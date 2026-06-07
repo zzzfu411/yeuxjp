@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import { loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { RefreshCw, ArrowLeft } from "lucide-react"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { useKanaProgress } from "@/lib/kana-progress"
@@ -19,6 +18,7 @@ import { SpeechSettingsBar, useSpeechPreferences } from "@/components/ui/speech-
 import { QuizAnswerFeedback } from "@/components/quiz/quiz-answer-feedback"
 import { QuizOptionGrid } from "@/components/quiz/quiz-option-grid"
 import { QuizQuestionPrompt } from "@/components/quiz/quiz-question-prompt"
+import { QuizScopeControls } from "@/components/quiz/quiz-scope-controls"
 import {
   filterUnlearnedVocab,
   filterUnmasteredKana,
@@ -250,106 +250,17 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         }
       />
 
-      {/* Scopes / review filters */}
-      {(mode === "hiragana-romaji" || mode === "audio-kana") && (
-        <div className="w-full flex flex-wrap items-center justify-center gap-2">
-          <div className="flex p-1 bg-secondary rounded-lg">
-            <button
-              onClick={() => setKanaScope("seion")}
-              className={cn(
-                "px-5 py-2 rounded-md text-sm font-medium transition-all",
-                kanaScope === "seion"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              清音
-            </button>
-            <button
-              onClick={() => setKanaScope("all")}
-              className={cn(
-                "px-5 py-2 rounded-md text-sm font-medium transition-all",
-                kanaScope === "all"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              全部
-            </button>
-          </div>
-
-          <button
-            onClick={() => setOnlyUnmasteredKana((v) => !v)}
-            className={cn(
-              "px-4 py-2 rounded-full border transition-colors bg-background hover:bg-secondary/60 text-sm",
-              onlyUnmasteredKana && "border-primary/40 bg-primary/5"
-            )}
-          >
-            {onlyUnmasteredKana ? "只出未掌握" : "全部出题"}
-          </button>
-        </div>
-      )}
-
-      {mode === "meaning-vocab" && (
-        <div className="w-full flex flex-wrap items-center justify-center gap-2">
-          <div className="flex flex-wrap p-1 bg-secondary rounded-lg">
-            <button
-              onClick={() => setVocabScope("survival")}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all",
-                vocabScope === "survival"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              生存
-            </button>
-            <button
-              onClick={() => setVocabScope("daily")}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all",
-                vocabScope === "daily"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              日常
-            </button>
-            <button
-              onClick={() => setVocabScope("fluent")}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all",
-                vocabScope === "fluent"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              流利
-            </button>
-            <button
-              onClick={() => setVocabScope("all")}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-medium transition-all",
-                vocabScope === "all"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              全部
-            </button>
-          </div>
-
-          <button
-            onClick={() => setOnlyUnlearnedVocab((v) => !v)}
-            className={cn(
-              "px-4 py-2 rounded-full border transition-colors bg-background hover:bg-secondary/60 text-sm",
-              onlyUnlearnedVocab && "border-primary/40 bg-primary/5"
-            )}
-          >
-            {onlyUnlearnedVocab ? "只出未掌握" : "全部出题"}
-          </button>
-        </div>
-      )}
+      <QuizScopeControls
+        mode={mode}
+        kanaScope={kanaScope}
+        onKanaScopeChange={setKanaScope}
+        onlyUnmasteredKana={onlyUnmasteredKana}
+        onOnlyUnmasteredKanaChange={setOnlyUnmasteredKana}
+        vocabScope={vocabScope}
+        onVocabScopeChange={setVocabScope}
+        onlyUnlearnedVocab={onlyUnlearnedVocab}
+        onOnlyUnlearnedVocabChange={setOnlyUnlearnedVocab}
+      />
 
       <QuizQuestionPrompt
         question={currentQuestion}
