@@ -19,6 +19,13 @@ import { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
 import { makeQuestionResult, type Question } from "@/lib/questions"
 import {
+  advanceReviewQueue,
+  createReviewStats,
+  getReviewCompletionStats,
+  recordReviewAnswer,
+  type ReviewCompletionStats,
+} from "@/lib/review-session"
+import {
   makeKanaReviewQuestion,
   makeVocabReviewQuestion,
   mistakeToQuestion,
@@ -104,7 +111,7 @@ function TodayReview({
   const [selected, setSelected] = useState<string | null>(null)
   const [lastOk, setLastOk] = useState<boolean | null>(null)
   const [initialCount] = useState(items.length)
-  const [stats, setStats] = useState({ correct: 0, wrong: 0, repeated: 0 })
+  const [stats, setStats] = useState(createReviewStats)
 
   const current = queue[0] ?? null
 
@@ -167,7 +174,7 @@ function TodayReview({
       <ReviewDone
         title="今日复习完成"
         onExit={onExit}
-        stats={{ initial: initialCount, answered: stats.correct + stats.wrong, correct: stats.correct, repeated: stats.repeated }}
+        stats={getReviewCompletionStats(initialCount, stats)}
       />
     )
   }
@@ -199,20 +206,11 @@ function TodayReview({
     setLastOk(ok)
     grade(current.id, ok)
     recordQuestionPractice({ progress: learning, notebook, result })
-    setStats((prev) => ({
-      correct: prev.correct + (ok ? 1 : 0),
-      wrong: prev.wrong + (ok ? 0 : 1),
-      repeated: prev.repeated + (ok ? 0 : 1),
-    }))
+    setStats((prev) => recordReviewAnswer(prev, ok))
   }
 
   const next = () => {
-    setQueue((prev) => {
-      const [head, ...rest] = prev
-      if (!head) return prev
-      if (lastOk) return rest
-      return [...rest, head]
-    })
+    setQueue((prev) => advanceReviewQueue(prev, lastOk))
     setSelected(null)
     setLastOk(null)
   }
@@ -312,7 +310,7 @@ function KanaReview({
   const [lastOk, setLastOk] = useState<boolean | null>(null)
   const [options, setOptions] = useState<string[]>(() => [])
   const [initialCount] = useState(ids.length)
-  const [stats, setStats] = useState({ correct: 0, wrong: 0, repeated: 0 })
+  const [stats, setStats] = useState(createReviewStats)
 
   const currentId = queue[0] ?? null
   const item = useMemo(() => (currentId ? kanaData.find((k) => k.romaji === currentId) ?? null : null), [currentId])
@@ -356,7 +354,7 @@ function KanaReview({
       <ReviewDone
         title="假名复习完成"
         onExit={onExit}
-        stats={{ initial: initialCount, answered: stats.correct + stats.wrong, correct: stats.correct, repeated: stats.repeated }}
+        stats={getReviewCompletionStats(initialCount, stats)}
       />
     )
   }
@@ -386,21 +384,12 @@ function KanaReview({
     setLastOk(ok)
     srs.grade(item.romaji, ok ? "good" : "again")
     recordQuestionPractice({ progress: learning, notebook, result })
-    setStats((prev) => ({
-      correct: prev.correct + (ok ? 1 : 0),
-      wrong: prev.wrong + (ok ? 0 : 1),
-      repeated: prev.repeated + (ok ? 0 : 1),
-    }))
+    setStats((prev) => recordReviewAnswer(prev, ok))
   }
 
   const next = () => {
     if (!currentId) return
-    setQueue((prev) => {
-      const [head, ...rest] = prev
-      if (!head) return prev
-      if (lastOk) return rest
-      return [...rest, head]
-    })
+    setQueue((prev) => advanceReviewQueue(prev, lastOk))
     setSelected(null)
     setLastOk(null)
   }
@@ -490,7 +479,7 @@ function VocabReview({
   const [lastOk, setLastOk] = useState<boolean | null>(null)
   const [options, setOptions] = useState<string[]>(() => [])
   const [initialCount] = useState(ids.length)
-  const [stats, setStats] = useState({ correct: 0, wrong: 0, repeated: 0 })
+  const [stats, setStats] = useState(createReviewStats)
 
   const currentId = queue[0] ?? null
   const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
@@ -534,7 +523,7 @@ function VocabReview({
       <ReviewDone
         title="单词复习完成"
         onExit={onExit}
-        stats={{ initial: initialCount, answered: stats.correct + stats.wrong, correct: stats.correct, repeated: stats.repeated }}
+        stats={getReviewCompletionStats(initialCount, stats)}
       />
     )
   }
@@ -574,21 +563,12 @@ function VocabReview({
     setLastOk(ok)
     srs.grade(item.id, ok ? "good" : "again")
     recordQuestionPractice({ progress: learning, notebook, result })
-    setStats((prev) => ({
-      correct: prev.correct + (ok ? 1 : 0),
-      wrong: prev.wrong + (ok ? 0 : 1),
-      repeated: prev.repeated + (ok ? 0 : 1),
-    }))
+    setStats((prev) => recordReviewAnswer(prev, ok))
   }
 
   const next = () => {
     if (!currentId) return
-    setQueue((prev) => {
-      const [head, ...rest] = prev
-      if (!head) return prev
-      if (lastOk) return rest
-      return [...rest, head]
-    })
+    setQueue((prev) => advanceReviewQueue(prev, lastOk))
     setSelected(null)
     setLastOk(null)
   }
@@ -687,7 +667,7 @@ function MistakeReview({
   const [selected, setSelected] = useState<string | null>(null)
   const [lastOk, setLastOk] = useState<boolean | null>(null)
   const [initialCount] = useState(ids.length)
-  const [stats, setStats] = useState({ correct: 0, wrong: 0, repeated: 0 })
+  const [stats, setStats] = useState(createReviewStats)
 
   const currentId = queue[0] ?? null
   const item = currentId ? notebook.byId.get(currentId) ?? null : null
@@ -711,7 +691,7 @@ function MistakeReview({
       <ReviewDone
         title="错题复习完成"
         onExit={onExit}
-        stats={{ initial: initialCount, answered: stats.correct + stats.wrong, correct: stats.correct, repeated: stats.repeated }}
+        stats={getReviewCompletionStats(initialCount, stats)}
       />
     )
   }
@@ -732,21 +712,12 @@ function MistakeReview({
     setLastOk(ok)
     srs.grade(item.id, ok ? "good" : "again")
     recordQuestionPractice({ progress: learning, notebook, result })
-    setStats((prev) => ({
-      correct: prev.correct + (ok ? 1 : 0),
-      wrong: prev.wrong + (ok ? 0 : 1),
-      repeated: prev.repeated + (ok ? 0 : 1),
-    }))
+    setStats((prev) => recordReviewAnswer(prev, ok))
   }
 
   const next = () => {
     if (!currentId) return
-    setQueue((prev) => {
-      const [head, ...rest] = prev
-      if (!head) return prev
-      if (lastOk) return rest
-      return [...rest, head]
-    })
+    setQueue((prev) => advanceReviewQueue(prev, lastOk))
     setSelected(null)
     setLastOk(null)
   }
@@ -863,7 +834,7 @@ function ReviewDone({
 }: {
   title: string
   onExit: () => void
-  stats?: { initial: number; answered: number; correct: number; repeated: number }
+  stats?: ReviewCompletionStats
 }) {
   const accuracy = stats?.answered ? Math.round((stats.correct / stats.answered) * 100) : null
 
