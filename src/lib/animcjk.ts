@@ -40,6 +40,14 @@ export interface ParsedAnimCjkSvg {
   viewBox: string
 }
 
+export const ANIMCJK_SPEEDS = [
+  { label: "慢", value: 1.6 },
+  { label: "正常", value: 1 },
+  { label: "快", value: 0.6 },
+] as const
+
+export type AnimCjkSpeedValue = (typeof ANIMCJK_SPEEDS)[number]["value"]
+
 export function normalizeKanaChar(char: string) {
   return SMALL_KANA_MAP[char] ?? char
 }
@@ -140,4 +148,69 @@ export function generateActiveStrokeCss(strokeCount: number, scopeId: string): s
   const allDone = Array.from({ length: strokeCount }, (_, i) => selector(strokeCount + 1, i + 1)).join(",")
   rules.push(`${allDone}{stroke-dashoffset:0;stroke:hsl(var(--foreground));}`)
   return rules.join("\n")
+}
+
+export function getAnimCjkTotalStrokes(svgs: Pick<ParsedAnimCjkSvg, "strokeCount">[]) {
+  return svgs.reduce((total, svg) => total + svg.strokeCount, 0)
+}
+
+export function getAnimCjkStrokeOffsets(svgs: Pick<ParsedAnimCjkSvg, "strokeCount">[]) {
+  const offsets: number[] = []
+  let total = 0
+  for (const svg of svgs) {
+    offsets.push(total)
+    total += svg.strokeCount
+  }
+  return offsets
+}
+
+export function getAnimCjkLocalActiveStroke({
+  activeStroke,
+  strokeCount,
+  offset,
+}: {
+  activeStroke: number
+  strokeCount: number
+  offset: number
+}) {
+  return Math.max(0, Math.min(strokeCount + 1, activeStroke - offset))
+}
+
+export function getAnimCjkTimelineEvents({
+  startFrom,
+  totalStrokes,
+  speed,
+}: {
+  startFrom: number
+  totalStrokes: number
+  speed: AnimCjkSpeedValue
+}) {
+  if (totalStrokes <= 0 || startFrom > totalStrokes) return []
+
+  const baseMs = 800 * speed
+  const initialDelay = startFrom === 1 ? 150 : 0
+  const events: Array<{ stroke: number; delayMs: number }> = []
+
+  for (let stroke = startFrom; stroke <= totalStrokes; stroke++) {
+    events.push({
+      stroke,
+      delayMs: initialDelay + (stroke - startFrom) * baseMs,
+    })
+  }
+
+  events.push({
+    stroke: totalStrokes + 1,
+    delayMs: initialDelay + (totalStrokes - startFrom + 1) * baseMs,
+  })
+
+  return events
+}
+
+export function getNextAnimCjkSpeed(current: AnimCjkSpeedValue) {
+  const index = ANIMCJK_SPEEDS.findIndex((speed) => speed.value === current)
+  return ANIMCJK_SPEEDS[(index + 1) % ANIMCJK_SPEEDS.length].value
+}
+
+export function getAnimCjkSpeedLabel(current: AnimCjkSpeedValue) {
+  return ANIMCJK_SPEEDS.find((speed) => speed.value === current)?.label ?? "正常"
 }

@@ -5,19 +5,19 @@ import { cn } from "@/lib/utils"
 import { Pause, Play, RotateCcw, SkipBack, SkipForward, Gauge } from "lucide-react"
 import { ControlBtn, KanaGlyphBoard } from "@/components/kana/kana-glyph-board"
 import {
+  getAnimCjkLocalActiveStroke,
   getAnimCjkKanaUrl,
+  getAnimCjkSpeedLabel,
+  getAnimCjkStrokeOffsets,
+  getAnimCjkTimelineEvents,
+  getAnimCjkTotalStrokes,
+  getNextAnimCjkSpeed,
   SMALL_KANA_MAP,
   parseAnimCJK,
+  type AnimCjkSpeedValue,
   type ParsedAnimCjkSvg,
 } from "@/lib/animcjk"
 export { getAnimCjkKanaUrls } from "@/lib/animcjk"
-
-const SPEEDS = [
-  { label: "慢", value: 1.6 },
-  { label: "正常", value: 1 },
-  { label: "快", value: 0.6 },
-] as const
-type SpeedValue = (typeof SPEEDS)[number]["value"]
 
 interface KanaStrokeAnimCJKProps {
   char: string
@@ -43,7 +43,7 @@ export function KanaStrokeAnimCJK({
   const cacheKey = useMemo(() => parts.join(""), [parts])
 
   const [parsed, setParsed] = useState<{ key: string; svgs?: ParsedAnimCjkSvg[]; error?: string } | null>(null)
-  const [speed, setSpeed] = useState<SpeedValue>(1)
+  const [speed, setSpeed] = useState<AnimCjkSpeedValue>(1)
   const [playToken, setPlayToken] = useState(0) // bump to restart timeline
   const [isPaused, setIsPaused] = useState(false)
   const [activeStroke, setActiveStroke] = useState<number>(0) // 0 = not started, 1..N = current
@@ -85,21 +85,12 @@ export function KanaStrokeAnimCJK({
 
   // Total stroke count across all sub-glyphs (for combos like きゃ)
   const totalStrokes = useMemo(
-    () => (svgs ? svgs.reduce((acc, s) => acc + s.strokeCount, 0) : 0),
+    () => (svgs ? getAnimCjkTotalStrokes(svgs) : 0),
     [svgs]
   )
 
   /** Per-glyph stroke offsets so we can compute global active stroke -> local. */
-  const offsets = useMemo(() => {
-    if (!svgs) return []
-    const arr: number[] = []
-    let cum = 0
-    for (const s of svgs) {
-      arr.push(cum)
-      cum += s.strokeCount
-    }
-    return arr
-  }, [svgs])
+  const offsets = useMemo(() => (svgs ? getAnimCjkStrokeOffsets(svgs) : []), [svgs])
 
   const clearTimers = useCallback(() => {
     for (const t of timersRef.current) clearTimeout(t)
@@ -115,23 +106,13 @@ export function KanaStrokeAnimCJK({
     (startFrom: number) => {
       clearTimers()
       if (!totalStrokes) return
-      const baseMs = 800 * speed
-      // Initial gap before first stroke begins (so user sees the grid first)
-      const initialDelay = startFrom === 1 ? 150 : 0
-
-      for (let i = startFrom; i <= totalStrokes; i++) {
+      for (const event of getAnimCjkTimelineEvents({ startFrom, totalStrokes, speed })) {
         const t = setTimeout(
-          () => setActiveStroke(i),
-          initialDelay + (i - startFrom) * baseMs
+          () => setActiveStroke(event.stroke),
+          event.delayMs
         )
         timersRef.current.push(t)
       }
-      // Settle to "finished" after the last stroke has drawn.
-      const settle = setTimeout(
-        () => setActiveStroke(totalStrokes + 1),
-        initialDelay + (totalStrokes - startFrom + 1) * baseMs
-      )
-      timersRef.current.push(settle)
     },
     [clearTimers, speed, totalStrokes]
   )
@@ -193,11 +174,7 @@ export function KanaStrokeAnimCJK({
   }, [activeStroke, totalStrokes, isPaused, handleReplay, clearTimers])
 
   const handleCycleSpeed = useCallback(() => {
-    setSpeed((cur) => {
-      const idx = SPEEDS.findIndex((s) => s.value === cur)
-      const next = SPEEDS[(idx + 1) % SPEEDS.length].value
-      return next
-    })
+    setSpeed((cur) => getNextAnimCjkSpeed(cur))
   }, [])
 
   // Cleanup timers on unmount
@@ -220,7 +197,7 @@ export function KanaStrokeAnimCJK({
     )
   }
 
-  const speedLabel = SPEEDS.find((s) => s.value === speed)?.label ?? "正常"
+  const speedLabel = getAnimCjkSpeedLabel(speed)
 
   return (
     <div className={cn("kana-animcjk-wrapper w-full h-full flex flex-col items-stretch gap-3 text-foreground", className)}>
@@ -236,7 +213,11 @@ export function KanaStrokeAnimCJK({
           // combos like きゃ would freeze the first glyph at "last stroke is
           // current/highlighted" instead of transitioning to the uniform
           // finished color.
-          const localActive = Math.max(0, Math.min(svg.strokeCount + 1, activeStroke - offset))
+          const localActive = getAnimCjkLocalActiveStroke({
+            activeStroke,
+            strokeCount: svg.strokeCount,
+            offset,
+          })
           return (
             <Fragment key={`${cacheKey}-${i}`}>
               <KanaGlyphBoard
