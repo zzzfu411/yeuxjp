@@ -13,6 +13,7 @@ function reviewSessionSources() {
   return [
     read("src/components/review/review-runner.tsx"),
     read("src/components/review/kana-review-session.tsx"),
+    read("src/components/review/vocab-review-session.tsx"),
   ].join("\n")
 }
 

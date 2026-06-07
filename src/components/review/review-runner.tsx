@@ -1,12 +1,13 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
 import { KanaReviewSession } from "@/components/review/kana-review-session"
-import { MistakeReviewPrompt, MixedReviewPrompt, VocabReviewPrompt } from "@/components/review/review-prompt-content"
+import { VocabReviewSession } from "@/components/review/vocab-review-session"
+import { MistakeReviewPrompt, MixedReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
@@ -17,7 +18,7 @@ import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-noteb
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { useLearningProgress } from "@/lib/learning-progress"
-import type { Question, QuestionResult } from "@/lib/questions"
+import type { QuestionResult } from "@/lib/questions"
 import {
   makeKanaReviewQuestion,
   makeVocabReviewQuestion,
@@ -201,90 +202,7 @@ function VocabReview({
 }) {
   const srs = useSrsDeck(VOCAB_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
-  const vocabulary = useAllVocabulary(ids.length > 0)
-  const [question, setQuestion] = useState<Question | null>(null)
-  const review = useReviewSessionState(ids)
-  const selected = review.selectedAnswer
-
-  const currentId = review.currentItem
-  const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
-
-  useEffect(() => {
-    let cancelled = false
-
-    Promise.resolve().then(() => {
-      if (cancelled) return
-      if (!item) {
-        setQuestion(null)
-        return
-      }
-
-      setQuestion(makeVocabReviewQuestion(item.id, vocabulary.data))
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [item, vocabulary.data])
-
-  const { playAudio } = useReviewAudio({
-    autoPlayText: item?.kana,
-    autoPlayKey: item?.id,
-  })
-
-  const recordAnswerSelection = useReviewAnswerRecorder({
-    progress: learning,
-    notebook,
-    recordAnswer: review.recordAnswer,
-    grade: useCallback((result: QuestionResult) => {
-      if (!item) return
-      srs.grade(item.id, result.correct ? "good" : "again")
-    }, [item, srs]),
-  })
-
-  if (review.isComplete) {
-    return (
-      <ReviewDone
-        title="单词复习完成"
-        onExit={onExit}
-        stats={review.completionStats}
-      />
-    )
-  }
-
-  if (vocabulary.loading) {
-    return <ReviewLoadingState label="正在加载单词复习..." />
-  }
-
-  if (!item) {
-    return <ReviewDone title="题库变更：当前条目不存在" onExit={onExit} />
-  }
-
-  const handleSelect = (val: string) => {
-    if (!question) return
-    recordAnswerSelection(question, val)
-  }
-
-  return (
-    <ReviewSessionFrame
-      onExit={onExit}
-      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>}
-    >
-
-      <ReviewPromptCard minHeightClassName="min-h-[240px]">
-        <VocabReviewPrompt display={item.kanji ?? item.kana} kana={item.kana} onPlay={playAudio} />
-      </ReviewPromptCard>
-
-      <ReviewOptionGrid
-        options={question?.options ?? []}
-        correctAnswer={item.id}
-        selectedAnswer={selected}
-        onSelect={handleSelect}
-      />
-
-      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
-    </ReviewSessionFrame>
-  )
+  return <VocabReviewSession ids={ids} onExit={onExit} notebook={notebook} learning={learning} srs={srs} />
 }
 
 function MistakeReview({
