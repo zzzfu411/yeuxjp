@@ -1,8 +1,9 @@
-const CACHE_NAME = "yasashi-static-v1";
+const CACHE_NAME = "yasashi-static-v2";
+const OFFLINE_FALLBACK_URL = "/offline.html";
 
 const STATIC_ASSETS = [
   "/",
-  "/offline.html",
+  OFFLINE_FALLBACK_URL,
   "/manifest.webmanifest",
   "/favicon.ico",
   "/apple-touch-icon.png",
@@ -35,9 +36,10 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
+  const requestUrl = new URL(request.url);
 
   if (request.method !== "GET") return;
-  if (!request.url.startsWith(self.location.origin)) return;
+  if (requestUrl.origin !== self.location.origin) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
@@ -46,7 +48,7 @@ self.addEventListener("fetch", (event) => {
       return fetch(request)
         .then((response) => {
           const copy = response.clone();
-          const isAnimCjkSvg = new URL(request.url).pathname.startsWith("/animcjk/") && request.url.endsWith(".svg");
+          const isAnimCjkSvg = requestUrl.pathname.startsWith("/animcjk/") && requestUrl.pathname.endsWith(".svg");
           const isStaticAsset =
             request.destination === "image" ||
             request.destination === "style" ||
@@ -59,7 +61,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() => {
-          if (request.mode === "navigate") return caches.match("/offline.html");
+          if (request.mode === "navigate") return caches.match(OFFLINE_FALLBACK_URL);
           return Response.error();
         });
     })
