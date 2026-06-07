@@ -7,12 +7,19 @@ import { KanaGrid } from "@/components/kana/kana-grid"
 import { cn } from "@/lib/utils"
 import { Eye, EyeOff } from "lucide-react"
 import { useKanaProgress } from "@/lib/kana-progress"
+import {
+  filterKanaByProgress,
+  getKanaProgress,
+  getKanaRowsForData,
+  getKanaSetData,
+  KANA_ROWS,
+  parseKanaSet,
+  type KanaSet,
+} from "@/lib/kana-page-model"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { KanaBanner } from "@/components/kana/kana-banner"
-
-type KanaSet = "seion" | "dakuon" | "yoon" | "special" | "all"
 
 function KanaPageContent() {
   const searchParams = useSearchParams()
@@ -35,10 +42,8 @@ function KanaPageContent() {
         setMode(urlMode)
       }
 
-      const allowed: KanaSet[] = ["seion", "dakuon", "yoon", "special", "all"]
-      if (urlSet && (allowed as string[]).includes(urlSet)) {
-        setKanaSet(urlSet as KanaSet)
-      }
+      const parsedSet = parseKanaSet(urlSet)
+      if (parsedSet) setKanaSet(parsedSet)
     })
 
     return () => {
@@ -46,33 +51,24 @@ function KanaPageContent() {
     }
   }, [urlMode, urlSet])
 
-  const seionRows = ["a", "ka", "sa", "ta", "na", "ha", "ma", "ya", "ra", "wa", "n"]
-  const dakuonRows = ["ga", "za", "da", "ba", "pa"]
-  const yoonRows = ["ky", "gy", "sh", "j", "ch", "ny", "hy", "by", "py", "my", "ry"]
-  const specialRows = ["special"]
+  const seion = useMemo(() => getKanaSetData(kanaData, "seion"), [])
+  const dakuonHandakuon = useMemo(() => getKanaSetData(kanaData, "dakuon"), [])
+  const yoon = useMemo(() => getKanaSetData(kanaData, "yoon"), [])
+  const special = useMemo(() => getKanaSetData(kanaData, "special"), [])
+  const seionDakuon = useMemo(
+    () => kanaData.filter((item) => item.type === "seion" || item.type === "dakuon" || item.type === "handakuon"),
+    []
+  )
 
-  const seion = kanaData.filter(k => k.type === "seion")
-  const dakuonHandakuon = kanaData.filter(k => k.type === "dakuon" || k.type === "handakuon")
-  const yoon = kanaData.filter(k => k.type === "yoon")
-  const special = kanaData.filter(k => k.type === "special")
-
-  const filterByProgress = (list: typeof kanaData) =>
-    onlyUnmastered ? list.filter(k => !isMastered(k.romaji)) : list
-
-  const rowsFor = (rows: string[], list: typeof kanaData) => rows.filter(r => list.some(k => k.row === r))
+  const filterByProgress = (list: typeof kanaData) => filterKanaByProgress(list, onlyUnmastered, isMastered)
+  const rowsFor = (rows: readonly string[], list: typeof kanaData) => getKanaRowsForData(rows, list)
 
   const activeData = useMemo(() => {
-    if (kanaSet === "seion") return seion
-    if (kanaSet === "dakuon") return dakuonHandakuon
-    if (kanaSet === "yoon") return yoon
-    if (kanaSet === "special") return special
-    return kanaData
-  }, [dakuonHandakuon, kanaSet, seion, special, yoon])
+    return getKanaSetData(kanaData, kanaSet)
+  }, [kanaSet])
 
   const activeProgress = useMemo(() => {
-    const total = activeData.length
-    const learned = activeData.reduce((acc, k) => acc + (isMastered(k.romaji) ? 1 : 0), 0)
-    return { learned, total }
+    return getKanaProgress(activeData, isMastered)
   }, [activeData, isMastered])
 
   const kanaSetHint = useMemo(() => {
@@ -289,7 +285,7 @@ function KanaPageContent() {
           <KanaGrid
             data={filterByProgress(seion)}
             mode={mode}
-            rows={rowsFor(seionRows, filterByProgress(seion))}
+            rows={rowsFor(KANA_ROWS.seion, filterByProgress(seion))}
             columns={5}
             showRomaji={showRomaji}
             isMastered={isMastered}
@@ -303,7 +299,7 @@ function KanaPageContent() {
           <KanaGrid
             data={filterByProgress(dakuonHandakuon)}
             mode={mode}
-            rows={rowsFor(dakuonRows, filterByProgress(dakuonHandakuon))}
+            rows={rowsFor(KANA_ROWS.dakuon, filterByProgress(dakuonHandakuon))}
             columns={5}
             showRomaji={showRomaji}
             isMastered={isMastered}
@@ -317,7 +313,7 @@ function KanaPageContent() {
           <KanaGrid
             data={filterByProgress(yoon)}
             mode={mode}
-            rows={rowsFor(yoonRows, filterByProgress(yoon))}
+            rows={rowsFor(KANA_ROWS.yoon, filterByProgress(yoon))}
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
@@ -338,7 +334,7 @@ function KanaPageContent() {
           <KanaGrid
             data={filterByProgress(special)}
             mode={mode}
-            rows={rowsFor(specialRows, filterByProgress(special))}
+            rows={rowsFor(KANA_ROWS.special, filterByProgress(special))}
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
@@ -355,11 +351,11 @@ function KanaPageContent() {
             <p className="text-xs text-muted-foreground">建议先掌握清音，再逐步解锁后两类。</p>
           </div>
           <KanaGrid
-            data={filterByProgress(kanaData.filter(k => k.type === "seion" || k.type === "dakuon" || k.type === "handakuon"))}
+            data={filterByProgress(seionDakuon)}
             mode={mode}
             rows={rowsFor(
-              [...seionRows, ...dakuonRows],
-              filterByProgress(kanaData.filter(k => k.type === "seion" || k.type === "dakuon" || k.type === "handakuon"))
+              [...KANA_ROWS.seion, ...KANA_ROWS.dakuon],
+              filterByProgress(seionDakuon)
             )}
             columns={5}
             showRomaji={showRomaji}
@@ -374,7 +370,7 @@ function KanaPageContent() {
           <KanaGrid
             data={filterByProgress(yoon)}
             mode={mode}
-            rows={rowsFor(yoonRows, filterByProgress(yoon))}
+            rows={rowsFor(KANA_ROWS.yoon, filterByProgress(yoon))}
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
@@ -388,7 +384,7 @@ function KanaPageContent() {
           <KanaGrid
             data={filterByProgress(special)}
             mode={mode}
-            rows={rowsFor(specialRows, filterByProgress(special))}
+            rows={rowsFor(KANA_ROWS.special, filterByProgress(special))}
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
