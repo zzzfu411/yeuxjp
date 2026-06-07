@@ -7,19 +7,29 @@ const storage = await loadTsModule("src/lib/storage-keys.ts")
 
 function installWindow() {
   const map = new Map()
+  const events = []
   global.window = {
     localStorage: {
       getItem: (key) => (map.has(key) ? map.get(key) : null),
       setItem: (key, value) => map.set(key, String(value)),
       removeItem: (key) => map.delete(key),
     },
-    dispatchEvent: () => true,
+    dispatchEvent: (event) => {
+      events.push(event)
+      return true
+    },
   }
-  return map
+  global.CustomEvent = class CustomEvent extends Event {
+    constructor(type, init) {
+      super(type)
+      this.detail = init?.detail
+    }
+  }
+  return { map, events }
 }
 
 test("learning backups include existing learning keys and can restore them", () => {
-  const map = installWindow()
+  const { map } = installWindow()
   map.set(storage.STORAGE_KEYS.USER_PROFILE, '{"goal":"balanced"}')
   map.set(storage.STORAGE_KEYS.SRS_KANA, '{"a":{"box":1}}')
 
@@ -29,12 +39,14 @@ test("learning backups include existing learning keys and can restore them", () 
   assert.equal(backup.entries[storage.STORAGE_KEYS.USER_PROFILE], '{"goal":"balanced"}')
 
   map.clear()
+  map.set(storage.STORAGE_KEYS.MISTAKES, "[{\"id\":\"stale\"}]")
   assert.equal(store.restoreLearningBackup(backup), true)
   assert.equal(map.get(storage.STORAGE_KEYS.SRS_KANA), '{"a":{"box":1}}')
+  assert.equal(map.has(storage.STORAGE_KEYS.MISTAKES), false)
 })
 
 test("resetLearningData removes all managed keys but leaves unrelated localStorage alone", () => {
-  const map = installWindow()
+  const { map } = installWindow()
   for (const key of store.getLearningBackupKeys()) {
     map.set(key, "value")
   }
@@ -45,6 +57,28 @@ test("resetLearningData removes all managed keys but leaves unrelated localStora
     assert.equal(map.has(key), false)
   }
   assert.equal(map.get("unrelated"), "keep")
+})
+
+test("learning store events include changed keys for UI sync", () => {
+  const { map, events } = installWindow()
+  map.set(storage.STORAGE_KEYS.USER_PROFILE, '{"goal":"balanced"}')
+  map.set(storage.STORAGE_KEYS.MISTAKES, "[]")
+
+  const backup = store.createLearningBackup(456)
+  assert.equal(events.at(-1).type, store.LEARNING_STORE_EVENT)
+  assert.equal(events.at(-1).detail.action, "backup")
+  assert.deepEqual(
+    events.at(-1).detail.keys.sort(),
+    [storage.STORAGE_KEYS.MISTAKES, storage.STORAGE_KEYS.USER_PROFILE].sort()
+  )
+
+  store.restoreLearningBackup(backup)
+  assert.equal(events.at(-1).detail.action, "restore")
+  assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
+
+  store.resetLearningData()
+  assert.equal(events.at(-1).detail.action, "reset")
+  assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
 })
 
 test("parseLearningBackup rejects invalid JSON and wrong versions", () => {

@@ -11,6 +11,7 @@ import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-noteb
 import { getNextSrsDueAt, useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
+import { LearningDataPanel } from "@/components/review/learning-data-panel"
 import { ReviewRunner, type ReviewSession } from "@/components/review/review-runner"
 import {
   buildTodayReviewQueue,
@@ -289,6 +290,8 @@ export default function ReviewPage() {
           </div>
         </div>
       )}
+
+      <LearningDataPanel />
     </div>
   )
 }

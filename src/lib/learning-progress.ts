@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
 const LEARNING_EVENT = "yasashi:learning:update"
@@ -212,10 +213,18 @@ export function useLearningProfile() {
       setProfileState(normalizeProfile(readJson(STORAGE_KEYS.USER_PROFILE, null)))
     }
 
+    const syncStore = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
+      if (!detail?.keys?.includes(STORAGE_KEYS.USER_PROFILE)) return
+      setProfileState(normalizeProfile(readJson(STORAGE_KEYS.USER_PROFILE, null)))
+    }
+
     window.addEventListener(LEARNING_EVENT, sync)
+    window.addEventListener(LEARNING_STORE_EVENT, syncStore)
     return () => {
       cancelled = true
       window.removeEventListener(LEARNING_EVENT, sync)
+      window.removeEventListener(LEARNING_STORE_EVENT, syncStore)
     }
   }, [])
 
@@ -260,10 +269,24 @@ export function useLearningProgress() {
       }
     }
 
+    const syncStore = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
+      const keys = detail?.keys ?? []
+      if (
+        keys.includes(STORAGE_KEYS.LESSON_PROGRESS) ||
+        keys.includes(STORAGE_KEYS.ITEM_PROGRESS) ||
+        keys.includes(STORAGE_KEYS.PRACTICE_RESULTS)
+      ) {
+        load()
+      }
+    }
+
     window.addEventListener(LEARNING_EVENT, sync)
+    window.addEventListener(LEARNING_STORE_EVENT, syncStore)
     return () => {
       cancelled = true
       window.removeEventListener(LEARNING_EVENT, sync)
+      window.removeEventListener(LEARNING_STORE_EVENT, syncStore)
     }
   }, [load])
 

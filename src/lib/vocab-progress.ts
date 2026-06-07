@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
@@ -66,13 +67,21 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
       sync()
     }
 
+    const onLearningStore = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
+      if (!detail?.keys?.includes(storageKey)) return
+      sync()
+    }
+
     window.addEventListener("storage", onStorage)
     window.addEventListener(PROGRESS_UPDATE_EVENT, onCustom)
+    window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
 
     return () => {
       cancelled = true
       window.removeEventListener("storage", onStorage)
       window.removeEventListener(PROGRESS_UPDATE_EVENT, onCustom)
+      window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
   }, [storageKey])
 

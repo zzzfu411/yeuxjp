@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { applySrsResult, createSrsState, removeSrs, setSrsState, clearSrs } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
@@ -141,8 +142,26 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       setList(readList(storageKey))
     })
 
+    const sync = () => setList(readList(storageKey))
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== storageKey) return
+      sync()
+    }
+
+    const onLearningStore = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
+      if (!detail?.keys?.includes(storageKey)) return
+      sync()
+    }
+
+    window.addEventListener("storage", onStorage)
+    window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
+
     return () => {
       cancelled = true
+      window.removeEventListener("storage", onStorage)
+      window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
   }, [storageKey])
 

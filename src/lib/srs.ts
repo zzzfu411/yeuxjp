@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 
 export type SrsState = {
   box: number
@@ -207,14 +208,22 @@ export function useSrsDeck(storageKey: string) {
       setMap(readMap(storageKey))
     }
 
+    const onLearningStore = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { keys?: readonly string[] } | undefined
+      if (!detail?.keys?.includes(storageKey)) return
+      setMap(readMap(storageKey))
+    }
+
     window.addEventListener("storage", onStorage)
     window.addEventListener("yasashi:srs:update", onCustom)
+    window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
 
     return () => {
       cancelled = true
       window.clearInterval(interval)
       window.removeEventListener("storage", onStorage)
       window.removeEventListener("yasashi:srs:update", onCustom)
+      window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
   }, [storageKey])
 

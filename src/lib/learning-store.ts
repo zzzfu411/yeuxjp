@@ -54,15 +54,16 @@ export function restoreLearningBackup(backup: LearningBackup) {
   if (typeof window === "undefined") return false
   if (backup.version !== LEARNING_BACKUP_VERSION) return false
 
-  const restoredKeys: string[] = []
   for (const key of BACKUP_KEYS) {
     const value = backup.entries[key]
-    if (typeof value !== "string") continue
-    window.localStorage.setItem(key, value)
-    restoredKeys.push(key)
+    if (typeof value === "string") {
+      window.localStorage.setItem(key, value)
+    } else {
+      window.localStorage.removeItem(key)
+    }
   }
 
-  notifyLearningStore({ action: "restore", keys: restoredKeys })
+  notifyLearningStore({ action: "restore", keys: BACKUP_KEYS })
   return true
 }
 
