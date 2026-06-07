@@ -5,9 +5,6 @@ import { useSearchParams } from "next/navigation"
 import { loadVocabularyLevel } from "@/data/vocabulary/loader"
 import type { VocabLevel, Vocabulary } from "@/data/vocabulary/types"
 import { Flashcard } from "@/components/vocabulary/flashcard"
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { speakJapanese } from "@/lib/speech"
 import { useVocabProgress } from "@/lib/vocab-progress"
 import {
@@ -20,8 +17,9 @@ import {
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
-import { CategoryIcon, hasCategoryIcon } from "@/components/vocabulary/category-icon"
+import { CategoryIcon } from "@/components/vocabulary/category-icon"
 import { VocabularyFocusModal } from "@/components/vocabulary/vocabulary-focus-modal"
+import { VocabularyToolbar } from "@/components/vocabulary/vocabulary-toolbar"
 
 const EMPTY_VOCAB: Vocabulary[] = []
 
@@ -156,6 +154,34 @@ function VocabularyPageContent() {
     }
   };
 
+  const resetSelection = useCallback(() => {
+    setSelectedIndex(null)
+    setIsModalFlipped(false)
+  }, [])
+
+  const handleLevelChange = useCallback((level: VocabLevel) => {
+    setCurrentLevel(level)
+    setActiveCategory(null)
+    resetSelection()
+    window.scrollTo({ top: 0 })
+  }, [resetSelection])
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value)
+    resetSelection()
+  }, [resetSelection])
+
+  const handleToggleOnlyUnlearned = useCallback(() => {
+    setOnlyUnlearned((value) => !value)
+    resetSelection()
+  }, [resetSelection])
+
+  const handleClearLearned = useCallback(() => {
+    if (typeof window === "undefined") return
+    const ok = window.confirm("纭娓呯┖璇嶆眹鎺屾彙杩涘害鍚楋紵")
+    if (ok) clearLearned()
+  }, [clearLearned])
+
   // Handlers
   const handleNext = useCallback(() => {
     if (selectedIndex === null || currentDataLength === 0) return
@@ -204,106 +230,21 @@ function VocabularyPageContent() {
 
       <SpeechSettingsBar className="max-w-3xl mx-auto" />
 
-      {/* Search Input */}
-      <div className="relative max-w-md mx-auto w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input 
-          placeholder="搜索单词..." 
-          data-testid="vocabulary-search"
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value)
-            setSelectedIndex(null)
-            setIsModalFlipped(false)
-          }}
-          className="pl-9 bg-secondary/30 border-primary/20 focus-visible:ring-primary/50"
-        />
-      </div>
-
-      {/* Sticky Header Group */}
-      <div className="sticky top-16 z-30 bg-background/95 backdrop-blur py-4 space-y-4 shadow-sm -mx-4 px-4 sm:mx-0 sm:px-0 sm:rounded-xl border-b sm:border-none transition-all">
-        
-        {/* Level Tabs */}
-        <div className="flex justify-center">
-          <div className="bg-secondary/50 p-1 rounded-full inline-flex">
-            {levels.map(level => (
-              <button
-                key={level.id}
-                onClick={() => {
-                  setCurrentLevel(level.id)
-                  setActiveCategory(null)
-                  setSelectedIndex(null)
-                  setIsModalFlipped(false)
-                  window.scrollTo({top: 0})
-                }}
-                className={cn(
-                  "px-6 py-2 rounded-full text-sm font-medium transition-all",
-                  currentLevel === level.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {level.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Progress / Filters */}
-        <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-          <div className="text-xs text-muted-foreground font-mono px-3 py-1 rounded-full bg-secondary/50 border">
-            Progress: {levelProgress.learned}/{levelProgress.total}
-          </div>
-
-          <button
-            onClick={() => {
-              setOnlyUnlearned(v => !v)
-              setSelectedIndex(null)
-              setIsModalFlipped(false)
-            }}
-            className={cn(
-              "px-4 py-2 rounded-full border transition-colors bg-background hover:bg-secondary/60",
-              onlyUnlearned && "border-primary/40 bg-primary/5"
-            )}
-          >
-            {onlyUnlearned ? "显示全部" : "只看未掌握"}
-          </button>
-
-          <button
-            onClick={() => {
-              if (typeof window === "undefined") return
-              const ok = window.confirm("确认清空词汇掌握进度吗？")
-              if (ok) clearLearned()
-            }}
-            className="px-4 py-2 rounded-full border transition-colors bg-background hover:bg-secondary/60 text-muted-foreground hover:text-foreground"
-          >
-            清空进度
-          </button>
-        </div>
-
-        {/* Category Anchor Chips (Scrollable) */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mask-fade items-center">
-          {categories.map(cat => {
-            const withIcon = hasCategoryIcon(cat)
-            return (
-              <button
-                key={cat}
-                onClick={() => scrollToCategory(cat)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full text-xs font-medium border transition-all hover:shadow-sm",
-                  withIcon ? "pl-1 pr-3 py-1" : "px-4 py-1.5",
-                  activeCategory === cat
-                    ? "bg-primary/10 border-primary text-primary font-bold scale-105"
-                    : "bg-card border-border hover:border-primary/50 text-muted-foreground"
-                )}
-              >
-                {withIcon && <CategoryIcon category={cat} size={20} fallback={false} />}
-                {categoryNames[cat] || cat}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <VocabularyToolbar
+        levels={levels}
+        currentLevel={currentLevel}
+        searchQuery={searchQuery}
+        onlyUnlearned={onlyUnlearned}
+        activeCategory={activeCategory}
+        categories={categories}
+        categoryNames={categoryNames}
+        progress={levelProgress}
+        onSearchChange={handleSearchChange}
+        onLevelChange={handleLevelChange}
+        onToggleOnlyUnlearned={handleToggleOnlyUnlearned}
+        onClearLearned={handleClearLearned}
+        onSelectCategory={scrollToCategory}
+      />
 
       {/* Content Grid */}
       <div className="space-y-16 pt-4">

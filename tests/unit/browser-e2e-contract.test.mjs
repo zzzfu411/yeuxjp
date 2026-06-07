@@ -33,7 +33,7 @@ const requiredSelectors = [
   },
   {
     testId: "vocabulary-search",
-    source: "src/app/vocabulary/page.tsx",
+    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
     pattern: /data-testid="vocabulary-search"/,
   },
   {
