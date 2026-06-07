@@ -18,7 +18,7 @@ const requiredSelectors = [
   },
   {
     testId: "lesson-answer-a",
-    source: "src/app/learn/[lessonId]/page.tsx",
+    source: "src/components/lesson/lesson-step-body.tsx",
     pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
   },
   {
