@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
@@ -19,8 +20,7 @@ import { speakJapaneseRepeated } from "@/lib/speech"
 import { useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
 import { useLearningProgress } from "@/lib/learning-progress"
-import { recordQuestionPractice } from "@/lib/learning-session"
-import { makeQuestionResult, type Question } from "@/lib/questions"
+import type { Question, QuestionResult } from "@/lib/questions"
 import type { ReviewCompletionStats } from "@/lib/review-session"
 import {
   makeKanaReviewQuestion,
@@ -162,6 +162,18 @@ function TodayReview({
     return () => clearTimeout(timer)
   }, [data?.audio, playAudio, speech?.prefs.autoPlay])
 
+  const recordAnswerSelection = useReviewAnswerRecorder({
+    progress: learning,
+    notebook,
+    recordAnswer: review.recordAnswer,
+    grade: useCallback((result: QuestionResult) => {
+      if (!current) return
+      if (current.deck === "kana") kanaSrs.grade(current.id, result.correct ? "good" : "again")
+      if (current.deck === "vocab") vocabSrs.grade(current.id, result.correct ? "good" : "again")
+      if (current.deck === "mistakes") mistakeSrs.grade(current.id, result.correct ? "good" : "again")
+    }, [current, kanaSrs, mistakeSrs, vocabSrs]),
+  })
+
   if (review.isComplete) {
     return (
       <ReviewDone
@@ -185,18 +197,8 @@ function TodayReview({
     return <ReviewDone title="复习条目不存在（可能已移除）" onExit={onExit} />
   }
 
-  const grade = (id: string, ok: boolean) => {
-    if (current.deck === "kana") kanaSrs.grade(id, ok ? "good" : "again")
-    if (current.deck === "vocab") vocabSrs.grade(id, ok ? "good" : "again")
-    if (current.deck === "mistakes") mistakeSrs.grade(id, ok ? "good" : "again")
-  }
-
   const handleSelect = (value: string) => {
-    const result = makeQuestionResult(data.question, value)
-    const ok = result.correct
-    if (!review.recordAnswer(value, ok)) return
-    grade(current.id, ok)
-    recordQuestionPractice({ progress: learning, notebook, result })
+    recordAnswerSelection(data.question, value)
   }
 
   return (
@@ -299,6 +301,16 @@ function KanaReview({
     return () => clearTimeout(timer)
   }, [item, playAudio, speech?.prefs.autoPlay])
 
+  const recordAnswerSelection = useReviewAnswerRecorder({
+    progress: learning,
+    notebook,
+    recordAnswer: review.recordAnswer,
+    grade: useCallback((result: QuestionResult) => {
+      if (!item) return
+      srs.grade(item.romaji, result.correct ? "good" : "again")
+    }, [item, srs]),
+  })
+
   if (review.isComplete) {
     return (
       <ReviewDone
@@ -327,11 +339,7 @@ function KanaReview({
       correctDisplay: item.romaji,
       options: options.map((option) => ({ value: option, display: option })),
     }
-    const result = makeQuestionResult(question, val)
-    const ok = result.correct
-    if (!review.recordAnswer(val, ok)) return
-    srs.grade(item.romaji, ok ? "good" : "again")
-    recordQuestionPractice({ progress: learning, notebook, result })
+    recordAnswerSelection(question, val)
   }
 
   return (
@@ -425,6 +433,16 @@ function VocabReview({
     return () => clearTimeout(timer)
   }, [item, playAudio, speech?.prefs.autoPlay])
 
+  const recordAnswerSelection = useReviewAnswerRecorder({
+    progress: learning,
+    notebook,
+    recordAnswer: review.recordAnswer,
+    grade: useCallback((result: QuestionResult) => {
+      if (!item) return
+      srs.grade(item.id, result.correct ? "good" : "again")
+    }, [item, srs]),
+  })
+
   if (review.isComplete) {
     return (
       <ReviewDone
@@ -463,11 +481,7 @@ function VocabReview({
         return { value: optionId, display: option?.meaning ?? optionId }
       }),
     }
-    const result = makeQuestionResult(question, val)
-    const ok = result.correct
-    if (!review.recordAnswer(val, ok)) return
-    srs.grade(item.id, ok ? "good" : "again")
-    recordQuestionPractice({ progress: learning, notebook, result })
+    recordAnswerSelection(question, val)
   }
 
   return (
@@ -551,6 +565,16 @@ function MistakeReview({
     return () => clearTimeout(timer)
   }, [currentId, item?.questionAudio, playAudio, speech?.prefs.autoPlay])
 
+  const recordAnswerSelection = useReviewAnswerRecorder({
+    progress: learning,
+    notebook,
+    recordAnswer: review.recordAnswer,
+    grade: useCallback((result: QuestionResult) => {
+      if (!item) return
+      srs.grade(item.id, result.correct ? "good" : "again")
+    }, [item, srs]),
+  })
+
   if (review.isComplete) {
     return (
       <ReviewDone
@@ -570,11 +594,7 @@ function MistakeReview({
   const correctDisplay = item.options.find((o) => o.value === correct)?.display ?? item.correctDisplay ?? correct
 
   const handleSelect = (val: string) => {
-    const result = makeQuestionResult(mistakeToQuestion(item), val)
-    const ok = result.correct
-    if (!review.recordAnswer(val, ok)) return
-    srs.grade(item.id, ok ? "good" : "again")
-    recordQuestionPractice({ progress: learning, notebook, result })
+    recordAnswerSelection(mistakeToQuestion(item), val)
   }
 
   const canShowConj =
