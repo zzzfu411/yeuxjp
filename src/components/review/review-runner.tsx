@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
+import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
@@ -15,7 +15,6 @@ import { kanaData } from "@/data/kana-data"
 import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-notebook"
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
-import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
 import { useLearningProgress } from "@/lib/learning-progress"
 import type { Question, QuestionResult } from "@/lib/questions"
 import {
@@ -183,12 +182,7 @@ function TodayReview({
         onSelect={handleSelect}
       />
 
-      {selected && (
-        <div className="w-full rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground leading-relaxed">
-          正确答案：<span className="font-semibold text-foreground">{data.question.options.find((o) => o.value === data.question.correctAnswer)?.display ?? data.question.correctDisplay ?? data.question.correctAnswer}</span>
-          {data.question.explanation ? <div className="mt-2">{data.question.explanation}</div> : null}
-        </div>
-      )}
+      <ReviewAnswerFeedback question={data.question} selectedAnswer={selected} />
 
       <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
     </ReviewSessionFrame>
@@ -415,14 +409,6 @@ function VocabReview({
   )
 }
 
-function isVerbKind(value: unknown): value is ConjugationVerbMeta["kind"] {
-  return value === "ichidan" || value === "godan" || value === "suru" || value === "kuru"
-}
-
-function isVerbForm(value: unknown): value is "masu" | "nai" | "te" | "ta" {
-  return value === "masu" || value === "nai" || value === "te" || value === "ta"
-}
-
 function MistakeReview({
   ids,
   onExit,
@@ -471,20 +457,12 @@ function MistakeReview({
     return <ReviewDone title="错题不存在（可能已移除）" onExit={onExit} />
   }
 
-  const correct = item.correctAnswer
-  const selectedDisplay = selected ? item.options.find((o) => o.value === selected)?.display ?? selected : null
-  const correctDisplay = item.options.find((o) => o.value === correct)?.display ?? item.correctDisplay ?? correct
+  const question = mistakeToQuestion(item)
+  const correct = question.correctAnswer
 
   const handleSelect = (val: string) => {
-    recordAnswerSelection(mistakeToQuestion(item), val)
+    recordAnswerSelection(question, val)
   }
-
-  const canShowConj =
-    item.type === "verb-conjugation" &&
-    item.meta?.verb &&
-    isVerbKind(item.meta.verb.kind) &&
-    item.meta.askedForm &&
-    isVerbForm(item.meta.askedForm.id)
 
   return (
     <ReviewSessionFrame
@@ -518,37 +496,19 @@ function MistakeReview({
       </ReviewPromptCard>
 
       <ReviewOptionGrid
-        options={item.options}
+        options={question.options}
         correctAnswer={correct}
         selectedAnswer={selected}
         onSelect={handleSelect}
       />
 
-      {selected && item.type === "particle" && item.questionText && (
-        <ParticleFillFeedback sentence={item.questionText} selected={selectedDisplay ?? selected} correct={correct} />
-      )}
-
-      {selected && canShowConj && (
-        <ConjugationComparison
-          verb={{ ...item.meta!.verb!, kind: item.meta!.verb!.kind as ConjugationVerbMeta["kind"] }}
-          askedForm={{ id: item.meta!.askedForm!.id as "masu" | "nai" | "te" | "ta", label: item.meta!.askedForm!.label }}
-          selected={selected}
-          correct={correct}
-        />
-      )}
-
-      {selected && (
-        <div className="w-full rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground leading-relaxed">
-          <div className="text-xs font-semibold text-foreground mb-1 tracking-wider">解析</div>
-          <div className="space-y-2">
-            <div className="text-sm">
-              你的答案：<span className={cn("font-semibold", lastOk ? "text-green-700 dark:text-green-300" : "text-red-700 dark:text-red-300")}>{selectedDisplay ?? selected}</span>
-              <span className="text-muted-foreground"> · 正确：<span className="font-semibold text-foreground">{correctDisplay}</span></span>
-            </div>
-            {item.explanation ? <div>{item.explanation}</div> : null}
-          </div>
-        </div>
-      )}
+      <ReviewAnswerFeedback
+        question={question}
+        selectedAnswer={selected}
+        correct={lastOk}
+        showSelectedAnswer
+        showSpecialFeedback
+      />
 
       <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
     </ReviewSessionFrame>
