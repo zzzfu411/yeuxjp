@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { STARTER_LESSONS, getLessonById, isPracticeStep, type LessonStep } from "@/data/lessons"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
-import { countPracticeSteps, calculateLessonCompletionScore } from "@/lib/lesson-session"
+import { countPracticeSteps, calculateLessonCompletionScore, resolveLessonResumeStepIndex } from "@/lib/lesson-session"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
@@ -19,24 +19,14 @@ export default function LessonPage() {
   const lesson = getLessonById(params.lessonId)
   const progress = useLearningProgress()
   const mistakes = useMistakeNotebook()
-  const [stepIndex, setStepIndex] = useState(0)
+  const { lessons, loaded, startLesson, completeLesson, saveLessonPosition } = progress
+  const [manualStep, setManualStep] = useState<{ lessonId: string; index: number } | null>(null)
   const [answered, setAnswered] = useState<Record<string, boolean>>({})
   const [selected, setSelected] = useState<string | null>(null)
   const [typed, setTyped] = useState("")
   const [built, setBuilt] = useState<string[]>([])
   const [result, setResult] = useState<"correct" | "wrong" | null>(null)
-
-  useEffect(() => {
-    if (!lesson) return
-    progress.startLesson(lesson.id)
-  }, [lesson, progress])
-
-  const current = lesson?.steps[stepIndex]
-  const isLast = lesson ? stepIndex === lesson.steps.length - 1 : false
-  const practiceSteps = useMemo(() => (lesson ? countPracticeSteps(lesson.steps) : 0), [lesson])
-  const correctCount = useMemo(() => Object.values(answered).filter(Boolean).length, [answered])
-  const completionScore = calculateLessonCompletionScore(correctCount, practiceSteps)
-  const savedLessonProgress = lesson ? progress.lessons[lesson.id] : undefined
+  const savedLessonProgress = lesson ? lessons[lesson.id] : undefined
 
   const resetStepState = useCallback(() => {
     setSelected(null)
@@ -44,6 +34,30 @@ export default function LessonPage() {
     setBuilt([])
     setResult(null)
   }, [])
+
+  useEffect(() => {
+    if (!lesson) return
+    startLesson(lesson.id)
+  }, [lesson, startLesson])
+
+  const resumedStepIndex = useMemo(() => {
+    if (!lesson || !loaded) return 0
+    return resolveLessonResumeStepIndex(savedLessonProgress, lesson.steps)
+  }, [lesson, loaded, savedLessonProgress])
+
+  const stepIndex = lesson && manualStep?.lessonId === lesson.id ? manualStep.index : resumedStepIndex
+
+  useEffect(() => {
+    if (!lesson || !loaded) return
+    const step = lesson.steps[stepIndex]
+    saveLessonPosition(lesson.id, stepIndex, step?.id)
+  }, [lesson, loaded, stepIndex, saveLessonPosition])
+
+  const current = lesson?.steps[stepIndex]
+  const isLast = lesson ? stepIndex === lesson.steps.length - 1 : false
+  const practiceSteps = useMemo(() => (lesson ? countPracticeSteps(lesson.steps) : 0), [lesson])
+  const correctCount = useMemo(() => Object.values(answered).filter(Boolean).length, [answered])
+  const completionScore = calculateLessonCompletionScore(correctCount, practiceSteps)
 
   const recordAnswer = useLessonAnswerRecorder({
     lessonId: lesson?.id ?? params.lessonId,
@@ -62,15 +76,15 @@ export default function LessonPage() {
 
   const goNext = () => {
     if (isLast) {
-      progress.completeLesson(lesson.id, completionScore)
+      completeLesson(lesson.id, completionScore)
       return
     }
-    setStepIndex((index) => Math.min(index + 1, lesson.steps.length - 1))
+    setManualStep({ lessonId: lesson.id, index: Math.min(stepIndex + 1, lesson.steps.length - 1) })
     resetStepState()
   }
 
   const goBack = () => {
-    setStepIndex((index) => Math.max(index - 1, 0))
+    setManualStep({ lessonId: lesson.id, index: Math.max(stepIndex - 1, 0) })
     resetStepState()
   }
 
@@ -94,7 +108,7 @@ export default function LessonPage() {
     setResult(ok ? "correct" : "wrong")
   }
 
-  const hasCompletedLesson = progress.lessons[lesson.id]?.status === "completed"
+  const hasCompletedLesson = lessons[lesson.id]?.status === "completed"
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_32rem),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted)/0.22))]">

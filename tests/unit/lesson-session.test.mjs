@@ -43,3 +43,38 @@ test("lesson practice counts and completion scores are deterministic", () => {
   assert.equal(session.calculateLessonCompletionScore(2, 3), 67)
   assert.equal(session.calculateLessonCompletionScore(3, 3), 100)
 })
+
+test("lesson resume indexes are clamped to existing lesson steps", () => {
+  const lesson = lessons.STARTER_LESSONS[0]
+
+  assert.equal(session.clampLessonStepIndex(-2, lesson.steps.length), 0)
+  assert.equal(session.clampLessonStepIndex(2.8, lesson.steps.length), 2)
+  assert.equal(session.clampLessonStepIndex(999, lesson.steps.length), lesson.steps.length - 1)
+  assert.equal(session.clampLessonStepIndex(3, 0), 0)
+})
+
+test("started lessons resume from saved step id before numeric index", () => {
+  const lesson = lessons.STARTER_LESSONS[0]
+
+  assert.equal(
+    session.resolveLessonResumeStepIndex(
+      { status: "started", currentStepIndex: 1, lastStepId: lesson.steps[3].id },
+      lesson.steps
+    ),
+    3
+  )
+  assert.equal(session.resolveLessonResumeStepIndex({ status: "started", currentStepIndex: 999 }, lesson.steps), lesson.steps.length - 1)
+  assert.equal(session.resolveLessonResumeStepIndex({ status: "started", lastStepId: "missing" }, lesson.steps), 0)
+})
+
+test("completed lessons reopen on the summary step", () => {
+  const lesson = lessons.STARTER_LESSONS[0]
+
+  assert.equal(
+    session.resolveLessonResumeStepIndex(
+      { status: "completed", currentStepIndex: 1, lastStepId: lesson.steps[1].id },
+      lesson.steps
+    ),
+    lesson.steps.length - 1
+  )
+})

@@ -25,6 +25,9 @@ export interface LessonProgress {
   startedAt: number
   completedAt?: number
   score?: number
+  currentStepIndex?: number
+  lastStepId?: string
+  updatedAt?: number
 }
 
 export type PracticeItemType = "kana" | "vocab" | "grammar" | "sentence" | "lesson"
@@ -140,13 +143,23 @@ function normalizeLessonProgressMap(input: unknown): LessonProgressMap {
     if (!value || typeof value !== "object") continue
     const obj = value as Partial<LessonProgress>
     if (typeof obj.lessonId !== "string") continue
-    out[lessonId] = {
+    const normalized: LessonProgress = {
       lessonId: obj.lessonId,
       status: obj.status === "completed" ? "completed" : "started",
       startedAt: typeof obj.startedAt === "number" ? obj.startedAt : Date.now(),
       completedAt: typeof obj.completedAt === "number" ? obj.completedAt : undefined,
       score: typeof obj.score === "number" ? clampScore(obj.score) : undefined,
     }
+    if (typeof obj.currentStepIndex === "number" && Number.isFinite(obj.currentStepIndex)) {
+      normalized.currentStepIndex = Math.max(0, Math.floor(obj.currentStepIndex))
+    }
+    if (typeof obj.lastStepId === "string" && obj.lastStepId) {
+      normalized.lastStepId = obj.lastStepId
+    }
+    if (typeof obj.updatedAt === "number" && Number.isFinite(obj.updatedAt)) {
+      normalized.updatedAt = obj.updatedAt
+    }
+    out[lessonId] = normalized
   }
   return out
 }
@@ -198,6 +211,19 @@ function todayKey(date = new Date()) {
   return date.toISOString().slice(0, 10)
 }
 
+function readLessonProgressMap() {
+  return normalizeLessonProgressMap(readJson(STORAGE_KEYS.LESSON_PROGRESS, {}))
+}
+
+function mergeLessonProgressState(prev: LessonProgressMap) {
+  return { ...readLessonProgressMap(), ...prev }
+}
+
+function normalizeStepIndex(stepIndex: number) {
+  if (!Number.isFinite(stepIndex)) return 0
+  return Math.max(0, Math.floor(stepIndex))
+}
+
 export function useLearningProfile() {
   const [profile, setProfileState] = useState<UserProfile | null>(null)
 
@@ -245,11 +271,13 @@ export function useLearningProgress() {
   const [lessons, setLessons] = useState<LessonProgressMap>({})
   const [items, setItems] = useState<ItemProgressMap>({})
   const [results, setResults] = useState<PracticeResult[]>([])
+  const [loaded, setLoaded] = useState(false)
 
   const load = useCallback(() => {
     setLessons(normalizeLessonProgressMap(readJson(STORAGE_KEYS.LESSON_PROGRESS, {})))
     setItems(normalizeItemProgressMap(readJson(STORAGE_KEYS.ITEM_PROGRESS, {})))
     setResults(normalizePracticeResults(readJson(STORAGE_KEYS.PRACTICE_RESULTS, [])))
+    setLoaded(true)
   }, [])
 
   useEffect(() => {
@@ -292,8 +320,10 @@ export function useLearningProgress() {
 
   const startLesson = useCallback((lessonId: string) => {
     setLessons((prev) => {
-      if (prev[lessonId]) return prev
-      const next = { ...prev, [lessonId]: { lessonId, status: "started" as const, startedAt: Date.now() } }
+      const base = mergeLessonProgressState(prev)
+      if (base[lessonId]) return base
+      const now = Date.now()
+      const next = { ...base, [lessonId]: { lessonId, status: "started" as const, startedAt: now, updatedAt: now } }
       writeJson(STORAGE_KEYS.LESSON_PROGRESS, next)
       return next
     })
@@ -301,15 +331,43 @@ export function useLearningProgress() {
 
   const completeLesson = useCallback((lessonId: string, score?: number) => {
     setLessons((prev) => {
+      const base = mergeLessonProgressState(prev)
+      const current = base[lessonId]
       const now = Date.now()
       const next = {
-        ...prev,
+        ...base,
         [lessonId]: {
           lessonId,
           status: "completed" as const,
-          startedAt: prev[lessonId]?.startedAt ?? now,
+          startedAt: current?.startedAt ?? now,
           completedAt: now,
           score: typeof score === "number" ? clampScore(score) : undefined,
+          currentStepIndex: current?.currentStepIndex,
+          lastStepId: current?.lastStepId,
+          updatedAt: now,
+        },
+      }
+      writeJson(STORAGE_KEYS.LESSON_PROGRESS, next)
+      return next
+    })
+  }, [])
+
+  const saveLessonPosition = useCallback((lessonId: string, currentStepIndex: number, lastStepId?: string) => {
+    setLessons((prev) => {
+      const base = mergeLessonProgressState(prev)
+      const current = base[lessonId]
+      const now = Date.now()
+      const next = {
+        ...base,
+        [lessonId]: {
+          lessonId,
+          status: current?.status ?? ("started" as const),
+          startedAt: current?.startedAt ?? now,
+          completedAt: current?.completedAt,
+          score: current?.score,
+          currentStepIndex: normalizeStepIndex(currentStepIndex),
+          lastStepId: lastStepId || current?.lastStepId,
+          updatedAt: now,
         },
       }
       writeJson(STORAGE_KEYS.LESSON_PROGRESS, next)
@@ -377,10 +435,12 @@ export function useLearningProgress() {
     lessons,
     items,
     results,
+    loaded,
     completedLessonIds,
     streak,
     startLesson,
     completeLesson,
+    saveLessonPosition,
     recordPractice,
   }
 }
