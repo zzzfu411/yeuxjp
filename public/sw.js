@@ -6,6 +6,8 @@ const STATIC_ASSETS = [
   "/manifest.webmanifest",
   "/favicon.ico",
   "/apple-touch-icon.png",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
   "/assets/hero/hero-watercolor.webp",
   "/assets/hero/hero-watercolor-dark.webp",
   "/assets/states/state-empty.webp",

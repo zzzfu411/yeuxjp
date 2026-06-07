@@ -50,7 +50,7 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 - Quiz and review routes use shared runner components plus pure question builders, so the route files stay focused on URL/session entry state.
 - AnimCJK rendering is split into parser/timeline helpers (`web/src/lib/animcjk.ts`) and a glyph-board component, keeping SVG parsing testable outside React.
 - Dynamic vocabulary loading helpers (`loadVocabularyLevel`, `loadVocabularyScope`) live in `web/src/data/vocabulary/loader.ts`; import that module when a route can avoid loading every level at once.
-- Basic PWA installability via `manifest.webmanifest` and a production service worker that caches only the static shell, images, scripts/styles, and AnimCJK SVGs. Learning state stays in `localStorage` and is not cached by the service worker.
+- Basic PWA installability via `manifest.webmanifest`, 192/512 app icons, and a production service worker that caches only the static shell, images, scripts/styles, and AnimCJK SVGs. Learning state stays in `localStorage` and is not cached by the service worker.
 - A dedicated offline fallback page at `/offline.html` for navigation requests when the network is unavailable.
 
 ## Extending Content
