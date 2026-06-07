@@ -5,17 +5,23 @@ import { useSearchParams } from "next/navigation"
 import { loadVocabularyLevel } from "@/data/vocabulary/loader"
 import type { VocabLevel, Vocabulary } from "@/data/vocabulary/types"
 import { Flashcard } from "@/components/vocabulary/flashcard"
-import { Modal } from "@/components/ui/modal"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { CheckCircle2, ChevronLeft, ChevronRight, Volume2, RotateCw, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { speakJapanese } from "@/lib/speech"
 import { useVocabProgress } from "@/lib/vocab-progress"
+import {
+  filterVocabularyItems,
+  findVocabularyIndex,
+  getVocabularyCategories,
+  getVocabularyItemsByCategory,
+  getVocabularyProgress,
+} from "@/lib/vocabulary-page-model"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { CategoryIcon, hasCategoryIcon } from "@/components/vocabulary/category-icon"
+import { VocabularyFocusModal } from "@/components/vocabulary/vocabulary-focus-modal"
 
 const EMPTY_VOCAB: Vocabulary[] = []
 
@@ -108,31 +114,21 @@ function VocabularyPageContent() {
   const vocabLoading = vocabState.level !== currentLevel
   const rawData = vocabLoading ? EMPTY_VOCAB : vocabState.data
   const levelProgress = useMemo(() => {
-    const total = rawData.length
-    const learned = rawData.reduce((acc, v) => acc + (isLearnedId(v.id) ? 1 : 0), 0)
-    return { learned, total }
+    return getVocabularyProgress(rawData, isLearnedId)
   }, [isLearnedId, rawData])
 
   const currentData = useMemo(() => {
-    const query = searchQuery.trim()
-    const q = query.toLowerCase()
-
-    return rawData
-      .filter((v) => {
-        if (!query) return true
-        return (
-          v.kana.includes(query) ||
-          (v.kanji && v.kanji.includes(query)) ||
-          v.romaji.toLowerCase().includes(q) ||
-          v.meaning.toLowerCase().includes(q)
-        )
-      })
-      .filter((v) => (onlyUnlearned ? !isLearnedId(v.id) : true))
+    return filterVocabularyItems({
+      items: rawData,
+      searchQuery,
+      onlyUnlearned,
+      isLearned: isLearnedId,
+    })
   }, [isLearnedId, onlyUnlearned, rawData, searchQuery])
   
   // Keep original order
   const categories = useMemo(
-    () => Array.from(new Set(currentData.map(v => v.category))),
+    () => getVocabularyCategories(currentData),
     [currentData]
   )
 
@@ -317,16 +313,14 @@ function VocabularyPageContent() {
               <CategoryIcon category={category} size={40} />
               {categoryNames[category] || category}
               <span className="text-xs font-normal text-muted-foreground ml-auto bg-secondary px-2 py-1 rounded-full">
-                {currentData.filter(v => v.category === category).length}
+                {getVocabularyItemsByCategory(currentData, category).length}
               </span>
             </h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
-              {currentData
-                .filter(v => v.category === category)
+              {getVocabularyItemsByCategory(currentData, category)
                 .map(vocab => {
-                  // 修复Bug5: 使用currentData中的实际索引
-                  const actualIndex = currentData.findIndex(v => v.id === vocab.id)
+                  const actualIndex = findVocabularyIndex(currentData, vocab.id)
                   return (
                     <Flashcard
                       key={vocab.id}
@@ -363,71 +357,21 @@ function VocabularyPageContent() {
 
       <NextStepCard />
 
-      {/* Focus Modal */}
-      <Modal isOpen={selectedVocab !== null} onClose={() => setSelectedIndex(null)} className="max-w-xl h-[70vh] flex flex-col p-0 overflow-hidden rounded-2xl">
-        {selectedVocab && (
-          <>
-            <div 
-              className="flex-1 relative cursor-pointer group bg-gradient-to-b from-card to-secondary/10" 
-              onClick={() => setIsModalFlipped(!isModalFlipped)}
-            >
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                {!isModalFlipped ? (
-                  <div className="animate-in fade-in zoom-in duration-200 space-y-6">
-                    <div className="space-y-2">
-                      <h2 className="text-6xl sm:text-7xl font-bold text-foreground tracking-tight">{selectedVocab.kanji || selectedVocab.kana}</h2>
-                      {selectedVocab.kanji && <p className="text-2xl text-muted-foreground/80 font-medium">{selectedVocab.kana}</p>}
-                    </div>
-                    <div className="absolute bottom-8 left-0 right-0 flex justify-center opacity-50 group-hover:opacity-100 transition-opacity">
-                      <div className="bg-background/80 backdrop-blur px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm flex items-center gap-2 border">
-                        <RotateCw className="w-3 h-3" /> Tap or Space to Flip
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="animate-in fade-in zoom-in duration-200 space-y-8 w-full max-w-sm">
-                    <div className="space-y-1">
-                      <p className="text-4xl font-bold text-primary">{selectedVocab.meaning}</p>
-                      <p className="text-xl text-muted-foreground font-serif italic">{selectedVocab.romaji}</p>
-                    </div>
-                    <div className="pt-2">
-                      <Button size="lg" className="w-full rounded-full gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all" onClick={(e) => { e.stopPropagation(); handlePlay(); }}>
-                        <Volume2 className="w-5 h-5" /> Listen
-                      </Button>
-                    </div>
-                    <div className="pt-2">
-                      <Button
-                        size="lg"
-                        variant={isLearnedId(selectedVocab.id) ? "default" : "secondary"}
-                        className="w-full rounded-full gap-2"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleLearnedId(selectedVocab.id)
-                        }}
-                      >
-                        <CheckCircle2 className="w-5 h-5" />
-                        {isLearnedId(selectedVocab.id) ? "已掌握" : "标记已掌握"}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="p-4 bg-background border-t flex justify-between items-center shrink-0 select-none">
-              <Button variant="ghost" size="sm" onClick={handlePrev} className="gap-1 pl-2 text-muted-foreground hover:text-foreground">
-                <ChevronLeft className="w-4 h-4" /> Prev
-              </Button>
-              <div className="text-xs font-mono text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-                {selectedIndex! + 1} / {currentData.length}
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleNext} className="gap-1 pr-2 text-muted-foreground hover:text-foreground">
-                Next <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </>
-        )}
-      </Modal>
+      <VocabularyFocusModal
+        vocab={selectedVocab}
+        selectedIndex={selectedIndex}
+        total={currentData.length}
+        flipped={isModalFlipped}
+        learned={selectedVocab ? isLearnedId(selectedVocab.id) : false}
+        onClose={() => setSelectedIndex(null)}
+        onFlip={() => setIsModalFlipped((prev) => !prev)}
+        onNext={handleNext}
+        onPrev={handlePrev}
+        onPlay={handlePlay}
+        onToggleLearned={() => {
+          if (selectedVocab) toggleLearnedId(selectedVocab.id)
+        }}
+      />
     </div>
   )
 }
