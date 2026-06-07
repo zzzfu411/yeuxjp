@@ -7,8 +7,16 @@ import { Modal } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, ChevronLeft, ChevronRight, PenTool, Volume2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getAnimCjkKanaUrls, KanaStrokeAnimCJK } from "./kana-stroke-animcjk"
+import { KanaStrokeAnimCJK } from "./kana-stroke-animcjk"
 import { speakJapanese } from "@/lib/speech"
+import {
+  cacheKeyForChar,
+  checkStrokeAvailability,
+  getAdjacentKanaIndexes,
+  getKanaGridRowContent,
+  prefetchStrokeSvgs,
+  type StrokeAvailability,
+} from "@/lib/kana-grid-model"
 
 interface KanaGridProps {
   data: Kana[]
@@ -21,39 +29,6 @@ interface KanaGridProps {
 }
 
 const DEFAULT_ROWS = ["a", "ka", "sa", "ta", "na", "ha", "ma", "ya", "ra", "wa", "n"]
-type StrokeAvailability = "unknown" | "available" | "missing"
-
-function cacheKeyForChar(char: string) {
-  return Array.from(char).join("")
-}
-
-async function checkStrokeAvailability(char: string) {
-  const urls = getAnimCjkKanaUrls(char)
-  if (!urls.length) return false
-
-  const results = await Promise.all(
-    urls.map(async (url) => {
-      try {
-        const response = await fetch(url, { method: "HEAD", cache: "force-cache" })
-        if (response.ok) return true
-        if (response.status !== 405) return false
-
-        const fallback = await fetch(url, { cache: "force-cache" })
-        return fallback.ok
-      } catch {
-        return false
-      }
-    })
-  )
-
-  return results.every(Boolean)
-}
-
-function prefetchStrokeSvgs(char: string) {
-  for (const url of getAnimCjkKanaUrls(char)) {
-    fetch(url, { cache: "force-cache" }).catch(() => undefined)
-  }
-}
 
 export function KanaGrid({
   data,
@@ -125,11 +100,7 @@ export function KanaGrid({
   useEffect(() => {
     if (selectedIndex === null) return
 
-    const indexes = [
-      selectedIndex,
-      (selectedIndex + 1) % data.length,
-      (selectedIndex - 1 + data.length) % data.length,
-    ]
+    const indexes = getAdjacentKanaIndexes(selectedIndex, data.length)
 
     for (const index of indexes) {
       const item = data[index]
@@ -154,30 +125,11 @@ export function KanaGrid({
     if (!utterance) setIsPlaying(false)
   }
 
-  const getRowContent = (rowName: string, columns: 3 | 5) => {
-    const rowKana = data.filter(k => k.row === rowName);
-    if (columns === 5 && rowName === "ya") {
-       const ya = rowKana.find(k => k.romaji === "ya");
-       const yu = rowKana.find(k => k.romaji === "yu");
-       const yo = rowKana.find(k => k.romaji === "yo");
-       return [ya, null, yu, null, yo];
-    }
-    if (columns === 5 && rowName === "wa") {
-       const wa = rowKana.find(k => k.romaji === "wa");
-       const wo = rowKana.find(k => k.romaji === "wo");
-       return [wa, null, null, null, wo];
-    }
-    if (columns === 5 && rowName === "n") {
-       return [rowKana[0], null, null, null, null];
-    }
-    return rowKana;
-  };
-
   return (
     <>
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-3xl mx-auto pb-20">
         {rows.map(row => {
-          const content = getRowContent(row, columns);
+          const content = getKanaGridRowContent(data, row, columns);
           return (
             <div key={row} className={cn("grid gap-3 sm:gap-4", columns === 3 ? "grid-cols-3" : "grid-cols-5")}>
                {content.map((item, idx) => {
