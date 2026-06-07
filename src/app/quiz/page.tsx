@@ -63,6 +63,7 @@ function QuizPageContent() {
             title="基础假名" 
             desc="看假名，选罗马音" 
             icon={<Type className="w-8 h-8 text-primary" />}
+            testId="quiz-mode-hiragana-romaji"
             onClick={() => setMode('hiragana-romaji')}
           />
           <ModeCard 
@@ -128,11 +129,12 @@ export default function QuizPage() {
   )
 }
 
-function ModeCard({ title, desc, icon, onClick }: { title: string, desc: string, icon: React.ReactNode, onClick: () => void }) {
+function ModeCard({ title, desc, icon, onClick, testId }: { title: string, desc: string, icon: React.ReactNode, onClick: () => void, testId?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      data-testid={testId}
       className="flex flex-col items-center p-8 bg-card border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 cursor-pointer transition-all group text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <div className="mb-6 p-4 bg-primary/10 rounded-full group-hover:scale-110 transition-transform">

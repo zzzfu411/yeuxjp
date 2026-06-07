@@ -93,7 +93,7 @@ export default function Home() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="gap-2 rounded-full px-7">
-                <Link href={nextLesson ? `/learn/${nextLesson.id}` : "/review"}>
+                <Link href={nextLesson ? `/learn/${nextLesson.id}` : "/review"} data-testid="home-start-learning">
                   开始今日学习 <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

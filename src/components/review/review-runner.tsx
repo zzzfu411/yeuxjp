@@ -221,7 +221,7 @@ function TodayReview({
         <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
           <ArrowLeft className="w-4 h-4" /> 返回
         </Button>
-        <div className="text-xs text-muted-foreground font-mono">今日剩余: {queue.length}</div>
+        <div className="text-xs text-muted-foreground font-mono" data-testid="review-remaining">今日剩余: {queue.length}</div>
       </div>
 
       <div className="w-full rounded-xl border bg-muted/10 p-4 text-sm text-muted-foreground leading-relaxed">

@@ -31,6 +31,7 @@ export function KanaCard({
       type="button"
       onClick={onClick}
       aria-label={`打开 ${mainChar}（${kana.romaji}）的详情`}
+      data-testid={`kana-card-${kana.romaji}`}
       className={cn(
         "group relative flex flex-col items-center justify-center p-2 sm:p-4 aspect-square",
         "bg-card border rounded-xl shadow-sm cursor-pointer select-none",

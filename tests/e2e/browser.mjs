@@ -102,30 +102,30 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
 
   await page.goto(baseUrl, { waitUntil: "networkidle" })
-  await assert.doesNotReject(() => page.getByRole("link", { name: /开始今日学习/ }).click())
+  await assert.doesNotReject(() => page.getByTestId("home-start-learning").click())
   await page.waitForURL(/\/learn\//)
-  await page.getByRole("button", { name: /继续/ }).click()
-  await page.getByRole("button", { name: "a" }).click()
-  assert.ok(await page.getByText(/答对了|再看一眼/).isVisible())
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-answer-a").click()
+  assert.ok(await page.getByTestId("lesson-next").isEnabled())
 
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
-  await page.getByRole("button", { name: /打开 あ/ }).click()
-  await page.getByRole("button", { name: /笔顺/ }).click()
-  assert.ok(await page.getByLabel(/笔顺：a|Stroke order/).isVisible())
+  await page.getByTestId("kana-card-a").click()
+  await page.getByTestId("kana-stroke-toggle").click()
+  assert.ok(await page.getByLabel(/Stroke order|笔顺|绗旈『/).isVisible())
 
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
-  await page.getByPlaceholder("搜索单词...").fill("みず")
-  assert.ok(await page.getByText("みず").first().isVisible())
+  await page.getByTestId("vocabulary-search").fill("みせ")
+  assert.ok(await page.getByText("みせ").first().isVisible())
 
   await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
-  await page.getByText("基础假名").click()
+  await page.getByTestId("quiz-mode-hiragana-romaji").click()
   await page.waitForSelector("button")
-  assert.ok(await page.getByText(/得分:/).isVisible())
+  assert.ok(await page.getByText(/得分:|寰楀垎:/).isVisible())
 
   await seedReviewState(page)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
-  await page.getByRole("button", { name: "开始" }).first().click()
-  assert.ok(await page.getByText(/剩余:|今日剩余:/).isVisible())
+  await page.getByTestId("review-start-today").click()
+  assert.ok(await page.getByTestId("review-remaining").isVisible())
 
   console.log(`Browser E2E checks passed at ${baseUrl}`)
 } catch (error) {

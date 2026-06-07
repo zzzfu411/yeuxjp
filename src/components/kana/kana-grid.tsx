@@ -279,6 +279,7 @@ export function KanaGrid({
                       size="lg" 
                       variant="outline"
                       className="flex-1 rounded-full border-2" 
+                      data-testid="kana-stroke-toggle"
                       onClick={() => setIsWriting(!isWriting)}
                     >
                       {isWriting ? <PenTool className="w-5 h-5 mr-2" /> : <PenTool className="w-5 h-5 mr-2" />}

@@ -180,6 +180,7 @@ export default function ReviewPage() {
           <Button
             type="button"
             className="rounded-full"
+            data-testid="review-start-today"
             onClick={() => setSession({ deck: "today", items: todayQueue })}
           >
             开始今日复习

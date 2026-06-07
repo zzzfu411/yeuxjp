@@ -241,6 +241,7 @@ export default function LessonPage() {
                 <Button
                   type="button"
                   className="gap-2 rounded-full"
+                  data-testid="lesson-next"
                   onClick={goNext}
                   disabled={isPracticeStep(current) && !result}
                 >
@@ -354,6 +355,7 @@ function StepBody({
                 )}
                 onClick={() => onSelect(option)}
                 disabled={!!result}
+                data-testid={`lesson-answer-${option}`}
               >
                 {option}
               </Button>
