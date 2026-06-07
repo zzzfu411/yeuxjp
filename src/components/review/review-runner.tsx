@@ -1,11 +1,11 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
+import { KanaReviewPrompt, MistakeReviewPrompt, MixedReviewPrompt, VocabReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
@@ -158,21 +158,7 @@ function TodayReview({
       </div>
 
       <ReviewPromptCard minHeightClassName="min-h-[240px]">
-        {data.audio ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="w-20 h-20 rounded-full border-4"
-            onClick={() => data.audio && playAudio(data.audio)}
-          >
-            <Volume2 className="w-8 h-8" />
-          </Button>
-        ) : null}
-        <div className="mt-6 text-center space-y-2 px-6">
-          <div className="text-4xl font-bold leading-snug break-words">{data.prompt}</div>
-          {data.sub ? <div className="text-sm text-muted-foreground">{data.sub}</div> : null}
-        </div>
+        <MixedReviewPrompt prompt={data.prompt} sub={data.sub} audio={data.audio} onPlay={playAudio} />
       </ReviewPromptCard>
 
       <ReviewOptionGrid
@@ -268,21 +254,7 @@ function KanaReview({
     >
 
       <ReviewPromptCard>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="w-20 h-20 rounded-full border-4"
-          onClick={() => playAudio(item.hiragana)}
-        >
-          <Volume2 className="w-8 h-8" />
-        </Button>
-
-        <div className="mt-6 text-center">
-          <div className="text-7xl font-bold leading-none">{item.hiragana}</div>
-          <div className="mt-2 text-xl text-muted-foreground">{item.katakana}</div>
-          <div className="mt-3 text-xs text-muted-foreground">选择正确的罗马音</div>
-        </div>
+        <KanaReviewPrompt hiragana={item.hiragana} katakana={item.katakana} onPlay={playAudio} />
       </ReviewPromptCard>
 
       <ReviewOptionGrid
@@ -380,21 +352,7 @@ function VocabReview({
     >
 
       <ReviewPromptCard minHeightClassName="min-h-[240px]">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="w-20 h-20 rounded-full border-4"
-          onClick={() => playAudio(item.kana)}
-        >
-          <Volume2 className="w-8 h-8" />
-        </Button>
-
-        <div className="mt-6 text-center space-y-2">
-          <div className="text-6xl font-bold leading-none">{item.kanji ?? item.kana}</div>
-          {item.kanji ? <div className="text-xl text-muted-foreground">{item.kana}</div> : null}
-          <div className="text-xs text-muted-foreground">选择正确的中文意思</div>
-        </div>
+        <VocabReviewPrompt display={item.kanji ?? item.kana} kana={item.kana} onPlay={playAudio} />
       </ReviewPromptCard>
 
       <ReviewOptionGrid
@@ -478,21 +436,12 @@ function MistakeReview({
     >
 
       <ReviewPromptCard>
-        {item.questionAudio ? (
-          <>
-            <Button type="button" variant="outline" size="icon" className="w-20 h-20 rounded-full border-4" onClick={() => playAudio(item.questionAudio!)}>
-              <Volume2 className="w-8 h-8" />
-            </Button>
-            {item.questionText ? (
-              <div className="mt-5 text-center px-6 text-sm text-muted-foreground leading-relaxed">{item.questionText}</div>
-            ) : null}
-          </>
-        ) : (
-          <div className="text-center space-y-3 px-6">
-            <div className="text-3xl font-bold leading-snug break-words">{item.questionText ?? "（无题干）"}</div>
-            <div className="text-xs text-muted-foreground">{item.type}</div>
-          </div>
-        )}
+        <MistakeReviewPrompt
+          questionText={item.questionText}
+          questionAudio={item.questionAudio}
+          type={item.type}
+          onPlay={playAudio}
+        />
       </ReviewPromptCard>
 
       <ReviewOptionGrid
