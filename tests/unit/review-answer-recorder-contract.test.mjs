@@ -9,18 +9,24 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("review runner delegates shared answer recording to useReviewAnswerRecorder", () => {
-  const source = read("src/components/review/review-runner.tsx")
+function reviewSessionSources() {
+  return [
+    read("src/components/review/review-runner.tsx"),
+    read("src/components/review/kana-review-session.tsx"),
+  ].join("\n")
+}
 
-  assert.match(source, /from "@\/components\/review\/use-review-answer-recorder"/)
+test("review sessions delegate shared answer recording to useReviewAnswerRecorder", () => {
+  const source = reviewSessionSources()
+
   assert.equal(source.match(/useReviewAnswerRecorder\(/g)?.length, 4)
   assert.doesNotMatch(source, /makeQuestionResult/)
   assert.doesNotMatch(source, /recordQuestionPractice/)
   assert.doesNotMatch(source, /review\.recordAnswer\(/)
 })
 
-test("review runner reuses shared kana and vocab review question builders", () => {
-  const source = read("src/components/review/review-runner.tsx")
+test("review sessions reuse shared kana and vocab review question builders", () => {
+  const source = reviewSessionSources()
 
   assert.match(source, /makeKanaReviewQuestion\(item\.romaji\)/)
   assert.match(source, /makeVocabReviewQuestion\(item\.id, vocabulary\.data\)/)

@@ -9,10 +9,16 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("review runner delegates repeated session chrome to frame components", () => {
-  const source = read("src/components/review/review-runner.tsx")
+function reviewSessionSources() {
+  return [
+    read("src/components/review/review-runner.tsx"),
+    read("src/components/review/kana-review-session.tsx"),
+  ].join("\n")
+}
 
-  assert.match(source, /from "@\/components\/review\/review-session-frame"/)
+test("review sessions delegate repeated session chrome to frame components", () => {
+  const source = reviewSessionSources()
+
   assert.equal(source.match(/<ReviewSessionFrame\b/g)?.length, 4)
   assert.equal(source.match(/<ReviewPromptCard\b/g)?.length, 4)
   assert.equal(source.match(/<ReviewNextButton\b/g)?.length, 4)
@@ -31,10 +37,9 @@ test("review session frame owns shared review layout chrome", () => {
   assert.match(source, /ReviewNextButton/)
 })
 
-test("review runner delegates repeated queue state to useReviewSessionState", () => {
-  const source = read("src/components/review/review-runner.tsx")
+test("review sessions delegate repeated queue state to useReviewSessionState", () => {
+  const source = reviewSessionSources()
 
-  assert.match(source, /from "@\/components\/review\/use-review-session-state"/)
   assert.equal(source.match(/useReviewSessionState\(/g)?.length, 4)
   assert.doesNotMatch(source, /review\.queue/)
   assert.doesNotMatch(source, /setQueue/)

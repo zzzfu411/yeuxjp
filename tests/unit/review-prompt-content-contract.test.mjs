@@ -9,10 +9,16 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("review runner delegates prompt content rendering to prompt components", () => {
-  const source = read("src/components/review/review-runner.tsx")
+function reviewSessionSources() {
+  return [
+    read("src/components/review/review-runner.tsx"),
+    read("src/components/review/kana-review-session.tsx"),
+  ].join("\n")
+}
 
-  assert.match(source, /from "@\/components\/review\/review-prompt-content"/)
+test("review sessions delegate prompt content rendering to prompt components", () => {
+  const source = reviewSessionSources()
+
   assert.match(source, /<MixedReviewPrompt\b/)
   assert.match(source, /<KanaReviewPrompt\b/)
   assert.match(source, /<VocabReviewPrompt\b/)

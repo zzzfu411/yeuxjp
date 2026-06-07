@@ -9,10 +9,16 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("review runner delegates answer option rendering to ReviewOptionGrid", () => {
-  const source = read("src/components/review/review-runner.tsx")
+function reviewSessionSources() {
+  return [
+    read("src/components/review/review-runner.tsx"),
+    read("src/components/review/kana-review-session.tsx"),
+  ].join("\n")
+}
 
-  assert.match(source, /from "@\/components\/review\/review-option-grid"/)
+test("review sessions delegate answer option rendering to ReviewOptionGrid", () => {
+  const source = reviewSessionSources()
+
   assert.equal(source.match(/<ReviewOptionGrid\b/g)?.length, 4)
   assert.doesNotMatch(source, /getAnswerOptionFeedback/)
   assert.doesNotMatch(source, /shouldShowCorrectAnswerIcon/)

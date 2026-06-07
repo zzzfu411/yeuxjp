@@ -9,10 +9,16 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("review runner delegates speech preferences and autoplay to useReviewAudio", () => {
-  const source = read("src/components/review/review-runner.tsx")
+function reviewSessionSources() {
+  return [
+    read("src/components/review/review-runner.tsx"),
+    read("src/components/review/kana-review-session.tsx"),
+  ].join("\n")
+}
 
-  assert.match(source, /from "@\/components\/review\/use-review-audio"/)
+test("review sessions delegate speech preferences and autoplay to useReviewAudio", () => {
+  const source = reviewSessionSources()
+
   assert.equal(source.match(/useReviewAudio\(/g)?.length, 4)
   assert.doesNotMatch(source, /useSpeechPreferences/)
   assert.doesNotMatch(source, /speakJapaneseRepeated/)

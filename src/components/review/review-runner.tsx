@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
-import { KanaReviewPrompt, MistakeReviewPrompt, MixedReviewPrompt, VocabReviewPrompt } from "@/components/review/review-prompt-content"
+import { KanaReviewSession } from "@/components/review/kana-review-session"
+import { MistakeReviewPrompt, MixedReviewPrompt, VocabReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
@@ -186,88 +187,7 @@ function KanaReview({
 }) {
   const srs = useSrsDeck(KANA_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
-  const [question, setQuestion] = useState<Question | null>(null)
-  const review = useReviewSessionState(ids)
-  const selected = review.selectedAnswer
-
-  const currentId = review.currentItem
-  const item = useMemo(() => (currentId ? kanaData.find((k) => k.romaji === currentId) ?? null : null), [currentId])
-
-  useEffect(() => {
-    let cancelled = false
-
-    Promise.resolve().then(() => {
-      if (cancelled) return
-      if (!item) {
-        setQuestion(null)
-        return
-      }
-
-      setQuestion(makeKanaReviewQuestion(item.romaji))
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [item])
-
-  const { playAudio } = useReviewAudio({
-    autoPlayText: item?.hiragana,
-    autoPlayKey: item?.romaji,
-  })
-
-  const recordAnswerSelection = useReviewAnswerRecorder({
-    progress: learning,
-    notebook,
-    recordAnswer: review.recordAnswer,
-    grade: useCallback((result: QuestionResult) => {
-      if (!item) return
-      srs.grade(item.romaji, result.correct ? "good" : "again")
-    }, [item, srs]),
-  })
-
-  if (review.isComplete) {
-    return (
-      <ReviewDone
-        title="假名复习完成"
-        onExit={onExit}
-        stats={review.completionStats}
-      />
-    )
-  }
-
-  if (!item) {
-    return (
-      <ReviewDone title="题库变更：当前条目不存在" onExit={onExit} />
-    )
-  }
-
-  const handleSelect = (val: string) => {
-    if (!question) return
-    recordAnswerSelection(question, val)
-  }
-
-  return (
-    <ReviewSessionFrame
-      onExit={onExit}
-      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>}
-    >
-
-      <ReviewPromptCard>
-        <KanaReviewPrompt hiragana={item.hiragana} katakana={item.katakana} onPlay={playAudio} />
-      </ReviewPromptCard>
-
-      <ReviewOptionGrid
-        options={question?.options ?? []}
-        correctAnswer={item.romaji}
-        selectedAnswer={selected}
-        onSelect={handleSelect}
-        optionClassName="h-16 text-lg font-medium"
-      />
-
-      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
-    </ReviewSessionFrame>
-  )
+  return <KanaReviewSession ids={ids} onExit={onExit} notebook={notebook} learning={learning} srs={srs} />
 }
 
 function VocabReview({
