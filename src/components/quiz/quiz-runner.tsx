@@ -6,7 +6,7 @@ import { loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { RefreshCw, ArrowLeft, Volume2 } from "lucide-react"
+import { RefreshCw, ArrowLeft } from "lucide-react"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
@@ -20,6 +20,7 @@ import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { SpeechSettingsBar, useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
 import { QuizOptionGrid } from "@/components/quiz/quiz-option-grid"
+import { QuizQuestionPrompt } from "@/components/quiz/quiz-question-prompt"
 import {
   filterUnlearnedVocab,
   filterUnmasteredKana,
@@ -371,43 +372,11 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         </div>
       )}
 
-      {/* Question Card */}
-      <div className="w-full flex flex-col items-center justify-center py-12 bg-card border rounded-xl shadow-sm min-h-[200px] relative">
-        {currentQuestion.questionAudio ? (
-          <>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="w-24 h-24 rounded-full border-4"
-              onClick={() => currentQuestion.questionAudio && playAudio(currentQuestion.questionAudio)}
-            >
-              <Volume2 className="w-10 h-10" />
-            </Button>
-            {currentQuestion.questionText && (
-              <div className="mt-4 text-sm text-muted-foreground text-center px-6">
-                {currentQuestion.questionText}
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="text-center">
-             <span
-               className={cn(
-                 "font-bold text-foreground block mb-2",
-                 mode === "verb-conjugation" ? "text-3xl" : "text-6xl"
-               )}
-             >
-               {currentQuestion.questionText}
-             </span>
-             {mode === 'meaning-vocab' && (
-               <span className="text-sm text-muted-foreground">What does this mean?</span>
-             )}
-             {mode === "verb-conjugation" && (
-               <span className="text-sm text-muted-foreground">选择正确的活用形</span>
-             )}
-           </div>
-         )}
-      </div>
+      <QuizQuestionPrompt
+        question={currentQuestion}
+        mode={mode}
+        onPlayAudio={playAudio}
+      />
 
       <QuizOptionGrid
         question={currentQuestion}
