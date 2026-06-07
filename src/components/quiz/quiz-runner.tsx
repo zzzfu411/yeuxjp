@@ -14,6 +14,12 @@ import type { VerbConjForm } from "@/lib/verb-conjugation"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
+import {
+  getAnswerOptionClassName,
+  getAnswerOptionFeedback,
+  shouldShowCorrectAnswerIcon,
+  shouldShowWrongAnswerIcon,
+} from "@/lib/answer-option-feedback"
 import { isQuestionAnswerCorrect, makeQuestionResult, type Question } from "@/lib/questions"
 import { createQuizStats, recordQuizAnswer } from "@/lib/quiz-session"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
@@ -411,33 +417,25 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       {/* Options */}
       <div className="grid grid-cols-2 gap-4 w-full">
         {currentQuestion.options.map((opt) => {
-          const isSelected = selectedOption === opt.value
           const isCorrect = isCorrectValue(currentQuestion, opt.value)
-          
-          let className = ""
-
-          if (selectedOption) {
-            if (isCorrect) {
-              className = "bg-green-100 border-green-500 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:border-green-500 dark:text-green-400"
-            } else if (isSelected) {
-              className = "bg-red-100 border-red-500 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:border-red-500 dark:text-red-400"
-            } else {
-              className = "opacity-50"
-            }
-          }
+          const feedback = getAnswerOptionFeedback({
+            selectedAnswer: selectedOption,
+            optionValue: opt.value,
+            isCorrectOption: isCorrect,
+          })
 
           return (
             <Button
               key={opt.value}
               variant="outline"
               size="lg"
-              className={cn("h-16 text-lg font-medium", className)}
+              className={cn("h-16 text-lg font-medium", getAnswerOptionClassName(feedback))}
               onClick={() => handleSelect(opt.value)}
               disabled={!!selectedOption}
             >
               {opt.display}
-              {selectedOption && isCorrect && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {selectedOption && isSelected && !isCorrect && <XCircle className="ml-2 w-5 h-5" />}
+              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
+              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
             </Button>
           )
         })}

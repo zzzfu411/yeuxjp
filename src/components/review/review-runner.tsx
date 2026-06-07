@@ -17,6 +17,12 @@ import { useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
+import {
+  getAnswerOptionClassName,
+  getAnswerOptionFeedback,
+  shouldShowCorrectAnswerIcon,
+  shouldShowWrongAnswerIcon,
+} from "@/lib/answer-option-feedback"
 import { makeQuestionResult, type Question } from "@/lib/questions"
 import {
   advanceReviewQueue,
@@ -248,30 +254,25 @@ function TodayReview({
 
       <div className="grid grid-cols-2 gap-4 w-full">
         {data.question.options.map((opt) => {
-          const isSelected = selected === opt.value
           const isCorrect = opt.value === data.question.correctAnswer
-          const show = !!selected
-          const className =
-            show && isCorrect
-              ? "bg-green-100 border-green-500 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:border-green-500 dark:text-green-400"
-              : show && isSelected && !isCorrect
-                ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:border-red-500 dark:text-red-400"
-                : show
-                  ? "opacity-50"
-                  : ""
+          const feedback = getAnswerOptionFeedback({
+            selectedAnswer: selected,
+            optionValue: opt.value,
+            isCorrectOption: isCorrect,
+          })
 
           return (
             <Button
               key={opt.value}
               variant="outline"
               size="lg"
-              className={cn("h-16 text-base font-medium leading-tight", className)}
+              className={cn("h-16 text-base font-medium leading-tight", getAnswerOptionClassName(feedback))}
               onClick={() => handleSelect(opt.value)}
               disabled={!!selected}
             >
               {opt.display}
-              {show && isCorrect && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {show && isSelected && !isCorrect && <XCircle className="ml-2 w-5 h-5" />}
+              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
+              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
             </Button>
           )
         })}
@@ -423,30 +424,25 @@ function KanaReview({
 
       <div className="grid grid-cols-2 gap-4 w-full">
         {options.map((opt) => {
-          const isSelected = selected === opt
           const isCorrect = opt === item.romaji
-          const show = !!selected
-          const className =
-            show && isCorrect
-              ? "bg-green-100 border-green-500 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:border-green-500 dark:text-green-400"
-              : show && isSelected && !isCorrect
-                ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:border-red-500 dark:text-red-400"
-                : show
-                  ? "opacity-50"
-                  : ""
+          const feedback = getAnswerOptionFeedback({
+            selectedAnswer: selected,
+            optionValue: opt,
+            isCorrectOption: isCorrect,
+          })
 
           return (
             <Button
               key={opt}
               variant="outline"
               size="lg"
-              className={cn("h-16 text-lg font-medium", className)}
+              className={cn("h-16 text-lg font-medium", getAnswerOptionClassName(feedback))}
               onClick={() => handleSelect(opt)}
               disabled={!!selected}
             >
               {opt}
-              {show && isCorrect && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {show && isSelected && !isCorrect && <XCircle className="ml-2 w-5 h-5" />}
+              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
+              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
             </Button>
           )
         })}
@@ -604,30 +600,25 @@ function VocabReview({
         {options.map((optId) => {
           const opt = vocabulary.data.find((v) => v.id === optId)
           const label = opt?.meaning ?? optId
-          const isSelected = selected === optId
           const isCorrect = optId === item.id
-          const show = !!selected
-          const className =
-            show && isCorrect
-              ? "bg-green-100 border-green-500 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:border-green-500 dark:text-green-400"
-              : show && isSelected && !isCorrect
-                ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:border-red-500 dark:text-red-400"
-                : show
-                  ? "opacity-50"
-                  : ""
+          const feedback = getAnswerOptionFeedback({
+            selectedAnswer: selected,
+            optionValue: optId,
+            isCorrectOption: isCorrect,
+          })
 
           return (
             <Button
               key={optId}
               variant="outline"
               size="lg"
-              className={cn("h-16 text-base font-medium leading-tight", className)}
+              className={cn("h-16 text-base font-medium leading-tight", getAnswerOptionClassName(feedback))}
               onClick={() => handleSelect(optId)}
               disabled={!!selected}
             >
               {label}
-              {show && isCorrect && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {show && isSelected && !isCorrect && <XCircle className="ml-2 w-5 h-5" />}
+              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
+              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
             </Button>
           )
         })}
@@ -763,30 +754,25 @@ function MistakeReview({
 
       <div className="grid grid-cols-2 gap-4 w-full">
         {item.options.map((opt) => {
-          const isSelected = selected === opt.value
           const isCorrect = opt.value === correct
-          const show = !!selected
-          const className =
-            show && isCorrect
-              ? "bg-green-100 border-green-500 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:border-green-500 dark:text-green-400"
-              : show && isSelected && !isCorrect
-                ? "bg-red-100 border-red-500 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:border-red-500 dark:text-red-400"
-                : show
-                  ? "opacity-50"
-                  : ""
+          const feedback = getAnswerOptionFeedback({
+            selectedAnswer: selected,
+            optionValue: opt.value,
+            isCorrectOption: isCorrect,
+          })
 
           return (
             <Button
               key={opt.value}
               variant="outline"
               size="lg"
-              className={cn("h-16 text-base font-medium leading-tight", className)}
+              className={cn("h-16 text-base font-medium leading-tight", getAnswerOptionClassName(feedback))}
               onClick={() => handleSelect(opt.value)}
               disabled={!!selected}
             >
               {opt.display}
-              {show && isCorrect && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {show && isSelected && !isCorrect && <XCircle className="ml-2 w-5 h-5" />}
+              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
+              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
             </Button>
           )
         })}
