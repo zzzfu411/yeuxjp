@@ -75,6 +75,12 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
   assert.match(e2e, /readJsonStorage/)
+  assert.match(e2e, /yasashi\.learning\.lessons\.v1/)
+  assert.match(e2e, /currentStepIndex/)
+  assert.match(e2e, /lastStepId/)
+  assert.match(e2e, /recognize-a/)
+  assert.match(e2e, /page\.reload\(\{ waitUntil: "networkidle" \}\)/)
+  assert.match(e2e, /lesson-answer-a"\)\.waitFor\(\{ state: "visible" \}\)/)
   assert.match(e2e, /yasashi\.learning\.practice\.v1/)
   assert.match(e2e, /yasashi\.learning\.items\.v1/)
   assert.match(e2e, /yasashi\.srs\.kana\.v1/)

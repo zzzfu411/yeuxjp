@@ -32,7 +32,7 @@ npm run e2e            # HTTP smoke test for key routes
 npm run e2e:browser    # optional real browser click-flow E2E when Playwright is available
 ```
 
-The current merge gate is `npm run check`. `npm run e2e` is the minimum E2E gate and only verifies HTTP route health. `npm run e2e:browser` exercises real interactions with Playwright, but it is intentionally separate because local browser binaries may not be installed in every environment.
+The current merge gate is `npm run check`. `npm run e2e` is the minimum E2E gate and only verifies HTTP route health. `npm run e2e:browser` exercises real interactions with Playwright, including lesson resume persistence, lesson answer recording, kana stroke playback, vocabulary search, quiz mistakes, and review queue startup. It is intentionally separate because local browser binaries may not be installed in every environment.
 
 Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale. Treat that as dependency maintenance, not a functional failure.
 

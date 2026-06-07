@@ -112,6 +112,19 @@ try {
   await assert.doesNotReject(() => page.getByTestId("home-start-learning").click())
   await page.waitForURL(/\/learn\//)
   await page.getByTestId("lesson-next").click()
+  const lessonProgress = await readJsonStorage(page, "yasashi.learning.lessons.v1")
+  assert.equal(
+    lessonProgress?.["day-1-a-row-hello"]?.currentStepIndex,
+    1,
+    "lesson navigation should persist the current step index"
+  )
+  assert.equal(
+    lessonProgress?.["day-1-a-row-hello"]?.lastStepId,
+    "recognize-a",
+    "lesson navigation should persist the current step id"
+  )
+  await page.reload({ waitUntil: "networkidle" })
+  await page.getByTestId("lesson-answer-a").waitFor({ state: "visible" })
   await page.getByTestId("lesson-answer-a").click()
   assert.ok(await page.getByTestId("lesson-next").isEnabled())
 
