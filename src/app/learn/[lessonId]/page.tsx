@@ -10,7 +10,8 @@ import { STARTER_LESSONS, getLessonById, isPracticeStep, type LessonStep } from 
 import { useLearningProgress } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { recordQuestionPractice } from "@/lib/learning-session"
-import { makeQuestionResult, type Question } from "@/lib/questions"
+import { countPracticeSteps, calculateLessonCompletionScore, lessonStepToQuestion } from "@/lib/lesson-session"
+import { makeQuestionResult } from "@/lib/questions"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { cn } from "@/lib/utils"
 
@@ -33,9 +34,9 @@ export default function LessonPage() {
 
   const current = lesson?.steps[stepIndex]
   const isLast = lesson ? stepIndex === lesson.steps.length - 1 : false
-  const practiceSteps = useMemo(() => lesson?.steps.filter(isPracticeStep).length ?? 0, [lesson])
+  const practiceSteps = useMemo(() => (lesson ? countPracticeSteps(lesson.steps) : 0), [lesson])
   const correctCount = useMemo(() => Object.values(answered).filter(Boolean).length, [answered])
-  const completionScore = practiceSteps ? Math.round((correctCount / practiceSteps) * 100) : 100
+  const completionScore = calculateLessonCompletionScore(correctCount, practiceSteps)
   const savedLessonProgress = lesson ? progress.lessons[lesson.id] : undefined
 
   const resetStepState = useCallback(() => {
@@ -253,46 +254,6 @@ export default function LessonPage() {
       </div>
     </div>
   )
-}
-
-function lessonStepToQuestion(step: Extract<LessonStep, { itemId: string }>): Question {
-  if (step.type === "multipleChoice") {
-    return {
-      type: `lesson:${step.type}`,
-      itemId: step.itemId,
-      itemType: step.itemType,
-      mode: step.mode,
-      questionText: step.prompt,
-      questionAudio: step.audioText,
-      correctAnswer: step.answer,
-      explanation: step.explanation,
-      options: step.options.map((option) => ({ value: option, display: option })),
-    }
-  }
-
-  if (step.type === "typing" || step.type === "dictation") {
-    return {
-      type: `lesson:${step.type}`,
-      itemId: step.itemId,
-      itemType: step.itemType,
-      mode: step.mode,
-      questionText: step.prompt,
-      questionAudio: step.audioText,
-      correctAnswer: step.answer,
-      acceptedAnswers: step.acceptedAnswers,
-      options: [{ value: step.answer, display: step.answer }],
-    }
-  }
-
-  return {
-    type: "lesson:sentenceBuild",
-    itemId: step.itemId,
-    itemType: step.itemType,
-    mode: step.mode,
-    questionText: step.prompt,
-    correctAnswer: step.answer,
-    options: [{ value: step.answer, display: step.answer }],
-  }
 }
 
 function stepLabel(type: LessonStep["type"]) {
