@@ -19,6 +19,16 @@ test("review runner delegates shared answer recording to useReviewAnswerRecorder
   assert.doesNotMatch(source, /review\.recordAnswer\(/)
 })
 
+test("review runner reuses shared kana and vocab review question builders", () => {
+  const source = read("src/components/review/review-runner.tsx")
+
+  assert.match(source, /makeKanaReviewQuestion\(item\.romaji\)/)
+  assert.match(source, /makeVocabReviewQuestion\(item\.id, vocabulary\.data\)/)
+  assert.doesNotMatch(source, /const question: Question =/)
+  assert.doesNotMatch(source, /options: options\.map/)
+  assert.doesNotMatch(source, /shuffleList/)
+})
+
 test("useReviewAnswerRecorder owns question result and learning record writes", () => {
   const source = read("src/components/review/use-review-answer-recorder.ts")
 

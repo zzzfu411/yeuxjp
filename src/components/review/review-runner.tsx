@@ -26,7 +26,6 @@ import {
   makeKanaReviewQuestion,
   makeVocabReviewQuestion,
   mistakeToQuestion,
-  shuffleList,
   type ReviewDeck,
   type TodayReviewItem,
 } from "@/lib/review-questions"
@@ -260,7 +259,7 @@ function KanaReview({
   const speech = useSpeechPreferences()
   const srs = useSrsDeck(KANA_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
-  const [options, setOptions] = useState<string[]>(() => [])
+  const [question, setQuestion] = useState<Question | null>(null)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
 
@@ -273,13 +272,11 @@ function KanaReview({
     Promise.resolve().then(() => {
       if (cancelled) return
       if (!item) {
-        setOptions([])
+        setQuestion(null)
         return
       }
 
-      const wrongPool = kanaData.filter((k) => k.romaji !== item.romaji).map((k) => k.romaji)
-      const wrong = shuffleList(wrongPool).slice(0, 3)
-      setOptions(shuffleList([item.romaji, ...wrong]))
+      setQuestion(makeKanaReviewQuestion(item.romaji))
     })
 
     return () => {
@@ -328,17 +325,7 @@ function KanaReview({
   }
 
   const handleSelect = (val: string) => {
-    const question: Question = {
-      type: "review:kana",
-      itemId: item.romaji,
-      itemType: "kana",
-      mode: "recognition",
-      questionText: item.hiragana,
-      questionAudio: item.hiragana,
-      correctAnswer: item.romaji,
-      correctDisplay: item.romaji,
-      options: options.map((option) => ({ value: option, display: option })),
-    }
+    if (!question) return
     recordAnswerSelection(question, val)
   }
 
@@ -367,7 +354,7 @@ function KanaReview({
       </ReviewPromptCard>
 
       <ReviewOptionGrid
-        options={options.map((opt) => ({ value: opt, display: opt }))}
+        options={question?.options ?? []}
         correctAnswer={item.romaji}
         selectedAnswer={selected}
         onSelect={handleSelect}
@@ -392,7 +379,7 @@ function VocabReview({
   const srs = useSrsDeck(VOCAB_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
   const vocabulary = useAllVocabulary(ids.length > 0)
-  const [options, setOptions] = useState<string[]>(() => [])
+  const [question, setQuestion] = useState<Question | null>(null)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
 
@@ -405,13 +392,11 @@ function VocabReview({
     Promise.resolve().then(() => {
       if (cancelled) return
       if (!item) {
-        setOptions([])
+        setQuestion(null)
         return
       }
 
-      const wrongPool = vocabulary.data.filter((v) => v.id !== item.id).map((v) => v.id)
-      const wrong = shuffleList(wrongPool).slice(0, 3)
-      setOptions(shuffleList([item.id, ...wrong]))
+      setQuestion(makeVocabReviewQuestion(item.id, vocabulary.data))
     })
 
     return () => {
@@ -467,20 +452,7 @@ function VocabReview({
   }
 
   const handleSelect = (val: string) => {
-    const question: Question = {
-      type: "review:vocab",
-      itemId: item.id,
-      itemType: "vocab",
-      mode: "meaning",
-      questionText: item.kanji ?? item.kana,
-      questionAudio: item.kana,
-      correctAnswer: item.id,
-      correctDisplay: item.meaning,
-      options: options.map((optionId) => {
-        const option = vocabulary.data.find((v) => v.id === optionId)
-        return { value: optionId, display: option?.meaning ?? optionId }
-      }),
-    }
+    if (!question) return
     recordAnswerSelection(question, val)
   }
 
@@ -509,10 +481,7 @@ function VocabReview({
       </ReviewPromptCard>
 
       <ReviewOptionGrid
-        options={options.map((optId) => {
-          const opt = vocabulary.data.find((v) => v.id === optId)
-          return { value: optId, display: opt?.meaning ?? optId }
-        })}
+        options={question?.options ?? []}
         correctAnswer={item.id}
         selectedAnswer={selected}
         onSelect={handleSelect}
