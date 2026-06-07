@@ -176,7 +176,7 @@ function TodayReview({
     return (
       <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-4">
         <div className="w-full max-w-[16rem] aspect-square rounded-2xl border-2 border-dashed border-muted-foreground/20 animate-pulse" />
-        <div className="text-sm text-muted-foreground">鍔犺浇澶嶄範棰樺簱...</div>
+        <div className="text-sm text-muted-foreground">{"\u6b63\u5728\u52a0\u8f7d\u4eca\u65e5\u590d\u4e60\u9898\u5e93..."}</div>
       </div>
     )
   }
@@ -543,7 +543,7 @@ function VocabReview({
     return (
       <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-4">
         <div className="w-full max-w-[16rem] aspect-square rounded-2xl border-2 border-dashed border-muted-foreground/20 animate-pulse" />
-        <div className="text-sm text-muted-foreground">鍔犺浇鍗曡瘝澶嶄範...</div>
+        <div className="text-sm text-muted-foreground">{"\u6b63\u5728\u52a0\u8f7d\u5355\u8bcd\u590d\u4e60..."}</div>
       </div>
     )
   }
