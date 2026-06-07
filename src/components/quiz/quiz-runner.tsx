@@ -1,8 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { loadVocabularyScope } from "@/data/vocabulary/loader"
-import type { Vocabulary } from "@/data/vocabulary/types"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, ArrowLeft } from "lucide-react"
 import { speakJapaneseRepeated } from "@/lib/speech"
@@ -19,6 +17,7 @@ import { QuizAnswerFeedback } from "@/components/quiz/quiz-answer-feedback"
 import { QuizOptionGrid } from "@/components/quiz/quiz-option-grid"
 import { QuizQuestionPrompt } from "@/components/quiz/quiz-question-prompt"
 import { QuizScopeControls } from "@/components/quiz/quiz-scope-controls"
+import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
 import {
   filterUnlearnedVocab,
   filterUnmasteredKana,
@@ -40,20 +39,14 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   const [onlyUnmasteredKana, setOnlyUnmasteredKana] = useState(false)
   const [vocabScope, setVocabScope] = useState<VocabQuizScope>("survival")
   const [onlyUnlearnedVocab, setOnlyUnlearnedVocab] = useState(false)
-  const [vocabPools, setVocabPools] = useState<{
-    scope: VocabQuizScope | null
-    base: Vocabulary[]
-    fallback: Vocabulary[]
-    error: string | null
-  }>({
-    scope: null,
-    base: [],
-    fallback: [],
-    error: null,
-  })
 
   const { isMastered: isKanaMastered } = useKanaProgress()
   const { isLearnedId } = useVocabProgress()
+  const {
+    loading: vocabLoading,
+    basePool: vocabBasePool,
+    fallbackPool: allVocab,
+  } = useQuizVocabularyPools({ mode, vocabScope })
 
   const kanaBasePool = useMemo(() => {
     return getKanaPool(kanaScope)
@@ -62,45 +55,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   const kanaTargetPool = useMemo(() => {
     return filterUnmasteredKana(kanaBasePool, isKanaMastered, onlyUnmasteredKana)
   }, [isKanaMastered, kanaBasePool, onlyUnmasteredKana])
-
-  useEffect(() => {
-    if (mode !== "meaning-vocab") return
-    let cancelled = false
-
-    ;(async () => {
-      const base = await loadVocabularyScope(vocabScope)
-      const fallback = base.length >= 4 ? base : await loadVocabularyScope("all")
-      if (cancelled) return
-      setVocabPools({
-        scope: vocabScope,
-        base,
-        fallback,
-        error: null,
-      })
-    })().catch(() => {
-      if (cancelled) return
-      setVocabPools({
-        scope: vocabScope,
-        base: [],
-        fallback: [],
-        error: "Failed to load vocabulary",
-      })
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [mode, vocabScope])
-
-  const vocabLoading = mode === "meaning-vocab" && vocabPools.scope !== vocabScope
-
-  const vocabBasePool = useMemo(() => {
-    return !vocabLoading ? vocabPools.base : []
-  }, [vocabLoading, vocabPools.base])
-
-  const allVocab = useMemo(() => {
-    return !vocabLoading ? vocabPools.fallback : []
-  }, [vocabLoading, vocabPools.fallback])
 
   const vocabTargetPool = useMemo(() => {
     return filterUnlearnedVocab(vocabBasePool, isLearnedId, onlyUnlearnedVocab)
