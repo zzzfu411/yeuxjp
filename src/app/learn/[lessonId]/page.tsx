@@ -3,14 +3,14 @@
 import Link from "next/link"
 import { notFound, useParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { ArrowLeft, ArrowRight, CheckCircle2, Sparkles, Volume2, XCircle } from "lucide-react"
+import { ArrowLeft, ArrowRight, Sparkles, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { STARTER_LESSONS, getLessonById, isPracticeStep, type LessonStep } from "@/data/lessons"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { countPracticeSteps, calculateLessonCompletionScore } from "@/lib/lesson-session"
 import { speakJapaneseRepeated } from "@/lib/speech"
-import { cn } from "@/lib/utils"
+import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
 import { useLessonAnswerRecorder } from "@/components/lesson/use-lesson-answer-recorder"
 
@@ -180,25 +180,7 @@ export default function LessonPage() {
             />
 
             {result && isPracticeStep(current) ? (
-              <div
-                className={cn(
-                  "mt-5 rounded-2xl border p-4 text-sm leading-relaxed",
-                  result === "correct"
-                    ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-200"
-                    : "border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-200"
-                )}
-              >
-                <div className="mb-1 flex items-center gap-2 font-semibold">
-                  {result === "correct" ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                  {result === "correct" ? "答对了" : "再看一眼"}
-                </div>
-                正确答案：<span className="font-semibold">{current.answer}</span>
-                {"explanation" in current && current.explanation ? <div className="mt-1">{current.explanation}</div> : null}
-                {result === "wrong" ? <div className="mt-1">这道题已加入错题本，稍后会在复习页出现。</div> : null}
-                {result === "correct" && (current.itemType === "kana" || current.itemType === "vocab") ? (
-                  <div className="mt-1">已加入 SRS 复习队列，系统会在合适时间提醒巩固。</div>
-                ) : null}
-              </div>
+              <LessonPracticeFeedback step={current} result={result} />
             ) : null}
 
             {current.type === "summary" && hasCompletedLesson ? (
