@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { cn } from "@/lib/utils"
 import { kanaData } from "@/data/kana-data"
-import { vocabByLevel } from "@/data/vocabulary"
+import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
 import { SKILL_CATEGORY_LABEL, SKILL_TREE, SKILL_TREE_BY_CATEGORY, type SkillCategory, type SkillId } from "@/lib/skill-tree"
@@ -21,7 +21,7 @@ function ratioText(done: number, total: number) {
 
 export default function SkillTreePage() {
   const { isMastered } = useKanaProgress()
-  const { isLearnedId } = useVocabProgress()
+  const { learned } = useVocabProgress()
   const learning = useLearningProgress()
 
   const kanaStats = useMemo(() => {
@@ -46,19 +46,7 @@ export default function SkillTreePage() {
     }
   }, [isMastered])
 
-  const vocabStats = useMemo(() => {
-    const stat = (list: typeof vocabByLevel.survival) => {
-      const total = list.length
-      const done = list.reduce((acc, v) => acc + (isLearnedId(v.id) ? 1 : 0), 0)
-      return { total, done, ratio: total ? done / total : 0 }
-    }
-
-    return {
-      survival: stat(vocabByLevel.survival),
-      daily: stat(vocabByLevel.daily),
-      fluent: stat(vocabByLevel.fluent),
-    }
-  }, [isLearnedId])
+  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learned), [learned])
 
   const nextSkillId = useMemo<SkillId>(() => {
     if (kanaStats.seion.ratio < 0.7) return "kana-seion"

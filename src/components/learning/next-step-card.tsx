@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { kanaData } from "@/data/kana-data"
-import { vocabByLevel } from "@/data/vocabulary"
+import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
 import { SKILL_TREE, type SkillId } from "@/lib/skill-tree"
@@ -18,7 +18,7 @@ function ratio(done: number, total: number) {
 
 export function NextStepCard({ className }: { className?: string }) {
   const { isMastered } = useKanaProgress()
-  const { isLearnedId } = useVocabProgress()
+  const { learned } = useVocabProgress()
   const learning = useLearningProgress()
 
   const kanaStats = useMemo(() => {
@@ -42,10 +42,8 @@ export function NextStepCard({ className }: { className?: string }) {
   }, [isMastered])
 
   const survivalRatio = useMemo(() => {
-    const total = vocabByLevel.survival.length
-    const done = vocabByLevel.survival.reduce((acc, v) => acc + (isLearnedId(v.id) ? 1 : 0), 0)
-    return ratio(done, total)
-  }, [isLearnedId])
+    return summarizeLearnedVocabIds(learned).survival.ratio
+  }, [learned])
 
   const nextSkillId = useMemo<SkillId>(() => {
     if (kanaStats.seion.ratio < 0.7) return "kana-seion"

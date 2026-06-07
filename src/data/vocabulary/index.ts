@@ -1,10 +1,11 @@
-import { Vocabulary, type VocabLevel } from "./types";
+import { Vocabulary } from "./types";
 import { survivalVocab } from "./survival";
 import { dailyVocab } from "./daily";
 import { fluentVocab } from "./fluent";
 
 export * from "./types";
 export { loadVocabularyLevel, loadVocabularyScope } from "./loader";
+export { vocabLevelCounts } from "./stats";
 
 export const vocabData: Vocabulary[] = [
   ...survivalVocab,
@@ -17,9 +18,3 @@ export const vocabByLevel = {
   daily: dailyVocab,
   fluent: fluentVocab
 };
-
-export const vocabLevelCounts = {
-  survival: survivalVocab.length,
-  daily: dailyVocab.length,
-  fluent: fluentVocab.length,
-} satisfies Record<VocabLevel, number>

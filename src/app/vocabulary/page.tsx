@@ -2,7 +2,8 @@
 
 import { useMemo, useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { vocabByLevel, VocabLevel } from "@/data/vocabulary"
+import { loadVocabularyLevel } from "@/data/vocabulary/loader"
+import type { VocabLevel, Vocabulary } from "@/data/vocabulary/types"
 import { Flashcard } from "@/components/vocabulary/flashcard"
 import { Modal } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,8 @@ import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { CategoryIcon, hasCategoryIcon } from "@/components/vocabulary/category-icon"
+
+const EMPTY_VOCAB: Vocabulary[] = []
 
 const levels: { id: VocabLevel; label: string; desc: string }[] = [
   { id: "survival", label: "生存级 (N5)", desc: "购物、问路、自我介绍" },
@@ -52,6 +55,15 @@ function VocabularyPageContent() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [onlyUnlearned, setOnlyUnlearned] = useState(false)
+  const [vocabState, setVocabState] = useState<{
+    level: VocabLevel | null
+    data: Vocabulary[]
+    error: string | null
+  }>({
+    level: null,
+    data: [],
+    error: null,
+  })
 
   const { isLearnedId, toggleLearnedId, clearLearned } = useVocabProgress()
 
@@ -70,8 +82,31 @@ function VocabularyPageContent() {
       cancelled = true
     }
   }, [urlLevel])
+
+  useEffect(() => {
+    let cancelled = false
+
+    loadVocabularyLevel(currentLevel)
+      .then((data) => {
+        if (cancelled) return
+        setVocabState({ level: currentLevel, data, error: null })
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setVocabState({
+          level: currentLevel,
+          data: [],
+          error: err instanceof Error ? err.message : String(err),
+        })
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentLevel])
    
-  const rawData = useMemo(() => vocabByLevel[currentLevel], [currentLevel])
+  const vocabLoading = vocabState.level !== currentLevel
+  const rawData = vocabLoading ? EMPTY_VOCAB : vocabState.data
   const levelProgress = useMemo(() => {
     const total = rawData.length
     const learned = rawData.reduce((acc, v) => acc + (isLearnedId(v.id) ? 1 : 0), 0)
@@ -199,8 +234,9 @@ function VocabularyPageContent() {
                 key={level.id}
                 onClick={() => {
                   setCurrentLevel(level.id)
+                  setActiveCategory(null)
                   setSelectedIndex(null)
-                  setIsModalFlipped(false)  // 修复Bug4: 重置Modal翻转状态
+                  setIsModalFlipped(false)
                   window.scrollTo({top: 0})
                 }}
                 className={cn(
@@ -305,10 +341,21 @@ function VocabularyPageContent() {
             </div>
           </div>
         ))}
-        
-        {currentData.length === 0 && (
+        {vocabLoading && (
           <div className="text-center py-20 text-muted-foreground">
-            该等级词汇即将上线...
+            {"\u6b63\u5728\u52a0\u8f7d\u8bcd\u6c47..."}
+          </div>
+        )}
+
+        {!vocabLoading && vocabState.error && (
+          <div className="text-center py-20 text-muted-foreground">
+            {"\u8bcd\u6c47\u52a0\u8f7d\u5931\u8d25\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002"}
+          </div>
+        )}
+
+        {!vocabLoading && !vocabState.error && currentData.length === 0 && (
+          <div className="text-center py-20 text-muted-foreground">
+            {"\u8be5\u7b49\u7ea7\u6682\u65e0\u5339\u914d\u8bcd\u6c47\u3002"}
           </div>
         )}
       </div>
