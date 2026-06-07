@@ -1,0 +1,38 @@
+import assert from "node:assert/strict"
+import fs from "node:fs"
+import path from "node:path"
+import test from "node:test"
+
+const root = path.resolve(import.meta.dirname, "..", "..")
+
+function read(relPath) {
+  return fs.readFileSync(path.join(root, relPath), "utf8")
+}
+
+test("quiz runner delegates answer option rendering to QuizOptionGrid", () => {
+  const source = read("src/components/quiz/quiz-runner.tsx")
+
+  assert.match(source, /from "@\/components\/quiz\/quiz-option-grid"/)
+  assert.match(source, /<QuizOptionGrid\b/)
+  assert.doesNotMatch(source, /currentQuestion\.options\.map/)
+  assert.doesNotMatch(source, /getAnswerOptionFeedback/)
+  assert.doesNotMatch(source, /getAnswerOptionClassName/)
+  assert.doesNotMatch(source, /shouldShowCorrectAnswerIcon/)
+  assert.doesNotMatch(source, /shouldShowWrongAnswerIcon/)
+  assert.doesNotMatch(source, /CheckCircle2/)
+  assert.doesNotMatch(source, /XCircle/)
+})
+
+test("QuizOptionGrid owns quiz option feedback visuals", () => {
+  const source = read("src/components/quiz/quiz-option-grid.tsx")
+
+  assert.match(source, /export function QuizOptionGrid/)
+  assert.match(source, /getAnswerOptionFeedback/)
+  assert.match(source, /getAnswerOptionClassName/)
+  assert.match(source, /shouldShowCorrectAnswerIcon/)
+  assert.match(source, /shouldShowWrongAnswerIcon/)
+  assert.match(source, /isQuestionAnswerCorrect\(question, option\.value\)/)
+  assert.match(source, /disabled=\{selectedOption != null\}/)
+  assert.match(source, /CheckCircle2/)
+  assert.match(source, /XCircle/)
+})

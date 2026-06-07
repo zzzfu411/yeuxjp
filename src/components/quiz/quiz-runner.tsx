@@ -6,7 +6,7 @@ import { loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { CheckCircle2, XCircle, RefreshCw, ArrowLeft, Volume2 } from "lucide-react"
+import { RefreshCw, ArrowLeft, Volume2 } from "lucide-react"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
@@ -14,17 +14,12 @@ import type { VerbConjForm } from "@/lib/verb-conjugation"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
-import {
-  getAnswerOptionClassName,
-  getAnswerOptionFeedback,
-  shouldShowCorrectAnswerIcon,
-  shouldShowWrongAnswerIcon,
-} from "@/lib/answer-option-feedback"
 import { isQuestionAnswerCorrect, makeQuestionResult, type Question } from "@/lib/questions"
 import { createQuizStats, recordQuizAnswer } from "@/lib/quiz-session"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { SpeechSettingsBar, useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
+import { QuizOptionGrid } from "@/components/quiz/quiz-option-grid"
 import {
   filterUnlearnedVocab,
   filterUnmasteredKana,
@@ -414,32 +409,11 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
          )}
       </div>
 
-      {/* Options */}
-      <div className="grid grid-cols-2 gap-4 w-full">
-        {currentQuestion.options.map((opt) => {
-          const isCorrect = isCorrectValue(currentQuestion, opt.value)
-          const feedback = getAnswerOptionFeedback({
-            selectedAnswer: selectedOption,
-            optionValue: opt.value,
-            isCorrectOption: isCorrect,
-          })
-
-          return (
-            <Button
-              key={opt.value}
-              variant="outline"
-              size="lg"
-              className={cn("h-16 text-lg font-medium", getAnswerOptionClassName(feedback))}
-              onClick={() => handleSelect(opt.value)}
-              disabled={!!selectedOption}
-            >
-              {opt.display}
-              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
-            </Button>
-          )
-        })}
-      </div>
+      <QuizOptionGrid
+        question={currentQuestion}
+        selectedOption={selectedOption}
+        onSelect={handleSelect}
+      />
 
       {/* Feedback */}
       {selectedOption && mode === "particle" && currentQuestion.questionText && (
