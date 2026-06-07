@@ -30,3 +30,15 @@ test("review session frame owns shared review layout chrome", () => {
   assert.match(source, /ReviewPromptCard/)
   assert.match(source, /ReviewNextButton/)
 })
+
+test("review runner delegates repeated queue state to useReviewSessionState", () => {
+  const source = read("src/components/review/review-runner.tsx")
+
+  assert.match(source, /from "@\/components\/review\/use-review-session-state"/)
+  assert.equal(source.match(/useReviewSessionState\(/g)?.length, 4)
+  assert.doesNotMatch(source, /review\.queue/)
+  assert.doesNotMatch(source, /setQueue/)
+  assert.doesNotMatch(source, /advanceReviewQueue/)
+  assert.doesNotMatch(source, /recordReviewAnswer/)
+  assert.doesNotMatch(source, /createReviewStats/)
+})

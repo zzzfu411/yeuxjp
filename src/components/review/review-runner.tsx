@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
+import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { kanaData } from "@/data/kana-data"
 import { loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
@@ -20,13 +21,7 @@ import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta }
 import { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
 import { makeQuestionResult, type Question } from "@/lib/questions"
-import {
-  advanceReviewQueue,
-  createReviewStats,
-  getReviewCompletionStats,
-  recordReviewAnswer,
-  type ReviewCompletionStats,
-} from "@/lib/review-session"
+import type { ReviewCompletionStats } from "@/lib/review-session"
 import {
   makeKanaReviewQuestion,
   makeVocabReviewQuestion,
@@ -109,13 +104,9 @@ function TodayReview({
   const needsVocabulary = useMemo(() => items.some((item) => item.deck === "vocab"), [items])
   const vocabulary = useAllVocabulary(needsVocabulary)
 
-  const [queue, setQueue] = useState<TodayReviewItem[]>(() => items)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [lastOk, setLastOk] = useState<boolean | null>(null)
-  const [initialCount] = useState(items.length)
-  const [stats, setStats] = useState(createReviewStats)
-
-  const current = queue[0] ?? null
+  const review = useReviewSessionState(items)
+  const current = review.currentItem
+  const selected = review.selectedAnswer
 
   const data = useMemo(() => {
     if (!current) return null
@@ -171,12 +162,12 @@ function TodayReview({
     return () => clearTimeout(timer)
   }, [data?.audio, playAudio, speech?.prefs.autoPlay])
 
-  if (!queue.length) {
+  if (review.isComplete) {
     return (
       <ReviewDone
         title="今日复习完成"
         onExit={onExit}
-        stats={getReviewCompletionStats(initialCount, stats)}
+        stats={review.completionStats}
       />
     )
   }
@@ -201,26 +192,17 @@ function TodayReview({
   }
 
   const handleSelect = (value: string) => {
-    if (selected) return
     const result = makeQuestionResult(data.question, value)
     const ok = result.correct
-    setSelected(value)
-    setLastOk(ok)
+    if (!review.recordAnswer(value, ok)) return
     grade(current.id, ok)
     recordQuestionPractice({ progress: learning, notebook, result })
-    setStats((prev) => recordReviewAnswer(prev, ok))
-  }
-
-  const next = () => {
-    setQueue((prev) => advanceReviewQueue(prev, lastOk))
-    setSelected(null)
-    setLastOk(null)
   }
 
   return (
     <ReviewSessionFrame
       onExit={onExit}
-      headerRight={<div className="text-xs text-muted-foreground font-mono" data-testid="review-remaining">今日剩余: {queue.length}</div>}
+      headerRight={<div className="text-xs text-muted-foreground font-mono" data-testid="review-remaining">今日剩余: {review.remainingCount}</div>}
     >
 
       <div className="w-full rounded-xl border bg-muted/10 p-4 text-sm text-muted-foreground leading-relaxed">
@@ -259,7 +241,7 @@ function TodayReview({
         </div>
       )}
 
-      <ReviewNextButton show={selected != null} onNext={next} />
+      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
     </ReviewSessionFrame>
   )
 }
@@ -276,14 +258,11 @@ function KanaReview({
   const speech = useSpeechPreferences()
   const srs = useSrsDeck(KANA_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
-  const [queue, setQueue] = useState<string[]>(() => ids)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [lastOk, setLastOk] = useState<boolean | null>(null)
   const [options, setOptions] = useState<string[]>(() => [])
-  const [initialCount] = useState(ids.length)
-  const [stats, setStats] = useState(createReviewStats)
+  const review = useReviewSessionState(ids)
+  const selected = review.selectedAnswer
 
-  const currentId = queue[0] ?? null
+  const currentId = review.currentItem
   const item = useMemo(() => (currentId ? kanaData.find((k) => k.romaji === currentId) ?? null : null), [currentId])
 
   useEffect(() => {
@@ -320,12 +299,12 @@ function KanaReview({
     return () => clearTimeout(timer)
   }, [item, playAudio, speech?.prefs.autoPlay])
 
-  if (!queue.length) {
+  if (review.isComplete) {
     return (
       <ReviewDone
         title="假名复习完成"
         onExit={onExit}
-        stats={getReviewCompletionStats(initialCount, stats)}
+        stats={review.completionStats}
       />
     )
   }
@@ -337,8 +316,6 @@ function KanaReview({
   }
 
   const handleSelect = (val: string) => {
-    if (selected) return
-    setSelected(val)
     const question: Question = {
       type: "review:kana",
       itemId: item.romaji,
@@ -352,23 +329,15 @@ function KanaReview({
     }
     const result = makeQuestionResult(question, val)
     const ok = result.correct
-    setLastOk(ok)
+    if (!review.recordAnswer(val, ok)) return
     srs.grade(item.romaji, ok ? "good" : "again")
     recordQuestionPractice({ progress: learning, notebook, result })
-    setStats((prev) => recordReviewAnswer(prev, ok))
-  }
-
-  const next = () => {
-    if (!currentId) return
-    setQueue((prev) => advanceReviewQueue(prev, lastOk))
-    setSelected(null)
-    setLastOk(null)
   }
 
   return (
     <ReviewSessionFrame
       onExit={onExit}
-      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {queue.length}</div>}
+      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>}
     >
 
       <ReviewPromptCard>
@@ -397,7 +366,7 @@ function KanaReview({
         optionClassName="h-16 text-lg font-medium"
       />
 
-      <ReviewNextButton show={selected != null} onNext={next} />
+      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
     </ReviewSessionFrame>
   )
 }
@@ -415,14 +384,11 @@ function VocabReview({
   const srs = useSrsDeck(VOCAB_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
   const vocabulary = useAllVocabulary(ids.length > 0)
-  const [queue, setQueue] = useState<string[]>(() => ids)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [lastOk, setLastOk] = useState<boolean | null>(null)
   const [options, setOptions] = useState<string[]>(() => [])
-  const [initialCount] = useState(ids.length)
-  const [stats, setStats] = useState(createReviewStats)
+  const review = useReviewSessionState(ids)
+  const selected = review.selectedAnswer
 
-  const currentId = queue[0] ?? null
+  const currentId = review.currentItem
   const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
 
   useEffect(() => {
@@ -459,12 +425,12 @@ function VocabReview({
     return () => clearTimeout(timer)
   }, [item, playAudio, speech?.prefs.autoPlay])
 
-  if (!queue.length) {
+  if (review.isComplete) {
     return (
       <ReviewDone
         title="单词复习完成"
         onExit={onExit}
-        stats={getReviewCompletionStats(initialCount, stats)}
+        stats={review.completionStats}
       />
     )
   }
@@ -483,8 +449,6 @@ function VocabReview({
   }
 
   const handleSelect = (val: string) => {
-    if (selected) return
-    setSelected(val)
     const question: Question = {
       type: "review:vocab",
       itemId: item.id,
@@ -501,23 +465,15 @@ function VocabReview({
     }
     const result = makeQuestionResult(question, val)
     const ok = result.correct
-    setLastOk(ok)
+    if (!review.recordAnswer(val, ok)) return
     srs.grade(item.id, ok ? "good" : "again")
     recordQuestionPractice({ progress: learning, notebook, result })
-    setStats((prev) => recordReviewAnswer(prev, ok))
-  }
-
-  const next = () => {
-    if (!currentId) return
-    setQueue((prev) => advanceReviewQueue(prev, lastOk))
-    setSelected(null)
-    setLastOk(null)
   }
 
   return (
     <ReviewSessionFrame
       onExit={onExit}
-      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {queue.length}</div>}
+      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>}
     >
 
       <ReviewPromptCard minHeightClassName="min-h-[240px]">
@@ -548,7 +504,7 @@ function VocabReview({
         onSelect={handleSelect}
       />
 
-      <ReviewNextButton show={selected != null} onNext={next} />
+      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
     </ReviewSessionFrame>
   )
 }
@@ -574,13 +530,11 @@ function MistakeReview({
   const srs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
 
-  const [queue, setQueue] = useState<string[]>(() => ids)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [lastOk, setLastOk] = useState<boolean | null>(null)
-  const [initialCount] = useState(ids.length)
-  const [stats, setStats] = useState(createReviewStats)
+  const review = useReviewSessionState(ids)
+  const selected = review.selectedAnswer
+  const lastOk = review.lastAnswerCorrect
 
-  const currentId = queue[0] ?? null
+  const currentId = review.currentItem
   const item = currentId ? notebook.byId.get(currentId) ?? null : null
 
   const playAudio = useCallback((text: string) => {
@@ -597,12 +551,12 @@ function MistakeReview({
     return () => clearTimeout(timer)
   }, [currentId, item?.questionAudio, playAudio, speech?.prefs.autoPlay])
 
-  if (!queue.length) {
+  if (review.isComplete) {
     return (
       <ReviewDone
         title="错题复习完成"
         onExit={onExit}
-        stats={getReviewCompletionStats(initialCount, stats)}
+        stats={review.completionStats}
       />
     )
   }
@@ -616,21 +570,11 @@ function MistakeReview({
   const correctDisplay = item.options.find((o) => o.value === correct)?.display ?? item.correctDisplay ?? correct
 
   const handleSelect = (val: string) => {
-    if (selected) return
-    setSelected(val)
     const result = makeQuestionResult(mistakeToQuestion(item), val)
     const ok = result.correct
-    setLastOk(ok)
+    if (!review.recordAnswer(val, ok)) return
     srs.grade(item.id, ok ? "good" : "again")
     recordQuestionPractice({ progress: learning, notebook, result })
-    setStats((prev) => recordReviewAnswer(prev, ok))
-  }
-
-  const next = () => {
-    if (!currentId) return
-    setQueue((prev) => advanceReviewQueue(prev, lastOk))
-    setSelected(null)
-    setLastOk(null)
   }
 
   const canShowConj =
@@ -645,7 +589,7 @@ function MistakeReview({
       onExit={onExit}
       headerRight={
         <div className="flex items-center gap-2">
-          <div className="text-xs text-muted-foreground font-mono">剩余: {queue.length}</div>
+          <div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>
           <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={() => notebook.remove(item.id)}>
             移除
           </Button>
@@ -704,7 +648,7 @@ function MistakeReview({
         </div>
       )}
 
-      <ReviewNextButton show={selected != null} onNext={next} />
+      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
     </ReviewSessionFrame>
   )
 }
