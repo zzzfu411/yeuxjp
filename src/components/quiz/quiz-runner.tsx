@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
@@ -10,15 +9,14 @@ import { RefreshCw, ArrowLeft } from "lucide-react"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
-import type { VerbConjForm } from "@/lib/verb-conjugation"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
-import { isQuestionAnswerCorrect, makeQuestionResult, type Question } from "@/lib/questions"
+import { makeQuestionResult, type Question } from "@/lib/questions"
 import { createQuizStats, recordQuizAnswer } from "@/lib/quiz-session"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { SpeechSettingsBar, useSpeechPreferences } from "@/components/ui/speech-preferences"
-import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
+import { QuizAnswerFeedback } from "@/components/quiz/quiz-answer-feedback"
 import { QuizOptionGrid } from "@/components/quiz/quiz-option-grid"
 import { QuizQuestionPrompt } from "@/components/quiz/quiz-question-prompt"
 import {
@@ -30,14 +28,6 @@ import {
   type QuizMode,
   type VocabQuizScope,
 } from "@/lib/quiz-generators"
-
-function isVerbKind(value: unknown): value is ConjugationVerbMeta["kind"] {
-  return value === "ichidan" || value === "godan" || value === "suru" || value === "kuru"
-}
-
-function isVerbForm(value: unknown): value is VerbConjForm {
-  return value === "masu" || value === "nai" || value === "te" || value === "ta"
-}
 
 export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => void }) {
   const speech = useSpeechPreferences()
@@ -121,10 +111,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     const gapMs = speech?.prefs.gapMs ?? 250
     speakJapaneseRepeated(text, { repeat, gapMs })
   }, [speech?.prefs.gapMs, speech?.prefs.repeat])
-
-  const isCorrectValue = useCallback((q: Question, val: string) => {
-    return isQuestionAnswerCorrect(q, val)
-  }, [])
 
   const modeHint = useMemo(() => {
     if (mode === "hiragana-romaji") {
@@ -241,13 +227,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       </div>
     )
   }
-
-  const canShowConj =
-    mode === "verb-conjugation" &&
-    currentQuestion.meta?.verb &&
-    isVerbKind(currentQuestion.meta.verb.kind) &&
-    currentQuestion.meta.askedForm &&
-    isVerbForm(currentQuestion.meta.askedForm.id)
 
   return (
     <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20">
@@ -384,41 +363,11 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         onSelect={handleSelect}
       />
 
-      {/* Feedback */}
-      {selectedOption && mode === "particle" && currentQuestion.questionText && (
-        <ParticleFillFeedback
-          sentence={currentQuestion.questionText}
-          selected={selectedOption}
-          correct={currentQuestion.correctAnswer}
-        />
-      )}
-
-      {selectedOption && canShowConj && (
-        <ConjugationComparison
-          verb={{ ...currentQuestion.meta!.verb!, kind: currentQuestion.meta!.verb!.kind as ConjugationVerbMeta["kind"] }}
-          askedForm={{ id: currentQuestion.meta!.askedForm!.id as VerbConjForm, label: currentQuestion.meta!.askedForm!.label }}
-          selected={selectedOption}
-          correct={currentQuestion.correctAnswer}
-        />
-      )}
-
-      {/* Explanation */}
-      {selectedOption && currentQuestion.explanation && (
-        <div className="w-full rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground leading-relaxed">
-          <div className="text-xs font-semibold text-foreground mb-1 tracking-wider">解析</div>
-          {currentQuestion.explanation}
-        </div>
-      )}
-
-      {selectedOption && !isCorrectValue(currentQuestion, selectedOption) && (
-        <div className="w-full text-xs text-muted-foreground">
-          已加入错题本，可在{" "}
-          <Link href="/review" className="underline underline-offset-4">
-            复习（SRS）
-          </Link>{" "}
-          里集中复盘。
-        </div>
-      )}
+      <QuizAnswerFeedback
+        question={currentQuestion}
+        mode={mode}
+        selectedOption={selectedOption}
+      />
 
       {/* Next Button */}
       {selectedOption && (
