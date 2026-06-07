@@ -8,15 +8,15 @@ import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningProgress } from "@/lib/learning-progress"
-import { recordQuestionPractice } from "@/lib/learning-session"
-import { makeQuestionResult, type Question } from "@/lib/questions"
-import { createQuizStats, recordQuizAnswer } from "@/lib/quiz-session"
+import type { Question } from "@/lib/questions"
+import { createQuizStats } from "@/lib/quiz-session"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { SpeechSettingsBar, useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { QuizAnswerFeedback } from "@/components/quiz/quiz-answer-feedback"
 import { QuizOptionGrid } from "@/components/quiz/quiz-option-grid"
 import { QuizQuestionPrompt } from "@/components/quiz/quiz-question-prompt"
 import { QuizScopeControls } from "@/components/quiz/quiz-scope-controls"
+import { useQuizAnswerRecorder } from "@/components/quiz/use-quiz-answer-recorder"
 import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
 import {
   filterUnlearnedVocab,
@@ -42,6 +42,11 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
 
   const { isMastered: isKanaMastered } = useKanaProgress()
   const { isLearnedId } = useVocabProgress()
+  const recordAnswer = useQuizAnswerRecorder({
+    progress,
+    notebook: mistakes,
+    setQuizStats,
+  })
   const {
     loading: vocabLoading,
     basePool: vocabBasePool,
@@ -157,9 +162,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     setSelectedOption(val)
 
     if (currentQuestion) {
-      const result = makeQuestionResult(currentQuestion, val)
-      setQuizStats((prev) => recordQuizAnswer(prev, result.correct))
-      recordQuestionPractice({ progress, notebook: mistakes, result })
+      recordAnswer(currentQuestion, val)
     }
   }
 
