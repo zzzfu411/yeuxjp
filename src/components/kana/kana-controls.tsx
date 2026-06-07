@@ -1,0 +1,144 @@
+"use client"
+
+import type { ReactNode } from "react"
+import { Eye, EyeOff } from "lucide-react"
+import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
+import type { KanaSet } from "@/lib/kana-page-model"
+import { cn } from "@/lib/utils"
+
+export type KanaMode = "hiragana" | "katakana"
+
+export interface KanaControlsProps {
+  mode: KanaMode
+  kanaSet: KanaSet
+  showRomaji: boolean
+  onlyUnmastered: boolean
+  progress: {
+    learned: number
+    total: number
+  }
+  hint: ReactNode
+  onModeChange: (mode: KanaMode) => void
+  onKanaSetChange: (set: KanaSet) => void
+  onToggleRomaji: () => void
+  onToggleOnlyUnmastered: () => void
+  onClearMastered: () => void
+}
+
+const kanaSets: { id: KanaSet; label: string }[] = [
+  { id: "seion", label: "清音" },
+  { id: "dakuon", label: "浊音/半浊音" },
+  { id: "yoon", label: "拗音" },
+  { id: "special", label: "促音(っ)" },
+  { id: "all", label: "全部" },
+]
+
+export function KanaControls({
+  mode,
+  kanaSet,
+  showRomaji,
+  onlyUnmastered,
+  progress,
+  hint,
+  onModeChange,
+  onKanaSetChange,
+  onToggleRomaji,
+  onToggleOnlyUnmastered,
+  onClearMastered,
+}: KanaControlsProps) {
+  return (
+    <>
+      <div className="flex rounded-lg bg-secondary p-1">
+        <button
+          onClick={() => onModeChange("hiragana")}
+          className={cn(
+            "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-8",
+            mode === "hiragana"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          平假名 (Hiragana)
+        </button>
+        <button
+          onClick={() => onModeChange("katakana")}
+          className={cn(
+            "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-8",
+            mode === "katakana"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          片假名 (Katakana)
+        </button>
+      </div>
+
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex rounded-lg bg-secondary p-1">
+          {kanaSets.map((set) => (
+            <button
+              key={set.id}
+              onClick={() => onKanaSetChange(set.id)}
+              className={cn(
+                "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-6",
+                kanaSet === set.id
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {set.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="max-w-2xl text-center text-xs leading-relaxed text-muted-foreground">
+          {hint} <GlossaryButton className="ml-2 h-auto rounded-md px-2 py-1">术语表</GlossaryButton>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <button
+            onClick={onToggleRomaji}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
+              "bg-background hover:bg-secondary/60"
+            )}
+          >
+            {showRomaji ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showRomaji ? "隐藏罗马音" : "显示罗马音"}
+          </button>
+
+          <button
+            onClick={onToggleOnlyUnmastered}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
+              "bg-background hover:bg-secondary/60"
+            )}
+          >
+            {onlyUnmastered ? "显示全部" : "只看未掌握"}
+          </button>
+
+          <button
+            onClick={onClearMastered}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
+              "bg-background text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+            )}
+          >
+            清空进度
+          </button>
+        </div>
+
+        <div className="font-mono text-xs text-muted-foreground">
+          Progress: {progress.learned}/{progress.total}
+        </div>
+
+        {showRomaji && (
+          <div className="max-w-2xl text-center text-xs text-muted-foreground">
+            小提示：熟悉后可隐藏 <GlossaryTerm termId="romaji">罗马音</GlossaryTerm>，训练直接读{" "}
+            <GlossaryTerm termId="kana">假名</GlossaryTerm>。
+          </div>
+        )}
+      </div>
+    </>
+  )
+}

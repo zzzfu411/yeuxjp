@@ -1,11 +1,9 @@
 "use client"
 
-import { useEffect, useMemo, useState, Suspense } from "react"
+import { useCallback, useEffect, useMemo, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { kanaData } from "@/data/kana-data"
 import { KanaGrid } from "@/components/kana/kana-grid"
-import { cn } from "@/lib/utils"
-import { Eye, EyeOff } from "lucide-react"
 import { useKanaProgress } from "@/lib/kana-progress"
 import {
   filterKanaByProgress,
@@ -16,14 +14,15 @@ import {
   parseKanaSet,
   type KanaSet,
 } from "@/lib/kana-page-model"
-import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
+import { GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { KanaBanner } from "@/components/kana/kana-banner"
+import { KanaControls, type KanaMode } from "@/components/kana/kana-controls"
 
 function KanaPageContent() {
   const searchParams = useSearchParams()
-  const [mode, setMode] = useState<"hiragana" | "katakana">("hiragana")
+  const [mode, setMode] = useState<KanaMode>("hiragana")
   const [kanaSet, setKanaSet] = useState<KanaSet>("seion")
   const [showRomaji, setShowRomaji] = useState(true)
   const [onlyUnmastered, setOnlyUnmastered] = useState(false)
@@ -70,6 +69,12 @@ function KanaPageContent() {
   const activeProgress = useMemo(() => {
     return getKanaProgress(activeData, isMastered)
   }, [activeData, isMastered])
+
+  const handleClearMastered = useCallback(() => {
+    if (typeof window === "undefined") return
+    const ok = window.confirm("确认清空假名掌握进度吗？")
+    if (ok) clearMastered()
+  }, [clearMastered])
 
   const kanaSetHint = useMemo(() => {
     if (kanaSet === "seion") {
@@ -139,144 +144,19 @@ function KanaPageContent() {
         </p>
       </div>
 
-      <div className="flex p-1 bg-secondary rounded-lg">
-        <button
-          onClick={() => setMode("hiragana")}
-          className={cn(
-            "px-4 sm:px-8 py-2 rounded-md text-sm font-medium transition-all",
-            mode === "hiragana" 
-              ? "bg-background text-foreground shadow-sm" 
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          平假名 (Hiragana)
-        </button>
-        <button
-          onClick={() => setMode("katakana")}
-          className={cn(
-            "px-4 sm:px-8 py-2 rounded-md text-sm font-medium transition-all",
-            mode === "katakana" 
-              ? "bg-background text-foreground shadow-sm" 
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          片假名 (Katakana)
-        </button>
-      </div>
-
-      <div className="flex flex-col items-center gap-3">
-        <div className="flex p-1 bg-secondary rounded-lg">
-          <button
-            onClick={() => setKanaSet("seion")}
-            className={cn(
-              "px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all",
-              kanaSet === "seion"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            清音
-          </button>
-          <button
-            onClick={() => setKanaSet("dakuon")}
-            className={cn(
-              "px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all",
-              kanaSet === "dakuon"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            浊音/半浊音
-          </button>
-          <button
-            onClick={() => setKanaSet("yoon")}
-            className={cn(
-              "px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all",
-              kanaSet === "yoon"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            拗音
-          </button>
-          <button
-            onClick={() => setKanaSet("special")}
-            className={cn(
-              "px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all",
-              kanaSet === "special"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            促音(っ)
-          </button>
-          <button
-            onClick={() => setKanaSet("all")}
-            className={cn(
-              "px-4 sm:px-6 py-2 rounded-md text-sm font-medium transition-all",
-              kanaSet === "all"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            全部
-          </button>
-        </div>
-
-        <div className="text-xs text-muted-foreground text-center max-w-2xl leading-relaxed">
-          {kanaSetHint}{" "}
-          <GlossaryButton className="ml-2 h-auto px-2 py-1 rounded-md">术语表</GlossaryButton>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <button
-            onClick={() => setShowRomaji(v => !v)}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
-              "bg-background hover:bg-secondary/60"
-            )}
-          >
-            {showRomaji ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            {showRomaji ? "隐藏罗马音" : "显示罗马音"}
-          </button>
-
-          <button
-            onClick={() => setOnlyUnmastered(v => !v)}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
-              "bg-background hover:bg-secondary/60"
-            )}
-          >
-            {onlyUnmastered ? "显示全部" : "只看未掌握"}
-          </button>
-
-          <button
-            onClick={() => {
-              if (typeof window === "undefined") return
-              const ok = window.confirm("确认清空假名掌握进度吗？")
-              if (ok) clearMastered()
-            }}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
-              "bg-background hover:bg-secondary/60 text-muted-foreground hover:text-foreground"
-            )}
-          >
-            清空进度
-          </button>
-        </div>
-
-        <div className="text-xs text-muted-foreground font-mono">
-          Progress: {activeProgress.learned}/{activeProgress.total}
-        </div>
-
-        {showRomaji && (
-          <div className="text-xs text-muted-foreground text-center max-w-2xl">
-            小提示：熟悉后可隐藏 <GlossaryTerm termId="romaji">罗马音</GlossaryTerm>，训练直接读{" "}
-            <GlossaryTerm termId="kana">假名</GlossaryTerm>。
-          </div>
-        )}
-      </div>
-
+      <KanaControls
+        mode={mode}
+        kanaSet={kanaSet}
+        showRomaji={showRomaji}
+        onlyUnmastered={onlyUnmastered}
+        progress={activeProgress}
+        hint={kanaSetHint}
+        onModeChange={setMode}
+        onKanaSetChange={setKanaSet}
+        onToggleRomaji={() => setShowRomaji((value) => !value)}
+        onToggleOnlyUnmastered={() => setOnlyUnmastered((value) => !value)}
+        onClearMastered={handleClearMastered}
+      />
       <SpeechSettingsBar className="max-w-3xl" />
 
       {kanaSet === "seion" && (
