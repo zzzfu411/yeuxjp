@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, CheckCircle2, RefreshCw, Volume2, XCircle } from "lucide-react"
+import { ArrowLeft, RefreshCw, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { kanaData } from "@/data/kana-data"
 import { loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
@@ -17,12 +18,6 @@ import { useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
-import {
-  getAnswerOptionClassName,
-  getAnswerOptionFeedback,
-  shouldShowCorrectAnswerIcon,
-  shouldShowWrongAnswerIcon,
-} from "@/lib/answer-option-feedback"
 import { makeQuestionResult, type Question } from "@/lib/questions"
 import {
   advanceReviewQueue,
@@ -252,31 +247,12 @@ function TodayReview({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full">
-        {data.question.options.map((opt) => {
-          const isCorrect = opt.value === data.question.correctAnswer
-          const feedback = getAnswerOptionFeedback({
-            selectedAnswer: selected,
-            optionValue: opt.value,
-            isCorrectOption: isCorrect,
-          })
-
-          return (
-            <Button
-              key={opt.value}
-              variant="outline"
-              size="lg"
-              className={cn("h-16 text-base font-medium leading-tight", getAnswerOptionClassName(feedback))}
-              onClick={() => handleSelect(opt.value)}
-              disabled={!!selected}
-            >
-              {opt.display}
-              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
-            </Button>
-          )
-        })}
-      </div>
+      <ReviewOptionGrid
+        options={data.question.options}
+        correctAnswer={data.question.correctAnswer}
+        selectedAnswer={selected}
+        onSelect={handleSelect}
+      />
 
       {selected && (
         <div className="w-full rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground leading-relaxed">
@@ -422,31 +398,13 @@ function KanaReview({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full">
-        {options.map((opt) => {
-          const isCorrect = opt === item.romaji
-          const feedback = getAnswerOptionFeedback({
-            selectedAnswer: selected,
-            optionValue: opt,
-            isCorrectOption: isCorrect,
-          })
-
-          return (
-            <Button
-              key={opt}
-              variant="outline"
-              size="lg"
-              className={cn("h-16 text-lg font-medium", getAnswerOptionClassName(feedback))}
-              onClick={() => handleSelect(opt)}
-              disabled={!!selected}
-            >
-              {opt}
-              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
-            </Button>
-          )
-        })}
-      </div>
+      <ReviewOptionGrid
+        options={options.map((opt) => ({ value: opt, display: opt }))}
+        correctAnswer={item.romaji}
+        selectedAnswer={selected}
+        onSelect={handleSelect}
+        optionClassName="h-16 text-lg font-medium"
+      />
 
       {selected && (
         <Button onClick={next} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
@@ -596,33 +554,15 @@ function VocabReview({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full">
-        {options.map((optId) => {
+      <ReviewOptionGrid
+        options={options.map((optId) => {
           const opt = vocabulary.data.find((v) => v.id === optId)
-          const label = opt?.meaning ?? optId
-          const isCorrect = optId === item.id
-          const feedback = getAnswerOptionFeedback({
-            selectedAnswer: selected,
-            optionValue: optId,
-            isCorrectOption: isCorrect,
-          })
-
-          return (
-            <Button
-              key={optId}
-              variant="outline"
-              size="lg"
-              className={cn("h-16 text-base font-medium leading-tight", getAnswerOptionClassName(feedback))}
-              onClick={() => handleSelect(optId)}
-              disabled={!!selected}
-            >
-              {label}
-              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
-            </Button>
-          )
+          return { value: optId, display: opt?.meaning ?? optId }
         })}
-      </div>
+        correctAnswer={item.id}
+        selectedAnswer={selected}
+        onSelect={handleSelect}
+      />
 
       {selected && (
         <Button onClick={next} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
@@ -752,31 +692,12 @@ function MistakeReview({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full">
-        {item.options.map((opt) => {
-          const isCorrect = opt.value === correct
-          const feedback = getAnswerOptionFeedback({
-            selectedAnswer: selected,
-            optionValue: opt.value,
-            isCorrectOption: isCorrect,
-          })
-
-          return (
-            <Button
-              key={opt.value}
-              variant="outline"
-              size="lg"
-              className={cn("h-16 text-base font-medium leading-tight", getAnswerOptionClassName(feedback))}
-              onClick={() => handleSelect(opt.value)}
-              disabled={!!selected}
-            >
-              {opt.display}
-              {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
-              {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
-            </Button>
-          )
-        })}
-      </div>
+      <ReviewOptionGrid
+        options={item.options}
+        correctAnswer={correct}
+        selectedAnswer={selected}
+        onSelect={handleSelect}
+      />
 
       {selected && item.type === "particle" && item.questionText && (
         <ParticleFillFeedback sentence={item.questionText} selected={selectedDisplay ?? selected} correct={correct} />

@@ -1,0 +1,58 @@
+"use client"
+
+import type { ReactNode } from "react"
+import { CheckCircle2, XCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import {
+  getAnswerOptionClassName,
+  getAnswerOptionFeedback,
+  shouldShowCorrectAnswerIcon,
+  shouldShowWrongAnswerIcon,
+} from "@/lib/answer-option-feedback"
+
+export type ReviewOption = {
+  value: string
+  display: ReactNode
+}
+
+export function ReviewOptionGrid({
+  options,
+  correctAnswer,
+  selectedAnswer,
+  onSelect,
+  optionClassName = "h-16 text-base font-medium leading-tight",
+}: {
+  options: ReviewOption[]
+  correctAnswer: string
+  selectedAnswer: string | null
+  onSelect: (value: string) => void
+  optionClassName?: string
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-4 w-full">
+      {options.map((option) => {
+        const feedback = getAnswerOptionFeedback({
+          selectedAnswer,
+          optionValue: option.value,
+          isCorrectOption: option.value === correctAnswer,
+        })
+
+        return (
+          <Button
+            key={option.value}
+            variant="outline"
+            size="lg"
+            className={cn(optionClassName, getAnswerOptionClassName(feedback))}
+            onClick={() => onSelect(option.value)}
+            disabled={selectedAnswer != null}
+          >
+            {option.display}
+            {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
+            {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
+          </Button>
+        )
+      })}
+    </div>
+  )
+}
