@@ -1,5 +1,5 @@
 import { kanaData } from "@/data/kana-data"
-import type { Vocabulary } from "@/data/vocabulary"
+import type { Vocabulary } from "@/data/vocabulary/types"
 import type { MistakeItem } from "@/lib/mistake-notebook"
 import type { Question } from "@/lib/questions"
 import { sortSrsIdsByDue, type SrsMap } from "@/lib/srs"

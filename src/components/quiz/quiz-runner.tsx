@@ -15,6 +15,7 @@ import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
 import { isQuestionAnswerCorrect, makeQuestionResult, type Question } from "@/lib/questions"
+import { createQuizStats, recordQuizAnswer } from "@/lib/quiz-session"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { SpeechSettingsBar, useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
@@ -42,8 +43,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   const progress = useLearningProgress()
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
-  const [score, setScore] = useState(0)
-  const [total, setTotal] = useState(0)
+  const [quizStats, setQuizStats] = useState(createQuizStats)
   const [kanaScope, setKanaScope] = useState<KanaQuizScope>("seion")
   const [onlyUnmasteredKana, setOnlyUnmasteredKana] = useState(false)
   const [vocabScope, setVocabScope] = useState<VocabQuizScope>("survival")
@@ -213,13 +213,10 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   const handleSelect = (val: string) => {
     if (selectedOption) return
     setSelectedOption(val)
-    setTotal(t => t + 1)
 
     if (currentQuestion) {
       const result = makeQuestionResult(currentQuestion, val)
-      if (result.correct) {
-        setScore(s => s + 1)
-      }
+      setQuizStats((prev) => recordQuizAnswer(prev, result.correct))
       recordQuestionPractice({ progress, notebook: mistakes, result })
     }
   }
@@ -258,7 +255,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
           <ArrowLeft className="w-4 h-4" /> 退出
         </Button>
         <div className="font-mono font-medium">
-          得分: {score}/{total}
+          得分: {quizStats.score}/{quizStats.total}
         </div>
       </div>
 

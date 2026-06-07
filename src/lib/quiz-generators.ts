@@ -1,5 +1,5 @@
 import { kanaData, type Kana } from "@/data/kana-data"
-import type { VocabLevel, Vocabulary } from "@/data/vocabulary"
+import type { VocabLevel, Vocabulary } from "@/data/vocabulary/types"
 import { VERB_CONJ_FORMS, VERB_CONJ_VERBS, conjugateVerb, explainConjugation } from "@/lib/verb-conjugation"
 import type { Question } from "@/lib/questions"
 import { shuffleList } from "@/lib/review-questions"
