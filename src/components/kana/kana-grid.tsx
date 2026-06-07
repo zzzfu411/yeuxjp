@@ -3,11 +3,8 @@
 import { useState, useCallback, useEffect } from "react"
 import { Kana } from "@/data/kana-data"
 import { KanaCard } from "./kana-card"
-import { Modal } from "@/components/ui/modal"
-import { Button } from "@/components/ui/button"
-import { CheckCircle2, ChevronLeft, ChevronRight, PenTool, Volume2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { KanaStrokeAnimCJK } from "./kana-stroke-animcjk"
+import { KanaDetailModal } from "./kana-detail-modal"
 import { speakJapanese } from "@/lib/speech"
 import {
   cacheKeyForChar,
@@ -160,116 +157,31 @@ export function KanaGrid({
         })}
       </div>
 
-      <Modal
-        isOpen={selectedIndex !== null}
+      <KanaDetailModal
+        kana={selectedKana}
+        mode={mode}
+        currentChar={currentChar}
+        currentStrokeAvailability={currentStrokeAvailability}
+        selectedIndex={selectedIndex}
+        total={data.length}
+        isWriting={isWriting}
+        isPlaying={isPlaying}
+        hasStrokes={hasStrokes}
+        isComboChar={isComboChar}
+        learned={learned}
+        canToggleMastered={!!onToggleMastered}
         onClose={() => {
           setSelectedIndex(null)
           setIsWriting(false)
         }}
-        className="max-w-md"
-      >
-        {selectedKana && (
-          <div className="flex flex-col h-full">
-            <div className="flex-1 p-8 flex flex-col items-center justify-center space-y-8">
-              
-              {/* 头部：罗马音 */}
-              <div className="text-sm font-mono text-muted-foreground uppercase tracking-[0.2em]">
-                {selectedKana.romaji}
-              </div>
-
-              {/* 主显示区域 */}
-              {isWriting && currentChar ? (
-                <div className={cn("h-72 flex items-stretch justify-center", isComboChar ? "w-[22rem]" : "w-64")}>
-                  <KanaStrokeAnimCJK
-                    char={currentChar}
-                    label={`笔顺：${selectedKana.romaji}`}
-                    className="w-full"
-                  />
-                </div>
-              ) : (
-                <div className="relative w-64 h-56 flex items-center justify-center bg-secondary/30 rounded-[2rem] border-4 border-background shadow-inner overflow-hidden">
-                  <span
-                    className={cn(
-                      "font-bold text-foreground leading-none pb-4 whitespace-nowrap",
-                      isComboChar ? "text-[5.5rem] tracking-tight" : "text-[9rem]"
-                    )}
-                  >
-                    {mode === "hiragana" ? selectedKana.hiragana : selectedKana.katakana}
-                  </span>
-                  {/* 背景水印 (Ghost Char) — single-char only, two-char combos
-                      would overflow the corner. */}
-                  {!isComboChar && (
-                    <span className="absolute top-4 left-5 text-5xl text-muted-foreground/10 font-serif font-black select-none">
-                      {mode === "hiragana" ? selectedKana.katakana : selectedKana.hiragana}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {!isWriting && currentChar && currentStrokeAvailability === "missing" ? (
-                <div className="rounded-xl border bg-muted/30 px-4 py-3 text-center text-sm text-muted-foreground">
-                  当前字符暂无可用 AnimCJK 笔顺资源，仍可朗读和标记掌握。
-                </div>
-              ) : null}
-
-              {/* 控制按钮 */}
-              <div className="w-full space-y-3">
-                <div className="flex gap-3 w-full">
-                  <Button 
-                    size="lg" 
-                    className="flex-1 rounded-full shadow-lg hover:shadow-xl transition-all" 
-                    onClick={handlePlay}
-                    disabled={isPlaying}
-                  >
-                    <Volume2 className={cn("w-5 h-5 mr-2", isPlaying && "animate-pulse")} />
-                    朗读
-                  </Button>
-                  
-                  {/* 只有当有数据时才显示书写按钮 */}
-                  {hasStrokes && (
-                    <Button 
-                      size="lg" 
-                      variant="outline"
-                      className="flex-1 rounded-full border-2" 
-                      data-testid="kana-stroke-toggle"
-                      onClick={() => setIsWriting(!isWriting)}
-                    >
-                      {isWriting ? <PenTool className="w-5 h-5 mr-2" /> : <PenTool className="w-5 h-5 mr-2" />}
-                      {isWriting ? "字形" : "笔顺"}
-                    </Button>
-                  )}
-                </div>
-
-                {/* Progress */}
-                {selectedKana && onToggleMastered && (
-                  <Button
-                    size="lg"
-                    variant={learned ? "default" : "secondary"}
-                    className="w-full rounded-full"
-                    onClick={() => onToggleMastered(selectedKana.romaji)}
-                  >
-                    <CheckCircle2 className="w-5 h-5 mr-2" />
-                    {learned ? "已掌握" : "标记已掌握"}
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* 底部导航 */}
-            <div className="p-4 border-t bg-muted/30 flex justify-between items-center shrink-0">
-              <Button variant="ghost" size="icon" onClick={handlePrev}>
-                <ChevronLeft className="w-6 h-6" />
-              </Button>
-              <div className="text-xs font-mono text-muted-foreground">
-                {selectedIndex! + 1} / {data.length}
-              </div>
-              <Button variant="ghost" size="icon" onClick={handleNext}>
-                <ChevronRight className="w-6 h-6" />
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+        onPrev={handlePrev}
+        onNext={handleNext}
+        onPlay={handlePlay}
+        onToggleWriting={() => setIsWriting((prev) => !prev)}
+        onToggleMastered={() => {
+          if (selectedKana) onToggleMastered?.(selectedKana.romaji)
+        }}
+      />
     </>
   )
 }

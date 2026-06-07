@@ -28,7 +28,7 @@ const requiredSelectors = [
   },
   {
     testId: "kana-stroke-toggle",
-    source: "src/components/kana/kana-grid.tsx",
+    source: "src/components/kana/kana-detail-modal.tsx",
     pattern: /data-testid="kana-stroke-toggle"/,
   },
   {
