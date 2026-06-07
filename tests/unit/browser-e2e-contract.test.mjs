@@ -64,6 +64,19 @@ test("browser E2E uses only declared stable test ids", () => {
   assert.deepEqual(new Set(used), new Set(requiredSelectors.map((item) => item.testId)))
 })
 
+test("browser E2E can skip missing optional Playwright but has a required mode", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const webPackage = fs.readFileSync(path.join(root, "package.json"), "utf8")
+
+  assert.match(e2e, /process\.argv\.includes\("--required"\)/)
+  assert.match(e2e, /E2E_BROWSER_REQUIRED === "1"/)
+  assert.match(e2e, /Browser E2E skipped: Playwright is not installed/)
+  assert.match(e2e, /process\.exit\(0\)/)
+  assert.match(e2e, /process\.exit\(2\)/)
+  assert.match(webPackage, /"e2e:browser": "node tests\/e2e\/browser\.mjs"/)
+  assert.match(webPackage, /"e2e:browser:required": "node tests\/e2e\/browser\.mjs --required"/)
+})
+
 test("browser E2E test ids remain present in source files", () => {
   for (const item of requiredSelectors) {
     const source = fs.readFileSync(path.join(root, item.source), "utf8")

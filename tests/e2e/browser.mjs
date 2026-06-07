@@ -4,11 +4,21 @@ import { fileURLToPath } from "node:url"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
+const browserE2ERequired = process.argv.includes("--required") || process.env.E2E_BROWSER_REQUIRED === "1"
+
+function isMissingPlaywright(error) {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes("Cannot find package 'playwright'") || message.includes('Cannot find package "playwright"')
+}
 
 async function importPlaywright() {
   try {
     return await import("playwright")
   } catch (error) {
+    if (!browserE2ERequired && isMissingPlaywright(error)) {
+      console.warn("Browser E2E skipped: Playwright is not installed. Run `npm run e2e:browser:required --prefix web` when browser dependencies are available.")
+      process.exit(0)
+    }
     console.error("Browser E2E requires Playwright. Install browser dependencies or set E2E_BASE_URL and run in an environment with Playwright available.")
     console.error(error instanceof Error ? error.message : String(error))
     process.exit(2)

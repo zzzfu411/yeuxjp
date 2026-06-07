@@ -29,10 +29,11 @@ npm run test           # Node built-in unit tests
 npm run build          # production Next build
 npm run check          # validate:data + lint + test + build
 npm run e2e            # HTTP smoke test for key routes
-npm run e2e:browser    # optional real browser click-flow E2E when Playwright is available
+npm run e2e:browser    # optional real browser click-flow E2E; skips if Playwright is unavailable
+npm run e2e:browser:required # strict browser E2E; fails if Playwright is unavailable
 ```
 
-The current merge gate is `npm run check`. `npm run e2e` is the minimum E2E gate and only verifies HTTP route health. `npm run e2e:browser` exercises real interactions with Playwright, including lesson resume persistence, lesson answer recording, kana stroke playback, vocabulary search, quiz mistakes, and review queue startup. It is intentionally separate because local browser binaries may not be installed in every environment.
+The current merge gate is `npm run check`. `npm run e2e` is the minimum E2E gate and only verifies HTTP route health. `npm run e2e:browser` exercises real interactions with Playwright, including lesson resume persistence, lesson answer recording, kana stroke playback, vocabulary search, quiz mistakes, and review queue startup. It exits cleanly with a skip message when Playwright is not installed. Use `npm run e2e:browser:required` in CI or release checks that must fail when the browser stack is missing.
 
 Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale. Treat that as dependency maintenance, not a functional failure.
 
