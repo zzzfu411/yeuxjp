@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, RefreshCw, Volume2 } from "lucide-react"
+import { Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
+import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { kanaData } from "@/data/kana-data"
 import { loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
@@ -217,19 +218,16 @@ function TodayReview({
   }
 
   return (
-    <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20">
-      <div className="w-full flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
-          <ArrowLeft className="w-4 h-4" /> 返回
-        </Button>
-        <div className="text-xs text-muted-foreground font-mono" data-testid="review-remaining">今日剩余: {queue.length}</div>
-      </div>
+    <ReviewSessionFrame
+      onExit={onExit}
+      headerRight={<div className="text-xs text-muted-foreground font-mono" data-testid="review-remaining">今日剩余: {queue.length}</div>}
+    >
 
       <div className="w-full rounded-xl border bg-muted/10 p-4 text-sm text-muted-foreground leading-relaxed">
         当前：<span className="font-semibold text-foreground">{data.deckLabel}</span> · 答错会排到本轮队尾，答对会进入下一次间隔复习。
       </div>
 
-      <div className="w-full flex flex-col items-center justify-center py-10 bg-card border rounded-xl shadow-sm min-h-[240px] relative">
+      <ReviewPromptCard minHeightClassName="min-h-[240px]">
         {data.audio ? (
           <Button
             type="button"
@@ -245,7 +243,7 @@ function TodayReview({
           <div className="text-4xl font-bold leading-snug break-words">{data.prompt}</div>
           {data.sub ? <div className="text-sm text-muted-foreground">{data.sub}</div> : null}
         </div>
-      </div>
+      </ReviewPromptCard>
 
       <ReviewOptionGrid
         options={data.question.options}
@@ -261,12 +259,8 @@ function TodayReview({
         </div>
       )}
 
-      {selected && (
-        <Button onClick={next} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
-          下一题 <RefreshCw className="w-4 h-4" />
-        </Button>
-      )}
-    </div>
+      <ReviewNextButton show={selected != null} onNext={next} />
+    </ReviewSessionFrame>
   )
 }
 
@@ -372,15 +366,12 @@ function KanaReview({
   }
 
   return (
-    <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20">
-      <div className="w-full flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
-          <ArrowLeft className="w-4 h-4" /> 返回
-        </Button>
-        <div className="text-xs text-muted-foreground font-mono">剩余: {queue.length}</div>
-      </div>
+    <ReviewSessionFrame
+      onExit={onExit}
+      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {queue.length}</div>}
+    >
 
-      <div className="w-full flex flex-col items-center justify-center py-10 bg-card border rounded-xl shadow-sm min-h-[220px] relative">
+      <ReviewPromptCard>
         <Button
           type="button"
           variant="outline"
@@ -396,7 +387,7 @@ function KanaReview({
           <div className="mt-2 text-xl text-muted-foreground">{item.katakana}</div>
           <div className="mt-3 text-xs text-muted-foreground">选择正确的罗马音</div>
         </div>
-      </div>
+      </ReviewPromptCard>
 
       <ReviewOptionGrid
         options={options.map((opt) => ({ value: opt, display: opt }))}
@@ -406,12 +397,8 @@ function KanaReview({
         optionClassName="h-16 text-lg font-medium"
       />
 
-      {selected && (
-        <Button onClick={next} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
-          下一题 <RefreshCw className="w-4 h-4" />
-        </Button>
-      )}
-    </div>
+      <ReviewNextButton show={selected != null} onNext={next} />
+    </ReviewSessionFrame>
   )
 }
 
@@ -528,15 +515,12 @@ function VocabReview({
   }
 
   return (
-    <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20">
-      <div className="w-full flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
-          <ArrowLeft className="w-4 h-4" /> 返回
-        </Button>
-        <div className="text-xs text-muted-foreground font-mono">剩余: {queue.length}</div>
-      </div>
+    <ReviewSessionFrame
+      onExit={onExit}
+      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {queue.length}</div>}
+    >
 
-      <div className="w-full flex flex-col items-center justify-center py-10 bg-card border rounded-xl shadow-sm min-h-[240px] relative">
+      <ReviewPromptCard minHeightClassName="min-h-[240px]">
         <Button
           type="button"
           variant="outline"
@@ -552,7 +536,7 @@ function VocabReview({
           {item.kanji ? <div className="text-xl text-muted-foreground">{item.kana}</div> : null}
           <div className="text-xs text-muted-foreground">选择正确的中文意思</div>
         </div>
-      </div>
+      </ReviewPromptCard>
 
       <ReviewOptionGrid
         options={options.map((optId) => {
@@ -564,12 +548,8 @@ function VocabReview({
         onSelect={handleSelect}
       />
 
-      {selected && (
-        <Button onClick={next} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
-          下一题 <RefreshCw className="w-4 h-4" />
-        </Button>
-      )}
-    </div>
+      <ReviewNextButton show={selected != null} onNext={next} />
+    </ReviewSessionFrame>
   )
 }
 
@@ -661,20 +641,19 @@ function MistakeReview({
     isVerbForm(item.meta.askedForm.id)
 
   return (
-    <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20">
-      <div className="w-full flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
-          <ArrowLeft className="w-4 h-4" /> 返回
-        </Button>
+    <ReviewSessionFrame
+      onExit={onExit}
+      headerRight={
         <div className="flex items-center gap-2">
           <div className="text-xs text-muted-foreground font-mono">剩余: {queue.length}</div>
           <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={() => notebook.remove(item.id)}>
             移除
           </Button>
         </div>
-      </div>
+      }
+    >
 
-      <div className="w-full flex flex-col items-center justify-center py-10 bg-card border rounded-xl shadow-sm min-h-[220px] relative">
+      <ReviewPromptCard>
         {item.questionAudio ? (
           <>
             <Button type="button" variant="outline" size="icon" className="w-20 h-20 rounded-full border-4" onClick={() => playAudio(item.questionAudio!)}>
@@ -690,7 +669,7 @@ function MistakeReview({
             <div className="text-xs text-muted-foreground">{item.type}</div>
           </div>
         )}
-      </div>
+      </ReviewPromptCard>
 
       <ReviewOptionGrid
         options={item.options}
@@ -725,12 +704,8 @@ function MistakeReview({
         </div>
       )}
 
-      {selected && (
-        <Button onClick={next} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
-          下一题 <RefreshCw className="w-4 h-4" />
-        </Button>
-      )}
-    </div>
+      <ReviewNextButton show={selected != null} onNext={next} />
+    </ReviewSessionFrame>
   )
 }
 
