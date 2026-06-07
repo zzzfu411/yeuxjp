@@ -9,10 +9,16 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("review runner delegates answer explanation surfaces to ReviewAnswerFeedback", () => {
-  const source = read("src/components/review/review-runner.tsx")
+function reviewSessionSources() {
+  return [
+    read("src/components/review/review-runner.tsx"),
+    read("src/components/review/mistake-review-session.tsx"),
+  ].join("\n")
+}
 
-  assert.match(source, /from "@\/components\/review\/review-answer-feedback"/)
+test("review sessions delegate answer explanation surfaces to ReviewAnswerFeedback", () => {
+  const source = reviewSessionSources()
+
   assert.equal(source.match(/<ReviewAnswerFeedback\b/g)?.length, 2)
   assert.doesNotMatch(source, /ParticleFillFeedback/)
   assert.doesNotMatch(source, /ConjugationComparison/)
