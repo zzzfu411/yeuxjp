@@ -42,6 +42,11 @@ const requiredSelectors = [
     pattern: /testId="quiz-mode-hiragana-romaji"/,
   },
   {
+    testId: "quiz-answer-option-0",
+    source: "src/components/quiz/quiz-option-grid.tsx",
+    pattern: /data-testid=\{`quiz-answer-option-\$\{index\}`\}/,
+  },
+  {
     testId: "review-start-today",
     source: "src/app/review/page.tsx",
     pattern: /data-testid="review-start-today"/,
@@ -77,4 +82,17 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   assert.match(e2e, /itemId === "a"/)
   assert.match(e2e, /item\.correct === true/)
   assert.match(e2e, /correct kana lesson answer should enroll SRS/)
+})
+
+test("browser E2E verifies wrong quiz answers enter the mistake notebook", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /getByTestId\("quiz-answer-option-0"\)/)
+  assert.match(e2e, /Math\.random = \(\) => 0/)
+  assert.match(e2e, /fixed quiz random source should ask kana a/)
+  assert.match(e2e, /yasashi\.mistakes\.v1/)
+  assert.match(e2e, /item\.id === "kana:a:hiragana-romaji"/)
+  assert.match(e2e, /item\.type === "hiragana-romaji"/)
+  assert.match(e2e, /item\.correctAnswer === "a"/)
+  assert.match(e2e, /wrong quiz answer should record kana a in mistakes/)
 })

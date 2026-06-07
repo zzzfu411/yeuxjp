@@ -144,9 +144,25 @@ try {
   assert.ok(await page.getByText("みせ").first().isVisible())
 
   await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+  await page.evaluate(() => {
+    Math.random = () => 0
+  })
   await page.getByTestId("quiz-mode-hiragana-romaji").click()
   await page.waitForSelector("button")
   assert.ok(await page.getByText(/得分:|寰楀垎:/).isVisible())
+  assert.ok(await page.getByText("あ").isVisible(), "fixed quiz random source should ask kana a")
+  await page.getByTestId("quiz-answer-option-0").click()
+  const mistakes = await readJsonStorage(page, "yasashi.mistakes.v1")
+  assert.ok(Array.isArray(mistakes), "wrong quiz answer should write mistake notebook")
+  assert.ok(
+    mistakes.some((item) =>
+      item.id === "kana:a:hiragana-romaji" &&
+      item.type === "hiragana-romaji" &&
+      item.correctAnswer === "a" &&
+      item.wrongCount >= 1
+    ),
+    "wrong quiz answer should record kana a in mistakes"
+  )
 
   await seedReviewState(page)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })

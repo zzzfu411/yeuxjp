@@ -22,7 +22,7 @@ export function QuizOptionGrid({
 }) {
   return (
     <div className="grid grid-cols-2 gap-4 w-full">
-      {question.options.map((option) => {
+      {question.options.map((option, index) => {
         const feedback = getAnswerOptionFeedback({
           selectedAnswer: selectedOption,
           optionValue: option.value,
@@ -37,6 +37,7 @@ export function QuizOptionGrid({
             className={cn("h-16 text-lg font-medium", getAnswerOptionClassName(feedback))}
             onClick={() => onSelect(option.value)}
             disabled={selectedOption != null}
+            data-testid={`quiz-answer-option-${index}`}
           >
             {option.display}
             {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
