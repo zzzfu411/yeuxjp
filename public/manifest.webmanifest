@@ -1,0 +1,24 @@
+{
+  "name": "Yasashi Japanese",
+  "short_name": "Yasashi",
+  "description": "A gentle Japanese learning app for kana, vocabulary, grammar, quiz, and review.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fdfbf7",
+  "theme_color": "#ffb7b2",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    }
+  ]
+}

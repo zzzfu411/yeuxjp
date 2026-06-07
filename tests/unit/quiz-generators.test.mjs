@@ -1,0 +1,76 @@
+import assert from "node:assert/strict"
+import test from "node:test"
+import { loadTsModule } from "./load-ts-module.mjs"
+
+const quiz = await loadTsModule("src/lib/quiz-generators.ts")
+
+const vocab = [
+  { id: "v1", kana: "みず", romaji: "mizu", meaning: "水", category: "food", level: "survival" },
+  { id: "v2", kana: "ちゃ", romaji: "cha", meaning: "茶", category: "food", level: "survival" },
+  { id: "v3", kana: "ごはん", romaji: "gohan", meaning: "饭", category: "food", level: "survival" },
+  { id: "v4", kana: "パン", romaji: "pan", meaning: "面包", category: "food", level: "survival" },
+]
+
+test("parseQuizMode accepts only known quiz modes", () => {
+  assert.equal(quiz.parseQuizMode("meaning-vocab"), "meaning-vocab")
+  assert.equal(quiz.parseQuizMode("unknown"), null)
+})
+
+test("kana quiz generators return shared Question objects", () => {
+  const base = quiz.getKanaPool("seion")
+  const question = quiz.generateQuizQuestion({
+    mode: "hiragana-romaji",
+    kanaBasePool: base,
+    kanaTargetPool: base,
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    allVocab: vocab,
+    random: () => 0,
+  })
+
+  assert.equal(question.itemType, "kana")
+  assert.equal(question.mode, "recognition")
+  assert.equal(question.correctAnswer, "a")
+})
+
+test("vocabulary quiz generators return meaning questions", () => {
+  const question = quiz.generateQuizQuestion({
+    mode: "meaning-vocab",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    allVocab: vocab,
+    random: () => 0,
+  })
+
+  assert.equal(question.itemType, "vocab")
+  assert.equal(question.mode, "meaning")
+  assert.equal(question.correctAnswer, "v1")
+})
+
+test("audio contrast and verb conjugation modes include explanations or audio", () => {
+  const audio = quiz.generateQuizQuestion({
+    mode: "audio-sokuon",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    allVocab: vocab,
+    random: () => 0,
+  })
+  const verb = quiz.generateQuizQuestion({
+    mode: "verb-conjugation",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    allVocab: vocab,
+    random: () => 0,
+  })
+
+  assert.equal(audio.itemType, "kana")
+  assert.ok(audio.questionAudio)
+  assert.equal(verb.itemType, "grammar")
+  assert.ok(verb.explanation)
+})

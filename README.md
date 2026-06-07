@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Yasashi Japanese
 
-## Getting Started
+Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana, vocabulary, grammar, semantic nuance, pragmatics, quizzes, a 14-day starter path, local progress tracking, SRS review, and a mistake notebook. Course practice, quiz practice, and review now share the same question/result rules so progress, SRS enrollment, and mistake recording stay consistent across pages.
 
-First, run the development server:
+## Project Layout
+
+- `web/` is the real Next.js app.
+- The repository root keeps convenience scripts that forward into `web/`.
+- Runtime and development dependencies belong in `web/package.json` and are locked by `web/package-lock.json`.
+- Learning data lives under `web/src/data/`; vocabulary has a single source of truth in `web/src/data/vocabulary/*`.
+
+## Install And Run
+
+From the repository root:
 
 ```bash
+npm ci --prefix web
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The dev server defaults to `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verification
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run validate:data  # data integrity, lesson refs, PWA files, legacy-source guard
+npm run lint           # ESLint + Next/TypeScript rules
+npm run test           # Node built-in unit tests
+npm run build          # production Next build
+npm run check          # validate:data + lint + test + build
+npm run e2e            # HTTP smoke test for key routes
+npm run e2e:browser    # optional real browser click-flow E2E when Playwright is available
+```
 
-## Learn More
+The current merge gate is `npm run check`. `npm run e2e` is the minimum E2E gate and only verifies HTTP route health. `npm run e2e:browser` exercises real interactions with Playwright, but it is intentionally separate because local browser binaries may not be installed in every environment.
 
-To learn more about Next.js, take a look at the following resources:
+Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale. Treat that as dependency maintenance, not a functional failure.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Implemented Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Kana charts for hiragana/katakana, seion, dakuon, handakuon, yoon, and sokuon.
+- AnimCJK stroke-order animation loaded from `web/public/animcjk/kana`.
+- Vocabulary cards grouped by level and category, with search, learned-state tracking, and TTS.
+- Grammar, semantics, and pragmatics reference pages.
+- Quiz modes for kana recognition, audio recognition, sokuon/long-vowel contrast, particles, verb conjugation, and vocabulary meaning.
+- Local SRS review for kana, vocabulary, and mistakes, with today queue priority of mistakes first and due-time sorting for kana/vocabulary.
+- A 14-day starter path with practice steps, step feedback, local progress, SRS enrollment for correct kana/vocab practice, and automatic mistake notebook capture for wrong answers.
+- Shared learning-session helpers in `web/src/lib/learning-session.ts` and shared question helpers in `web/src/lib/questions.ts`.
+- Learning backup/restore/reset helpers in `web/src/lib/learning-store.ts`; storage keys remain compatible with existing localStorage data.
+- Quiz and review routes use shared runner components plus pure question builders, so the route files stay focused on URL/session entry state.
+- AnimCJK rendering is split into parser/timeline helpers (`web/src/lib/animcjk.ts`) and a glyph-board component, keeping SVG parsing testable outside React.
+- Dynamic vocabulary loading helpers (`loadVocabularyLevel`, `loadVocabularyScope`) live in `web/src/data/vocabulary/loader.ts`; import that module when a route can avoid loading every level at once.
+- Basic PWA installability via `manifest.webmanifest` and a production service worker that caches only the static shell, images, scripts/styles, and AnimCJK SVGs. Learning state stays in `localStorage` and is not cached by the service worker.
+- A dedicated offline fallback page at `/offline.html` for navigation requests when the network is unavailable.
 
-## Deploy on Vercel
+## Extending Content
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Add vocabulary to `web/src/data/vocabulary/survival.ts`, `daily.ts`, or `fluent.ts`.
+- Add grammar to `web/src/data/grammar-data.ts`.
+- Add lesson steps to `web/src/data/lessons.ts` and run `npm run validate:data`.
+- Practice steps should include stable `itemId`, `itemType`, and `mode` fields so progress/SRS/mistake recording can identify the learned item.
+- Do not recreate `web/src/data/vocab-data.ts`, `kanaHira.json`, or `kanaKata.json`; validation fails if those legacy sources return.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Assets And Licenses
+
+AnimCJK SVG files are stored in `web/public/animcjk/`. Keep `web/public/animcjk/licenses/` when distributing the app.

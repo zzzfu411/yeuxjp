@@ -1,26 +1,163 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* 背景: 暖白 #FDFBF7 */
+    --background: 40 33% 98%;
+    /* 文本: 深灰 #2D3748 */
+    --foreground: 218 23% 23%;
+
+    /* 卡片背景: 纯白 */
+    --card: 0 0% 100%;
+    --card-foreground: 218 23% 23%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 23% 23%;
+
+    /* 主色: 樱花粉 #FFB7B2 */
+    --primary: 3 100% 85%;
+    --primary-foreground: 218 23% 23%;
+
+    /* 辅色/次要操作: 浅灰 */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* 强调/静音 */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* 抹茶绿 #88C999 (用于成功状态或强调) */
+    --accent: 136 39% 66%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* 破坏性操作 */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* 边框 */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 3 100% 85%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* 优化后的深色模式 - Zen Dark */
+    --background: 220 15% 14%; /* #1E2129 - 深炭色，比纯黑更护眼 */
+    --foreground: 220 10% 90%;
+
+    --card: 220 15% 18%; /* 稍亮的深灰 */
+    --card-foreground: 220 10% 90%;
+
+    --popover: 220 15% 18%;
+    --popover-foreground: 220 10% 90%;
+
+    /* 樱花粉在深色下降低亮度，提高饱和度以保持可见性 */
+    --primary: 3 70% 75%; 
+    --primary-foreground: 220 15% 14%;
+
+    --secondary: 220 15% 25%;
+    --secondary-foreground: 220 10% 90%;
+
+    --muted: 220 15% 25%;
+    --muted-foreground: 220 10% 60%;
+
+    /* 抹茶绿在深色下 */
+    --accent: 136 30% 55%;
+    --accent-foreground: 220 10% 90%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 25%;
+    --input: 220 15% 25%;
+    --ring: 3 70% 75%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* AnimCJK inline SVG overrides — base styles for the controlled stroke
+     animation. The active stroke advance is driven by [data-active-stroke="N"]
+     selectors generated per-glyph in KanaStrokeAnimCJK. */
+  .kana-glyph-svg svg.acjk {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  /* Ghost outline of the finished glyph (fills the underlying shape paths) */
+  .kana-glyph-svg svg.acjk path[id] {
+    fill: hsl(var(--muted-foreground));
+    opacity: 0.1;
+  }
+  /* Animated stroke base: starts hidden via dashoffset; transitions are driven
+     by --stroke-draw-ms when the wrapper's data-active-stroke advances. */
+  .kana-glyph-svg svg.acjk path[clip-path][data-stroke-index] {
+    fill: none;
+    stroke: hsl(var(--foreground));
+    stroke-width: 96;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: var(--stroke-len, 3333);
+    stroke-dashoffset: var(--stroke-off, 3335);
+    transition: stroke-dashoffset var(--stroke-draw-ms, 800ms) linear,
+      stroke 240ms ease;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+
+  /* Fade the left/right edges for horizontally scrollable rows */
+  .mask-fade {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 24px,
+      #000 calc(100% - 24px),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 24px,
+      #000 calc(100% - 24px),
+      transparent
+    );
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+  }
 }
