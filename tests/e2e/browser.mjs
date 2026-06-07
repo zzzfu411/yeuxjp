@@ -92,6 +92,13 @@ async function seedReviewState(page) {
   })
 }
 
+async function readJsonStorage(page, key) {
+  return page.evaluate((storageKey) => {
+    const raw = localStorage.getItem(storageKey)
+    return raw ? JSON.parse(raw) : null
+  }, key)
+}
+
 let browser = null
 let failure = null
 
@@ -107,6 +114,25 @@ try {
   await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-answer-a").click()
   assert.ok(await page.getByTestId("lesson-next").isEnabled())
+
+  const lessonPractice = await readJsonStorage(page, "yasashi.learning.practice.v1")
+  assert.ok(Array.isArray(lessonPractice), "lesson answer should write practice history")
+  assert.ok(
+    lessonPractice.some((item) =>
+      item.lessonId === "day-1-a-row-hello" &&
+      item.itemId === "a" &&
+      item.itemType === "kana" &&
+      item.mode === "recognition" &&
+      item.correct === true
+    ),
+    "lesson answer should record the kana recognition result"
+  )
+  const itemProgress = await readJsonStorage(page, "yasashi.learning.items.v1")
+  assert.equal(itemProgress?.a?.itemType, "kana", "lesson answer should update item progress")
+  assert.equal(itemProgress?.a?.attempts, 1, "lesson answer should increment item attempts")
+  assert.equal(itemProgress?.a?.correct, 1, "lesson answer should increment correct count")
+  const kanaSrs = await readJsonStorage(page, "yasashi.srs.kana.v1")
+  assert.ok(kanaSrs?.a?.dueAt, "correct kana lesson answer should enroll SRS")
 
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").click()

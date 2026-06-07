@@ -65,3 +65,16 @@ test("browser E2E test ids remain present in source files", () => {
     assert.match(source, item.pattern, `${item.testId} should be declared in ${item.source}`)
   }
 })
+
+test("browser E2E verifies lesson progress writes after a real answer", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /readJsonStorage/)
+  assert.match(e2e, /yasashi\.learning\.practice\.v1/)
+  assert.match(e2e, /yasashi\.learning\.items\.v1/)
+  assert.match(e2e, /yasashi\.srs\.kana\.v1/)
+  assert.match(e2e, /lessonId === "day-1-a-row-hello"/)
+  assert.match(e2e, /itemId === "a"/)
+  assert.match(e2e, /item\.correct === true/)
+  assert.match(e2e, /correct kana lesson answer should enroll SRS/)
+})
