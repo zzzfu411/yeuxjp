@@ -9,13 +9,13 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("review runner delegates status UI and vocabulary loading to shared modules", () => {
+test("review runner delegates status UI and vocabulary loading to sessions and shared modules", () => {
   const source = read("src/components/review/review-runner.tsx")
 
-  assert.match(source, /from "@\/components\/review\/review-status"/)
-  assert.match(source, /from "@\/components\/review\/review-vocabulary"/)
   assert.doesNotMatch(source, /function ReviewDone/)
   assert.doesNotMatch(source, /function useAllVocabulary/)
+  assert.doesNotMatch(source, /ReviewLoadingState/)
+  assert.doesNotMatch(source, /useAllVocabulary/)
   assert.doesNotMatch(source, /loadVocabularyScope/)
   assert.doesNotMatch(source, /state-complete\.webp/)
 })
