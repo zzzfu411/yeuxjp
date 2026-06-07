@@ -10,12 +10,11 @@ import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/compon
 import { ReviewDone, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useAllVocabulary } from "@/components/review/review-vocabulary"
+import { useReviewAudio } from "@/components/review/use-review-audio"
 import { kanaData } from "@/data/kana-data"
 import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-notebook"
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
-import { speakJapaneseRepeated } from "@/lib/speech"
-import { useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
 import { useLearningProgress } from "@/lib/learning-progress"
 import type { Question, QuestionResult } from "@/lib/questions"
@@ -58,7 +57,6 @@ function TodayReview({
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
 }) {
-  const speech = useSpeechPreferences()
   const kanaSrs = useSrsDeck(KANA_SRS_STORAGE_KEY)
   const vocabSrs = useSrsDeck(VOCAB_SRS_STORAGE_KEY)
   const mistakeSrs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
@@ -110,19 +108,11 @@ function TodayReview({
     }
   }, [current, notebook.byId, vocabulary.data])
 
-  const playAudio = useCallback((text: string) => {
-    const repeat = speech?.prefs.repeat ?? 1
-    const gapMs = speech?.prefs.gapMs ?? 250
-    speakJapaneseRepeated(text, { repeat, gapMs })
-  }, [speech?.prefs.gapMs, speech?.prefs.repeat])
-
-  useEffect(() => {
-    if (!data?.audio) return
-    const autoPlay = speech?.prefs.autoPlay ?? true
-    if (!autoPlay) return
-    const timer = setTimeout(() => playAudio(data.audio!), 350)
-    return () => clearTimeout(timer)
-  }, [data?.audio, playAudio, speech?.prefs.autoPlay])
+  const { playAudio } = useReviewAudio({
+    autoPlayText: data?.audio,
+    autoPlayKey: current?.id,
+    autoPlayDelayMs: 350,
+  })
 
   const recordAnswerSelection = useReviewAnswerRecorder({
     progress: learning,
@@ -214,7 +204,6 @@ function KanaReview({
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
 }) {
-  const speech = useSpeechPreferences()
   const srs = useSrsDeck(KANA_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
   const [question, setQuestion] = useState<Question | null>(null)
@@ -242,19 +231,10 @@ function KanaReview({
     }
   }, [item])
 
-  const playAudio = useCallback((text: string) => {
-    const repeat = speech?.prefs.repeat ?? 1
-    const gapMs = speech?.prefs.gapMs ?? 250
-    speakJapaneseRepeated(text, { repeat, gapMs })
-  }, [speech?.prefs.gapMs, speech?.prefs.repeat])
-
-  useEffect(() => {
-    if (!item) return
-    const autoPlay = speech?.prefs.autoPlay ?? true
-    if (!autoPlay) return
-    const timer = setTimeout(() => playAudio(item.hiragana), 400)
-    return () => clearTimeout(timer)
-  }, [item, playAudio, speech?.prefs.autoPlay])
+  const { playAudio } = useReviewAudio({
+    autoPlayText: item?.hiragana,
+    autoPlayKey: item?.romaji,
+  })
 
   const recordAnswerSelection = useReviewAnswerRecorder({
     progress: learning,
@@ -333,7 +313,6 @@ function VocabReview({
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
 }) {
-  const speech = useSpeechPreferences()
   const srs = useSrsDeck(VOCAB_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
   const vocabulary = useAllVocabulary(ids.length > 0)
@@ -362,19 +341,10 @@ function VocabReview({
     }
   }, [item, vocabulary.data])
 
-  const playAudio = useCallback((text: string) => {
-    const repeat = speech?.prefs.repeat ?? 1
-    const gapMs = speech?.prefs.gapMs ?? 250
-    speakJapaneseRepeated(text, { repeat, gapMs })
-  }, [speech?.prefs.gapMs, speech?.prefs.repeat])
-
-  useEffect(() => {
-    if (!item) return
-    const autoPlay = speech?.prefs.autoPlay ?? true
-    if (!autoPlay) return
-    const timer = setTimeout(() => playAudio(item.kana), 400)
-    return () => clearTimeout(timer)
-  }, [item, playAudio, speech?.prefs.autoPlay])
+  const { playAudio } = useReviewAudio({
+    autoPlayText: item?.kana,
+    autoPlayKey: item?.id,
+  })
 
   const recordAnswerSelection = useReviewAnswerRecorder({
     progress: learning,
@@ -462,7 +432,6 @@ function MistakeReview({
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
 }) {
-  const speech = useSpeechPreferences()
   const srs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
 
@@ -473,19 +442,10 @@ function MistakeReview({
   const currentId = review.currentItem
   const item = currentId ? notebook.byId.get(currentId) ?? null : null
 
-  const playAudio = useCallback((text: string) => {
-    const repeat = speech?.prefs.repeat ?? 1
-    const gapMs = speech?.prefs.gapMs ?? 250
-    speakJapaneseRepeated(text, { repeat, gapMs })
-  }, [speech?.prefs.gapMs, speech?.prefs.repeat])
-
-  useEffect(() => {
-    if (!item?.questionAudio) return
-    const autoPlay = speech?.prefs.autoPlay ?? true
-    if (!autoPlay) return
-    const timer = setTimeout(() => playAudio(item.questionAudio!), 400)
-    return () => clearTimeout(timer)
-  }, [currentId, item?.questionAudio, playAudio, speech?.prefs.autoPlay])
+  const { playAudio } = useReviewAudio({
+    autoPlayText: item?.questionAudio,
+    autoPlayKey: currentId,
+  })
 
   const recordAnswerSelection = useReviewAnswerRecorder({
     progress: learning,
