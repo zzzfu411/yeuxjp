@@ -9,11 +9,10 @@ import { Input } from "@/components/ui/input"
 import { STARTER_LESSONS, getLessonById, isPracticeStep, type LessonStep } from "@/data/lessons"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
-import { recordQuestionPractice } from "@/lib/learning-session"
-import { countPracticeSteps, calculateLessonCompletionScore, lessonStepToQuestion } from "@/lib/lesson-session"
-import { makeQuestionResult } from "@/lib/questions"
+import { countPracticeSteps, calculateLessonCompletionScore } from "@/lib/lesson-session"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { cn } from "@/lib/utils"
+import { useLessonAnswerRecorder } from "@/components/lesson/use-lesson-answer-recorder"
 
 export default function LessonPage() {
   const params = useParams<{ lessonId: string }>()
@@ -46,6 +45,13 @@ export default function LessonPage() {
     setResult(null)
   }, [])
 
+  const recordAnswer = useLessonAnswerRecorder({
+    lessonId: lesson?.id ?? params.lessonId,
+    progress,
+    notebook: mistakes,
+    setAnswered,
+  })
+
   if (!lesson || !current) return notFound()
 
   const lessonPosition = STARTER_LESSONS.findIndex((item) => item.id === lesson.id) + 1
@@ -53,21 +59,6 @@ export default function LessonPage() {
   const stepProgress = ((stepIndex + 1) / lesson.steps.length) * 100
 
   const playAudio = (text: string) => speakJapaneseRepeated(text, { repeat: 1, gapMs: 200 })
-
-  const record = (step: LessonStep, answer: string) => {
-    if (!isPracticeStep(step)) return
-    const question = lessonStepToQuestion(step)
-    const questionResult = makeQuestionResult(question, answer)
-
-    recordQuestionPractice({
-      progress,
-      notebook: mistakes,
-      result: questionResult,
-      lessonId: lesson.id,
-    })
-    setAnswered((prev) => ({ ...prev, [step.id]: questionResult.correct }))
-    return questionResult.correct
-  }
 
   const goNext = () => {
     if (isLast) {
@@ -85,21 +76,21 @@ export default function LessonPage() {
 
   const submitChoice = (answer: string) => {
     if (current.type !== "multipleChoice" || result) return
-    const ok = record(current, answer) ?? false
+    const ok = recordAnswer(current, answer)?.correct ?? false
     setSelected(answer)
     setResult(ok ? "correct" : "wrong")
   }
 
   const submitTyping = () => {
     if ((current.type !== "typing" && current.type !== "dictation") || result) return
-    const ok = record(current, typed) ?? false
+    const ok = recordAnswer(current, typed)?.correct ?? false
     setResult(ok ? "correct" : "wrong")
   }
 
   const submitSentence = () => {
     if (current.type !== "sentenceBuild" || result) return
     const answer = built.join("")
-    const ok = record(current, answer) ?? false
+    const ok = recordAnswer(current, answer)?.correct ?? false
     setResult(ok ? "correct" : "wrong")
   }
 
