@@ -12,6 +12,7 @@ import { countPracticeSteps, calculateLessonCompletionScore, resolveLessonResume
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
+import { LessonProgressSidebar } from "@/components/lesson/lesson-progress-sidebar"
 import { useLessonAnswerRecorder } from "@/components/lesson/use-lesson-answer-recorder"
 
 export default function LessonPage() {
@@ -126,38 +127,16 @@ export default function LessonPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="rounded-2xl border bg-card/80 p-5 shadow-sm lg:sticky lg:top-24 lg:self-start">
-            <div className="space-y-3">
-              <div className="text-xs font-semibold tracking-wider text-muted-foreground">当前课程</div>
-              <div>
-                <h1 className="text-xl font-bold leading-tight">{lesson.title}</h1>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{lesson.subtitle}</p>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${stepProgress}%` }} />
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="rounded-xl border bg-background/70 p-3">
-                  <div className="text-xs text-muted-foreground">步骤</div>
-                  <div className="font-semibold">{stepIndex + 1}/{lesson.steps.length}</div>
-                </div>
-                <div className="rounded-xl border bg-background/70 p-3">
-                  <div className="text-xs text-muted-foreground">练习正确</div>
-                  <div className="font-semibold">{correctCount}/{practiceSteps}</div>
-                </div>
-              </div>
-              {savedLessonProgress?.status === "started" && (
-                <div className="rounded-xl border bg-primary/10 p-3 text-sm leading-relaxed">
-                  已开始本课。系统会保留本课练习记录；继续完成后会更新课程分数。
-                </div>
-              )}
-              {savedLessonProgress?.status === "completed" && (
-                <div className="rounded-xl border bg-green-50 p-3 text-sm leading-relaxed text-green-800 dark:bg-green-900/20 dark:text-green-200">
-                  已完成本课，上次分数 {savedLessonProgress.score ?? completionScore}。
-                </div>
-              )}
-            </div>
-          </aside>
+          <LessonProgressSidebar
+            lesson={lesson}
+            lessonPosition={lessonPosition}
+            stepIndex={stepIndex}
+            stepProgress={stepProgress}
+            correctCount={correctCount}
+            practiceSteps={practiceSteps}
+            completionScore={completionScore}
+            savedProgress={savedLessonProgress}
+          />
 
           <main className="rounded-3xl border bg-card p-5 shadow-sm sm:p-7">
             <div className="mb-5 flex items-start justify-between gap-4">
