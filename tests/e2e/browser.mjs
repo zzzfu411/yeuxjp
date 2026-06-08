@@ -1,11 +1,11 @@
 import { spawn, spawnSync } from "node:child_process"
 import assert from "node:assert/strict"
 import { fileURLToPath } from "node:url"
+import { canServeRoutes, waitForServer } from "./app-health.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
 const browserE2ERequired = process.argv.includes("--required") || process.env.E2E_BROWSER_REQUIRED === "1"
-const healthRoutes = ["/", "/kana", "/vocabulary", "/quiz", "/review", "/path"]
 
 function isMissingPlaywright(error) {
   const message = error instanceof Error ? error.message : String(error)
@@ -24,46 +24,6 @@ async function importPlaywright() {
     console.error(error instanceof Error ? error.message : String(error))
     process.exit(2)
   }
-}
-
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-async function canReach(url) {
-  try {
-    const response = await fetch(url)
-    return response.ok
-  } catch {
-    return false
-  }
-}
-
-async function routeLooksHealthy(url, route) {
-  try {
-    const response = await fetch(`${url}${route}`)
-    if (response.status !== 200) return false
-    const html = await response.text()
-    return /Yasashi|__next/.test(html)
-  } catch {
-    return false
-  }
-}
-
-async function canServeRoutes(url) {
-  for (const route of healthRoutes) {
-    if (!(await routeLooksHealthy(url, route))) return false
-  }
-  return true
-}
-
-async function waitForServer(url) {
-  const deadline = Date.now() + 60_000
-  while (Date.now() < deadline) {
-    if (await canReach(url)) return
-    await wait(500)
-  }
-  throw new Error(`Timed out waiting for ${url}`)
 }
 
 const appDir = fileURLToPath(new URL("../..", import.meta.url))

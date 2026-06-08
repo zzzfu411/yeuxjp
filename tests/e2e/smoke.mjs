@@ -1,50 +1,16 @@
 import { spawn, spawnSync } from "node:child_process"
 import assert from "node:assert/strict"
 import { fileURLToPath } from "node:url"
+import {
+  appHealthRoutes,
+  canServeRoutes,
+  pageLooksLikeYasashi,
+  waitForServer,
+} from "./app-health.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
-const routes = ["/", "/kana", "/vocabulary", "/quiz", "/review", "/path"]
-
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-async function canReach(url) {
-  try {
-    const response = await fetch(url)
-    return response.ok
-  } catch {
-    return false
-  }
-}
-
-async function routeLooksHealthy(url, route) {
-  try {
-    const response = await fetch(`${url}${route}`)
-    if (response.status !== 200) return false
-    const html = await response.text()
-    return /Yasashi|__next/.test(html)
-  } catch {
-    return false
-  }
-}
-
-async function canServeRoutes(url) {
-  for (const route of routes) {
-    if (!(await routeLooksHealthy(url, route))) return false
-  }
-  return true
-}
-
-async function waitForServer(url) {
-  const deadline = Date.now() + 60_000
-  while (Date.now() < deadline) {
-    if (await canReach(url)) return
-    await wait(500)
-  }
-  throw new Error(`Timed out waiting for ${url}`)
-}
+const routes = appHealthRoutes
 
 const appDir = fileURLToPath(new URL("../..", import.meta.url))
 
@@ -115,7 +81,7 @@ try {
     const response = await fetch(`${baseUrl}${route}`)
     assert.equal(response.status, 200, `${route} should return 200`)
     const html = await response.text()
-    assert.match(html, /Yasashi|__next/, `${route} should return a Next.js page`)
+    assert.equal(pageLooksLikeYasashi(html), true, `${route} should return a Next.js page`)
   }
 
   console.log(`HTTP smoke checks passed for ${routes.length} routes at ${baseUrl}`)
