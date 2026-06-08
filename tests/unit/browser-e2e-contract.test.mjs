@@ -48,7 +48,7 @@ const requiredSelectors = [
   },
   {
     testId: "review-start-today",
-    source: "src/components/review/review-dashboard.tsx",
+    source: "src/components/review/review-banners.tsx",
     pattern: /data-testid="review-start-today"/,
   },
   {
