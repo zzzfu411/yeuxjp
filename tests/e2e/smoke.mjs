@@ -19,6 +19,24 @@ async function canReach(url) {
   }
 }
 
+async function routeLooksHealthy(url, route) {
+  try {
+    const response = await fetch(`${url}${route}`)
+    if (response.status !== 200) return false
+    const html = await response.text()
+    return /Yasashi|__next/.test(html)
+  } catch {
+    return false
+  }
+}
+
+async function canServeRoutes(url) {
+  for (const route of routes) {
+    if (!(await routeLooksHealthy(url, route))) return false
+  }
+  return true
+}
+
 async function waitForServer(url) {
   const deadline = Date.now() + 60_000
   while (Date.now() < deadline) {
@@ -56,7 +74,7 @@ try {
   let reusedExistingServer = false
 
   for (const candidate of uniqueCandidates) {
-    if (await canReach(candidate)) {
+    if (await canServeRoutes(candidate)) {
       baseUrl = candidate
       reusedExistingServer = true
       break

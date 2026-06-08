@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url"
 const port = Number(process.env.E2E_PORT ?? 3210)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
 const browserE2ERequired = process.argv.includes("--required") || process.env.E2E_BROWSER_REQUIRED === "1"
+const healthRoutes = ["/", "/kana", "/vocabulary", "/quiz", "/review", "/path"]
 
 function isMissingPlaywright(error) {
   const message = error instanceof Error ? error.message : String(error)
@@ -38,6 +39,24 @@ async function canReach(url) {
   }
 }
 
+async function routeLooksHealthy(url, route) {
+  try {
+    const response = await fetch(`${url}${route}`)
+    if (response.status !== 200) return false
+    const html = await response.text()
+    return /Yasashi|__next/.test(html)
+  } catch {
+    return false
+  }
+}
+
+async function canServeRoutes(url) {
+  for (const route of healthRoutes) {
+    if (!(await routeLooksHealthy(url, route))) return false
+  }
+  return true
+}
+
 async function waitForServer(url) {
   const deadline = Date.now() + 60_000
   while (Date.now() < deadline) {
@@ -68,7 +87,7 @@ async function ensureServer() {
   ].filter(Boolean)
 
   for (const candidate of Array.from(new Set(candidates))) {
-    if (await canReach(candidate)) {
+    if (await canServeRoutes(candidate)) {
       baseUrl = candidate
       return
     }

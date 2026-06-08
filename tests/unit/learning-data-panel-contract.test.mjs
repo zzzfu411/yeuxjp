@@ -10,10 +10,10 @@ function read(relPath) {
 }
 
 test("review page exposes local learning data management through the shared store facade", () => {
-  const reviewPage = read("src/app/review/page.tsx")
+  const dashboard = read("src/components/review/review-dashboard.tsx")
   const panel = read("src/components/review/learning-data-panel.tsx")
 
-  assert.match(reviewPage, /<LearningDataPanel \/>/)
+  assert.match(dashboard, /<LearningDataPanel \/>/)
   assert.match(panel, /createLearningBackup/)
   assert.match(panel, /parseLearningBackup/)
   assert.match(panel, /restoreLearningBackup/)
