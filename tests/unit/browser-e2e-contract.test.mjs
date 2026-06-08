@@ -38,8 +38,8 @@ const requiredSelectors = [
   },
   {
     testId: "quiz-mode-hiragana-romaji",
-    source: "src/app/quiz/page.tsx",
-    pattern: /testId="quiz-mode-hiragana-romaji"/,
+    source: "src/lib/quiz-mode-options.ts",
+    pattern: /testId: "quiz-mode-hiragana-romaji"/,
   },
   {
     testId: "quiz-answer-option-0",
