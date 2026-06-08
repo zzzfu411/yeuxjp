@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { LEARNING_EVENT, readLearningJson, writeLearningJson } from "@/lib/learning-storage"
 import {
   clampScore,
   createItemProgress,
@@ -19,8 +20,6 @@ import {
 } from "@/lib/learning-progress-model"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
-const LEARNING_EVENT = "yasashi:learning:update"
-
 export {
   averageMastery,
   type ItemProgress,
@@ -34,36 +33,8 @@ export {
   type UserProfile,
 } from "@/lib/learning-progress-model"
 
-function readJson<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback
-  try {
-    const raw = window.localStorage.getItem(key)
-    if (!raw) return fallback
-    return JSON.parse(raw) as T
-  } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[learning-progress] Failed to read ${key}:`, e)
-    }
-    return fallback
-  }
-}
-
-function writeJson<T>(key: string, value: T) {
-  if (typeof window === "undefined") return false
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value))
-    window.dispatchEvent(new CustomEvent(LEARNING_EVENT, { detail: { key } }))
-    return true
-  } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[learning-progress] Failed to write ${key}:`, e)
-    }
-    return false
-  }
-}
-
 function readLessonProgressMap() {
-  return normalizeLessonProgressMap(readJson(STORAGE_KEYS.LESSON_PROGRESS, {}))
+  return normalizeLessonProgressMap(readLearningJson(STORAGE_KEYS.LESSON_PROGRESS, {}))
 }
 
 function mergeLessonProgressState(prev: LessonProgressMap) {
@@ -76,19 +47,19 @@ export function useLearningProfile() {
   useEffect(() => {
     let cancelled = false
     Promise.resolve().then(() => {
-      if (!cancelled) setProfileState(normalizeProfile(readJson(STORAGE_KEYS.USER_PROFILE, null)))
+      if (!cancelled) setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
     })
 
     const sync = (event: Event) => {
       const detail = (event as CustomEvent).detail as { key?: string } | undefined
       if (detail?.key !== STORAGE_KEYS.USER_PROFILE) return
-      setProfileState(normalizeProfile(readJson(STORAGE_KEYS.USER_PROFILE, null)))
+      setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
     }
 
     const syncStore = (event: Event) => {
       const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
       if (!detail?.keys?.includes(STORAGE_KEYS.USER_PROFILE)) return
-      setProfileState(normalizeProfile(readJson(STORAGE_KEYS.USER_PROFILE, null)))
+      setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
     }
 
     window.addEventListener(LEARNING_EVENT, sync)
@@ -107,7 +78,7 @@ export function useLearningProfile() {
       createdAt: profile?.createdAt ?? now,
       updatedAt: now,
     }
-    if (writeJson(STORAGE_KEYS.USER_PROFILE, next)) setProfileState(next)
+    if (writeLearningJson(STORAGE_KEYS.USER_PROFILE, next)) setProfileState(next)
   }, [profile?.createdAt])
 
   return { profile, saveProfile }
@@ -120,9 +91,9 @@ export function useLearningProgress() {
   const [loaded, setLoaded] = useState(false)
 
   const load = useCallback(() => {
-    setLessons(normalizeLessonProgressMap(readJson(STORAGE_KEYS.LESSON_PROGRESS, {})))
-    setItems(normalizeItemProgressMap(readJson(STORAGE_KEYS.ITEM_PROGRESS, {})))
-    setResults(normalizePracticeResults(readJson(STORAGE_KEYS.PRACTICE_RESULTS, [])))
+    setLessons(normalizeLessonProgressMap(readLearningJson(STORAGE_KEYS.LESSON_PROGRESS, {})))
+    setItems(normalizeItemProgressMap(readLearningJson(STORAGE_KEYS.ITEM_PROGRESS, {})))
+    setResults(normalizePracticeResults(readLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, [])))
     setLoaded(true)
   }, [])
 
@@ -170,7 +141,7 @@ export function useLearningProgress() {
       if (base[lessonId]) return base
       const now = Date.now()
       const next = { ...base, [lessonId]: { lessonId, status: "started" as const, startedAt: now, updatedAt: now } }
-      writeJson(STORAGE_KEYS.LESSON_PROGRESS, next)
+      writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)
       return next
     })
   }, [])
@@ -193,7 +164,7 @@ export function useLearningProgress() {
           updatedAt: now,
         },
       }
-      writeJson(STORAGE_KEYS.LESSON_PROGRESS, next)
+      writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)
       return next
     })
   }, [])
@@ -216,7 +187,7 @@ export function useLearningProgress() {
           updatedAt: now,
         },
       }
-      writeJson(STORAGE_KEYS.LESSON_PROGRESS, next)
+      writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)
       return next
     })
   }, [])
@@ -227,7 +198,7 @@ export function useLearningProgress() {
 
     setResults((prev) => {
       const next = [...prev, nextResult].slice(-300)
-      writeJson(STORAGE_KEYS.PRACTICE_RESULTS, next)
+      writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, next)
       return next
     })
 
@@ -246,7 +217,7 @@ export function useLearningProgress() {
           updatedAt: createdAt,
         },
       }
-      writeJson(STORAGE_KEYS.ITEM_PROGRESS, next)
+      writeLearningJson(STORAGE_KEYS.ITEM_PROGRESS, next)
       return next
     })
   }, [])
