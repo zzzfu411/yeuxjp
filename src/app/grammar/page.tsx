@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, Suspense } from "react"
+import { useState, useEffect, useMemo, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { grammarData, Level } from "@/data/grammar-data"
 import { cn } from "@/lib/utils"
@@ -12,6 +12,7 @@ import { SpeakButton } from "@/components/ui/speak-button"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
+import { useIndexedModalNavigation } from "@/lib/use-indexed-modal-navigation"
 
 const levels: Level[] = ["N5", "N4", "N3", "N2", "N1", "Anime"]
 
@@ -19,7 +20,6 @@ function GrammarPageContent() {
   const searchParams = useSearchParams()
   const [activeLevel, setActiveLevel] = useState<Level>("N5")
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
   const urlLevel = searchParams.get("level")
   useEffect(() => {
@@ -30,7 +30,6 @@ function GrammarPageContent() {
       if (!urlLevel) return
       if ((levels as readonly string[]).includes(urlLevel)) {
         setActiveLevel(urlLevel as Level)
-        setSelectedIndex(null)
       }
     })
 
@@ -48,32 +47,22 @@ function GrammarPageContent() {
       p.examples.some(e => e.meaning.toLowerCase().includes(searchQuery.toLowerCase()) || e.japanese.includes(searchQuery))
     )
   }, [activeLevel, searchQuery])
+
+  const {
+    selectedIndex,
+    selectedPosition,
+    isOpen,
+    openAt,
+    close,
+    goNext,
+    goPrev,
+  } = useIndexedModalNavigation(currentPoints.length)
   
   const selectedPoint = selectedIndex !== null ? currentPoints[selectedIndex] : null
 
-  // Navigation Logic
-  const handleNext = useCallback(() => {
-    if (selectedIndex === null) return
-    setSelectedIndex((prev) => (prev! + 1) % currentPoints.length)
-  }, [selectedIndex, currentPoints.length])
-
-  const handlePrev = useCallback(() => {
-    if (selectedIndex === null) return
-    setSelectedIndex((prev) => (prev! - 1 + currentPoints.length) % currentPoints.length)
-  }, [selectedIndex, currentPoints.length])
-
-  // Keyboard Support
   useEffect(() => {
-    if (selectedIndex === null) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") handleNext()
-      if (e.key === "ArrowLeft") handlePrev()
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [selectedIndex, handleNext, handlePrev])
+    close()
+  }, [activeLevel, close, searchQuery])
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-8 max-w-4xl mb-20">
@@ -113,7 +102,7 @@ function GrammarPageContent() {
           <Button
             key={level}
             variant={activeLevel === level ? "default" : "ghost"}
-            onClick={() => { setActiveLevel(level); setSelectedIndex(null); }}
+            onClick={() => setActiveLevel(level)}
             className={cn(
               "rounded-md min-w-[60px]",
               activeLevel === level && "shadow-sm"
@@ -129,7 +118,7 @@ function GrammarPageContent() {
         {currentPoints.map((point, index) => (
           <div 
             key={point.id} 
-            onClick={() => setSelectedIndex(index)}
+            onClick={() => openAt(index)}
             className="group cursor-pointer flex flex-col bg-card border rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-primary/50 relative"
           >
             {/* Decoration */}
@@ -179,7 +168,7 @@ function GrammarPageContent() {
       <NextStepCard />
 
       {/* Focus Modal */}
-      <Modal isOpen={selectedIndex !== null} onClose={() => setSelectedIndex(null)} className="max-w-3xl h-[85vh] flex flex-col p-0 overflow-hidden">
+      <Modal isOpen={isOpen} onClose={close} className="max-w-3xl h-[85vh] flex flex-col p-0 overflow-hidden">
         {selectedPoint && (
           <>
             {/* Modal Content - Scrollable */}
@@ -187,7 +176,7 @@ function GrammarPageContent() {
               <div className="space-y-4 text-center pb-6 border-b">
                 <div className="flex items-center justify-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                   <BookOpen className="w-4 h-4" />
-                  {selectedPoint.level} Grammar No.{selectedIndex! + 1}
+                  {selectedPoint.level} Grammar No.{selectedPosition}
                 </div>
                 <h2 className="text-4xl font-bold tracking-tight">{selectedPoint.title}</h2>
                 <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">{selectedPoint.explanation}</p>
@@ -224,13 +213,13 @@ function GrammarPageContent() {
 
             {/* Navigation Footer - Fixed */}
             <div className="p-4 border-t bg-muted/20 flex justify-between items-center shrink-0">
-              <Button variant="ghost" onClick={handlePrev} className="gap-2 pl-2">
+              <Button variant="ghost" onClick={goPrev} className="gap-2 pl-2">
                 <ChevronLeft className="w-5 h-5" /> Previous
               </Button>
               <div className="text-sm text-muted-foreground font-mono">
-                {selectedIndex! + 1} / {currentPoints.length}
+                {selectedPosition} / {currentPoints.length}
               </div>
-              <Button variant="ghost" onClick={handleNext} className="gap-2 pr-2">
+              <Button variant="ghost" onClick={goNext} className="gap-2 pr-2">
                 Next <ChevronRight className="w-5 h-5" />
               </Button>
             </div>

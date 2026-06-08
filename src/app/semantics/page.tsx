@@ -1,36 +1,23 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
 import { semanticsData } from "@/data/semantics-data"
 import { ArrowRightLeft, BrainCircuit, Lightbulb, ChevronLeft, ChevronRight } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
 import { SpeakButton } from "@/components/ui/speak-button"
+import { useIndexedModalNavigation } from "@/lib/use-indexed-modal-navigation"
 
 export default function SemanticsPage() {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const {
+    selectedIndex,
+    selectedPosition,
+    isOpen,
+    openAt,
+    close,
+    goNext,
+    goPrev,
+  } = useIndexedModalNavigation(semanticsData.length)
   const selectedPoint = selectedIndex !== null ? semanticsData[selectedIndex] : null
-
-  // Nav Logic
-  const handleNext = useCallback(() => {
-    if (selectedIndex === null) return
-    setSelectedIndex((prev) => (prev! + 1) % semanticsData.length)
-  }, [selectedIndex])
-
-  const handlePrev = useCallback(() => {
-    if (selectedIndex === null) return
-    setSelectedIndex((prev) => (prev! - 1 + semanticsData.length) % semanticsData.length)
-  }, [selectedIndex])
-
-  useEffect(() => {
-    if (selectedIndex === null) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") handleNext()
-      if (e.key === "ArrowLeft") handlePrev()
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [selectedIndex, handleNext, handlePrev])
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-12 max-w-4xl mb-20">
@@ -49,7 +36,7 @@ export default function SemanticsPage() {
         {semanticsData.map((point, index) => (
           <div 
             key={point.id} 
-            onClick={() => setSelectedIndex(index)}
+            onClick={() => openAt(index)}
             className="group relative bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden cursor-pointer"
           >
             {/* Header */}
@@ -96,7 +83,7 @@ export default function SemanticsPage() {
       </div>
 
       {/* Focus Modal */}
-      <Modal isOpen={selectedIndex !== null} onClose={() => setSelectedIndex(null)} className="max-w-3xl h-[85vh] flex flex-col p-0">
+      <Modal isOpen={isOpen} onClose={close} className="max-w-3xl h-[85vh] flex flex-col p-0">
         {selectedPoint && (
           <>
             <div className="flex-1 overflow-y-auto p-8 space-y-8">
@@ -168,13 +155,13 @@ export default function SemanticsPage() {
 
             {/* Footer */}
             <div className="p-4 border-t bg-muted/20 flex justify-between items-center shrink-0">
-              <Button variant="ghost" onClick={handlePrev} className="gap-2 pl-2">
+              <Button variant="ghost" onClick={goPrev} className="gap-2 pl-2">
                 <ChevronLeft className="w-5 h-5" /> Prev
               </Button>
               <div className="text-sm text-muted-foreground font-mono">
-                {selectedIndex! + 1} / {semanticsData.length}
+                {selectedPosition} / {semanticsData.length}
               </div>
-              <Button variant="ghost" onClick={handleNext} className="gap-2 pr-2">
+              <Button variant="ghost" onClick={goNext} className="gap-2 pr-2">
                 Next <ChevronRight className="w-5 h-5" />
               </Button>
             </div>

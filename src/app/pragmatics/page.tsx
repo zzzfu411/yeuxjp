@@ -1,36 +1,24 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
 import { pragmaticsData, PragmaticScenario } from "@/data/pragmatics-data"
 import { cn } from "@/lib/utils"
 import { MessageCircle, Users, XCircle, CheckCircle2, Crown, ChevronLeft, ChevronRight } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
 import { SpeakButton } from "@/components/ui/speak-button"
+import { useIndexedModalNavigation } from "@/lib/use-indexed-modal-navigation"
 
 export default function PragmaticsPage() {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const {
+    selectedIndex,
+    selectedPosition,
+    isOpen,
+    openAt,
+    close,
+    goNext,
+    goPrev,
+  } = useIndexedModalNavigation(pragmaticsData.length)
   const selectedScenario = selectedIndex !== null ? pragmaticsData[selectedIndex] : null
-
-  const handleNext = useCallback(() => {
-    if (selectedIndex === null) return
-    setSelectedIndex((prev) => (prev! + 1) % pragmaticsData.length)
-  }, [selectedIndex])
-
-  const handlePrev = useCallback(() => {
-    if (selectedIndex === null) return
-    setSelectedIndex((prev) => (prev! - 1 + pragmaticsData.length) % pragmaticsData.length)
-  }, [selectedIndex])
-
-  useEffect(() => {
-    if (selectedIndex === null) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") handleNext()
-      if (e.key === "ArrowLeft") handlePrev()
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [selectedIndex, handleNext, handlePrev])
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-12 max-w-4xl mb-20">
@@ -49,7 +37,7 @@ export default function PragmaticsPage() {
         {pragmaticsData.map((scenario, index) => (
           <div 
             key={scenario.id} 
-            onClick={() => setSelectedIndex(index)}
+            onClick={() => openAt(index)}
             className="cursor-pointer border-l-4 border-primary/50 pl-6 py-4 space-y-4 hover:bg-muted/20 transition-colors rounded-r-xl"
           >
             <div>
@@ -77,7 +65,7 @@ export default function PragmaticsPage() {
       </div>
 
       {/* Focus Modal */}
-      <Modal isOpen={selectedIndex !== null} onClose={() => setSelectedIndex(null)} className="max-w-2xl h-[85vh] flex flex-col p-0">
+      <Modal isOpen={isOpen} onClose={close} className="max-w-2xl h-[85vh] flex flex-col p-0">
         {selectedScenario && (
           <>
             <div className="flex-1 overflow-y-auto p-8 space-y-8">
@@ -153,13 +141,13 @@ export default function PragmaticsPage() {
 
             {/* Footer */}
             <div className="p-4 border-t bg-muted/20 flex justify-between items-center shrink-0">
-              <Button variant="ghost" onClick={handlePrev} className="gap-2 pl-2">
+              <Button variant="ghost" onClick={goPrev} className="gap-2 pl-2">
                 <ChevronLeft className="w-5 h-5" /> Prev
               </Button>
               <div className="text-sm text-muted-foreground font-mono">
-                {selectedIndex! + 1} / {pragmaticsData.length}
+                {selectedPosition} / {pragmaticsData.length}
               </div>
-              <Button variant="ghost" onClick={handleNext} className="gap-2 pr-2">
+              <Button variant="ghost" onClick={goNext} className="gap-2 pr-2">
                 Next <ChevronRight className="w-5 h-5" />
               </Button>
             </div>
