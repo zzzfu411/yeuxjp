@@ -1,14 +1,15 @@
 "use client"
 
-import type { ReactNode } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { LearningDataPanel } from "@/components/review/learning-data-panel"
+import { RecentMistakes } from "@/components/review/recent-mistakes"
+import { ReviewDeckCard } from "@/components/review/review-deck-card"
 import type { MistakeItem } from "@/lib/mistake-notebook"
-import { formatReviewDueCount, formatReviewNextDueAt } from "@/lib/review-dashboard-model"
+import { formatReviewNextDueAt } from "@/lib/review-dashboard-model"
 
 export interface ReviewDashboardProps {
   isFirstTime: boolean
@@ -254,78 +255,6 @@ function TodayReviewPanel({
           </Button>
         </div>
       )}
-    </div>
-  )
-}
-
-function ReviewDeckCard({
-  title,
-  desc,
-  due,
-  total,
-  onStart,
-  startDisabled,
-  extra,
-}: {
-  title: string
-  desc: string
-  due: number
-  total: number
-  onStart: () => void
-  startDisabled?: boolean
-  extra?: ReactNode
-}) {
-  return (
-    <div className="rounded-2xl border bg-card p-5 shadow-sm space-y-3">
-      <div className="space-y-1">
-        <div className="text-lg font-bold">{title}</div>
-        <div className="text-sm text-muted-foreground leading-relaxed">{desc}</div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">
-          待复习：<span className="font-semibold text-foreground">{formatReviewDueCount(due)}</span>{" "}
-          <span className="text-muted-foreground/60">/ 已加入：{formatReviewDueCount(total)}</span>
-        </div>
-        <Button type="button" size="sm" className="rounded-full" onClick={onStart} disabled={startDisabled}>
-          开始
-        </Button>
-      </div>
-
-      {extra ? <div className="pt-1">{extra}</div> : null}
-    </div>
-  )
-}
-
-function RecentMistakes({
-  mistakes,
-  onRemove,
-}: {
-  mistakes: MistakeItem[]
-  onRemove: (id: string) => void
-}) {
-  return (
-    <div className="rounded-2xl border bg-muted/10 p-6 space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-foreground">最近错题</div>
-        <div className="text-xs text-muted-foreground">点击“错题本”开始复习</div>
-      </div>
-
-      <div className="space-y-2">
-        {mistakes.slice(0, 6).map((mistake) => (
-          <div key={mistake.id} className="flex items-start justify-between gap-3 rounded-xl border bg-background/60 p-4">
-            <div className="min-w-0">
-              <div className="text-xs text-muted-foreground">
-                {mistake.type} · 错 {mistake.wrongCount} 次
-              </div>
-              <div className="text-sm font-medium break-words">{mistake.questionText ?? mistake.questionAudio ?? "（无题干）"}</div>
-            </div>
-            <Button type="button" variant="ghost" size="sm" className="shrink-0" onClick={() => onRemove(mistake.id)}>
-              移除
-            </Button>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }

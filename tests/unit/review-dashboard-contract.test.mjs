@@ -32,16 +32,40 @@ test("ReviewDashboard owns review landing UI and delegates formatting to pure mo
 
   assert.match(source, /export function ReviewDashboard/)
   assert.match(source, /from "@\/lib\/review-dashboard-model"/)
-  assert.match(source, /formatReviewDueCount/)
   assert.match(source, /formatReviewNextDueAt/)
   assert.match(source, /function FirstReviewBanner/)
   assert.match(source, /function ReviewStreakBanner/)
   assert.match(source, /function TodayReviewPanel/)
-  assert.match(source, /function ReviewDeckCard/)
-  assert.match(source, /function RecentMistakes/)
+  assert.match(source, /from "@\/components\/review\/review-deck-card"/)
+  assert.match(source, /from "@\/components\/review\/recent-mistakes"/)
+  assert.match(source, /<ReviewDeckCard\b/)
+  assert.match(source, /<RecentMistakes\b/)
+  assert.doesNotMatch(source, /function ReviewDeckCard/)
+  assert.doesNotMatch(source, /function RecentMistakes/)
   assert.match(source, /state-empty\.webp/)
   assert.match(source, /review-streak\.webp/)
   assert.match(source, /SpeechSettingsBar/)
   assert.match(source, /LearningDataPanel/)
   assert.match(source, /data-testid="review-start-today"/)
+})
+
+test("ReviewDeckCard owns deck counts and start action presentation", () => {
+  const source = read("src/components/review/review-deck-card.tsx")
+
+  assert.match(source, /export function ReviewDeckCard/)
+  assert.match(source, /formatReviewDueCount/)
+  assert.match(source, /待复习/)
+  assert.match(source, /已加入/)
+  assert.match(source, /disabled=\{startDisabled\}/)
+  assert.match(source, /\{extra \? <div className="pt-1">\{extra\}<\/div> : null\}/)
+})
+
+test("RecentMistakes owns recent mistake preview and remove action", () => {
+  const source = read("src/components/review/recent-mistakes.tsx")
+
+  assert.match(source, /export function RecentMistakes/)
+  assert.match(source, /mistakes\.slice\(0, 6\)\.map/)
+  assert.match(source, /mistake\.questionText \?\? mistake\.questionAudio/)
+  assert.match(source, /onRemove\(mistake\.id\)/)
+  assert.match(source, /点击“错题本”开始复习/)
 })
