@@ -8,51 +8,21 @@ import { kanaData } from "@/data/kana-data"
 import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
-import { SKILL_TREE, type SkillId } from "@/lib/skill-tree"
+import { SKILL_TREE } from "@/lib/skill-tree"
 import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
 import { useLearningProgress } from "@/lib/learning-progress"
-
-function ratio(done: number, total: number) {
-  return total ? done / total : 0
-}
+import { getKanaSkillStats, getRecommendedSkillId } from "@/lib/path-page-model"
 
 export function NextStepCard({ className }: { className?: string }) {
   const { isMastered } = useKanaProgress()
   const { learned } = useVocabProgress()
   const learning = useLearningProgress()
 
-  const kanaStats = useMemo(() => {
-    const seion = kanaData.filter((k) => k.type === "seion")
-    const dakuon = kanaData.filter((k) => k.type === "dakuon" || k.type === "handakuon")
-    const yoon = kanaData.filter((k) => k.type === "yoon")
-    const special = kanaData.filter((k) => k.type === "special")
+  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, isMastered), [isMastered])
 
-    const stat = (list: typeof kanaData) => {
-      const total = list.length
-      const done = list.reduce((acc, k) => acc + (isMastered(k.romaji) ? 1 : 0), 0)
-      return { total, done, ratio: ratio(done, total) }
-    }
+  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learned), [learned])
 
-    return {
-      seion: stat(seion),
-      dakuon: stat(dakuon),
-      yoon: stat(yoon),
-      special: stat(special),
-    }
-  }, [isMastered])
-
-  const survivalRatio = useMemo(() => {
-    return summarizeLearnedVocabIds(learned).survival.ratio
-  }, [learned])
-
-  const nextSkillId = useMemo<SkillId>(() => {
-    if (kanaStats.seion.ratio < 0.7) return "kana-seion"
-    if (kanaStats.dakuon.ratio < 0.35) return "kana-dakuon"
-    if (kanaStats.yoon.ratio < 0.35) return "kana-yoon"
-    if (kanaStats.special.ratio < 0.5) return "kana-sokuon"
-    if (survivalRatio < 0.25) return "vocab-survival"
-    return "particles-basic"
-  }, [kanaStats.dakuon.ratio, kanaStats.seion.ratio, kanaStats.special.ratio, kanaStats.yoon.ratio, survivalRatio])
+  const nextSkillId = useMemo(() => getRecommendedSkillId(kanaStats, vocabStats), [kanaStats, vocabStats])
 
   const skill = useMemo(() => SKILL_TREE.find((s) => s.id === nextSkillId) ?? null, [nextSkillId])
   const nextLesson = useMemo(() => getNextLesson(learning.completedLessonIds), [learning.completedLessonIds])

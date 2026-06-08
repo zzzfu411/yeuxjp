@@ -9,121 +9,29 @@ import { kanaData } from "@/data/kana-data"
 import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
-import { SKILL_CATEGORY_LABEL, SKILL_TREE, SKILL_TREE_BY_CATEGORY, type SkillCategory, type SkillId } from "@/lib/skill-tree"
+import { SKILL_CATEGORY_LABEL, SKILL_TREE, SKILL_TREE_BY_CATEGORY, type SkillCategory } from "@/lib/skill-tree"
 import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
-import { averageMastery, useLearningProgress } from "@/lib/learning-progress"
-
-type SkillStatus = "locked" | "available" | "in-progress" | "done"
-
-function ratioText(done: number, total: number) {
-  return `${done}/${total}`
-}
+import { useLearningProgress } from "@/lib/learning-progress"
+import {
+  getKanaSkillStats,
+  getPathMasterySummary,
+  getRecommendedSkillId,
+  getSkillStatus,
+} from "@/lib/path-page-model"
 
 export default function SkillTreePage() {
   const { isMastered } = useKanaProgress()
   const { learned } = useVocabProgress()
   const learning = useLearningProgress()
 
-  const kanaStats = useMemo(() => {
-    const groups = {
-      seion: kanaData.filter((k) => k.type === "seion"),
-      dakuon: kanaData.filter((k) => k.type === "dakuon" || k.type === "handakuon"),
-      yoon: kanaData.filter((k) => k.type === "yoon"),
-      special: kanaData.filter((k) => k.type === "special"),
-    }
-
-    const stat = (list: typeof kanaData) => {
-      const total = list.length
-      const done = list.reduce((acc, k) => acc + (isMastered(k.romaji) ? 1 : 0), 0)
-      return { total, done, ratio: total ? done / total : 0 }
-    }
-
-    return {
-      seion: stat(groups.seion),
-      dakuon: stat(groups.dakuon),
-      yoon: stat(groups.yoon),
-      special: stat(groups.special),
-    }
-  }, [isMastered])
+  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, isMastered), [isMastered])
 
   const vocabStats = useMemo(() => summarizeLearnedVocabIds(learned), [learned])
 
-  const nextSkillId = useMemo<SkillId>(() => {
-    if (kanaStats.seion.ratio < 0.7) return "kana-seion"
-    if (kanaStats.dakuon.ratio < 0.35) return "kana-dakuon"
-    if (kanaStats.yoon.ratio < 0.35) return "kana-yoon"
-    if (kanaStats.special.ratio < 0.5) return "kana-sokuon"
-    if (vocabStats.survival.ratio < 0.25) return "vocab-survival"
-    return "particles-basic"
-  }, [kanaStats.dakuon.ratio, kanaStats.seion.ratio, kanaStats.special.ratio, kanaStats.yoon.ratio, vocabStats.survival.ratio])
+  const nextSkillId = useMemo(() => getRecommendedSkillId(kanaStats, vocabStats), [kanaStats, vocabStats])
 
   const nextLesson = useMemo(() => getNextLesson(learning.completedLessonIds), [learning.completedLessonIds])
-  const masterySummary = useMemo(() => {
-    const values = Object.values(learning.items)
-    if (!values.length) return { avg: 0, attempts: 0, production: 0 }
-    return {
-      avg: Math.round(values.reduce((acc, item) => acc + averageMastery(item), 0) / values.length),
-      attempts: values.reduce((acc, item) => acc + item.attempts, 0),
-      production: Math.round(values.reduce((acc, item) => acc + item.production, 0) / values.length),
-    }
-  }, [learning.items])
-
-  const isUnlocked = (skillId: SkillId) => {
-    // Soft-gated: show prerequisites but never hard-block.
-    // We still highlight "recommended" and "done" based on progress.
-    const node = SKILL_TREE.find((s) => s.id === skillId)
-    if (!node?.prerequisites?.length) return true
-
-    // If prerequisites are already "done-ish", treat as unlocked.
-    return node.prerequisites.every((p) => {
-      if (p === "kana-seion") return kanaStats.seion.ratio >= 0.4
-      if (p === "kana-sokuon") return kanaStats.special.ratio >= 0.2
-      if (p === "particles-basic") return true
-      if (p === "vocab-survival") return vocabStats.survival.ratio >= 0.1
-      return true
-    })
-  }
-
-  const getStatus = (skillId: SkillId): { status: SkillStatus; badge?: string } => {
-    if (!isUnlocked(skillId)) return { status: "locked", badge: "建议稍后" }
-
-    if (skillId === "kana-seion")
-      return kanaStats.seion.ratio >= 0.9
-        ? { status: "done", badge: `已掌握 ${ratioText(kanaStats.seion.done, kanaStats.seion.total)}` }
-        : kanaStats.seion.done > 0
-          ? { status: "in-progress", badge: `进度 ${ratioText(kanaStats.seion.done, kanaStats.seion.total)}` }
-          : { status: "available", badge: "从这里开始" }
-
-    if (skillId === "kana-dakuon")
-      return kanaStats.dakuon.ratio >= 0.85
-        ? { status: "done", badge: `已掌握 ${ratioText(kanaStats.dakuon.done, kanaStats.dakuon.total)}` }
-        : kanaStats.dakuon.done > 0
-          ? { status: "in-progress", badge: `进度 ${ratioText(kanaStats.dakuon.done, kanaStats.dakuon.total)}` }
-          : { status: "available", badge: "建议学习" }
-
-    if (skillId === "kana-yoon")
-      return kanaStats.yoon.ratio >= 0.85
-        ? { status: "done", badge: `已掌握 ${ratioText(kanaStats.yoon.done, kanaStats.yoon.total)}` }
-        : kanaStats.yoon.done > 0
-          ? { status: "in-progress", badge: `进度 ${ratioText(kanaStats.yoon.done, kanaStats.yoon.total)}` }
-          : { status: "available", badge: "建议学习" }
-
-    if (skillId === "kana-sokuon")
-      return kanaStats.special.ratio >= 0.95
-        ? { status: "done", badge: `已掌握 ${ratioText(kanaStats.special.done, kanaStats.special.total)}` }
-        : kanaStats.special.done > 0
-          ? { status: "in-progress", badge: `进度 ${ratioText(kanaStats.special.done, kanaStats.special.total)}` }
-          : { status: "available", badge: "建议学习" }
-
-    if (skillId === "vocab-survival")
-      return vocabStats.survival.ratio >= 0.6
-        ? { status: "done", badge: `已掌握 ${ratioText(vocabStats.survival.done, vocabStats.survival.total)}` }
-        : vocabStats.survival.done > 0
-          ? { status: "in-progress", badge: `进度 ${ratioText(vocabStats.survival.done, vocabStats.survival.total)}` }
-          : { status: "available", badge: "建议学习" }
-
-    return { status: "available", badge: isUnlocked(skillId) ? "可练习" : "建议稍后" }
-  }
+  const masterySummary = useMemo(() => getPathMasterySummary(learning.items), [learning.items])
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-10 max-w-5xl mb-20">
@@ -214,7 +122,7 @@ export default function SkillTreePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {list.map((skill) => {
-                const { status, badge } = getStatus(skill.id)
+                const { status, badge } = getSkillStatus(skill.id, kanaStats, vocabStats)
                 const isRecommended = skill.id === nextSkillId
 
                 return (
