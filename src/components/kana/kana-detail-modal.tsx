@@ -47,6 +47,9 @@ export function KanaDetailModal({
   onToggleWriting: () => void
   onToggleMastered: () => void
 }) {
+  const isCheckingStrokeResource = !isWriting && !!currentChar && currentStrokeAvailability === "unknown"
+  const isMissingStrokeResource = !isWriting && !!currentChar && currentStrokeAvailability === "missing"
+
   return (
     <Modal isOpen={selectedIndex !== null} onClose={onClose} className="max-w-md">
       {kana && (
@@ -82,8 +85,20 @@ export function KanaDetailModal({
               </div>
             )}
 
-            {!isWriting && currentChar && currentStrokeAvailability === "missing" ? (
-              <div className="rounded-xl border bg-muted/30 px-4 py-3 text-center text-sm text-muted-foreground">
+            {isCheckingStrokeResource ? (
+              <div
+                className="rounded-xl border bg-muted/30 px-4 py-3 text-center text-sm text-muted-foreground"
+                aria-live="polite"
+              >
+                正在确认 AnimCJK 笔顺资源，确认可用后会显示笔顺入口。
+              </div>
+            ) : null}
+
+            {isMissingStrokeResource ? (
+              <div
+                className="rounded-xl border bg-muted/30 px-4 py-3 text-center text-sm text-muted-foreground"
+                aria-live="polite"
+              >
                 当前字符暂无可用 AnimCJK 笔顺资源，仍可朗读和标记掌握。
               </div>
             ) : null}
