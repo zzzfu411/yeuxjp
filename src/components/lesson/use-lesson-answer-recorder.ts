@@ -34,6 +34,7 @@ export function useLessonAnswerRecorder({
       notebook,
       result,
       lessonId,
+      lessonStepId: step.id,
     })
     setAnswered((prev) => ({ ...prev, [step.id]: result.correct }))
     return result

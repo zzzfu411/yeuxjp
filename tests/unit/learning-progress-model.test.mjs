@@ -98,6 +98,7 @@ test("practice result normalization filters bad rows and keeps only recent histo
   const raw = Array.from({ length: 305 }, (_, index) => ({
     itemId: `item-${index}`,
     itemType: "vocab",
+    lessonStepId: index === 304 ? "step-304" : undefined,
     mode: "meaning",
     correct: index % 2 === 0,
     createdAt: index,
@@ -108,6 +109,7 @@ test("practice result normalization filters bad rows and keeps only recent histo
   assert.equal(normalized.length, 300)
   assert.equal(normalized[0].itemId, "item-5")
   assert.equal(normalized.at(-1).itemId, "item-304")
+  assert.equal(normalized.at(-1).lessonStepId, "step-304")
   assert.equal(normalized.at(-1).createdAt, 304)
 })
 

@@ -1,4 +1,5 @@
 import type { LessonStep } from "@/data/lessons"
+import type { PracticeResult } from "@/lib/learning-progress-model"
 import type { Question } from "@/lib/questions"
 
 export type LessonPracticeStep = Extract<LessonStep, { itemId: string }>
@@ -49,6 +50,19 @@ export function countPracticeSteps(steps: LessonStep[]) {
 
 export function calculateLessonCompletionScore(correct: number, practiceSteps: number) {
   return practiceSteps ? Math.round((correct / practiceSteps) * 100) : 100
+}
+
+export function getLessonAnsweredFromResults(lessonId: string, steps: LessonStep[], results: PracticeResult[]) {
+  const practiceStepIds = new Set(countPracticeSteps(steps) ? steps.filter((step) => "itemId" in step).map((step) => step.id) : [])
+  const answered: Record<string, boolean> = {}
+
+  for (const result of results) {
+    if (result.lessonId !== lessonId) continue
+    if (!result.lessonStepId || !practiceStepIds.has(result.lessonStepId)) continue
+    answered[result.lessonStepId] = result.correct
+  }
+
+  return answered
 }
 
 export interface LessonResumeProgress {

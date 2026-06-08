@@ -158,7 +158,7 @@ export default function Home() {
           <ActionCard
             icon={<CalendarDays className="h-5 w-5" />}
             title="今日复习流"
-            desc={`假名、词汇和错题会按到期顺序集中处理。当前到期 ${totalDue} 项。`}
+            desc={`先处理错题，再复习到期假名和词汇。当前到期 ${totalDue} 项。`}
             href="/review"
             cta="开始复习"
           />

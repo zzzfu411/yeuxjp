@@ -43,17 +43,20 @@ export function recordQuestionPractice({
   notebook,
   result,
   lessonId,
+  lessonStepId,
 }: {
   progress?: LearningProgressApi
   notebook?: MistakeNotebookApi
   result: QuestionResult
   lessonId?: string
+  lessonStepId?: string
 }) {
   const { question } = result
 
   if (progress && question.itemId && question.itemType && question.mode) {
     recordPracticeResult(progress, {
       lessonId,
+      lessonStepId,
       itemId: question.itemId,
       itemType: question.itemType,
       mode: question.mode,

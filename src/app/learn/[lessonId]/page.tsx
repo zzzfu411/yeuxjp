@@ -2,13 +2,18 @@
 
 import Link from "next/link"
 import { notFound, useParams } from "next/navigation"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState, type SetStateAction } from "react"
 import { ArrowLeft, ArrowRight, Sparkles, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { STARTER_LESSONS, getLessonById, isPracticeStep, type LessonStep } from "@/data/lessons"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
-import { countPracticeSteps, calculateLessonCompletionScore, resolveLessonResumeStepIndex } from "@/lib/lesson-session"
+import {
+  countPracticeSteps,
+  calculateLessonCompletionScore,
+  getLessonAnsweredFromResults,
+  resolveLessonResumeStepIndex,
+} from "@/lib/lesson-session"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
@@ -20,9 +25,9 @@ export default function LessonPage() {
   const lesson = getLessonById(params.lessonId)
   const progress = useLearningProgress()
   const mistakes = useMistakeNotebook()
-  const { lessons, loaded, startLesson, completeLesson, saveLessonPosition } = progress
+  const { lessons, results, loaded, startLesson, completeLesson, saveLessonPosition } = progress
   const [manualStep, setManualStep] = useState<{ lessonId: string; index: number } | null>(null)
-  const [answered, setAnswered] = useState<Record<string, boolean>>({})
+  const [answeredDraft, setAnsweredDraft] = useState<{ lessonId: string; answers: Record<string, boolean> } | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
   const [typed, setTyped] = useState("")
   const [built, setBuilt] = useState<string[]>([])
@@ -57,6 +62,31 @@ export default function LessonPage() {
   const current = lesson?.steps[stepIndex]
   const isLast = lesson ? stepIndex === lesson.steps.length - 1 : false
   const practiceSteps = useMemo(() => (lesson ? countPracticeSteps(lesson.steps) : 0), [lesson])
+  const restoredAnswered = useMemo(() => {
+    return lesson ? getLessonAnsweredFromResults(lesson.id, lesson.steps, results) : {}
+  }, [lesson, results])
+
+  const answered = useMemo(() => {
+    if (!lesson) return restoredAnswered
+    if (answeredDraft?.lessonId !== lesson.id) return restoredAnswered
+    return { ...restoredAnswered, ...answeredDraft.answers }
+  }, [answeredDraft, lesson, restoredAnswered])
+
+  const setAnsweredForLesson = useCallback(
+    (update: SetStateAction<Record<string, boolean>>) => {
+      if (!lesson) return
+      setAnsweredDraft((prev) => {
+        const base = {
+          ...restoredAnswered,
+          ...(prev?.lessonId === lesson.id ? prev.answers : {}),
+        }
+        const answers = typeof update === "function" ? update(base) : update
+        return { lessonId: lesson.id, answers }
+      })
+    },
+    [lesson, restoredAnswered]
+  )
+
   const correctCount = useMemo(() => Object.values(answered).filter(Boolean).length, [answered])
   const completionScore = calculateLessonCompletionScore(correctCount, practiceSteps)
 
@@ -64,7 +94,7 @@ export default function LessonPage() {
     lessonId: lesson?.id ?? params.lessonId,
     progress,
     notebook: mistakes,
-    setAnswered,
+    setAnswered: setAnsweredForLesson,
   })
 
   if (!lesson || !current) return notFound()

@@ -27,6 +27,7 @@ export type PracticeMode = "recognition" | "listening" | "meaning" | "recall" | 
 
 export interface PracticeResult {
   lessonId?: string
+  lessonStepId?: string
   itemId: string
   itemType: PracticeItemType
   mode: PracticeMode
@@ -159,6 +160,7 @@ export function normalizePracticeResults(input: unknown, now = Date.now()): Prac
     .filter((item) => typeof item.itemId === "string" && typeof item.mode === "string" && typeof item.correct === "boolean")
     .map((item) => ({
       lessonId: typeof item.lessonId === "string" ? item.lessonId : undefined,
+      lessonStepId: typeof item.lessonStepId === "string" ? item.lessonStepId : undefined,
       itemId: item.itemId!,
       itemType: item.itemType ?? "lesson",
       mode: item.mode as PracticeMode,

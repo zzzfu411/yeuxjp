@@ -44,6 +44,50 @@ test("lesson practice counts and completion scores are deterministic", () => {
   assert.equal(session.calculateLessonCompletionScore(3, 3), 100)
 })
 
+test("lesson answered state restores the latest result for each practice step", () => {
+  const lesson = lessons.STARTER_LESSONS[0]
+  const answered = session.getLessonAnsweredFromResults("day-1-a-row-hello", lesson.steps, [
+    {
+      lessonId: "day-1-a-row-hello",
+      lessonStepId: "recognize-a",
+      itemId: "a",
+      itemType: "kana",
+      mode: "recognition",
+      correct: false,
+      createdAt: 1,
+    },
+    {
+      lessonId: "day-1-a-row-hello",
+      lessonStepId: "recognize-a",
+      itemId: "a",
+      itemType: "kana",
+      mode: "recognition",
+      correct: true,
+      createdAt: 2,
+    },
+    {
+      lessonId: "other-lesson",
+      lessonStepId: "type-hello",
+      itemId: "hello",
+      itemType: "vocab",
+      mode: "recall",
+      correct: true,
+      createdAt: 3,
+    },
+    {
+      lessonId: "day-1-a-row-hello",
+      lessonStepId: "not-a-practice-step",
+      itemId: "x",
+      itemType: "lesson",
+      mode: "recall",
+      correct: true,
+      createdAt: 4,
+    },
+  ])
+
+  assert.deepEqual(answered, { "recognize-a": true })
+})
+
 test("lesson resume indexes are clamped to existing lesson steps", () => {
   const lesson = lessons.STARTER_LESSONS[0]
 

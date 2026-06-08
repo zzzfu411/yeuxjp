@@ -30,6 +30,7 @@ test("useLessonAnswerRecorder owns lesson question conversion and practice write
   assert.match(source, /makeQuestionResult\(question, answer\)/)
   assert.match(source, /recordQuestionPractice\(\{/)
   assert.match(source, /lessonId/)
+  assert.match(source, /lessonStepId: step\.id/)
   assert.match(source, /setAnswered\(\(prev\) => \(\{ \.\.\.prev, \[step\.id\]: result\.correct \}\)\)/)
   assert.match(source, /return result/)
 })
