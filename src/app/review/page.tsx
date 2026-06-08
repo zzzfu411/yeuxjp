@@ -10,6 +10,7 @@ import { ReviewRunner, type ReviewSession } from "@/components/review/review-run
 import { ReviewDashboard } from "@/components/review/review-dashboard"
 import {
   buildTodayReviewQueue,
+  isReviewableKanaId,
   type TodayReviewItem,
 } from "@/lib/review-questions"
 
@@ -57,6 +58,10 @@ export default function ReviewPage() {
     })
   }, [dueMistakeIds, kanaSrs.dueIds, kanaSrs.map, vocabSrs.dueIds, vocabSrs.map])
 
+  const reviewableKanaDueIds = useMemo(() => {
+    return kanaSrs.dueIds.filter(isReviewableKanaId)
+  }, [kanaSrs.dueIds])
+
   if (session) {
     return <ReviewRunner session={session} onExit={() => setSession(null)} notebook={mistakes} />
   }
@@ -66,7 +71,7 @@ export default function ReviewPage() {
     Object.keys(vocabSrs.map).length +
     mistakes.list.length
   const totalDue =
-    kanaSrs.dueIds.length + vocabSrs.dueIds.length + dueMistakeIds.length
+    reviewableKanaDueIds.length + vocabSrs.dueIds.length + dueMistakeIds.length
   const isFirstTime = totalEnrolled === 0 && mastered.size === 0 && learned.size === 0
   const nextDueAt = getNextSrsDueAt([kanaSrs.map, vocabSrs.map, mistakeSrs.map])
 
@@ -79,15 +84,15 @@ export default function ReviewPage() {
       todayQueueLength={todayQueue.length}
       counts={{
         mistakesDue: dueMistakeIds.length,
-        kanaDue: kanaSrs.dueIds.length,
+        kanaDue: reviewableKanaDueIds.length,
         vocabDue: vocabSrs.dueIds.length,
       }}
       kana={{
-        due: kanaSrs.dueIds.length,
+        due: reviewableKanaDueIds.length,
         total: Object.keys(kanaSrs.map).length,
         mastered: mastered.size,
         enrollMissing: kanaEnrollMissing.length,
-        onStart: () => setSession({ deck: "kana", ids: kanaSrs.dueIds }),
+        onStart: () => setSession({ deck: "kana", ids: reviewableKanaDueIds }),
         onEnrollMissing: () => kanaEnrollMissing.forEach((id) => kanaSrs.enroll(id)),
       }}
       vocab={{

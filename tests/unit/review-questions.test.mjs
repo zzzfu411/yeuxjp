@@ -7,10 +7,11 @@ const review = await loadTsModule("src/lib/review-questions.ts")
 test("today review queue prioritizes mistakes before due-sorted kana and vocab", () => {
   const queue = review.buildTodayReviewQueue({
     dueMistakeIds: ["m2", "m1"],
-    kanaDueIds: ["ka-late", "ka-early"],
+    kanaDueIds: ["ka", "a", "sokuon:きって"],
     kanaSrsMap: {
-      "ka-late": { dueAt: 30, box: 1, createdAt: 1, right: 0, wrong: 0 },
-      "ka-early": { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      ka: { dueAt: 30, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      a: { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      "sokuon:きって": { dueAt: 1, box: 1, createdAt: 1, right: 0, wrong: 0 },
     },
     vocabDueIds: ["vo-late", "vo-early"],
     vocabSrsMap: {
@@ -22,11 +23,18 @@ test("today review queue prioritizes mistakes before due-sorted kana and vocab",
   assert.deepEqual(queue, [
     { deck: "mistakes", id: "m2" },
     { deck: "mistakes", id: "m1" },
-    { deck: "kana", id: "ka-early" },
-    { deck: "kana", id: "ka-late" },
+    { deck: "kana", id: "a" },
+    { deck: "kana", id: "ka" },
     { deck: "vocab", id: "vo-early" },
     { deck: "vocab", id: "vo-late" },
   ])
+})
+
+test("only canonical kana romaji ids are reviewable", () => {
+  assert.equal(review.isReviewableKanaId("a"), true)
+  assert.equal(review.isReviewableKanaId("kya"), true)
+  assert.equal(review.isReviewableKanaId("sokuon:きって"), false)
+  assert.equal(review.isReviewableKanaId("longvowel:おばあさん"), false)
 })
 
 test("mistakeToQuestion preserves answers and de-duplicates options", () => {
@@ -45,7 +53,9 @@ test("mistakeToQuestion preserves answers and de-duplicates options", () => {
     lastWrongAt: 1,
   })
 
-  assert.equal(question.itemId, "m1")
+  assert.equal(question.itemId, undefined)
+  assert.equal(question.itemType, undefined)
+  assert.equal(question.mode, undefined)
   assert.equal(question.correctAnswer, "は")
   assert.deepEqual(question.options, [
     { value: "は", display: "は" },

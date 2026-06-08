@@ -2,6 +2,7 @@
 
 import { enrollSrs } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import { isReviewableKanaId } from "@/lib/review-questions"
 import type { PracticeResult } from "@/lib/learning-progress"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
@@ -20,6 +21,7 @@ export function getReviewStorageKey(itemType: PracticeResult["itemType"]) {
 export function enrollReviewItem(itemType: PracticeResult["itemType"], itemId: string) {
   const storageKey = getReviewStorageKey(itemType)
   if (!storageKey) return
+  if (itemType === "kana" && !isReviewableKanaId(itemId)) return
   enrollSrs(storageKey, itemId)
 }
 

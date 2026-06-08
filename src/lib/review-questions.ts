@@ -7,6 +7,12 @@ import { sortSrsIdsByDue, type SrsMap } from "@/lib/srs"
 export type ReviewDeck = "kana" | "vocab" | "mistakes"
 export type TodayReviewItem = { deck: ReviewDeck; id: string }
 
+const REVIEWABLE_KANA_IDS = new Set(kanaData.map((item) => item.romaji))
+
+export function isReviewableKanaId(id: string) {
+  return REVIEWABLE_KANA_IDS.has(id)
+}
+
 export function shuffleList<T>(list: T[], random: () => number = Math.random) {
   const arr = [...list]
   for (let i = arr.length - 1; i > 0; i -= 1) {
@@ -31,7 +37,7 @@ export function buildTodayReviewQueue({
   vocabDueIds: string[]
   vocabSrsMap: SrsMap
 }): TodayReviewItem[] {
-  const sortedKanaIds = sortSrsIdsByDue(kanaDueIds, kanaSrsMap)
+  const sortedKanaIds = sortSrsIdsByDue(kanaDueIds.filter(isReviewableKanaId), kanaSrsMap)
   const sortedVocabIds = sortSrsIdsByDue(vocabDueIds, vocabSrsMap)
 
   return [
@@ -64,9 +70,6 @@ export function ensureQuestionOptions(question: Pick<Question, "correctAnswer" |
 export function mistakeToQuestion(item: MistakeItem): Question {
   return {
     type: item.type,
-    itemId: item.id,
-    itemType: "lesson",
-    mode: "recall",
     questionText: item.questionText,
     questionAudio: item.questionAudio,
     correctAnswer: item.correctAnswer,
