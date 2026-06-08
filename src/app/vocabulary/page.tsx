@@ -11,6 +11,11 @@ import {
   getVocabularyCategories,
   getVocabularyProgress,
 } from "@/lib/vocabulary-page-model"
+import {
+  getVocabularyLevelDescription,
+  VOCABULARY_CATEGORY_NAMES,
+  VOCABULARY_LEVELS,
+} from "@/lib/vocabulary-page-config"
 import { useIndexedModalNavigation } from "@/lib/use-indexed-modal-navigation"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
@@ -20,36 +25,6 @@ import { VocabularyFocusModal } from "@/components/vocabulary/vocabulary-focus-m
 import { VocabularyToolbar } from "@/components/vocabulary/vocabulary-toolbar"
 
 const EMPTY_VOCAB: Vocabulary[] = []
-
-const levels: { id: VocabLevel; label: string; desc: string }[] = [
-  { id: "survival", label: "生存级 (N5)", desc: "购物、问路、自我介绍" },
-  { id: "daily", label: "日常级 (N4-N3)", desc: "生活交流、动漫理解" },
-  { id: "fluent", label: "流利级 (N2-N1)", desc: "商务、新闻、深层文化" },
-];
-
-const categoryNames: Record<string, string> = {
-  "greetings": "寒暄 (Greetings)",
-  "verbs": "动词 (Verbs)",
-  "adjectives": "形容词 (Adjectives)",
-  "people": "人物 (People)",
-  "food": "食物 (Food)",
-  "time": "时间 (Time)",
-  "nature": "自然 (Nature)",
-  "daily": "日用品 (Daily)",
-  "body": "身体 (Body)",
-  "directions": "方位 (Directions)",
-  "transport": "交通 (Transport)",
-  "colors": "颜色 (Colors)",
-  "numbers": "数字 (Numbers)",
-  "furniture": "家居 (Furniture)",
-  "city": "城市 (City)",
-  "grammar_words": "虚词 (Grammar Words)",
-  "abstract": "抽象 (Abstract)",
-  "society": "社会 (Society)",
-  "business": "商务 (Business)",
-  "culture": "文化 (Culture)",
-  "emotion": "情感 (Emotion)"
-};
 
 function VocabularyPageContent() {
   const searchParams = useSearchParams()
@@ -220,7 +195,7 @@ function VocabularyPageContent() {
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">单词宝库 (Kotoba)</h1>
         <p className="text-muted-foreground text-sm">
-          {levels.find(l => l.id === currentLevel)?.desc}
+          {getVocabularyLevelDescription(currentLevel)}
         </p>
         <p className="text-muted-foreground text-xs">
           <GlossaryTerm termId="jlpt">JLPT</GlossaryTerm>：N5 最基础，N1 最难。本页分级为学习路线（大致对应 JLPT）。{" "}
@@ -231,13 +206,13 @@ function VocabularyPageContent() {
       <SpeechSettingsBar className="max-w-3xl mx-auto" />
 
       <VocabularyToolbar
-        levels={levels}
+        levels={VOCABULARY_LEVELS}
         currentLevel={currentLevel}
         searchQuery={searchQuery}
         onlyUnlearned={onlyUnlearned}
         activeCategory={activeCategory}
         categories={categories}
-        categoryNames={categoryNames}
+        categoryNames={VOCABULARY_CATEGORY_NAMES}
         progress={levelProgress}
         onSearchChange={handleSearchChange}
         onLevelChange={handleLevelChange}
@@ -248,7 +223,7 @@ function VocabularyPageContent() {
 
       <VocabularyCategoryList
         categories={categories}
-        categoryNames={categoryNames}
+        categoryNames={VOCABULARY_CATEGORY_NAMES}
         items={currentData}
         loading={vocabLoading}
         error={vocabState.error}
