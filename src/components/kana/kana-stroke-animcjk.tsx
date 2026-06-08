@@ -4,18 +4,16 @@ import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "rea
 import { cn } from "@/lib/utils"
 import { KanaGlyphBoard } from "@/components/kana/kana-glyph-board"
 import { KanaStrokeControls } from "@/components/kana/kana-stroke-controls"
+import { useAnimCjkSvgs } from "@/components/kana/use-animcjk-svgs"
 import {
   getAnimCjkLocalActiveStroke,
-  getAnimCjkKanaUrl,
   getAnimCjkSpeedLabel,
   getAnimCjkStrokeOffsets,
   getAnimCjkTimelineEvents,
   getAnimCjkTotalStrokes,
   getNextAnimCjkSpeed,
   SMALL_KANA_MAP,
-  parseAnimCJK,
   type AnimCjkSpeedValue,
-  type ParsedAnimCjkSvg,
 } from "@/lib/animcjk"
 export { getAnimCjkKanaUrls } from "@/lib/animcjk"
 
@@ -39,49 +37,13 @@ export function KanaStrokeAnimCJK({
   showStartDots = true,
   autoPlay = true,
 }: KanaStrokeAnimCJKProps) {
-  const parts = useMemo(() => Array.from(char), [char])
-  const cacheKey = useMemo(() => parts.join(""), [parts])
+  const { parts, cacheKey, svgs, error } = useAnimCjkSvgs(char)
 
-  const [parsed, setParsed] = useState<{ key: string; svgs?: ParsedAnimCjkSvg[]; error?: string } | null>(null)
   const [speed, setSpeed] = useState<AnimCjkSpeedValue>(1)
   const [playToken, setPlayToken] = useState(0) // bump to restart timeline
   const [isPaused, setIsPaused] = useState(false)
   const [activeStroke, setActiveStroke] = useState<number>(0) // 0 = not started, 1..N = current
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
-
-  // Fetch + parse
-  useEffect(() => {
-    let cancelled = false
-
-    ;(async () => {
-      try {
-        const results = await Promise.all(
-          parts.map(async (p) => {
-            const url = getAnimCjkKanaUrl(p)
-            if (!url) throw new Error("Invalid character")
-
-            const res = await fetch(url)
-            if (!res.ok) throw new Error(`HTTP ${res.status}`)
-            const text = await res.text()
-            return parseAnimCJK(text)
-          })
-        )
-
-        if (cancelled) return
-        setParsed({ key: cacheKey, svgs: results })
-      } catch (err) {
-        if (cancelled) return
-        setParsed({ key: cacheKey, error: err instanceof Error ? err.message : String(err) })
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [cacheKey, parts])
-
-  // Active set of parsed svgs only when key matches (avoid stale display)
-  const svgs = parsed?.key === cacheKey ? parsed.svgs : null
 
   // Total stroke count across all sub-glyphs (for combos like きゃ)
   const totalStrokes = useMemo(
@@ -181,10 +143,10 @@ export function KanaStrokeAnimCJK({
   useEffect(() => () => clearTimers(), [clearTimers])
 
   // ---- Render ----
-  if (parsed?.key === cacheKey && parsed.error) {
+  if (error) {
     return (
       <div className={cn("flex items-center justify-center text-sm text-muted-foreground", className)}>
-        笔顺 SVG 加载失败：{parsed.error}
+        笔顺 SVG 加载失败：{error}
       </div>
     )
   }
