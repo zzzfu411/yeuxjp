@@ -2,8 +2,8 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { cn } from "@/lib/utils"
-import { Pause, Play, RotateCcw, SkipBack, SkipForward, Gauge } from "lucide-react"
-import { ControlBtn, KanaGlyphBoard } from "@/components/kana/kana-glyph-board"
+import { KanaGlyphBoard } from "@/components/kana/kana-glyph-board"
+import { KanaStrokeControls } from "@/components/kana/kana-stroke-controls"
 import {
   getAnimCjkLocalActiveStroke,
   getAnimCjkKanaUrl,
@@ -239,39 +239,17 @@ export function KanaStrokeAnimCJK({
         })}
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-between gap-2 px-1">
-        <div className="text-[11px] font-mono text-muted-foreground tabular-nums select-none">
-          {Math.min(activeStroke, totalStrokes)} / {totalStrokes}
-        </div>
-        <div className="flex items-center gap-1">
-          <ControlBtn onClick={handlePrev} disabled={activeStroke === 0} aria-label="上一笔">
-            <SkipBack className="w-3.5 h-3.5" />
-          </ControlBtn>
-          <ControlBtn
-            onClick={handleTogglePause}
-            aria-label={isPaused || activeStroke > totalStrokes ? "播放" : "暂停"}
-          >
-            {activeStroke > totalStrokes ? (
-              <RotateCcw className="w-3.5 h-3.5" />
-            ) : isPaused ? (
-              <Play className="w-3.5 h-3.5" />
-            ) : (
-              <Pause className="w-3.5 h-3.5" />
-            )}
-          </ControlBtn>
-          <ControlBtn onClick={handleNext} disabled={activeStroke >= totalStrokes} aria-label="下一笔">
-            <SkipForward className="w-3.5 h-3.5" />
-          </ControlBtn>
-          <ControlBtn onClick={handleReplay} aria-label="重播">
-            <RotateCcw className="w-3.5 h-3.5" />
-          </ControlBtn>
-          <ControlBtn onClick={handleCycleSpeed} aria-label={`速度：${speedLabel}`}>
-            <Gauge className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-mono ml-0.5">{speedLabel}</span>
-          </ControlBtn>
-        </div>
-      </div>
+      <KanaStrokeControls
+        activeStroke={activeStroke}
+        totalStrokes={totalStrokes}
+        isPaused={isPaused}
+        speedLabel={speedLabel}
+        onPrev={handlePrev}
+        onTogglePause={handleTogglePause}
+        onNext={handleNext}
+        onReplay={handleReplay}
+        onCycleSpeed={handleCycleSpeed}
+      />
     </div>
   )
 }

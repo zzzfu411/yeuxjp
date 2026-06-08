@@ -8,6 +8,10 @@ const root = path.resolve(import.meta.dirname, "..", "..")
 test("KanaStrokeAnimCJK delegates timeline math to animcjk helpers", () => {
   const source = fs.readFileSync(path.join(root, "src/components/kana/kana-stroke-animcjk.tsx"), "utf8")
 
+  assert.match(source, /from "@\/components\/kana\/kana-stroke-controls"/)
+  assert.match(source, /<KanaStrokeControls\b/)
+  assert.match(source, /activeStroke=\{activeStroke\}/)
+  assert.match(source, /onTogglePause=\{handleTogglePause\}/)
   assert.match(source, /getAnimCjkTotalStrokes\(svgs\)/)
   assert.match(source, /getAnimCjkStrokeOffsets\(svgs\)/)
   assert.match(source, /getAnimCjkTimelineEvents\(\{ startFrom, totalStrokes, speed \}\)/)
@@ -17,4 +21,22 @@ test("KanaStrokeAnimCJK delegates timeline math to animcjk helpers", () => {
   assert.doesNotMatch(source, /const SPEEDS =/)
   assert.doesNotMatch(source, /Math\.max\(0, Math\.min\(svg\.strokeCount \+ 1, activeStroke - offset\)\)/)
   assert.doesNotMatch(source, /const baseMs = 800 \* speed/)
+  assert.doesNotMatch(source, /<ControlBtn/)
+  assert.doesNotMatch(source, /from "lucide-react"/)
+})
+
+test("KanaStrokeControls owns playback control buttons and labels", () => {
+  const source = fs.readFileSync(path.join(root, "src/components/kana/kana-stroke-controls.tsx"), "utf8")
+
+  assert.match(source, /export function KanaStrokeControls/)
+  assert.match(source, /from "lucide-react"/)
+  assert.match(source, /<ControlBtn onClick=\{onPrev\}/)
+  assert.match(source, /aria-label="上一笔"/)
+  assert.match(source, /aria-label=\{isPaused \|\| isFinished \? "播放" : "暂停"\}/)
+  assert.match(source, /<ControlBtn onClick=\{onNext\}/)
+  assert.match(source, /aria-label="下一笔"/)
+  assert.match(source, /<ControlBtn onClick=\{onReplay\}/)
+  assert.match(source, /aria-label="重播"/)
+  assert.match(source, /aria-label=\{`速度：\$\{speedLabel\}`\}/)
+  assert.match(source, /\{Math\.min\(activeStroke, totalStrokes\)\} \/ \{totalStrokes\}/)
 })
