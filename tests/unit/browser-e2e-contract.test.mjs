@@ -115,3 +115,12 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /item\.correctAnswer === "a"/)
   assert.match(e2e, /wrong quiz answer should record kana a in mistakes/)
 })
+
+test("browser E2E text assertions reject mojibake fallbacks", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /getByLabel\(\/Stroke order\|笔顺\/\)/)
+  assert.match(e2e, /getByText\(\/得分:\/\)/)
+  assert.doesNotMatch(e2e, /绗旈/)
+  assert.doesNotMatch(e2e, /寰楀垎/)
+})

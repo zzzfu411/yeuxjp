@@ -139,7 +139,7 @@ try {
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").click()
   await page.getByTestId("kana-stroke-toggle").click()
-  assert.ok(await page.getByLabel(/Stroke order|笔顺|绗旈『/).isVisible())
+  assert.ok(await page.getByLabel(/Stroke order|笔顺/).isVisible())
 
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").fill("みせ")
@@ -151,7 +151,7 @@ try {
   })
   await page.getByTestId("quiz-mode-hiragana-romaji").click()
   await page.waitForSelector("button")
-  assert.ok(await page.getByText(/得分:|寰楀垎:/).isVisible())
+  assert.ok(await page.getByText(/得分:/).isVisible())
   assert.ok(await page.getByText("あ").isVisible(), "fixed quiz random source should ask kana a")
   await page.getByTestId("quiz-answer-option-0").click()
   const mistakes = await readJsonStorage(page, "yasashi.mistakes.v1")
