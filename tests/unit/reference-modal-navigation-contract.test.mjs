@@ -45,3 +45,22 @@ test("grammar, semantics, and pragmatics pages delegate modal navigation to the 
     assert.doesNotMatch(source, /setSelectedIndex\(\(prev\)/, relPath)
   }
 })
+
+test("vocabulary page keeps card-specific flip behavior while sharing indexed navigation", () => {
+  const source = read("src/app/vocabulary/page.tsx")
+
+  assert.match(source, /from "@\/lib\/use-indexed-modal-navigation"/)
+  assert.match(source, /useIndexedModalNavigation\(currentDataLength\)/)
+  assert.match(source, /onExpand=\{\(index\) => \{/)
+  assert.match(source, /openAt\(index\)/)
+  assert.match(source, /onClose=\{resetSelection\}/)
+  assert.match(source, /onNext=\{handleNext\}/)
+  assert.match(source, /onPrev=\{handlePrev\}/)
+  assert.match(source, /goNext\(\)/)
+  assert.match(source, /goPrev\(\)/)
+  assert.match(source, /setIsModalFlipped\(false\)/)
+  assert.match(source, /e\.key === " "/)
+  assert.doesNotMatch(source, /e\.key === "ArrowRight"/)
+  assert.doesNotMatch(source, /e\.key === "ArrowLeft"/)
+  assert.doesNotMatch(source, /setSelectedIndex\(\(prev\)/)
+})

@@ -11,6 +11,7 @@ import {
   getVocabularyCategories,
   getVocabularyProgress,
 } from "@/lib/vocabulary-page-model"
+import { useIndexedModalNavigation } from "@/lib/use-indexed-modal-navigation"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
@@ -128,10 +129,16 @@ function VocabularyPageContent() {
   )
 
   // Navigation State
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isModalFlipped, setIsModalFlipped] = useState(false)
 
   const currentDataLength = currentData.length
+  const {
+    selectedIndex,
+    openAt,
+    close,
+    goNext,
+    goPrev,
+  } = useIndexedModalNavigation(currentDataLength)
   const selectedVocab = selectedIndex !== null ? currentData[selectedIndex] ?? null : null
   const selectedKana = selectedVocab?.kana
 
@@ -152,9 +159,9 @@ function VocabularyPageContent() {
   };
 
   const resetSelection = useCallback(() => {
-    setSelectedIndex(null)
+    close()
     setIsModalFlipped(false)
-  }, [])
+  }, [close])
 
   const handleLevelChange = useCallback((level: VocabLevel) => {
     setCurrentLevel(level)
@@ -181,16 +188,14 @@ function VocabularyPageContent() {
 
   // Handlers
   const handleNext = useCallback(() => {
-    if (selectedIndex === null || currentDataLength === 0) return
-    setSelectedIndex((prev) => (prev! + 1) % currentDataLength)
+    goNext()
     setIsModalFlipped(false)
-  }, [currentDataLength, selectedIndex])
+  }, [goNext])
 
   const handlePrev = useCallback(() => {
-    if (selectedIndex === null || currentDataLength === 0) return
-    setSelectedIndex((prev) => (prev! - 1 + currentDataLength) % currentDataLength)
+    goPrev()
     setIsModalFlipped(false)
-  }, [currentDataLength, selectedIndex])
+  }, [goPrev])
 
   const handlePlay = useCallback(() => {
     if (!selectedKana) return
@@ -201,8 +206,6 @@ function VocabularyPageContent() {
   useEffect(() => {
     if (selectedIndex === null) return
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") handleNext()
-      if (e.key === "ArrowLeft") handlePrev()
       if (e.key === " ") {
         e.preventDefault()
         setIsModalFlipped(prev => !prev)
@@ -210,7 +213,7 @@ function VocabularyPageContent() {
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [selectedIndex, handleNext, handlePrev])
+  }, [selectedIndex])
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-8 mb-20">
@@ -251,7 +254,7 @@ function VocabularyPageContent() {
         error={vocabState.error}
         isLearnedId={isLearnedId}
         onExpand={(index) => {
-          setSelectedIndex(index)
+          openAt(index)
           setIsModalFlipped(false)
         }}
       />
@@ -264,7 +267,7 @@ function VocabularyPageContent() {
         total={currentData.length}
         flipped={isModalFlipped}
         learned={selectedVocab ? isLearnedId(selectedVocab.id) : false}
-        onClose={() => setSelectedIndex(null)}
+        onClose={resetSelection}
         onFlip={() => setIsModalFlipped((prev) => !prev)}
         onNext={handleNext}
         onPrev={handlePrev}

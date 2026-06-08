@@ -15,7 +15,7 @@ test("vocabulary page delegates categorized card grid and status copy to Vocabul
   assert.match(page, /from "@\/components\/vocabulary\/vocabulary-category-list"/)
   assert.match(page, /<VocabularyCategoryList\b/)
   assert.match(page, /onExpand=\{\(index\) =>/)
-  assert.match(page, /setSelectedIndex\(index\)/)
+  assert.match(page, /openAt\(index\)/)
   assert.match(page, /setIsModalFlipped\(false\)/)
   assert.doesNotMatch(page, /<Flashcard\b/)
   assert.doesNotMatch(page, /<CategoryIcon\b/)
