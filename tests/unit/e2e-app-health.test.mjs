@@ -17,7 +17,18 @@ function fakeResponse(status, html = "") {
 }
 
 test("E2E app health recognizes current app pages", () => {
-  assert.deepEqual(appHealthRoutes, ["/", "/kana", "/vocabulary", "/quiz", "/review", "/path"])
+  assert.deepEqual(appHealthRoutes, [
+    "/",
+    "/kana",
+    "/vocabulary",
+    "/quiz",
+    "/review",
+    "/path",
+    "/grammar",
+    "/semantics",
+    "/pragmatics",
+    "/learn/day-1-a-row-hello",
+  ])
   assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>"), true)
   assert.equal(pageLooksLikeYasashi("<html><body><div id=\"__next\"></div></body></html>"), true)
   assert.equal(pageLooksLikeYasashi("<html>Different local app</html>"), false)

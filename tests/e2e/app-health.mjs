@@ -1,4 +1,15 @@
-export const appHealthRoutes = ["/", "/kana", "/vocabulary", "/quiz", "/review", "/path"]
+export const appHealthRoutes = [
+  "/",
+  "/kana",
+  "/vocabulary",
+  "/quiz",
+  "/review",
+  "/path",
+  "/grammar",
+  "/semantics",
+  "/pragmatics",
+  "/learn/day-1-a-row-hello",
+]
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
