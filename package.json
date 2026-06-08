@@ -10,7 +10,9 @@
     "test": "node --test tests/unit/*.test.mjs",
     "e2e": "node tests/e2e/smoke.mjs",
     "e2e:browser": "node tests/e2e/browser.mjs",
-    "e2e:browser:required": "node tests/e2e/browser.mjs --required"
+    "e2e:browser:required": "node tests/e2e/browser.mjs --required",
+    "e2e:pwa": "node tests/e2e/pwa-offline.mjs",
+    "e2e:pwa:required": "node tests/e2e/pwa-offline.mjs --required"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
