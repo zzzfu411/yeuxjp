@@ -2,22 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { kanaData } from "@/data/kana-data"
 import { useKanaProgress } from "@/lib/kana-progress"
-import {
-  filterKanaByProgress,
-  getKanaProgress,
-  getKanaRowsForData,
-  getKanaSetData,
-  KANA_ROWS,
-  parseKanaSet,
-  type KanaSet,
-} from "@/lib/kana-page-model"
+import { parseKanaSet, type KanaSet } from "@/lib/kana-page-model"
 import { GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { KanaLearningSection } from "@/components/kana/kana-learning-section"
 import { KanaControls, type KanaMode } from "@/components/kana/kana-controls"
+import { useKanaPageData } from "@/components/kana/use-kana-page-data"
 
 function KanaPageContent() {
   const searchParams = useSearchParams()
@@ -49,31 +41,15 @@ function KanaPageContent() {
     }
   }, [urlMode, urlSet])
 
-  const seion = useMemo(() => getKanaSetData(kanaData, "seion"), [])
-  const dakuonHandakuon = useMemo(() => getKanaSetData(kanaData, "dakuon"), [])
-  const yoon = useMemo(() => getKanaSetData(kanaData, "yoon"), [])
-  const special = useMemo(() => getKanaSetData(kanaData, "special"), [])
-  const seionDakuon = useMemo(
-    () => kanaData.filter((item) => item.type === "seion" || item.type === "dakuon" || item.type === "handakuon"),
-    []
-  )
-
-  const filterByProgress = (list: typeof kanaData) => filterKanaByProgress(list, onlyUnmastered, isMastered)
-  const rowsFor = (rows: readonly string[], list: typeof kanaData) => getKanaRowsForData(rows, list)
-
-  const visibleSeion = filterByProgress(seion)
-  const visibleDakuonHandakuon = filterByProgress(dakuonHandakuon)
-  const visibleYoon = filterByProgress(yoon)
-  const visibleSpecial = filterByProgress(special)
-  const visibleSeionDakuon = filterByProgress(seionDakuon)
-
-  const activeData = useMemo(() => {
-    return getKanaSetData(kanaData, kanaSet)
-  }, [kanaSet])
-
-  const activeProgress = useMemo(() => {
-    return getKanaProgress(activeData, isMastered)
-  }, [activeData, isMastered])
+  const {
+    activeProgress,
+    rows,
+    visibleSeion,
+    visibleDakuonHandakuon,
+    visibleYoon,
+    visibleSpecial,
+    visibleSeionDakuon,
+  } = useKanaPageData(kanaSet, onlyUnmastered, isMastered)
 
   const handleClearMastered = useCallback(() => {
     if (typeof window === "undefined") return
@@ -169,7 +145,7 @@ function KanaPageContent() {
           banner="seion"
           data={visibleSeion}
           mode={mode}
-          rows={rowsFor(KANA_ROWS.seion, visibleSeion)}
+          rows={rows.seion}
           columns={5}
           showRomaji={showRomaji}
           isMastered={isMastered}
@@ -181,7 +157,7 @@ function KanaPageContent() {
           banner="dakuon"
           data={visibleDakuonHandakuon}
           mode={mode}
-          rows={rowsFor(KANA_ROWS.dakuon, visibleDakuonHandakuon)}
+          rows={rows.dakuon}
           columns={5}
           showRomaji={showRomaji}
           isMastered={isMastered}
@@ -193,7 +169,7 @@ function KanaPageContent() {
           banner="yoon"
           data={visibleYoon}
           mode={mode}
-          rows={rowsFor(KANA_ROWS.yoon, visibleYoon)}
+          rows={rows.yoon}
           columns={3}
           showRomaji={showRomaji}
           isMastered={isMastered}
@@ -214,7 +190,7 @@ function KanaPageContent() {
           }
           data={visibleSpecial}
           mode={mode}
-          rows={rowsFor(KANA_ROWS.special, visibleSpecial)}
+          rows={rows.special}
           columns={3}
           showRomaji={showRomaji}
           isMastered={isMastered}
@@ -231,7 +207,7 @@ function KanaPageContent() {
             description="建议先掌握清音，再逐步解锁后两类。"
             data={visibleSeionDakuon}
             mode={mode}
-            rows={rowsFor([...KANA_ROWS.seion, ...KANA_ROWS.dakuon], visibleSeionDakuon)}
+            rows={rows.seionDakuon}
             columns={5}
             showRomaji={showRomaji}
             isMastered={isMastered}
@@ -244,7 +220,7 @@ function KanaPageContent() {
             description="由「い段 + 小ゃ/ゅ/ょ」组合而成，读音会收缩。"
             data={visibleYoon}
             mode={mode}
-            rows={rowsFor(KANA_ROWS.yoon, visibleYoon)}
+            rows={rows.yoon}
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
@@ -257,7 +233,7 @@ function KanaPageContent() {
             description="不单独发音，表示后续子音加倍（例：きって）。"
             data={visibleSpecial}
             mode={mode}
-            rows={rowsFor(KANA_ROWS.special, visibleSpecial)}
+            rows={rows.special}
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
