@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { kanaData } from "@/data/kana-data"
-import { KanaGrid } from "@/components/kana/kana-grid"
 import { useKanaProgress } from "@/lib/kana-progress"
 import {
   filterKanaByProgress,
@@ -17,7 +16,7 @@ import {
 import { GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
-import { KanaBanner } from "@/components/kana/kana-banner"
+import { KanaLearningSection } from "@/components/kana/kana-learning-section"
 import { KanaControls, type KanaMode } from "@/components/kana/kana-controls"
 
 function KanaPageContent() {
@@ -61,6 +60,12 @@ function KanaPageContent() {
 
   const filterByProgress = (list: typeof kanaData) => filterKanaByProgress(list, onlyUnmastered, isMastered)
   const rowsFor = (rows: readonly string[], list: typeof kanaData) => getKanaRowsForData(rows, list)
+
+  const visibleSeion = filterByProgress(seion)
+  const visibleDakuonHandakuon = filterByProgress(dakuonHandakuon)
+  const visibleYoon = filterByProgress(yoon)
+  const visibleSpecial = filterByProgress(special)
+  const visibleSeionDakuon = filterByProgress(seionDakuon)
 
   const activeData = useMemo(() => {
     return getKanaSetData(kanaData, kanaSet)
@@ -160,111 +165,99 @@ function KanaPageContent() {
       <SpeechSettingsBar className="max-w-3xl" />
 
       {kanaSet === "seion" && (
-        <div className="w-full space-y-6 flex flex-col items-center">
-          <KanaBanner banner="seion" />
-          <KanaGrid
-            data={filterByProgress(seion)}
-            mode={mode}
-            rows={rowsFor(KANA_ROWS.seion, filterByProgress(seion))}
-            columns={5}
-            showRomaji={showRomaji}
-            isMastered={isMastered}
-            onToggleMastered={toggleMastered}
-          />
-        </div>
+        <KanaLearningSection
+          banner="seion"
+          data={visibleSeion}
+          mode={mode}
+          rows={rowsFor(KANA_ROWS.seion, visibleSeion)}
+          columns={5}
+          showRomaji={showRomaji}
+          isMastered={isMastered}
+          onToggleMastered={toggleMastered}
+        />
       )}
       {kanaSet === "dakuon" && (
-        <div className="w-full space-y-6 flex flex-col items-center">
-          <KanaBanner banner="dakuon" />
-          <KanaGrid
-            data={filterByProgress(dakuonHandakuon)}
-            mode={mode}
-            rows={rowsFor(KANA_ROWS.dakuon, filterByProgress(dakuonHandakuon))}
-            columns={5}
-            showRomaji={showRomaji}
-            isMastered={isMastered}
-            onToggleMastered={toggleMastered}
-          />
-        </div>
+        <KanaLearningSection
+          banner="dakuon"
+          data={visibleDakuonHandakuon}
+          mode={mode}
+          rows={rowsFor(KANA_ROWS.dakuon, visibleDakuonHandakuon)}
+          columns={5}
+          showRomaji={showRomaji}
+          isMastered={isMastered}
+          onToggleMastered={toggleMastered}
+        />
       )}
       {kanaSet === "yoon" && (
-        <div className="w-full space-y-6 flex flex-col items-center">
-          <KanaBanner banner="yoon" />
-          <KanaGrid
-            data={filterByProgress(yoon)}
-            mode={mode}
-            rows={rowsFor(KANA_ROWS.yoon, filterByProgress(yoon))}
-            columns={3}
-            showRomaji={showRomaji}
-            isMastered={isMastered}
-            onToggleMastered={toggleMastered}
-          />
-        </div>
+        <KanaLearningSection
+          banner="yoon"
+          data={visibleYoon}
+          mode={mode}
+          rows={rowsFor(KANA_ROWS.yoon, visibleYoon)}
+          columns={3}
+          showRomaji={showRomaji}
+          isMastered={isMastered}
+          onToggleMastered={toggleMastered}
+        />
       )}
       {kanaSet === "special" && (
-        <div className="w-full space-y-4 flex flex-col items-center">
-          <KanaBanner banner="sokuon" />
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <p className="text-sm text-muted-foreground leading-relaxed">
+        <KanaLearningSection
+          banner="sokuon"
+          className="space-y-4"
+          descriptionClassName="text-sm"
+          description={
+            <p>
               促音用小写的「っ/ッ」表示，读的时候不单独发音，而是让后面的子音“加倍”（比如：きて vs きって）。
               <br />
               建议：先用朗读按钮反复听辨，再用笔顺动画记住写法与大小。
             </p>
-          </div>
-          <KanaGrid
-            data={filterByProgress(special)}
-            mode={mode}
-            rows={rowsFor(KANA_ROWS.special, filterByProgress(special))}
-            columns={3}
-            showRomaji={showRomaji}
-            isMastered={isMastered}
-            onToggleMastered={toggleMastered}
-          />
-        </div>
+          }
+          data={visibleSpecial}
+          mode={mode}
+          rows={rowsFor(KANA_ROWS.special, visibleSpecial)}
+          columns={3}
+          showRomaji={showRomaji}
+          isMastered={isMastered}
+          onToggleMastered={toggleMastered}
+        />
       )}
 
       {kanaSet === "all" && (
         <div className="w-full space-y-10 flex flex-col items-center">
-          <KanaBanner banner="all" />
-          <div className="text-center space-y-1">
-            <h2 className="text-lg font-bold">清音 + 浊音/半浊音</h2>
-            <p className="text-xs text-muted-foreground">建议先掌握清音，再逐步解锁后两类。</p>
-          </div>
-          <KanaGrid
-            data={filterByProgress(seionDakuon)}
+          <KanaLearningSection
+            banner="all"
+            title="清音 + 浊音/半浊音"
+            copyClassName="space-y-1"
+            description="建议先掌握清音，再逐步解锁后两类。"
+            data={visibleSeionDakuon}
             mode={mode}
-            rows={rowsFor(
-              [...KANA_ROWS.seion, ...KANA_ROWS.dakuon],
-              filterByProgress(seionDakuon)
-            )}
+            rows={rowsFor([...KANA_ROWS.seion, ...KANA_ROWS.dakuon], visibleSeionDakuon)}
             columns={5}
             showRomaji={showRomaji}
             isMastered={isMastered}
             onToggleMastered={toggleMastered}
           />
 
-          <div className="text-center space-y-1">
-            <h2 className="text-lg font-bold">拗音</h2>
-            <p className="text-xs text-muted-foreground">由「い段 + 小ゃ/ゅ/ょ」组合而成，读音会收缩。</p>
-          </div>
-          <KanaGrid
-            data={filterByProgress(yoon)}
+          <KanaLearningSection
+            title="拗音"
+            copyClassName="space-y-1"
+            description="由「い段 + 小ゃ/ゅ/ょ」组合而成，读音会收缩。"
+            data={visibleYoon}
             mode={mode}
-            rows={rowsFor(KANA_ROWS.yoon, filterByProgress(yoon))}
+            rows={rowsFor(KANA_ROWS.yoon, visibleYoon)}
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
             onToggleMastered={toggleMastered}
           />
 
-          <div className="text-center space-y-1">
-            <h2 className="text-lg font-bold">促音（っ / ッ）</h2>
-            <p className="text-xs text-muted-foreground">不单独发音，表示后续子音加倍（例：きって）。</p>
-          </div>
-          <KanaGrid
-            data={filterByProgress(special)}
+          <KanaLearningSection
+            title="促音（っ / ッ）"
+            copyClassName="space-y-1"
+            description="不单独发音，表示后续子音加倍（例：きって）。"
+            data={visibleSpecial}
             mode={mode}
-            rows={rowsFor(KANA_ROWS.special, filterByProgress(special))}
+            rows={rowsFor(KANA_ROWS.special, visibleSpecial)}
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
