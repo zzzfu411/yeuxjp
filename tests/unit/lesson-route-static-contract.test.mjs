@@ -19,6 +19,7 @@ test("lesson route is a static server shell around LessonRunner", () => {
   assert.match(source, /from "@\/data\/lessons"/)
   assert.match(source, /STARTER_LESSONS/)
   assert.match(source, /getLessonById/)
+  assert.match(source, /export const dynamicParams = false/)
   assert.match(source, /export function generateStaticParams\(\)/)
   assert.match(source, /STARTER_LESSONS\.map\(\(lesson\) => \(\{ lessonId: lesson\.id \}\)\)/)
   assert.match(source, /params: Promise<\{ lessonId: string \}>/)

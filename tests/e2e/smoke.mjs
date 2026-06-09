@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import {
   appHealthRoutes,
+  appNotFoundRoutes,
   pageLooksLikeYasashi,
 } from "./app-health.mjs"
 import { createServerController, reuseOrStartDevServer } from "./harness.mjs"
@@ -22,7 +23,13 @@ try {
     assert.equal(pageLooksLikeYasashi(html), true, `${route} should return a Next.js page`)
   }
 
-  console.log(`HTTP smoke checks passed for ${routes.length} routes at ${baseUrl}`)
+  for (const route of appNotFoundRoutes) {
+    const response = await fetch(`${baseUrl}${route}`)
+    assert.equal(response.status, 404, `${route} should return 404`)
+  }
+
+  const notFoundLabel = appNotFoundRoutes.length === 1 ? "404 route" : "404 routes"
+  console.log(`HTTP smoke checks passed for ${routes.length} routes and ${appNotFoundRoutes.length} ${notFoundLabel} at ${baseUrl}`)
 } catch (error) {
   console.error(serverController.output)
   failure = error

@@ -13,6 +13,10 @@ export const appHealthRoutes = [
   "/learn/day-1-a-row-hello",
 ]
 
+export const appNotFoundRoutes = [
+  "/learn/__missing__",
+]
+
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

@@ -6,6 +6,8 @@ interface LessonPageProps {
   params: Promise<{ lessonId: string }>
 }
 
+export const dynamicParams = false
+
 export function generateStaticParams() {
   return STARTER_LESSONS.map((lesson) => ({ lessonId: lesson.id }))
 }

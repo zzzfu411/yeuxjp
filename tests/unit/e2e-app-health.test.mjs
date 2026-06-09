@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import {
   appHealthRoutes,
+  appNotFoundRoutes,
   canReach,
   canServeRoutes,
   pageLooksLikeYasashi,
@@ -34,6 +35,12 @@ test("E2E app health recognizes current app pages", () => {
   assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>"), true)
   assert.equal(pageLooksLikeYasashi("<html><body><div id=\"__next\"></div></body></html>"), true)
   assert.equal(pageLooksLikeYasashi("<html>Different local app</html>"), false)
+})
+
+test("E2E app health declares expected not-found routes", () => {
+  assert.deepEqual(appNotFoundRoutes, [
+    "/learn/__missing__",
+  ])
 })
 
 test("E2E app health checks every candidate route before reusing a server", async () => {
