@@ -46,12 +46,14 @@ export function QuizScopeControls({
         <div className="flex p-1 bg-secondary rounded-lg">
           <button
             onClick={() => onKanaScopeChange("seion")}
+            data-testid="quiz-kana-scope-seion"
             className={cn(scopeButtonClassName(kanaScope === "seion"), "px-5")}
           >
             清音
           </button>
           <button
             onClick={() => onKanaScopeChange("all")}
+            data-testid="quiz-kana-scope-all"
             className={cn(scopeButtonClassName(kanaScope === "all"), "px-5")}
           >
             全部
@@ -60,6 +62,7 @@ export function QuizScopeControls({
 
         <button
           onClick={() => onOnlyUnmasteredKanaChange(!onlyUnmasteredKana)}
+          data-testid="quiz-only-unmastered-kana"
           className={filterButtonClassName(onlyUnmasteredKana)}
         >
           {onlyUnmasteredKana ? "只出未掌握" : "全部出题"}
@@ -81,6 +84,7 @@ export function QuizScopeControls({
             <button
               key={scope}
               onClick={() => onVocabScopeChange(scope as VocabQuizScope)}
+              data-testid={`quiz-vocab-scope-${scope}`}
               className={scopeButtonClassName(vocabScope === scope)}
             >
               {label}
@@ -90,6 +94,7 @@ export function QuizScopeControls({
 
         <button
           onClick={() => onOnlyUnlearnedVocabChange(!onlyUnlearnedVocab)}
+          data-testid="quiz-only-unlearned-vocab"
           className={filterButtonClassName(onlyUnlearnedVocab)}
         >
           {onlyUnlearnedVocab ? "只出未掌握" : "全部出题"}

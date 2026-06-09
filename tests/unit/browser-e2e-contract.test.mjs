@@ -97,6 +97,16 @@ const requiredSelectors = [
     pattern: /data-testid=\{`quiz-answer-option-\$\{index\}`\}/,
   },
   {
+    testId: "quiz-only-unmastered-kana",
+    source: "src/components/quiz/quiz-scope-controls.tsx",
+    pattern: /data-testid="quiz-only-unmastered-kana"/,
+  },
+  {
+    testId: "quiz-empty-state",
+    source: "src/components/quiz/quiz-runner.tsx",
+    pattern: /data-testid="quiz-empty-state"/,
+  },
+  {
     testId: "review-start-today",
     source: "src/components/review/review-banners.tsx",
     pattern: /data-testid="review-start-today"/,
@@ -254,6 +264,16 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /getByTestId\("recent-mistake-kana:a:hiragana-romaji"\)/)
   assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("mistake-review-session"\)/)
+})
+
+test("browser E2E verifies mastered kana filters show the quiz empty state", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /const seionRomaji = \[/)
+  assert.match(e2e, /yasashi\.kana\.mastered\.v1/)
+  assert.match(e2e, /JSON\.stringify\(masteredIds\)/)
+  assert.match(e2e, /getByTestId\("quiz-only-unmastered-kana"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("quiz-empty-state"\)\.waitFor\(\{ state: "visible" \}\)/)
 })
 
 test("browser E2E verifies review empty and due states", () => {

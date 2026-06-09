@@ -11,6 +11,54 @@ const port = Number(process.env.E2E_PORT ?? 3210)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
 const browserE2ERequired = isE2ERequired("E2E_BROWSER_REQUIRED")
 const serverController = createServerController()
+const seionRomaji = [
+  "a",
+  "i",
+  "u",
+  "e",
+  "o",
+  "ka",
+  "ki",
+  "ku",
+  "ke",
+  "ko",
+  "sa",
+  "shi",
+  "su",
+  "se",
+  "so",
+  "ta",
+  "chi",
+  "tsu",
+  "te",
+  "to",
+  "na",
+  "ni",
+  "nu",
+  "ne",
+  "no",
+  "ha",
+  "hi",
+  "fu",
+  "he",
+  "ho",
+  "ma",
+  "mi",
+  "mu",
+  "me",
+  "mo",
+  "ya",
+  "yu",
+  "yo",
+  "ra",
+  "ri",
+  "ru",
+  "re",
+  "ro",
+  "wa",
+  "wo",
+  "n",
+]
 
 async function ensureServer() {
   baseUrl = await reuseOrStartDevServer({
@@ -212,6 +260,15 @@ try {
   await page.getByTestId("recent-mistake-kana:a:hiragana-romaji").waitFor({ state: "visible" })
   await page.getByTestId("review-start-mistakes").click()
   await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
+
+  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+  await page.evaluate((masteredIds) => {
+    localStorage.clear()
+    localStorage.setItem("yasashi.kana.mastered.v1", JSON.stringify(masteredIds))
+  }, seionRomaji)
+  await page.getByTestId("quiz-mode-hiragana-romaji").click()
+  await page.getByTestId("quiz-only-unmastered-kana").click()
+  await page.getByTestId("quiz-empty-state").waitFor({ state: "visible" })
 
   await seedReviewState(page)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
