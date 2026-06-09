@@ -66,9 +66,11 @@ test("LessonRunner warns on locked direct lesson visits without auto-starting pr
 test("LessonRunner keeps locked lesson previews read-only", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
   const navigation = read("src/components/lesson/lesson-navigation-bar.tsx")
+  const practice = read("src/components/lesson/use-lesson-step-practice.ts")
 
   assert.match(source, /const lessonReadOnly = !loaded \|\| !lessonUnlocked/)
-  assert.match(source, /if \(lessonReadOnly\) return/)
+  assert.match(source, /readOnly: lessonReadOnly/)
+  assert.match(practice, /if \(readOnly\) return/)
   assert.match(source, /readOnly=\{lessonReadOnly\}/)
   assert.match(source, /<LessonNavigationBar/)
   assert.match(navigation, /disabled=\{!loaded \|\| \(!lessonUnlocked && isLast\) \|\| \(lessonUnlocked && isPracticeStep\(current\) && !result\)\}/)

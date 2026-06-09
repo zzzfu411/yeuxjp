@@ -21,6 +21,7 @@ import { LessonProgressSidebar } from "@/components/lesson/lesson-progress-sideb
 import { LessonLockedPreview } from "@/components/lesson/lesson-locked-preview"
 import { LessonNavigationBar } from "@/components/lesson/lesson-navigation-bar"
 import { useLessonAnswerRecorder } from "@/components/lesson/use-lesson-answer-recorder"
+import { useLessonStepPractice } from "@/components/lesson/use-lesson-step-practice"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 
 interface LessonRunnerProps {
@@ -33,10 +34,6 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
   const { lessons, results, loaded, startLesson, completeLesson, saveLessonPosition } = progress
   const [manualStep, setManualStep] = useState<{ lessonId: string; index: number } | null>(null)
   const [answeredDraft, setAnsweredDraft] = useState<{ lessonId: string; answers: Record<string, boolean> } | null>(null)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [typed, setTyped] = useState("")
-  const [built, setBuilt] = useState<string[]>([])
-  const [result, setResult] = useState<"correct" | "wrong" | null>(null)
   const [saveError, setSaveError] = useState(false)
   const savedLessonProgress = lesson ? lessons[lesson.id] : undefined
   const lessonUnlocked = useMemo(() => {
@@ -45,14 +42,6 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
   }, [lesson, loaded, progress.completedLessonIds])
   const recommendedLesson = useMemo(() => getNextLesson(progress.completedLessonIds), [progress.completedLessonIds])
   const lessonReadOnly = !loaded || !lessonUnlocked
-
-  const resetStepState = useCallback(() => {
-    setSelected(null)
-    setTyped("")
-    setBuilt([])
-    setResult(null)
-    setSaveError(false)
-  }, [])
 
   useEffect(() => {
     if (!lesson || !loaded) return
@@ -115,6 +104,25 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     notebook: mistakes,
     setAnswered: setAnsweredForLesson,
   })
+  const {
+    selected,
+    typed,
+    setTyped,
+    built,
+    result,
+    resetStepState,
+    submitChoice,
+    submitTyping,
+    pickChunk,
+    undoChunk,
+    resetChunks,
+    submitSentence,
+  } = useLessonStepPractice({
+    current,
+    readOnly: lessonReadOnly,
+    recordAnswer,
+    setSaveError,
+  })
 
   const lessonPosition = STARTER_LESSONS.findIndex((item) => item.id === lesson.id) + 1
   const nextLesson = STARTER_LESSONS[lessonPosition] ?? null
@@ -136,47 +144,6 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
   const goBack = () => {
     setManualStep({ lessonId: lesson.id, index: Math.max(stepIndex - 1, 0) })
     resetStepState()
-  }
-
-  const submitChoice = (answer: string) => {
-    if (lessonReadOnly) return
-    if (current.type !== "multipleChoice" || result) return
-    const recorded = recordAnswer(current, answer)
-    if (!recorded) {
-      setSaveError(true)
-      return
-    }
-    const ok = recorded.correct
-    setSaveError(false)
-    setSelected(answer)
-    setResult(ok ? "correct" : "wrong")
-  }
-
-  const submitTyping = () => {
-    if (lessonReadOnly) return
-    if ((current.type !== "typing" && current.type !== "dictation") || result) return
-    const recorded = recordAnswer(current, typed)
-    if (!recorded) {
-      setSaveError(true)
-      return
-    }
-    const ok = recorded.correct
-    setSaveError(false)
-    setResult(ok ? "correct" : "wrong")
-  }
-
-  const submitSentence = () => {
-    if (lessonReadOnly) return
-    if (current.type !== "sentenceBuild" || result) return
-    const answer = built.join("")
-    const recorded = recordAnswer(current, answer)
-    if (!recorded) {
-      setSaveError(true)
-      return
-    }
-    const ok = recorded.correct
-    setSaveError(false)
-    setResult(ok ? "correct" : "wrong")
   }
 
   const hasCompletedLesson = lessons[lesson.id]?.status === "completed"
@@ -234,12 +201,9 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
               onSelect={submitChoice}
               onTyped={setTyped}
               onSubmitTyping={submitTyping}
-              onPickChunk={(chunk) => {
-                if (result) return
-                setBuilt((prev) => [...prev, chunk])
-              }}
-              onUndoChunk={() => setBuilt((prev) => prev.slice(0, -1))}
-              onResetChunks={() => setBuilt([])}
+              onPickChunk={pickChunk}
+              onUndoChunk={undoChunk}
+              onResetChunks={resetChunks}
               onSubmitSentence={submitSentence}
               onPlay={playAudio}
               readOnly={lessonReadOnly}
