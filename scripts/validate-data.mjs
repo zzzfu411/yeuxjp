@@ -4,6 +4,7 @@ import url from "url"
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, "..")
+const workspaceRoot = path.resolve(root, "..")
 const srcDir = path.join(root, "src")
 
 let failed = false
@@ -187,9 +188,10 @@ function walkFiles(dir, predicate, out = []) {
 function validateNoMojibakeMarkers() {
   const sourceFiles = walkFiles(srcDir, (file) => /\.(ts|tsx|js|jsx|mjs)$/.test(file))
   const markdownFiles = [
-    "README.md",
+    path.join(root, "README.md"),
+    path.join(workspaceRoot, "CLAUDE.md"),
+    path.join(workspaceRoot, "README_CODEX.md"),
   ]
-    .map((relPath) => path.join(root, relPath))
     .filter((file) => fs.existsSync(file))
   const files = [...sourceFiles, ...markdownFiles]
   const markerPattern = /[\u9287\u9288\u9289\u934b\u9354\u95ab\u9435\u704f]/
@@ -211,7 +213,7 @@ function validateNoMojibakeMarkers() {
   const failures = []
 
   for (const file of files) {
-    const relPath = path.relative(root, file).replace(/\\/g, "/")
+    const relPath = path.relative(workspaceRoot, file).replace(/\\/g, "/")
     const lines = fs.readFileSync(file, "utf8").split(/\r?\n/)
     lines.forEach((line, index) => {
       if (markerPattern.test(line)) failures.push(`${relPath}:${index + 1}`)

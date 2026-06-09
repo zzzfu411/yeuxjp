@@ -22,6 +22,9 @@ test("data validation scans source and docs for common mojibake fragments", () =
   assert.match(source, /function validateNoMojibakeMarkers/)
   assert.match(source, /walkFiles\(srcDir/)
   assert.match(source, /README\.md/)
+  assert.match(source, /workspaceRoot/)
+  assert.match(source, /CLAUDE\.md/)
+  assert.match(source, /README_CODEX\.md/)
   for (const marker of ["绗旈", "寰楀", "褰撳", "瀛︿", "澶囦", "鏃犳", "娓呯", "閿欓", "瀵煎", "銇裤"]) {
     assert.ok(source.includes(marker), `validator should detect ${marker}`)
   }
