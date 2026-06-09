@@ -1,73 +1,23 @@
-import { spawn, spawnSync } from "node:child_process"
 import assert from "node:assert/strict"
-import { fileURLToPath } from "node:url"
-import { canServeRoutes, waitForServer } from "./app-health.mjs"
+import {
+  createServerController,
+  importPlaywrightOrSkip,
+  isE2ERequired,
+  readJsonStorage,
+  reuseOrStartDevServer,
+} from "./harness.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
-const browserE2ERequired = process.argv.includes("--required") || process.env.E2E_BROWSER_REQUIRED === "1"
-
-function isMissingPlaywright(error) {
-  const message = error instanceof Error ? error.message : String(error)
-  return message.includes("Cannot find package 'playwright'") || message.includes('Cannot find package "playwright"')
-}
-
-async function importPlaywright() {
-  try {
-    return await import("playwright")
-  } catch (error) {
-    if (!browserE2ERequired && isMissingPlaywright(error)) {
-      console.warn("Browser E2E skipped: Playwright is not installed. Run `npm run e2e:browser:required --prefix web` when browser dependencies are available.")
-      process.exit(0)
-    }
-    console.error("Browser E2E requires Playwright. Install browser dependencies or set E2E_BASE_URL and run in an environment with Playwright available.")
-    console.error(error instanceof Error ? error.message : String(error))
-    process.exit(2)
-  }
-}
-
-const appDir = fileURLToPath(new URL("../..", import.meta.url))
-let server = null
-let output = ""
-
-function stopServer() {
-  if (!server?.pid) return
-  if (process.platform === "win32") {
-    spawnSync("taskkill", ["/pid", String(server.pid), "/t", "/f"], { stdio: "ignore" })
-    return
-  }
-  server.kill("SIGTERM")
-}
+const browserE2ERequired = isE2ERequired("E2E_BROWSER_REQUIRED")
+const serverController = createServerController()
 
 async function ensureServer() {
-  const candidates = [
-    process.env.E2E_BASE_URL,
-    process.env.E2E_PORT ? baseUrl : "http://127.0.0.1:3000",
+  baseUrl = await reuseOrStartDevServer({
     baseUrl,
-  ].filter(Boolean)
-
-  for (const candidate of Array.from(new Set(candidates))) {
-    if (await canServeRoutes(candidate)) {
-      baseUrl = candidate
-      return
-    }
-  }
-
-  const command = process.platform === "win32" ? `npm.cmd run dev -- --hostname 127.0.0.1 --port ${port}` : "npm"
-  const args = process.platform === "win32" ? [] : ["run", "dev", "--", "--hostname", "127.0.0.1", "--port", String(port)]
-  server = spawn(command, args, {
-    cwd: appDir,
-    stdio: "pipe",
-    shell: process.platform === "win32",
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
+    port,
+    controller: serverController,
   })
-  server.stdout.on("data", (chunk) => {
-    output += chunk.toString()
-  })
-  server.stderr.on("data", (chunk) => {
-    output += chunk.toString()
-  })
-  await waitForServer(baseUrl)
 }
 
 async function seedReviewState(page) {
@@ -81,18 +31,16 @@ async function seedReviewState(page) {
   })
 }
 
-async function readJsonStorage(page, key) {
-  return page.evaluate((storageKey) => {
-    const raw = localStorage.getItem(storageKey)
-    return raw ? JSON.parse(raw) : null
-  }, key)
-}
-
 let browser = null
 let failure = null
 
 try {
-  const { chromium } = await importPlaywright()
+  const { chromium } = await importPlaywrightOrSkip({
+    required: browserE2ERequired,
+    label: "Browser E2E",
+    skipMessage: "Browser E2E skipped: Playwright is not installed. Run `npm run e2e:browser:required --prefix web` when browser dependencies are available.",
+    errorMessage: "Browser E2E requires Playwright. Install browser dependencies or set E2E_BASE_URL and run in an environment with Playwright available.",
+  })
   await ensureServer()
   browser = await chromium.launch({ headless: true })
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
@@ -173,13 +121,11 @@ try {
 
   console.log(`Browser E2E checks passed at ${baseUrl}`)
 } catch (error) {
-  console.error(output)
+  console.error(serverController.output)
   failure = error
 } finally {
   await browser?.close()
-  stopServer()
-  server?.stdout.destroy()
-  server?.stderr.destroy()
+  serverController.stop()
 }
 
 if (failure) {

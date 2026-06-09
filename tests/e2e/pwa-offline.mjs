@@ -1,76 +1,22 @@
-import { spawn, spawnSync } from "node:child_process"
 import assert from "node:assert/strict"
-import { fileURLToPath } from "node:url"
-import { canServeRoutes, waitForServer } from "./app-health.mjs"
+import {
+  createServerController,
+  importPlaywrightOrSkip,
+  isE2ERequired,
+  startProductionServer,
+} from "./harness.mjs"
 
 const port = Number(process.env.E2E_PWA_PORT ?? 3220)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
-const pwaE2ERequired = process.argv.includes("--required") || process.env.E2E_PWA_REQUIRED === "1"
-const appDir = fileURLToPath(new URL("../..", import.meta.url))
-
-function isMissingPlaywright(error) {
-  const message = error instanceof Error ? error.message : String(error)
-  return message.includes("Cannot find package 'playwright'") || message.includes('Cannot find package "playwright"')
-}
-
-async function importPlaywright() {
-  try {
-    return await import("playwright")
-  } catch (error) {
-    if (!pwaE2ERequired && isMissingPlaywright(error)) {
-      console.warn("PWA E2E skipped: Playwright is not installed. Run `npm run e2e:pwa:required --prefix web` when browser dependencies are available.")
-      process.exit(0)
-    }
-    console.error("PWA E2E requires Playwright. Install browser dependencies or set E2E_BASE_URL and run in an environment with Playwright available.")
-    console.error(error instanceof Error ? error.message : String(error))
-    process.exit(2)
-  }
-}
-
-let server = null
-let output = ""
-
-function npmCommand() {
-  return process.platform === "win32" ? "npm.cmd" : "npm"
-}
-
-function stopServer() {
-  if (!server?.pid) return
-  if (process.platform === "win32") {
-    spawnSync("taskkill", ["/pid", String(server.pid), "/t", "/f"], { stdio: "ignore" })
-    return
-  }
-  server.kill("SIGTERM")
-}
-
-function runBuildIfNeeded() {
-  if (process.env.E2E_BASE_URL) return
-  const result = spawnSync(npmCommand(), ["run", "build"], {
-    cwd: appDir,
-    stdio: "inherit",
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
-  })
-  if (result.status !== 0) {
-    throw new Error("Production build failed before PWA E2E")
-  }
-}
+const pwaE2ERequired = isE2ERequired("E2E_PWA_REQUIRED")
+const serverController = createServerController()
 
 async function ensureProductionServer() {
-  if (process.env.E2E_BASE_URL && await canServeRoutes(baseUrl)) return
-
-  runBuildIfNeeded()
-  server = spawn(npmCommand(), ["run", "start", "--", "--hostname", "127.0.0.1", "--port", String(port)], {
-    cwd: appDir,
-    stdio: "pipe",
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
+  baseUrl = await startProductionServer({
+    baseUrl,
+    port,
+    controller: serverController,
   })
-  server.stdout.on("data", (chunk) => {
-    output += chunk.toString()
-  })
-  server.stderr.on("data", (chunk) => {
-    output += chunk.toString()
-  })
-  await waitForServer(baseUrl)
 }
 
 async function waitForServiceWorker(page) {
@@ -96,7 +42,12 @@ let browser = null
 let failure = null
 
 try {
-  const { chromium } = await importPlaywright()
+  const { chromium } = await importPlaywrightOrSkip({
+    required: pwaE2ERequired,
+    label: "PWA E2E",
+    skipMessage: "PWA E2E skipped: Playwright is not installed. Run `npm run e2e:pwa:required --prefix web` when browser dependencies are available.",
+    errorMessage: "PWA E2E requires Playwright. Install browser dependencies or set E2E_BASE_URL and run in an environment with Playwright available.",
+  })
   await ensureProductionServer()
   browser = await chromium.launch({ headless: true })
   const context = await browser.newContext()
@@ -120,13 +71,11 @@ try {
   await context.setOffline(false)
   console.log(`PWA offline E2E checks passed at ${baseUrl}`)
 } catch (error) {
-  console.error(output)
+  console.error(serverController.output)
   failure = error
 } finally {
   await browser?.close()
-  stopServer()
-  server?.stdout.destroy()
-  server?.stderr.destroy()
+  serverController.stop()
 }
 
 if (failure) {
