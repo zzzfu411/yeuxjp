@@ -1,47 +1,29 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { useCallback, useMemo, useState, Suspense } from "react"
 import { useKanaProgress } from "@/lib/kana-progress"
-import { parseKanaSet, type KanaSet } from "@/lib/kana-page-model"
 import { GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { KanaLearningSection } from "@/components/kana/kana-learning-section"
-import { KanaControls, type KanaMode } from "@/components/kana/kana-controls"
+import { KanaControls } from "@/components/kana/kana-controls"
+import { useKanaPageControls } from "@/components/kana/use-kana-page-controls"
 import { useKanaPageData } from "@/components/kana/use-kana-page-data"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 
 function KanaPageContent() {
-  const searchParams = useSearchParams()
-  const [mode, setMode] = useState<KanaMode>("hiragana")
-  const [kanaSet, setKanaSet] = useState<KanaSet>("seion")
-  const [showRomaji, setShowRomaji] = useState(true)
-  const [onlyUnmastered, setOnlyUnmastered] = useState(false)
+  const {
+    mode,
+    setMode,
+    kanaSet,
+    setKanaSet,
+    showRomaji,
+    onlyUnmastered,
+    toggleShowRomaji,
+    toggleOnlyUnmastered,
+  } = useKanaPageControls()
   const [saveError, setSaveError] = useState(false)
   const { isMastered, toggleMastered, clearMastered } = useKanaProgress()
-
-  const urlMode = searchParams.get("mode")
-  const urlSet = searchParams.get("set")
-
-  useEffect(() => {
-    let cancelled = false
-
-    Promise.resolve().then(() => {
-      if (cancelled) return
-
-      if (urlMode === "hiragana" || urlMode === "katakana") {
-        setMode(urlMode)
-      }
-
-      const parsedSet = parseKanaSet(urlSet)
-      if (parsedSet) setKanaSet(parsedSet)
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [urlMode, urlSet])
 
   const {
     activeProgress,
@@ -146,8 +128,8 @@ function KanaPageContent() {
         hint={kanaSetHint}
         onModeChange={setMode}
         onKanaSetChange={setKanaSet}
-        onToggleRomaji={() => setShowRomaji((value) => !value)}
-        onToggleOnlyUnmastered={() => setOnlyUnmastered((value) => !value)}
+        onToggleRomaji={toggleShowRomaji}
+        onToggleOnlyUnmastered={toggleOnlyUnmastered}
         onClearMastered={handleClearMastered}
       />
       <PracticeSaveError show={saveError} />

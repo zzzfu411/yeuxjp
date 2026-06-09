@@ -51,8 +51,15 @@ test("kana page model filters progress, derives visible rows, and counts mastery
 test("kana page delegates reusable data derivation to kana-page-model", () => {
   const source = fs.readFileSync(path.join(root, "src/app/kana/page.tsx"), "utf8")
   const hook = fs.readFileSync(path.join(root, "src/components/kana/use-kana-page-data.ts"), "utf8")
+  const controls = fs.readFileSync(path.join(root, "src/components/kana/use-kana-page-controls.ts"), "utf8")
 
-  assert.match(source, /parseKanaSet\(urlSet\)/)
+  assert.match(source, /from "@\/components\/kana\/use-kana-page-controls"/)
+  assert.match(source, /useKanaPageControls\(\)/)
+  assert.match(controls, /useSearchParams\(\)/)
+  assert.match(controls, /parseKanaSet\(urlSet\)/)
+  assert.match(controls, /setMode\(urlMode\)/)
+  assert.match(controls, /setShowRomaji\(\(value\) => !value\)/)
+  assert.match(controls, /setOnlyUnmastered\(\(value\) => !value\)/)
   assert.match(source, /from "@\/components\/kana\/use-kana-page-data"/)
   assert.match(source, /useKanaPageData\(kanaSet, onlyUnmastered, isMastered\)/)
   assert.match(hook, /from "@\/lib\/kana-page-model"/)
@@ -65,4 +72,6 @@ test("kana page delegates reusable data derivation to kana-page-model", () => {
   assert.doesNotMatch(source, /filterKanaByProgress/)
   assert.doesNotMatch(source, /getKanaRowsForData/)
   assert.doesNotMatch(source, /activeData\.reduce/)
+  assert.doesNotMatch(source, /useSearchParams/)
+  assert.doesNotMatch(source, /parseKanaSet\(urlSet\)/)
 })

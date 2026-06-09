@@ -13,6 +13,8 @@ test("kana page delegates mode, set, filter, and progress controls to KanaContro
   const page = read("src/app/kana/page.tsx")
 
   assert.match(page, /from "@\/components\/kana\/kana-controls"/)
+  assert.match(page, /from "@\/components\/kana\/use-kana-page-controls"/)
+  assert.match(page, /useKanaPageControls\(\)/)
   assert.match(page, /<KanaControls\b/)
   assert.match(page, /mode=\{mode\}/)
   assert.match(page, /kanaSet=\{kanaSet\}/)
@@ -20,6 +22,8 @@ test("kana page delegates mode, set, filter, and progress controls to KanaContro
   assert.match(page, /hint=\{kanaSetHint\}/)
   assert.match(page, /onModeChange=\{setMode\}/)
   assert.match(page, /onKanaSetChange=\{setKanaSet\}/)
+  assert.match(page, /onToggleRomaji=\{toggleShowRomaji\}/)
+  assert.match(page, /onToggleOnlyUnmastered=\{toggleOnlyUnmastered\}/)
   assert.match(page, /onClearMastered=\{handleClearMastered\}/)
   assert.match(page, /from "@\/components\/practice\/practice-save-error"/)
   assert.match(page, /const \[saveError, setSaveError\] = useState\(false\)/)
@@ -29,6 +33,9 @@ test("kana page delegates mode, set, filter, and progress controls to KanaContro
   assert.match(page, /<PracticeSaveError show=\{saveError\} \/>/)
   assert.doesNotMatch(page, /EyeOff/)
   assert.doesNotMatch(page, /setShowRomaji\(v => !v\)/)
+  assert.doesNotMatch(page, /useSearchParams/)
+  assert.doesNotMatch(page, /parseKanaSet\(urlSet\)/)
+  assert.doesNotMatch(page, /setOnlyUnmastered\(\(value\) => !value\)/)
 })
 
 test("KanaControls owns kana mode tabs, set tabs, filters, and progress copy", () => {
