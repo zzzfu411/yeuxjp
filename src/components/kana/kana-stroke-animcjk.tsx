@@ -1,20 +1,16 @@
 "use client"
 
-import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react"
+import { Fragment, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { KanaGlyphBoard } from "@/components/kana/kana-glyph-board"
 import { KanaStrokeControls } from "@/components/kana/kana-stroke-controls"
+import { useAnimCjkPlayback } from "@/components/kana/use-animcjk-playback"
 import { useAnimCjkSvgs } from "@/components/kana/use-animcjk-svgs"
 import {
   getAnimCjkLocalActiveStroke,
-  getAnimCjkPlaybackStartStroke,
-  getAnimCjkSpeedLabel,
   getAnimCjkStrokeOffsets,
-  getAnimCjkTimelineEvents,
   getAnimCjkTotalStrokes,
-  getNextAnimCjkSpeed,
   SMALL_KANA_MAP,
-  type AnimCjkSpeedValue,
 } from "@/lib/animcjk"
 export { getAnimCjkKanaUrls } from "@/lib/animcjk"
 
@@ -40,107 +36,30 @@ export function KanaStrokeAnimCJK({
 }: KanaStrokeAnimCJKProps) {
   const { parts, cacheKey, svgs, error } = useAnimCjkSvgs(char)
 
-  const [speed, setSpeed] = useState<AnimCjkSpeedValue>(1)
-  const [playToken, setPlayToken] = useState(0) // bump to restart timeline
-  const [isPaused, setIsPaused] = useState(false)
-  const [activeStroke, setActiveStroke] = useState<number>(0) // 0 = not started, 1..N = current
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
-
   // Total stroke count across all sub-glyphs (for combos like きゃ)
   const totalStrokes = useMemo(
     () => (svgs ? getAnimCjkTotalStrokes(svgs) : 0),
     [svgs]
   )
+  const {
+    activeStroke,
+    isPaused,
+    speed,
+    speedLabel,
+    handlePrev,
+    handleTogglePause,
+    handleNext,
+    handleReplay,
+    handleCycleSpeed,
+  } = useAnimCjkPlayback({
+    autoPlay,
+    cacheKey,
+    ready: Boolean(svgs),
+    totalStrokes,
+  })
 
   /** Per-glyph stroke offsets so we can compute global active stroke -> local. */
   const offsets = useMemo(() => (svgs ? getAnimCjkStrokeOffsets(svgs) : []), [svgs])
-
-  const clearTimers = useCallback(() => {
-    for (const t of timersRef.current) clearTimeout(t)
-    timersRef.current = []
-  }, [])
-
-  // Schedule activeStroke advance based on speed. Single-stroke duration:
-  // 0.8s baseline (matches AnimCJK), multiplied by speed factor. After the
-  // last stroke fully draws, we push activeStroke to totalStrokes+1 as a
-  // "finished" sentinel so the per-stroke highlight color collapses back to
-  // the uniform foreground.
-  const scheduleTimeline = useCallback(
-    (startFrom: number) => {
-      clearTimers()
-      if (!totalStrokes) return
-      for (const event of getAnimCjkTimelineEvents({ startFrom, totalStrokes, speed })) {
-        const t = setTimeout(
-          () => setActiveStroke(event.stroke),
-          event.delayMs
-        )
-        timersRef.current.push(t)
-      }
-    },
-    [clearTimers, speed, totalStrokes]
-  )
-
-  // Drive playback whenever playToken or speed changes (also when svgs first load + autoPlay).
-  useEffect(() => {
-    if (!svgs || !totalStrokes) return
-    if (isPaused) return
-    const startFrom = getAnimCjkPlaybackStartStroke({ activeStroke, totalStrokes })
-    if (startFrom === null) return
-    scheduleTimeline(startFrom)
-
-    return () => clearTimers()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playToken, speed, isPaused, svgs, totalStrokes])
-
-  // Auto-play on mount / when character changes
-  useEffect(() => {
-    if (!svgs) return
-    if (!autoPlay) return
-    setActiveStroke(0)
-    setIsPaused(false)
-    setPlayToken((n) => n + 1)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cacheKey, svgs])
-
-  const handleReplay = useCallback(() => {
-    clearTimers()
-    setActiveStroke(0)
-    setIsPaused(false)
-    setPlayToken((n) => n + 1)
-  }, [clearTimers])
-
-  const handlePrev = useCallback(() => {
-    clearTimers()
-    setActiveStroke((n) => Math.max(0, n - 1))
-    setIsPaused(true)
-  }, [clearTimers])
-
-  const handleNext = useCallback(() => {
-    clearTimers()
-    setActiveStroke((n) => Math.min(totalStrokes, n + 1))
-    setIsPaused(true)
-  }, [clearTimers, totalStrokes])
-
-  const handleTogglePause = useCallback(() => {
-    if (activeStroke > totalStrokes) {
-      handleReplay()
-      return
-    }
-    setIsPaused((p) => !p)
-    if (isPaused) {
-      // resuming
-      setPlayToken((n) => n + 1)
-    } else {
-      clearTimers()
-    }
-  }, [activeStroke, totalStrokes, isPaused, handleReplay, clearTimers])
-
-  const handleCycleSpeed = useCallback(() => {
-    setSpeed((cur) => getNextAnimCjkSpeed(cur))
-  }, [])
-
-  // Cleanup timers on unmount
-  useEffect(() => () => clearTimers(), [clearTimers])
 
   // ---- Render ----
   if (error) {
@@ -158,8 +77,6 @@ export function KanaStrokeAnimCJK({
       </div>
     )
   }
-
-  const speedLabel = getAnimCjkSpeedLabel(speed)
 
   return (
     <div className={cn("kana-animcjk-wrapper w-full h-full flex flex-col items-stretch gap-3 text-foreground", className)}>
