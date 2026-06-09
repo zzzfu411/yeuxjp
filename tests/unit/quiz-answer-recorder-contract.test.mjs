@@ -25,11 +25,13 @@ test("quiz runner delegates shared answer recording to useQuizAnswerRecorder", (
   assert.doesNotMatch(source, /recordQuizAnswer/)
 })
 
-test("quiz runner explains empty question states instead of showing stale questions", () => {
+test("quiz runner delegates empty question states to QuizEmptyState", () => {
   const source = read("src/components/quiz/quiz-runner.tsx")
+  const emptyState = read("src/components/quiz/quiz-empty-state.tsx")
 
-  assert.match(source, /type QuizEmptyReason = "loading" \| "load-error" \| "filter-empty" \| "pool-too-small"/)
-  assert.match(source, /function getQuizEmptyMessage/)
+  assert.match(source, /from "@\/components\/quiz\/quiz-empty-state"/)
+  assert.match(source, /type QuizEmptyReason/)
+  assert.match(source, /<QuizEmptyState/)
   assert.match(source, /setEmptyReason\("loading"\)/)
   assert.match(source, /setEmptyReason\("load-error"\)/)
   assert.match(source, /setEmptyReason\(/)
@@ -37,12 +39,17 @@ test("quiz runner explains empty question states instead of showing stale questi
   assert.match(source, /"filter-empty"/)
   assert.match(source, /"pool-too-small"/)
   assert.match(source, /setCurrentQuestion\(null\)/)
-  assert.match(source, /词汇题库加载失败/)
-  assert.match(source, /当前题库不足以生成 4 个唯一选项/)
-  assert.match(source, /data-testid="quiz-empty-state"/)
-  assert.match(source, /data-testid="quiz-retry-vocabulary"/)
-  assert.match(source, /emptyReason === "load-error"/)
-  assert.doesNotMatch(source, /: "加载中\.\.\."\}/)
+  assert.doesNotMatch(source, /function getQuizEmptyMessage/)
+  assert.doesNotMatch(source, /data-testid="quiz-empty-state"/)
+
+  assert.match(emptyState, /export type QuizEmptyReason = "loading" \| "load-error" \| "filter-empty" \| "pool-too-small"/)
+  assert.match(emptyState, /function getQuizEmptyMessage/)
+  assert.match(emptyState, /词汇题库加载失败/)
+  assert.match(emptyState, /当前题库不足以生成 4 个唯一选项/)
+  assert.match(emptyState, /data-testid="quiz-empty-state"/)
+  assert.match(emptyState, /data-testid="quiz-retry-vocabulary"/)
+  assert.match(emptyState, /reason === "load-error"/)
+  assert.doesNotMatch(emptyState, /: "加载中\.\.\."\}/)
 })
 
 test("useQuizAnswerRecorder owns question result, stats, and learning record writes", () => {

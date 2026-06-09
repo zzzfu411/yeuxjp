@@ -11,15 +11,18 @@ function read(relPath) {
 
 test("quiz runner delegates vocabulary loading to useQuizVocabularyPools", () => {
   const source = read("src/components/quiz/quiz-runner.tsx")
+  const emptyState = read("src/components/quiz/quiz-empty-state.tsx")
 
   assert.match(source, /from "@\/components\/quiz\/use-quiz-vocabulary-pools"/)
+  assert.match(source, /from "@\/components\/quiz\/quiz-empty-state"/)
   assert.match(source, /useQuizVocabularyPools\(\{ mode, vocabScope \}\)/)
   assert.match(source, /error: vocabError/)
   assert.match(source, /retry: retryVocabulary/)
   assert.match(source, /if \(mode === "meaning-vocab" && vocabError\)/)
   assert.match(source, /setEmptyReason\("load-error"\)/)
-  assert.match(source, /data-testid="quiz-retry-vocabulary"/)
-  assert.match(source, /onClick=\{retryVocabulary\}/)
+  assert.match(source, /onRetryVocabulary=\{retryVocabulary\}/)
+  assert.match(emptyState, /data-testid="quiz-retry-vocabulary"/)
+  assert.match(emptyState, /onClick=\{onRetryVocabulary\}/)
   assert.doesNotMatch(source, /loadVocabularyScope/)
   assert.doesNotMatch(source, /setVocabPools/)
   assert.doesNotMatch(source, /vocabPools/)

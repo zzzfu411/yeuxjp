@@ -103,7 +103,7 @@ const requiredSelectors = [
   },
   {
     testId: "quiz-empty-state",
-    source: "src/components/quiz/quiz-runner.tsx",
+    source: "src/components/quiz/quiz-empty-state.tsx",
     pattern: /data-testid="quiz-empty-state"/,
   },
   {

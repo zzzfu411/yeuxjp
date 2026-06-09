@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { ArrowLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, ArrowLeft } from "lucide-react"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
@@ -12,6 +12,7 @@ import type { Question } from "@/lib/questions"
 import { createQuizStats } from "@/lib/quiz-session"
 import { SpeechSettingsBar, useSpeechPreferences } from "@/components/ui/speech-preferences"
 import { QuizAnswerFeedback } from "@/components/quiz/quiz-answer-feedback"
+import { QuizEmptyState, type QuizEmptyReason } from "@/components/quiz/quiz-empty-state"
 import { QuizModeHint } from "@/components/quiz/quiz-mode-hint"
 import { QuizOptionGrid } from "@/components/quiz/quiz-option-grid"
 import { QuizQuestionPrompt } from "@/components/quiz/quiz-question-prompt"
@@ -28,30 +29,6 @@ import {
   type QuizMode,
   type VocabQuizScope,
 } from "@/lib/quiz-generators"
-
-type QuizEmptyReason = "loading" | "load-error" | "filter-empty" | "pool-too-small"
-
-function getQuizEmptyMessage({
-  mode,
-  reason,
-}: {
-  mode: QuizMode
-  reason: QuizEmptyReason
-}) {
-  if (reason === "loading") return "加载中..."
-  if (reason === "load-error") return "词汇题库加载失败。请返回重新进入测验，或稍后再试。"
-
-  if (reason === "filter-empty") {
-    if (mode === "hiragana-romaji" || mode === "audio-kana") {
-      return "恭喜！你已掌握当前范围内的假名。请取消「只出未掌握」过滤，或切换到其他假名范围。"
-    }
-    if (mode === "meaning-vocab") {
-      return "恭喜！你已掌握当前范围内的词汇。请取消「只出未掌握」过滤，或切换到其他词汇范围。"
-    }
-  }
-
-  return "当前题库不足以生成 4 个唯一选项。请切换范围、取消筛选，或补充更多学习数据。"
-}
 
 export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => void }) {
   const speech = useSpeechPreferences()
@@ -131,8 +108,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       setSelectedOption(null)
       setSaveError(false)
       setEmptyReason("loading")
-      
-      // Auto-play audio if in audio mode
+
       const autoPlay = speech?.prefs.autoPlay ?? true
       if (q.questionAudio && q.autoPlayAudio && autoPlay) {
         setTimeout(() => playAudio(q.questionAudio!), 500)
@@ -164,7 +140,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     vocabTargetPool,
   ])
 
-  // Initial load
   useEffect(() => {
     const timer = setTimeout(() => {
       generateQuestion()
@@ -187,33 +162,17 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
 
   if (!currentQuestion) {
     return (
-      <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6">
-        <div className="text-center space-y-4">
-          <p className="text-lg text-muted-foreground" data-testid="quiz-empty-state">
-            {getQuizEmptyMessage({ mode, reason: emptyReason })}
-          </p>
-          {mode === "meaning-vocab" && emptyReason === "load-error" ? (
-            <Button
-              type="button"
-              variant="default"
-              onClick={retryVocabulary}
-              className="gap-2 rounded-full"
-              data-testid="quiz-retry-vocabulary"
-            >
-              <RefreshCw className="w-4 h-4" /> 重试加载
-            </Button>
-          ) : null}
-          <Button variant="outline" onClick={onExit} className="gap-2">
-            <ArrowLeft className="w-4 h-4" /> 返回选择模式
-          </Button>
-        </div>
-      </div>
+      <QuizEmptyState
+        mode={mode}
+        onExit={onExit}
+        onRetryVocabulary={retryVocabulary}
+        reason={emptyReason}
+      />
     )
   }
 
   return (
     <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20">
-      {/* Header */}
       <div className="w-full flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
           <ArrowLeft className="w-4 h-4" /> 退出
@@ -263,7 +222,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         selectedOption={selectedOption}
       />
 
-      {/* Next Button */}
       {selectedOption && (
         <Button onClick={generateQuestion} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
           下一题 <RefreshCw className="w-4 h-4" />
