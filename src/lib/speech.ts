@@ -221,11 +221,12 @@ export function writeSpeechPreferences(
   prefs: SpeechUserPreferences,
   storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY
 ) {
-  if (typeof window === "undefined") return
+  if (typeof window === "undefined") return false
   try {
     window.localStorage.setItem(storageKey, JSON.stringify(prefs))
+    return true
   } catch {
-    // ignore quota / privacy mode errors
+    return false
   }
 }
 
@@ -247,13 +248,22 @@ export function updateSpeechPreferences(
     gapMs: clampGapMs(patch.gapMs ?? prev.gapMs),
   }
 
-  writeSpeechPreferences(next, storageKey)
+  if (!writeSpeechPreferences(next, storageKey)) {
+    applySpeechPreferences(prev)
+    return prev
+  }
+
   applySpeechPreferences(next)
   return next
 }
 
 export function resetSpeechPreferences(storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY) {
-  writeSpeechPreferences(DEFAULT_SPEECH_PREFERENCES, storageKey)
+  const prev = readSpeechPreferences(storageKey)
+  if (!writeSpeechPreferences(DEFAULT_SPEECH_PREFERENCES, storageKey)) {
+    applySpeechPreferences(prev)
+    return prev
+  }
+
   applySpeechPreferences(DEFAULT_SPEECH_PREFERENCES)
   return DEFAULT_SPEECH_PREFERENCES
 }
