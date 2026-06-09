@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import type { QuizMode, VocabQuizScope } from "@/lib/quiz-generators"
@@ -25,6 +25,18 @@ export function useQuizVocabularyPools({
     fallback: [],
     error: null,
   })
+  const [retryToken, setRetryToken] = useState(0)
+
+  const retry = useCallback(() => {
+    if (mode !== "meaning-vocab") return
+    setState({
+      scope: null,
+      base: [],
+      fallback: [],
+      error: null,
+    })
+    setRetryToken((value) => value + 1)
+  }, [mode])
 
   useEffect(() => {
     if (mode !== "meaning-vocab") return
@@ -53,7 +65,7 @@ export function useQuizVocabularyPools({
     return () => {
       cancelled = true
     }
-  }, [mode, vocabScope])
+  }, [mode, retryToken, vocabScope])
 
   const loading = mode === "meaning-vocab" && state.scope !== vocabScope
 
@@ -70,5 +82,6 @@ export function useQuizVocabularyPools({
     basePool,
     fallbackPool,
     error: mode === "meaning-vocab" ? state.error : null,
+    retry,
   }
 }

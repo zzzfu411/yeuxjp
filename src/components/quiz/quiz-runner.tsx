@@ -79,6 +79,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     error: vocabError,
     basePool: vocabBasePool,
     fallbackPool: allVocab,
+    retry: retryVocabulary,
   } = useQuizVocabularyPools({ mode, vocabScope })
 
   const kanaBasePool = useMemo(() => {
@@ -191,6 +192,17 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
           <p className="text-lg text-muted-foreground" data-testid="quiz-empty-state">
             {getQuizEmptyMessage({ mode, reason: emptyReason })}
           </p>
+          {mode === "meaning-vocab" && emptyReason === "load-error" ? (
+            <Button
+              type="button"
+              variant="default"
+              onClick={retryVocabulary}
+              className="gap-2 rounded-full"
+              data-testid="quiz-retry-vocabulary"
+            >
+              <RefreshCw className="w-4 h-4" /> 重试加载
+            </Button>
+          ) : null}
           <Button variant="outline" onClick={onExit} className="gap-2">
             <ArrowLeft className="w-4 h-4" /> 返回选择模式
           </Button>

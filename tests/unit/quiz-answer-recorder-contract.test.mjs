@@ -40,6 +40,8 @@ test("quiz runner explains empty question states instead of showing stale questi
   assert.match(source, /词汇题库加载失败/)
   assert.match(source, /当前题库不足以生成 4 个唯一选项/)
   assert.match(source, /data-testid="quiz-empty-state"/)
+  assert.match(source, /data-testid="quiz-retry-vocabulary"/)
+  assert.match(source, /emptyReason === "load-error"/)
   assert.doesNotMatch(source, /: "加载中\.\.\."\}/)
 })
 
