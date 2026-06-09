@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { removeSrs, setSrsState, clearSrs } from "@/lib/srs"
 import { applySrsResult, createSrsState } from "@/lib/srs-model"
@@ -15,16 +15,11 @@ export const MISTAKE_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_MISTAKES
 
 export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
   const [list, setList] = useState<MistakeItem[]>(() => [])
-  const listRef = useRef<MistakeItem[]>([])
 
   useEffect(() => {
     let cancelled = false
 
-    const sync = () => {
-      const next = readMistakeList(storageKey)
-      listRef.current = next
-      setList(next)
-    }
+    const sync = () => setList(readMistakeList(storageKey))
 
     Promise.resolve().then(() => {
       if (cancelled) return
@@ -58,11 +53,11 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
     (input: RecordMistakeInput) => {
       const now = Date.now()
       const id = input.id ?? buildMistakeId(input)
-      const next = upsertWrongMistake(listRef.current, input, now)
+      const previous = readMistakeList(storageKey)
+      const next = upsertWrongMistake(previous, input, now)
 
       if (!writeMistakeList(storageKey, next)) return
 
-      listRef.current = next
       setList(next)
 
       // Mistakes should be reviewable soon, but only after the mistake record is durable.
@@ -73,11 +68,15 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
 
   const remove = useCallback(
     (id: string) => {
-      const next = removeMistakeById(listRef.current, id)
-      if (next === listRef.current) return
+      const previous = readMistakeList(storageKey)
+      const next = removeMistakeById(previous, id)
+      if (next === previous) {
+        setList(previous)
+        removeSrs(MISTAKE_SRS_STORAGE_KEY, id)
+        return
+      }
       if (!writeMistakeList(storageKey, next)) return
 
-      listRef.current = [...next]
       setList([...next])
       removeSrs(MISTAKE_SRS_STORAGE_KEY, id)
     },
@@ -87,7 +86,6 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
   const clear = useCallback(() => {
     if (!writeMistakeList(storageKey, [])) return
 
-    listRef.current = []
     setList([])
     clearSrs(MISTAKE_SRS_STORAGE_KEY)
   }, [storageKey])

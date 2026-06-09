@@ -14,7 +14,9 @@ test("mistake notebook hook delegates model and storage logic", () => {
 
   assert.match(source, /from "@\/lib\/mistake-notebook-model"/)
   assert.match(source, /from "@\/lib\/mistake-notebook-storage"/)
-  assert.match(source, /upsertWrongMistake\(listRef\.current, input, now\)/)
+  assert.match(source, /const previous = readMistakeList\(storageKey\)/)
+  assert.match(source, /upsertWrongMistake\(previous, input, now\)/)
+  assert.match(source, /removeMistakeById\(previous, id\)/)
   assert.match(source, /writeMistakeList\(storageKey, next\)/)
   assert.match(source, /setSrsState\(MISTAKE_SRS_STORAGE_KEY/)
   assert.doesNotMatch(source, /window\.localStorage/)
