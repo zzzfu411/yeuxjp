@@ -110,6 +110,39 @@ test("resetLearningData removes all managed keys but leaves unrelated localStora
   assert.equal(map.get("unrelated"), "keep")
 })
 
+test("learning storage transactions restore managed keys after failed commits", () => {
+  const { map, events } = installWindow()
+  map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "before-results")
+  map.set(storage.STORAGE_KEYS.SRS_KANA, "before-kana")
+  map.set("unrelated", "keep")
+
+  assert.equal(store.runLearningStorageTransaction(() => {
+    map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "after-results")
+    map.set(storage.STORAGE_KEYS.SRS_KANA, "after-kana")
+    map.set("unrelated", "changed")
+    return false
+  }), false)
+
+  assert.equal(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS), "before-results")
+  assert.equal(map.get(storage.STORAGE_KEYS.SRS_KANA), "before-kana")
+  assert.equal(map.get("unrelated"), "changed")
+  assert.equal(events.at(-1).detail.action, "rollback")
+  assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
+})
+
+test("learning storage transactions keep managed writes after successful commits", () => {
+  const { map, events } = installWindow()
+  map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "before-results")
+
+  assert.equal(store.runLearningStorageTransaction(() => {
+    map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "after-results")
+    return true
+  }), true)
+
+  assert.equal(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS), "after-results")
+  assert.equal(events.length, 0)
+})
+
 test("learning store events include changed keys for UI sync", () => {
   const { map, events } = installWindow()
   map.set(storage.STORAGE_KEYS.USER_PROFILE, '{"goal":"balanced"}')

@@ -1,8 +1,15 @@
 import assert from "node:assert/strict"
+import fs from "node:fs"
+import path from "node:path"
 import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const session = await loadTsModule("src/lib/learning-session.ts")
+const root = path.resolve(import.meta.dirname, "..", "..")
+
+function read(relPath) {
+  return fs.readFileSync(path.join(root, relPath), "utf8")
+}
 
 function installLocalStorage() {
   const store = new Map()
@@ -124,4 +131,46 @@ test("recordQuestionPractice returns false when progress recording fails before 
 
   assert.equal(ok, false)
   assert.equal(mistakeRecorded, false)
+})
+
+test("recordQuestionPractice rolls back managed storage when a later notebook write fails", () => {
+  const store = installLocalStorage()
+  store.set("yasashi.learning.practice.v1", "[]")
+  const progress = {
+    recordPractice: () => {
+      store.set("yasashi.learning.practice.v1", "[{\"itemId\":\"a\"}]")
+      return true
+    },
+  }
+  const notebook = { recordWrong: () => false }
+
+  const ok = session.recordQuestionPractice({
+    progress,
+    notebook,
+    result: {
+      question: {
+        type: "kana",
+        itemId: "a",
+        itemType: "kana",
+        mode: "recognition",
+        correctAnswer: "a",
+        options: [{ value: "a", display: "a" }],
+      },
+      selectedAnswer: "ka",
+      correct: false,
+      answeredAt: 123,
+    },
+  })
+
+  assert.equal(ok, false)
+  assert.equal(store.get("yasashi.learning.practice.v1"), "[]")
+})
+
+test("recordQuestionPractice public entrypoint is wrapped in a managed storage transaction", () => {
+  const source = read("src/lib/learning-session.ts")
+
+  assert.match(source, /runLearningStorageTransaction/)
+  assert.match(source, /export function recordQuestionPractice\(/)
+  assert.match(source, /return runLearningStorageTransaction\(\(\) => recordQuestionPracticeWithoutTransaction\(\{/)
+  assert.match(source, /export function recordQuestionPracticeWithoutTransaction\(/)
 })

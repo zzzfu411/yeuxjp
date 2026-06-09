@@ -28,7 +28,7 @@ export interface LearningBackup {
   entries: Partial<Record<LearningBackupKey, string>>
 }
 
-function notifyLearningStore(detail: { action: "backup" | "restore" | "reset"; keys: readonly string[] }) {
+function notifyLearningStore(detail: { action: "backup" | "restore" | "reset" | "rollback"; keys: readonly string[] }) {
   if (typeof window === "undefined") return
   window.dispatchEvent(new CustomEvent(LEARNING_STORE_EVENT, { detail }))
 }
@@ -68,6 +68,18 @@ function applyLearningSnapshot(snapshot: Partial<Record<LearningBackupKey, strin
 
 export function getLearningBackupKeys() {
   return [...BACKUP_KEYS]
+}
+
+export function runLearningStorageTransaction(commit: () => boolean) {
+  const previous = snapshotLearningKeys()
+  if (!previous) return false
+
+  if (commit()) return true
+
+  if (applyLearningSnapshot(previous)) {
+    notifyLearningStore({ action: "rollback", keys: BACKUP_KEYS })
+  }
+  return false
 }
 
 export function createLearningBackup(now: number = Date.now()): LearningBackup {

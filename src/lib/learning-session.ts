@@ -1,6 +1,7 @@
 "use client"
 
 import { enrollSrs } from "@/lib/srs"
+import { runLearningStorageTransaction } from "@/lib/learning-store"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { isReviewableKanaId } from "@/lib/review-questions"
 import type { PracticeResult } from "@/lib/learning-progress"
@@ -41,6 +42,28 @@ export function recordMistakeIfWrong(notebook: MistakeNotebookApi, result: Quest
 }
 
 export function recordQuestionPractice({
+  progress,
+  notebook,
+  result,
+  lessonId,
+  lessonStepId,
+}: {
+  progress?: LearningProgressApi
+  notebook?: MistakeNotebookApi
+  result: QuestionResult
+  lessonId?: string
+  lessonStepId?: string
+}) {
+  return runLearningStorageTransaction(() => recordQuestionPracticeWithoutTransaction({
+    progress,
+    notebook,
+    result,
+    lessonId,
+    lessonStepId,
+  }))
+}
+
+export function recordQuestionPracticeWithoutTransaction({
   progress,
   notebook,
   result,
