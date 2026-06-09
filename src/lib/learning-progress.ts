@@ -5,7 +5,7 @@ import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { LEARNING_EVENT, readLearningJson, writeLearningJson } from "@/lib/learning-storage"
 import {
   clampScore,
-  createItemProgress,
+  appendPracticeResult,
   mergeLessonProgressMaps,
   normalizeItemProgressMap,
   normalizeLessonProgressMap,
@@ -13,6 +13,7 @@ import {
   normalizeProfile,
   normalizeStepIndex,
   todayKey,
+  updateItemProgressForPractice,
   type ItemProgressMap,
   type LessonProgressMap,
   type PracticeResult,
@@ -194,32 +195,18 @@ export function useLearningProgress() {
 
   const recordPractice = useCallback((result: Omit<PracticeResult, "createdAt">) => {
     const createdAt = Date.now()
-    const nextResult: PracticeResult = { ...result, createdAt }
+    const nextResults = appendPracticeResult(readLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, []), result, createdAt)
+    const nextResult = nextResults.at(-1)
+    if (!nextResult) return
 
-    setResults((prev) => {
-      const next = [...prev, nextResult].slice(-300)
-      writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, next)
-      return next
-    })
+    if (writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, nextResults)) {
+      setResults(nextResults)
+    }
 
-    setItems((prev) => {
-      const current = prev[result.itemId] ?? createItemProgress(result.itemId, result.itemType, createdAt)
-      const delta = result.correct ? 18 : -10
-      const nextScore = clampScore(current[result.mode] + delta)
-      const next: ItemProgressMap = {
-        ...prev,
-        [result.itemId]: {
-          ...current,
-          itemType: result.itemType,
-          [result.mode]: nextScore,
-          attempts: current.attempts + 1,
-          correct: current.correct + (result.correct ? 1 : 0),
-          updatedAt: createdAt,
-        },
-      }
-      writeLearningJson(STORAGE_KEYS.ITEM_PROGRESS, next)
-      return next
-    })
+    const nextItems = updateItemProgressForPractice(readLearningJson(STORAGE_KEYS.ITEM_PROGRESS, {}), nextResult)
+    if (writeLearningJson(STORAGE_KEYS.ITEM_PROGRESS, nextItems)) {
+      setItems(nextItems)
+    }
   }, [])
 
   const completedLessonIds = useMemo(() => {

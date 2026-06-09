@@ -53,6 +53,8 @@ export interface ItemProgress {
 export type LessonProgressMap = Record<string, LessonProgress>
 export type ItemProgressMap = Record<string, ItemProgress>
 
+const PRACTICE_RESULT_LIMIT = 300
+
 export function clampScore(value: number) {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, Math.min(100, Math.round(value)))
@@ -169,7 +171,31 @@ export function normalizePracticeResults(input: unknown, now = Date.now()): Prac
       durationMs: typeof item.durationMs === "number" ? item.durationMs : undefined,
       createdAt: typeof item.createdAt === "number" ? item.createdAt : now,
     }))
-    .slice(-300)
+    .slice(-PRACTICE_RESULT_LIMIT)
+}
+
+export function appendPracticeResult(previous: unknown, result: Omit<PracticeResult, "createdAt">, createdAt = Date.now()) {
+  const nextResult: PracticeResult = { ...result, createdAt }
+  return [...normalizePracticeResults(previous, createdAt), nextResult].slice(-PRACTICE_RESULT_LIMIT)
+}
+
+export function updateItemProgressForPractice(previous: unknown, result: PracticeResult) {
+  const base = normalizeItemProgressMap(previous, result.createdAt)
+  const current = base[result.itemId] ?? createItemProgress(result.itemId, result.itemType, result.createdAt)
+  const delta = result.correct ? 18 : -10
+  const nextScore = clampScore(current[result.mode] + delta)
+
+  return {
+    ...base,
+    [result.itemId]: {
+      ...current,
+      itemType: result.itemType,
+      [result.mode]: nextScore,
+      attempts: current.attempts + 1,
+      correct: current.correct + (result.correct ? 1 : 0),
+      updatedAt: result.createdAt,
+    },
+  } satisfies ItemProgressMap
 }
 
 export function todayKey(date = new Date()) {

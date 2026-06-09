@@ -113,6 +113,70 @@ test("practice result normalization filters bad rows and keeps only recent histo
   assert.equal(normalized.at(-1).createdAt, 304)
 })
 
+test("practice recording helpers append history and update item mastery from stored snapshots", () => {
+  const rawHistory = Array.from({ length: 300 }, (_, index) => ({
+    itemId: `old-${index}`,
+    itemType: "kana",
+    mode: "recognition",
+    correct: true,
+    createdAt: index,
+  }))
+
+  const nextHistory = model.appendPracticeResult(
+    rawHistory,
+    {
+      itemId: "ka",
+      itemType: "kana",
+      mode: "recognition",
+      correct: false,
+      answer: "a",
+    },
+    999
+  )
+
+  assert.equal(nextHistory.length, 300)
+  assert.equal(nextHistory[0].itemId, "old-1")
+  assert.deepEqual(nextHistory.at(-1), {
+    itemId: "ka",
+    itemType: "kana",
+    mode: "recognition",
+    correct: false,
+    answer: "a",
+    createdAt: 999,
+  })
+
+  const nextItems = model.updateItemProgressForPractice(
+    {
+      ka: {
+        itemId: "ka",
+        itemType: "kana",
+        recognition: 20,
+        listening: 5,
+        meaning: 0,
+        recall: 0,
+        production: 0,
+        attempts: 2,
+        correct: 1,
+        updatedAt: 10,
+      },
+    },
+    nextHistory.at(-1)
+  )
+
+  assert.deepEqual(nextItems.ka, {
+    itemId: "ka",
+    itemType: "kana",
+    recognition: 10,
+    listening: 5,
+    meaning: 0,
+    recall: 0,
+    production: 0,
+    attempts: 3,
+    correct: 1,
+    updatedAt: 999,
+  })
+})
+
 test("learning progress helpers merge maps, normalize step indexes, and average mastery", () => {
   assert.equal(model.clampScore(99.6), 100)
   assert.equal(model.normalizeStepIndex(-3), 0)
