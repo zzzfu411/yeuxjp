@@ -33,6 +33,39 @@ function notifyLearningStore(detail: { action: "backup" | "restore" | "reset"; k
   window.dispatchEvent(new CustomEvent(LEARNING_STORE_EVENT, { detail }))
 }
 
+function snapshotLearningKeys() {
+  const snapshot: Partial<Record<LearningBackupKey, string | null>> = {}
+  if (typeof window === "undefined") return snapshot
+
+  try {
+    for (const key of BACKUP_KEYS) {
+      snapshot[key] = window.localStorage.getItem(key)
+    }
+  } catch {
+    return null
+  }
+
+  return snapshot
+}
+
+function applyLearningSnapshot(snapshot: Partial<Record<LearningBackupKey, string | null>>) {
+  if (typeof window === "undefined") return false
+
+  try {
+    for (const key of BACKUP_KEYS) {
+      const value = snapshot[key]
+      if (typeof value === "string") {
+        window.localStorage.setItem(key, value)
+      } else {
+        window.localStorage.removeItem(key)
+      }
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function getLearningBackupKeys() {
   return [...BACKUP_KEYS]
 }
@@ -55,13 +88,21 @@ export function restoreLearningBackup(backup: LearningBackup) {
   if (typeof window === "undefined") return false
   if (backup.version !== LEARNING_BACKUP_VERSION) return false
 
-  for (const key of BACKUP_KEYS) {
-    const value = backup.entries[key]
-    if (typeof value === "string") {
-      window.localStorage.setItem(key, value)
-    } else {
-      window.localStorage.removeItem(key)
+  const previous = snapshotLearningKeys()
+  if (!previous) return false
+
+  try {
+    for (const key of BACKUP_KEYS) {
+      const value = backup.entries[key]
+      if (typeof value === "string") {
+        window.localStorage.setItem(key, value)
+      } else {
+        window.localStorage.removeItem(key)
+      }
     }
+  } catch {
+    applyLearningSnapshot(previous)
+    return false
   }
 
   notifyLearningStore({ action: "restore", keys: BACKUP_KEYS })
@@ -71,8 +112,16 @@ export function restoreLearningBackup(backup: LearningBackup) {
 export function resetLearningData() {
   if (typeof window === "undefined") return false
 
-  for (const key of BACKUP_KEYS) {
-    window.localStorage.removeItem(key)
+  const previous = snapshotLearningKeys()
+  if (!previous) return false
+
+  try {
+    for (const key of BACKUP_KEYS) {
+      window.localStorage.removeItem(key)
+    }
+  } catch {
+    applyLearningSnapshot(previous)
+    return false
   }
 
   notifyLearningStore({ action: "reset", keys: BACKUP_KEYS })
