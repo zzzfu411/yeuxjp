@@ -23,6 +23,7 @@ import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { VocabularyCategoryList } from "@/components/vocabulary/vocabulary-category-list"
 import { VocabularyFocusModal } from "@/components/vocabulary/vocabulary-focus-modal"
 import { VocabularyToolbar } from "@/components/vocabulary/vocabulary-toolbar"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 
 const EMPTY_VOCAB: Vocabulary[] = []
 
@@ -32,6 +33,7 @@ function VocabularyPageContent() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [onlyUnlearned, setOnlyUnlearned] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const [vocabState, setVocabState] = useState<{
     level: VocabLevel | null
     data: Vocabulary[]
@@ -158,8 +160,16 @@ function VocabularyPageContent() {
   const handleClearLearned = useCallback(() => {
     if (typeof window === "undefined") return
     const ok = window.confirm("确认清空词汇掌握进度吗？")
-    if (ok) clearLearned()
+    if (!ok) return
+    const saved = clearLearned()
+    setSaveError(!saved)
   }, [clearLearned])
+
+  const handleToggleLearned = useCallback(() => {
+    if (!selectedVocab) return
+    const saved = toggleLearnedId(selectedVocab.id)
+    setSaveError(!saved)
+  }, [selectedVocab, toggleLearnedId])
 
   // Handlers
   const handleNext = useCallback(() => {
@@ -220,6 +230,7 @@ function VocabularyPageContent() {
         onClearLearned={handleClearLearned}
         onSelectCategory={scrollToCategory}
       />
+      <PracticeSaveError show={saveError} />
 
       <VocabularyCategoryList
         categories={categories}
@@ -247,9 +258,7 @@ function VocabularyPageContent() {
         onNext={handleNext}
         onPrev={handlePrev}
         onPlay={handlePlay}
-        onToggleLearned={() => {
-          if (selectedVocab) toggleLearnedId(selectedVocab.id)
-        }}
+        onToggleLearned={handleToggleLearned}
       />
     </div>
   )

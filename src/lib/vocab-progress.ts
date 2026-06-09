@@ -55,57 +55,54 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
 
   const toggleLearnedId = useCallback(
     (id: string) => {
-      setLearned((prev) => {
-        const base = new Set(readProgressList(storageKey, STORAGE_LABEL))
-        const next = new Set(base)
-        const wasLearned = next.has(id)
+      const base = new Set(readProgressList(storageKey, STORAGE_LABEL))
+      const next = new Set(base)
+      const wasLearned = next.has(id)
 
-        if (wasLearned) {
-          next.delete(id)
-        } else {
-          next.add(id)
+      if (wasLearned) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+
+      const previousSrs = readSrsMap(VOCAB_SRS_STORAGE_KEY)
+      const srsSuccess = wasLearned ? removeSrs(VOCAB_SRS_STORAGE_KEY, id) : enrollSrs(VOCAB_SRS_STORAGE_KEY, id)
+      if (!srsSuccess) return false
+
+      const writeSuccess = writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
+
+      if (!writeSuccess) {
+        if (writeSrsMap(VOCAB_SRS_STORAGE_KEY, previousSrs)) notifySrs(VOCAB_SRS_STORAGE_KEY)
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[vocab-progress] Write failed, rolling back state change")
         }
+        return false
+      }
 
-        const previousSrs = readSrsMap(VOCAB_SRS_STORAGE_KEY)
-        const srsSuccess = wasLearned ? removeSrs(VOCAB_SRS_STORAGE_KEY, id) : enrollSrs(VOCAB_SRS_STORAGE_KEY, id)
-        if (!srsSuccess) return prev
-
-        const writeSuccess = writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
-
-        if (writeSuccess) {
-          notifyProgressList(storageKey)
-        } else {
-          if (writeSrsMap(VOCAB_SRS_STORAGE_KEY, previousSrs)) notifySrs(VOCAB_SRS_STORAGE_KEY)
-          if (process.env.NODE_ENV === "development") {
-            console.warn("[vocab-progress] Write failed, rolling back state change")
-          }
-          return prev
-        }
-
-        return next
-      })
+      setLearned(next)
+      notifyProgressList(storageKey)
+      return true
     },
     [storageKey]
   )
 
   const clearLearned = useCallback(() => {
-    setLearned(() => {
-      const previousSrs = readSrsMap(VOCAB_SRS_STORAGE_KEY)
-      if (!clearSrs(VOCAB_SRS_STORAGE_KEY)) return learned
+    const previousSrs = readSrsMap(VOCAB_SRS_STORAGE_KEY)
+    if (!clearSrs(VOCAB_SRS_STORAGE_KEY)) return false
 
-      const writeSuccess = writeProgressList(storageKey, [], STORAGE_LABEL)
-      if (writeSuccess) {
-        notifyProgressList(storageKey)
-        return new Set()
-      }
+    const writeSuccess = writeProgressList(storageKey, [], STORAGE_LABEL)
+    if (writeSuccess) {
+      setLearned(new Set())
+      notifyProgressList(storageKey)
+      return true
+    }
 
-      if (writeSrsMap(VOCAB_SRS_STORAGE_KEY, previousSrs)) notifySrs(VOCAB_SRS_STORAGE_KEY)
-      if (process.env.NODE_ENV === "development") {
-        console.warn("[vocab-progress] Clear failed, keeping current state")
-      }
-      return learned
-    })
-  }, [storageKey, learned])
+    if (writeSrsMap(VOCAB_SRS_STORAGE_KEY, previousSrs)) notifySrs(VOCAB_SRS_STORAGE_KEY)
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[vocab-progress] Clear failed, keeping current state")
+    }
+    return false
+  }, [storageKey])
 
   return { learned, isLearnedId, toggleLearnedId, clearLearned }
 }

@@ -55,56 +55,53 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
 
   const toggleMastered = useCallback(
     (romaji: string) => {
-      setMastered((prev) => {
-        const base = new Set(readProgressList(storageKey, STORAGE_LABEL))
-        const next = new Set(base)
-        const wasMastered = next.has(romaji)
+      const base = new Set(readProgressList(storageKey, STORAGE_LABEL))
+      const next = new Set(base)
+      const wasMastered = next.has(romaji)
 
-        if (wasMastered) {
-          next.delete(romaji)
-        } else {
-          next.add(romaji)
+      if (wasMastered) {
+        next.delete(romaji)
+      } else {
+        next.add(romaji)
+      }
+
+      const previousSrs = readSrsMap(KANA_SRS_STORAGE_KEY)
+      const srsSuccess = wasMastered ? removeSrs(KANA_SRS_STORAGE_KEY, romaji) : enrollSrs(KANA_SRS_STORAGE_KEY, romaji)
+      if (!srsSuccess) return false
+
+      const writeSuccess = writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
+
+      if (!writeSuccess) {
+        if (writeSrsMap(KANA_SRS_STORAGE_KEY, previousSrs)) notifySrs(KANA_SRS_STORAGE_KEY)
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[kana-progress] Write failed, rolling back state change")
         }
+        return false
+      }
 
-        const previousSrs = readSrsMap(KANA_SRS_STORAGE_KEY)
-        const srsSuccess = wasMastered ? removeSrs(KANA_SRS_STORAGE_KEY, romaji) : enrollSrs(KANA_SRS_STORAGE_KEY, romaji)
-        if (!srsSuccess) return prev
-
-        const writeSuccess = writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
-
-        if (writeSuccess) {
-          notifyProgressList(storageKey)
-        } else {
-          if (writeSrsMap(KANA_SRS_STORAGE_KEY, previousSrs)) notifySrs(KANA_SRS_STORAGE_KEY)
-          if (process.env.NODE_ENV === "development") {
-            console.warn("[kana-progress] Write failed, rolling back state change")
-          }
-          return prev
-        }
-
-        return next
-      })
+      setMastered(next)
+      notifyProgressList(storageKey)
+      return true
     },
     [storageKey]
   )
 
   const clearMastered = useCallback(() => {
-    setMastered((prev) => {
-      const previousSrs = readSrsMap(KANA_SRS_STORAGE_KEY)
-      if (!clearSrs(KANA_SRS_STORAGE_KEY)) return prev
+    const previousSrs = readSrsMap(KANA_SRS_STORAGE_KEY)
+    if (!clearSrs(KANA_SRS_STORAGE_KEY)) return false
 
-      const writeSuccess = writeProgressList(storageKey, [], STORAGE_LABEL)
-      if (writeSuccess) {
-        notifyProgressList(storageKey)
-        return new Set()
-      }
+    const writeSuccess = writeProgressList(storageKey, [], STORAGE_LABEL)
+    if (writeSuccess) {
+      setMastered(new Set())
+      notifyProgressList(storageKey)
+      return true
+    }
 
-      if (writeSrsMap(KANA_SRS_STORAGE_KEY, previousSrs)) notifySrs(KANA_SRS_STORAGE_KEY)
-      if (process.env.NODE_ENV === "development") {
-        console.warn("[kana-progress] Clear failed, keeping current state")
-      }
-      return prev
-    })
+    if (writeSrsMap(KANA_SRS_STORAGE_KEY, previousSrs)) notifySrs(KANA_SRS_STORAGE_KEY)
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[kana-progress] Clear failed, keeping current state")
+    }
+    return false
   }, [storageKey])
 
   return { mastered, isMastered, toggleMastered, clearMastered }

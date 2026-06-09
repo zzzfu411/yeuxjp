@@ -10,6 +10,7 @@ import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { KanaLearningSection } from "@/components/kana/kana-learning-section"
 import { KanaControls, type KanaMode } from "@/components/kana/kana-controls"
 import { useKanaPageData } from "@/components/kana/use-kana-page-data"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 
 function KanaPageContent() {
   const searchParams = useSearchParams()
@@ -17,6 +18,7 @@ function KanaPageContent() {
   const [kanaSet, setKanaSet] = useState<KanaSet>("seion")
   const [showRomaji, setShowRomaji] = useState(true)
   const [onlyUnmastered, setOnlyUnmastered] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const { isMastered, toggleMastered, clearMastered } = useKanaProgress()
 
   const urlMode = searchParams.get("mode")
@@ -54,8 +56,18 @@ function KanaPageContent() {
   const handleClearMastered = useCallback(() => {
     if (typeof window === "undefined") return
     const ok = window.confirm("确认清空假名掌握进度吗？")
-    if (ok) clearMastered()
+    if (!ok) return
+    const saved = clearMastered()
+    setSaveError(!saved)
   }, [clearMastered])
+
+  const handleToggleMastered = useCallback(
+    (romaji: string) => {
+      const saved = toggleMastered(romaji)
+      setSaveError(!saved)
+    },
+    [toggleMastered]
+  )
 
   const kanaSetHint = useMemo(() => {
     if (kanaSet === "seion") {
@@ -138,6 +150,7 @@ function KanaPageContent() {
         onToggleOnlyUnmastered={() => setOnlyUnmastered((value) => !value)}
         onClearMastered={handleClearMastered}
       />
+      <PracticeSaveError show={saveError} />
       <SpeechSettingsBar className="max-w-3xl" />
 
       {kanaSet === "seion" && (
@@ -149,7 +162,7 @@ function KanaPageContent() {
           columns={5}
           showRomaji={showRomaji}
           isMastered={isMastered}
-          onToggleMastered={toggleMastered}
+          onToggleMastered={handleToggleMastered}
         />
       )}
       {kanaSet === "dakuon" && (
@@ -161,7 +174,7 @@ function KanaPageContent() {
           columns={5}
           showRomaji={showRomaji}
           isMastered={isMastered}
-          onToggleMastered={toggleMastered}
+          onToggleMastered={handleToggleMastered}
         />
       )}
       {kanaSet === "yoon" && (
@@ -173,7 +186,7 @@ function KanaPageContent() {
           columns={3}
           showRomaji={showRomaji}
           isMastered={isMastered}
-          onToggleMastered={toggleMastered}
+          onToggleMastered={handleToggleMastered}
         />
       )}
       {kanaSet === "special" && (
@@ -194,7 +207,7 @@ function KanaPageContent() {
           columns={3}
           showRomaji={showRomaji}
           isMastered={isMastered}
-          onToggleMastered={toggleMastered}
+          onToggleMastered={handleToggleMastered}
         />
       )}
 
@@ -211,7 +224,7 @@ function KanaPageContent() {
             columns={5}
             showRomaji={showRomaji}
             isMastered={isMastered}
-            onToggleMastered={toggleMastered}
+            onToggleMastered={handleToggleMastered}
           />
 
           <KanaLearningSection
@@ -224,7 +237,7 @@ function KanaPageContent() {
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
-            onToggleMastered={toggleMastered}
+            onToggleMastered={handleToggleMastered}
           />
 
           <KanaLearningSection
@@ -237,7 +250,7 @@ function KanaPageContent() {
             columns={3}
             showRomaji={showRomaji}
             isMastered={isMastered}
-            onToggleMastered={toggleMastered}
+            onToggleMastered={handleToggleMastered}
           />
         </div>
       )}
