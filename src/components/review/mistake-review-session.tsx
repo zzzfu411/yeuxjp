@@ -89,6 +89,7 @@ export function MistakeReviewSession({
   return (
     <ReviewSessionFrame
       onExit={onExit}
+      testId="mistake-review-session"
       headerRight={
         <div className="flex items-center gap-2">
           <div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>

@@ -55,6 +55,7 @@ test("ReviewDashboard owns review landing UI and delegates formatting to pure mo
   assert.match(source, /<RecentMistakes\b/)
   assert.match(source, /saveError: boolean/)
   assert.match(source, /<PracticeSaveError show=\{mistakes\.saveError\} \/>/)
+  assert.match(source, /startTestId="review-start-mistakes"/)
   assert.doesNotMatch(source, /function ReviewDeckCard/)
   assert.doesNotMatch(source, /function RecentMistakes/)
   assert.match(source, /SpeechSettingsBar/)
@@ -84,6 +85,8 @@ test("ReviewDeckCard owns deck counts and start action presentation", () => {
 
   assert.match(source, /export function ReviewDeckCard/)
   assert.match(source, /formatReviewDueCount/)
+  assert.match(source, /startTestId\?: string/)
+  assert.match(source, /data-testid=\{startTestId\}/)
   assert.match(source, /待复习/)
   assert.match(source, /已加入/)
   assert.match(source, /disabled=\{startDisabled\}/)
@@ -94,6 +97,8 @@ test("RecentMistakes owns recent mistake preview and remove action", () => {
   const source = read("src/components/review/recent-mistakes.tsx")
 
   assert.match(source, /export function RecentMistakes/)
+  assert.match(source, /data-testid="recent-mistakes"/)
+  assert.match(source, /data-testid=\{`recent-mistake-\$\{mistake\.id\}`\}/)
   assert.match(source, /mistakes\.slice\(0, 6\)\.map/)
   assert.match(source, /mistake\.questionText \?\? mistake\.questionAudio/)
   assert.match(source, /onRemove\(mistake\.id\)/)

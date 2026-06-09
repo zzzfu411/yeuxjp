@@ -9,13 +9,15 @@ export function ReviewSessionFrame({
   onExit,
   headerRight,
   children,
+  testId,
 }: {
   onExit: () => void
   headerRight: ReactNode
   children: ReactNode
+  testId?: string
 }) {
   return (
-    <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20">
+    <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20" data-testid={testId}>
       <div className="w-full flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
           <ArrowLeft className="w-4 h-4" /> 返回

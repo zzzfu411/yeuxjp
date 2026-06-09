@@ -62,6 +62,26 @@ const requiredSelectors = [
     pattern: /data-testid="review-start-today"/,
   },
   {
+    testId: "recent-mistakes",
+    source: "src/components/review/recent-mistakes.tsx",
+    pattern: /data-testid="recent-mistakes"/,
+  },
+  {
+    testId: "recent-mistake-kana:a:hiragana-romaji",
+    source: "src/components/review/recent-mistakes.tsx",
+    pattern: /data-testid=\{`recent-mistake-\$\{mistake\.id\}`\}/,
+  },
+  {
+    testId: "review-start-mistakes",
+    source: "src/components/review/review-dashboard.tsx",
+    pattern: /startTestId="review-start-mistakes"/,
+  },
+  {
+    testId: "mistake-review-session",
+    source: "src/components/review/mistake-review-session.tsx",
+    pattern: /testId="mistake-review-session"/,
+  },
+  {
     testId: "review-remaining",
     source: "src/components/review/today-review-session.tsx",
     pattern: /data-testid="review-remaining"/,
@@ -161,6 +181,10 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /item\.type === "hiragana-romaji"/)
   assert.match(e2e, /item\.correctAnswer === "a"/)
   assert.match(e2e, /wrong quiz answer should record kana a in mistakes/)
+  assert.match(e2e, /getByTestId\("recent-mistakes"\)/)
+  assert.match(e2e, /getByTestId\("recent-mistake-kana:a:hiragana-romaji"\)/)
+  assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("mistake-review-session"\)/)
 })
 
 test("browser E2E verifies learning data export reset and import through the UI", () => {

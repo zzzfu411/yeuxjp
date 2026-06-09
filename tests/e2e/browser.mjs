@@ -176,6 +176,11 @@ try {
     ),
     "wrong quiz answer should record kana a in mistakes"
   )
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("recent-mistakes").waitFor({ state: "visible" })
+  await page.getByTestId("recent-mistake-kana:a:hiragana-romaji").waitFor({ state: "visible" })
+  await page.getByTestId("review-start-mistakes").click()
+  await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
 
   await seedReviewState(page)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })

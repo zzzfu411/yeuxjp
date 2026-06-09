@@ -34,10 +34,18 @@ test("review session frame owns shared review layout chrome", () => {
   const source = read("src/components/review/review-session-frame.tsx")
 
   assert.match(source, /container py-10 px-4 mx-auto max-w-lg/)
+  assert.match(source, /testId\?: string/)
+  assert.match(source, /data-testid=\{testId\}/)
   assert.match(source, /<ArrowLeft\b/)
   assert.match(source, /<RefreshCw\b/)
   assert.match(source, /ReviewPromptCard/)
   assert.match(source, /ReviewNextButton/)
+})
+
+test("mistake review session exposes a stable browser test id", () => {
+  const source = read("src/components/review/mistake-review-session.tsx")
+
+  assert.match(source, /testId="mistake-review-session"/)
 })
 
 test("review sessions delegate repeated queue state to useReviewSessionState", () => {

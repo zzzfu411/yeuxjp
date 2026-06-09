@@ -131,6 +131,7 @@ export function ReviewDashboard({
           total={mistakes.total}
           onStart={mistakes.onStart}
           startDisabled={!mistakes.due}
+          startTestId="review-start-mistakes"
           extra={
             mistakes.total ? (
               <Button type="button" variant="ghost" size="sm" className="rounded-full" onClick={mistakes.onClear}>

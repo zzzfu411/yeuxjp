@@ -11,6 +11,7 @@ interface ReviewDeckCardProps {
   total: number
   onStart: () => void
   startDisabled?: boolean
+  startTestId?: string
   extra?: ReactNode
 }
 
@@ -21,6 +22,7 @@ export function ReviewDeckCard({
   total,
   onStart,
   startDisabled,
+  startTestId,
   extra,
 }: ReviewDeckCardProps) {
   return (
@@ -35,7 +37,7 @@ export function ReviewDeckCard({
           待复习：<span className="font-semibold text-foreground">{formatReviewDueCount(due)}</span>{" "}
           <span className="text-muted-foreground/60">/ 已加入：{formatReviewDueCount(total)}</span>
         </div>
-        <Button type="button" size="sm" className="rounded-full" onClick={onStart} disabled={startDisabled}>
+        <Button type="button" size="sm" className="rounded-full" onClick={onStart} disabled={startDisabled} data-testid={startTestId}>
           开始
         </Button>
       </div>
