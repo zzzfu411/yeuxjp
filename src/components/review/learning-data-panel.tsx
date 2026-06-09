@@ -155,6 +155,9 @@ export function LearningDataPanel({ className }: { className?: string }) {
               : "border-destructive/30 bg-destructive/10 text-destructive"
           )}
           role="status"
+          aria-live="polite"
+          data-testid="learning-data-notice"
+          data-tone={notice.tone}
         >
           {notice.text}
         </div>

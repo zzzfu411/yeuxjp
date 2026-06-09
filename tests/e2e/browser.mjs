@@ -288,6 +288,30 @@ try {
   const backupPath = await download.path()
   assert.ok(backupPath, "learning data export should create a downloadable backup file")
 
+  const invalidFileChooserPromise = page.waitForEvent("filechooser")
+  await page.getByTestId("learning-data-import").click()
+  const invalidFileChooser = await invalidFileChooserPromise
+  await invalidFileChooser.setFiles({
+    name: "invalid-yasashi-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from("{not-valid-json"),
+  })
+  await page.getByTestId("learning-data-notice").waitFor({ state: "visible" })
+  assert.equal(await page.getByTestId("learning-data-notice").getAttribute("data-tone"), "error")
+  assert.equal(
+    (await readJsonStorage(page, "yasashi.learning.profile.v1"))?.goal,
+    "balanced",
+    "invalid learning data import should not overwrite the current profile"
+  )
+  assert.ok(
+    (await readJsonStorage(page, "yasashi.mistakes.v1"))?.some((item) => item.id === "kana:a:hiragana-romaji"),
+    "invalid learning data import should not overwrite the mistake notebook"
+  )
+  assert.ok(
+    (await readJsonStorage(page, "yasashi.srs.mistakes.v1"))?.["kana:a:hiragana-romaji"]?.dueAt,
+    "invalid learning data import should not overwrite mistake SRS state"
+  )
+
   await page.getByTestId("learning-data-reset").click()
   await page.getByTestId("learning-data-reset").click()
   await page.waitForFunction(() =>

@@ -172,6 +172,11 @@ const requiredSelectors = [
     pattern: /data-testid="learning-data-import"/,
   },
   {
+    testId: "learning-data-notice",
+    source: "src/components/review/learning-data-panel.tsx",
+    pattern: /data-testid="learning-data-notice"/,
+  },
+  {
     testId: "learning-data-reset",
     source: "src/components/review/learning-data-panel.tsx",
     pattern: /data-testid="learning-data-reset"/,
@@ -314,6 +319,11 @@ test("browser E2E verifies learning data export reset and import through the UI"
   assert.match(e2e, /getByTestId\("learning-data-reset"\)\.click\(\)/)
   assert.match(e2e, /waitForEvent\("filechooser"\)/)
   assert.match(e2e, /getByTestId\("learning-data-import"\)/)
+  assert.match(e2e, /invalid-yasashi-backup\.json/)
+  assert.match(e2e, /getByTestId\("learning-data-notice"\)/)
+  assert.match(e2e, /invalid learning data import should not overwrite the current profile/)
+  assert.match(e2e, /invalid learning data import should not overwrite the mistake notebook/)
+  assert.match(e2e, /invalid learning data import should not overwrite mistake SRS state/)
   assert.match(e2e, /fileChooser\.setFiles\(backupPath\)/)
   assert.match(e2e, /learning data import should restore the profile backup/)
   assert.match(e2e, /learning data import should restore the mistake notebook backup/)

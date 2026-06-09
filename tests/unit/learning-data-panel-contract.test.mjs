@@ -34,4 +34,7 @@ test("review page exposes local learning data management through the shared stor
   assert.match(panel, /data-testid="learning-data-export"/)
   assert.match(panel, /data-testid="learning-data-import"/)
   assert.match(panel, /data-testid="learning-data-reset"/)
+  assert.match(panel, /data-testid="learning-data-notice"/)
+  assert.match(panel, /aria-live="polite"/)
+  assert.match(panel, /data-tone=\{notice\.tone\}/)
 })
