@@ -78,3 +78,10 @@ test("learning profile saves from the current storage snapshot", () => {
   assert.doesNotMatch(progress, /profile\?\.createdAt/)
   assert.match(progress, /}, \[\]\)/)
 })
+
+test("lesson progress updates state only after storage writes succeed", () => {
+  const progress = read("src/lib/learning-progress.ts")
+
+  const guardedWrites = progress.match(/writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next\) \? next : prev/g) ?? []
+  assert.equal(guardedWrites.length, 3)
+})

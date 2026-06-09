@@ -166,8 +166,7 @@ export function useLearningProgress() {
       if (base[lessonId]) return base
       const now = Date.now()
       const next = { ...base, [lessonId]: { lessonId, status: "started" as const, startedAt: now, updatedAt: now } }
-      writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)
-      return next
+      return writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next) ? next : prev
     })
   }, [])
 
@@ -189,8 +188,7 @@ export function useLearningProgress() {
           updatedAt: now,
         },
       }
-      writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)
-      return next
+      return writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next) ? next : prev
     })
   }, [])
 
@@ -212,8 +210,7 @@ export function useLearningProgress() {
           updatedAt: now,
         },
       }
-      writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)
-      return next
+      return writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next) ? next : prev
     })
   }, [])
 
