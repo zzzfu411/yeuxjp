@@ -155,7 +155,7 @@ test("vocabulary page keeps card-specific flip behavior while sharing indexed na
   const source = read("src/app/vocabulary/page.tsx")
 
   assert.match(source, /from "@\/lib\/use-indexed-modal-navigation"/)
-  assert.match(source, /useIndexedModalNavigation\(currentDataLength\)/)
+  assert.match(source, /useIndexedModalNavigation\(currentData\.length\)/)
   assert.match(source, /onExpand=\{\(index\) => \{/)
   assert.match(source, /openAt\(index\)/)
   assert.match(source, /onClose=\{resetSelection\}/)

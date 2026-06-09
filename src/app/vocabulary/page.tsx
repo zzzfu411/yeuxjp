@@ -1,7 +1,6 @@
 "use client"
 
 import { useMemo, useState, useEffect, useCallback, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
 import type { VocabLevel } from "@/data/vocabulary/types"
 import { speakJapanese } from "@/lib/speech"
 import { useVocabProgress } from "@/lib/vocab-progress"
@@ -23,34 +22,24 @@ import { VocabularyCategoryList } from "@/components/vocabulary/vocabulary-categ
 import { VocabularyFocusModal } from "@/components/vocabulary/vocabulary-focus-modal"
 import { VocabularyToolbar } from "@/components/vocabulary/vocabulary-toolbar"
 import { useVocabularyLevelData } from "@/components/vocabulary/use-vocabulary-level-data"
+import { useVocabularyPageControls } from "@/components/vocabulary/use-vocabulary-page-controls"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 
 function VocabularyPageContent() {
-  const searchParams = useSearchParams()
-  const [currentLevel, setCurrentLevel] = useState<VocabLevel>("survival")
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [onlyUnlearned, setOnlyUnlearned] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
   const { isLearnedId, toggleLearnedId, clearLearned } = useVocabProgress()
+  const {
+    currentLevel,
+    activeCategory,
+    searchQuery,
+    onlyUnlearned,
+    handleLevelChange: setVocabularyLevel,
+    handleSearchChange: setVocabularySearch,
+    handleToggleOnlyUnlearned: toggleOnlyUnlearned,
+    scrollToCategory,
+  } = useVocabularyPageControls()
   const vocabulary = useVocabularyLevelData(currentLevel)
-
-  const urlLevel = searchParams.get("level")
-  useEffect(() => {
-    let cancelled = false
-
-    Promise.resolve().then(() => {
-      if (cancelled) return
-      if (urlLevel === "survival" || urlLevel === "daily" || urlLevel === "fluent") {
-        setCurrentLevel(urlLevel)
-      }
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [urlLevel])
 
   const rawData = vocabulary.data
   const levelProgress = useMemo(() => {
@@ -65,42 +54,22 @@ function VocabularyPageContent() {
       isLearned: isLearnedId,
     })
   }, [isLearnedId, onlyUnlearned, rawData, searchQuery])
-  
-  // Keep original order
+
   const categories = useMemo(
     () => getVocabularyCategories(currentData),
     [currentData]
   )
 
-  // Navigation State
   const [isModalFlipped, setIsModalFlipped] = useState(false)
-
-  const currentDataLength = currentData.length
   const {
     selectedIndex,
     openAt,
     close,
     goNext,
     goPrev,
-  } = useIndexedModalNavigation(currentDataLength)
+  } = useIndexedModalNavigation(currentData.length)
   const selectedVocab = selectedIndex !== null ? currentData[selectedIndex] ?? null : null
   const selectedKana = selectedVocab?.kana
-
-  // Scroll to category
-  const scrollToCategory = (cat: string) => {
-    setActiveCategory(cat);
-    const element = document.getElementById(`cat-${cat}`);
-    if (element) {
-      const headerOffset = 180; 
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-    }
-  };
 
   const resetSelection = useCallback(() => {
     close()
@@ -108,21 +77,19 @@ function VocabularyPageContent() {
   }, [close])
 
   const handleLevelChange = useCallback((level: VocabLevel) => {
-    setCurrentLevel(level)
-    setActiveCategory(null)
+    setVocabularyLevel(level)
     resetSelection()
-    window.scrollTo({ top: 0 })
-  }, [resetSelection])
+  }, [resetSelection, setVocabularyLevel])
 
   const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value)
+    setVocabularySearch(value)
     resetSelection()
-  }, [resetSelection])
+  }, [resetSelection, setVocabularySearch])
 
   const handleToggleOnlyUnlearned = useCallback(() => {
-    setOnlyUnlearned((value) => !value)
+    toggleOnlyUnlearned()
     resetSelection()
-  }, [resetSelection])
+  }, [resetSelection, toggleOnlyUnlearned])
 
   const handleClearLearned = useCallback(() => {
     if (typeof window === "undefined") return
