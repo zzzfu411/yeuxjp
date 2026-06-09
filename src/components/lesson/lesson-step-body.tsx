@@ -1,9 +1,15 @@
 "use client"
 
-import { Headphones, RotateCcw } from "lucide-react"
+import { CheckCircle2, Headphones, RotateCcw, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { LessonStep } from "@/data/lessons"
+import {
+  getAnswerOptionClassName,
+  getAnswerOptionFeedback,
+  shouldShowCorrectAnswerIcon,
+  shouldShowWrongAnswerIcon,
+} from "@/lib/answer-option-feedback"
 import { cn } from "@/lib/utils"
 
 export function LessonStepBody({
@@ -75,9 +81,11 @@ export function LessonStepBody({
         <div className="rounded-2xl border bg-muted/20 p-5 text-xl font-semibold leading-relaxed">{step.prompt}</div>
         <div className="grid gap-3 sm:grid-cols-2">
           {step.options.map((option) => {
-            const show = !!result
-            const isCorrect = option === step.answer
-            const isSelected = selected === option
+            const feedback = getAnswerOptionFeedback({
+              selectedAnswer: result ? selected : null,
+              optionValue: option,
+              isCorrectOption: option === step.answer,
+            })
             return (
               <Button
                 key={option}
@@ -85,15 +93,15 @@ export function LessonStepBody({
                 variant="outline"
                 className={cn(
                   "min-h-14 justify-start whitespace-normal rounded-xl px-4 py-3 text-left text-base",
-                  show && isCorrect && "border-green-500 bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-200",
-                  show && isSelected && !isCorrect && "border-red-500 bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200",
-                  show && !isCorrect && !isSelected && "opacity-55"
+                  getAnswerOptionClassName(feedback)
                 )}
                 onClick={() => onSelect(option)}
                 disabled={!!result}
                 data-testid={`lesson-answer-${option}`}
               >
                 {option}
+                {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-auto h-4 w-4 shrink-0" />}
+                {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-auto h-4 w-4 shrink-0" />}
               </Button>
             )
           })}
