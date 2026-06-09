@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressList, writeProgressList } from "@/lib/progress-list-storage"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
+import { notifySrs, readSrsMap, writeSrsMap } from "@/lib/srs-storage"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
 const DEFAULT_STORAGE_KEY = STORAGE_KEYS.KANA_MASTERED
@@ -55,7 +56,8 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
   const toggleMastered = useCallback(
     (romaji: string) => {
       setMastered((prev) => {
-        const next = new Set(prev)
+        const base = new Set(readProgressList(storageKey, STORAGE_LABEL))
+        const next = new Set(base)
         const wasMastered = next.has(romaji)
 
         if (wasMastered) {
@@ -64,19 +66,16 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
           next.add(romaji)
         }
 
-        // 先写入掌握状态
+        const previousSrs = readSrsMap(KANA_SRS_STORAGE_KEY)
+        const srsSuccess = wasMastered ? removeSrs(KANA_SRS_STORAGE_KEY, romaji) : enrollSrs(KANA_SRS_STORAGE_KEY, romaji)
+        if (!srsSuccess) return prev
+
         const writeSuccess = writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
 
-        // 只有写入成功后才更新SRS状态，保持一致性
         if (writeSuccess) {
-          if (wasMastered) {
-            removeSrs(KANA_SRS_STORAGE_KEY, romaji)
-          } else {
-            enrollSrs(KANA_SRS_STORAGE_KEY, romaji)
-          }
           notifyProgressList(storageKey)
         } else {
-          // 写入失败，回滚状态
+          if (writeSrsMap(KANA_SRS_STORAGE_KEY, previousSrs)) notifySrs(KANA_SRS_STORAGE_KEY)
           if (process.env.NODE_ENV === "development") {
             console.warn("[kana-progress] Write failed, rolling back state change")
           }
@@ -91,13 +90,16 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
 
   const clearMastered = useCallback(() => {
     setMastered((prev) => {
+      const previousSrs = readSrsMap(KANA_SRS_STORAGE_KEY)
+      if (!clearSrs(KANA_SRS_STORAGE_KEY)) return prev
+
       const writeSuccess = writeProgressList(storageKey, [], STORAGE_LABEL)
       if (writeSuccess) {
-        clearSrs(KANA_SRS_STORAGE_KEY)
         notifyProgressList(storageKey)
         return new Set()
       }
-      // 写入失败，保持原状态
+
+      if (writeSrsMap(KANA_SRS_STORAGE_KEY, previousSrs)) notifySrs(KANA_SRS_STORAGE_KEY)
       if (process.env.NODE_ENV === "development") {
         console.warn("[kana-progress] Clear failed, keeping current state")
       }

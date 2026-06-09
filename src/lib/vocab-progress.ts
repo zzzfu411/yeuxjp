@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressList, writeProgressList } from "@/lib/progress-list-storage"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
+import { notifySrs, readSrsMap, writeSrsMap } from "@/lib/srs-storage"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
 const DEFAULT_STORAGE_KEY = STORAGE_KEYS.VOCAB_LEARNED
@@ -55,7 +56,8 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
   const toggleLearnedId = useCallback(
     (id: string) => {
       setLearned((prev) => {
-        const next = new Set(prev)
+        const base = new Set(readProgressList(storageKey, STORAGE_LABEL))
+        const next = new Set(base)
         const wasLearned = next.has(id)
 
         if (wasLearned) {
@@ -64,19 +66,16 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
           next.add(id)
         }
 
-        // 先写入学习状态
+        const previousSrs = readSrsMap(VOCAB_SRS_STORAGE_KEY)
+        const srsSuccess = wasLearned ? removeSrs(VOCAB_SRS_STORAGE_KEY, id) : enrollSrs(VOCAB_SRS_STORAGE_KEY, id)
+        if (!srsSuccess) return prev
+
         const writeSuccess = writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
 
-        // 只有写入成功后才更新SRS状态，保持一致性
         if (writeSuccess) {
-          if (wasLearned) {
-            removeSrs(VOCAB_SRS_STORAGE_KEY, id)
-          } else {
-            enrollSrs(VOCAB_SRS_STORAGE_KEY, id)
-          }
           notifyProgressList(storageKey)
         } else {
-          // 写入失败，回滚状态
+          if (writeSrsMap(VOCAB_SRS_STORAGE_KEY, previousSrs)) notifySrs(VOCAB_SRS_STORAGE_KEY)
           if (process.env.NODE_ENV === "development") {
             console.warn("[vocab-progress] Write failed, rolling back state change")
           }
@@ -91,13 +90,16 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
 
   const clearLearned = useCallback(() => {
     setLearned(() => {
+      const previousSrs = readSrsMap(VOCAB_SRS_STORAGE_KEY)
+      if (!clearSrs(VOCAB_SRS_STORAGE_KEY)) return learned
+
       const writeSuccess = writeProgressList(storageKey, [], STORAGE_LABEL)
       if (writeSuccess) {
-        clearSrs(VOCAB_SRS_STORAGE_KEY)
         notifyProgressList(storageKey)
         return new Set()
       }
-      // 写入失败，保持原状态
+
+      if (writeSrsMap(VOCAB_SRS_STORAGE_KEY, previousSrs)) notifySrs(VOCAB_SRS_STORAGE_KEY)
       if (process.env.NODE_ENV === "development") {
         console.warn("[vocab-progress] Clear failed, keeping current state")
       }
