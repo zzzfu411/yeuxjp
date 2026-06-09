@@ -3,6 +3,7 @@
 import type { Vocabulary } from "@/data/vocabulary/types"
 import { CategoryIcon } from "@/components/vocabulary/category-icon"
 import { Flashcard } from "@/components/vocabulary/flashcard"
+import { Button } from "@/components/ui/button"
 import { findVocabularyIndex, getVocabularyItemsByCategory } from "@/lib/vocabulary-page-model"
 
 interface VocabularyCategoryListProps {
@@ -13,6 +14,7 @@ interface VocabularyCategoryListProps {
   error: string | null
   isLearnedId: (id: string) => boolean
   onExpand: (index: number) => void
+  onRetry: () => void
 }
 
 export function VocabularyCategoryList({
@@ -23,6 +25,7 @@ export function VocabularyCategoryList({
   error,
   isLearnedId,
   onExpand,
+  onRetry,
 }: VocabularyCategoryListProps) {
   return (
     <div className="space-y-16 pt-4">
@@ -60,8 +63,11 @@ export function VocabularyCategoryList({
       )}
 
       {!loading && error && (
-        <div className="text-center py-20 text-muted-foreground">
-          {"\u8bcd\u6c47\u52a0\u8f7d\u5931\u8d25\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002"}
+        <div className="text-center py-20 text-muted-foreground space-y-4">
+          <div>{"\u8bcd\u6c47\u52a0\u8f7d\u5931\u8d25\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002"}</div>
+          <Button type="button" variant="outline" className="rounded-full" onClick={onRetry} data-testid="vocabulary-retry-load">
+            {"\u91cd\u65b0\u52a0\u8f7d"}
+          </Button>
         </div>
       )}
 

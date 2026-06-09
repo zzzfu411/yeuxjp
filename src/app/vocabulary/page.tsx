@@ -34,6 +34,7 @@ function VocabularyPageContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [onlyUnlearned, setOnlyUnlearned] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const [reloadNonce, setReloadNonce] = useState(0)
   const [vocabState, setVocabState] = useState<{
     level: VocabLevel | null
     data: Vocabulary[]
@@ -82,7 +83,7 @@ function VocabularyPageContent() {
     return () => {
       cancelled = true
     }
-  }, [currentLevel])
+  }, [currentLevel, reloadNonce])
    
   const vocabLoading = vocabState.level !== currentLevel
   const rawData = vocabLoading ? EMPTY_VOCAB : vocabState.data
@@ -165,6 +166,15 @@ function VocabularyPageContent() {
     setSaveError(!saved)
   }, [clearLearned])
 
+  const handleRetryLoad = useCallback(() => {
+    setVocabState((prev) => ({
+      level: prev.level === currentLevel ? null : prev.level,
+      data: prev.level === currentLevel ? [] : prev.data,
+      error: null,
+    }))
+    setReloadNonce((value) => value + 1)
+  }, [currentLevel])
+
   const handleToggleLearned = useCallback(() => {
     if (!selectedVocab) return
     const saved = toggleLearnedId(selectedVocab.id)
@@ -239,6 +249,7 @@ function VocabularyPageContent() {
         loading={vocabLoading}
         error={vocabState.error}
         isLearnedId={isLearnedId}
+        onRetry={handleRetryLoad}
         onExpand={(index) => {
           openAt(index)
           setIsModalFlipped(false)
