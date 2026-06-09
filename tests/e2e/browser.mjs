@@ -147,6 +147,10 @@ try {
     "locked lesson preview should not enroll SRS"
   )
 
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-empty-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-empty").waitFor({ state: "visible" })
+
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").click()
   await page.getByTestId("kana-stroke-toggle").click()
@@ -184,6 +188,8 @@ try {
 
   await seedReviewState(page)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-due-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-due").waitFor({ state: "visible" })
   await page.getByTestId("review-start-today").click()
   assert.ok(await page.getByTestId("review-remaining").isVisible())
 

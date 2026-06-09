@@ -62,6 +62,26 @@ const requiredSelectors = [
     pattern: /data-testid="review-start-today"/,
   },
   {
+    testId: "review-empty-state",
+    source: "src/components/review/review-banners.tsx",
+    pattern: /data-testid="review-empty-state"/,
+  },
+  {
+    testId: "review-today-empty",
+    source: "src/components/review/review-banners.tsx",
+    pattern: /data-testid=\{todayQueueLength \? "review-today-due" : "review-today-empty"\}/,
+  },
+  {
+    testId: "review-due-state",
+    source: "src/components/review/review-banners.tsx",
+    pattern: /"review-due-state"/,
+  },
+  {
+    testId: "review-today-due",
+    source: "src/components/review/review-banners.tsx",
+    pattern: /data-testid=\{todayQueueLength \? "review-today-due" : "review-today-empty"\}/,
+  },
+  {
     testId: "recent-mistakes",
     source: "src/components/review/recent-mistakes.tsx",
     pattern: /data-testid="recent-mistakes"/,
@@ -185,6 +205,17 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /getByTestId\("recent-mistake-kana:a:hiragana-romaji"\)/)
   assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("mistake-review-session"\)/)
+})
+
+test("browser E2E verifies review empty and due states", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /getByTestId\("review-empty-state"\)/)
+  assert.match(e2e, /getByTestId\("review-today-empty"\)/)
+  assert.match(e2e, /seedReviewState/)
+  assert.match(e2e, /getByTestId\("review-due-state"\)/)
+  assert.match(e2e, /getByTestId\("review-today-due"\)/)
+  assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
 })
 
 test("browser E2E verifies learning data export reset and import through the UI", () => {

@@ -77,6 +77,10 @@ test("review banners own first-time, streak, and today review surfaces", () => {
   assert.match(source, /href="\/vocabulary"/)
   assert.match(source, /href="\/quiz"/)
   assert.match(source, /href="\/path"/)
+  assert.match(source, /data-testid="review-empty-state"/)
+  assert.match(source, /"review-due-state"/)
+  assert.match(source, /"review-scheduled-empty-state"/)
+  assert.match(source, /todayQueueLength \? "review-today-due" : "review-today-empty"/)
   assert.match(source, /data-testid="review-start-today"/)
 })
 
