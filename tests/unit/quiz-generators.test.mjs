@@ -24,7 +24,6 @@ test("kana quiz generators return shared Question objects", () => {
     kanaTargetPool: base,
     vocabBasePool: vocab,
     vocabTargetPool: vocab,
-    allVocab: vocab,
     random: () => 0,
   })
 
@@ -42,7 +41,6 @@ test("kana quiz generators require enough unique options", () => {
     kanaTargetPool: base,
     vocabBasePool: vocab,
     vocabTargetPool: vocab,
-    allVocab: vocab,
     random: () => 0,
   })
 
@@ -69,7 +67,6 @@ test("vocabulary quiz generators return meaning questions", () => {
     kanaTargetPool: [],
     vocabBasePool: vocab,
     vocabTargetPool: vocab,
-    allVocab: vocab,
     random: () => 0,
   })
 
@@ -87,7 +84,6 @@ test("vocabulary quiz generators require enough unique options", () => {
     kanaTargetPool: [],
     vocabBasePool: smallVocab,
     vocabTargetPool: smallVocab,
-    allVocab: smallVocab,
     random: () => 0,
   })
 
@@ -112,7 +108,6 @@ test("audio contrast and verb conjugation modes include explanations or audio", 
     kanaTargetPool: [],
     vocabBasePool: vocab,
     vocabTargetPool: vocab,
-    allVocab: vocab,
     random: () => 0,
   })
   const verb = quiz.generateQuizQuestion({
@@ -121,7 +116,6 @@ test("audio contrast and verb conjugation modes include explanations or audio", 
     kanaTargetPool: [],
     vocabBasePool: vocab,
     vocabTargetPool: vocab,
-    allVocab: vocab,
     random: () => 0,
   })
 

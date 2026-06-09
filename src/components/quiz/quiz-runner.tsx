@@ -55,7 +55,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     loading: vocabLoading,
     error: vocabError,
     basePool: vocabBasePool,
-    fallbackPool: allVocab,
     retry: retryVocabulary,
   } = useQuizVocabularyPools({ mode, vocabScope })
 
@@ -100,7 +99,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       kanaTargetPool,
       vocabBasePool,
       vocabTargetPool,
-      allVocab,
     })
 
     if (q) {
@@ -126,7 +124,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         : "pool-too-small"
     )
   }, [
-    allVocab,
     kanaBasePool,
     kanaTargetPool,
     mode,

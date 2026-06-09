@@ -132,23 +132,20 @@ export function generateVocabularyQuizQuestion({
   mode,
   basePool,
   targetPool,
-  allVocab,
   random = Math.random,
 }: {
   mode: Extract<QuizMode, "meaning-vocab">
   basePool: Vocabulary[]
   targetPool: Vocabulary[]
-  allVocab: Vocabulary[]
   random?: RandomFn
 }): Question | null {
-  const base = basePool.length >= 4 ? basePool : allVocab
-  const targetSource = targetPool.length ? targetPool : base
+  const targetSource = targetPool.length ? targetPool : basePool
   if (targetSource.length === 0) return null
 
   const target = randomItem(targetSource, random)
   const options = pickUniqueQuestionOptions({
     target,
-    pool: base,
+    pool: basePool,
     getValue: (entry) => entry.id,
     random,
   })

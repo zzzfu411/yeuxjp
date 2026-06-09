@@ -8,7 +8,6 @@ import type { QuizMode, VocabQuizScope } from "@/lib/quiz-generators"
 type QuizVocabularyPoolState = {
   scope: VocabQuizScope | null
   base: Vocabulary[]
-  fallback: Vocabulary[]
   error: string | null
 }
 
@@ -22,7 +21,6 @@ export function useQuizVocabularyPools({
   const [state, setState] = useState<QuizVocabularyPoolState>({
     scope: null,
     base: [],
-    fallback: [],
     error: null,
   })
   const [retryToken, setRetryToken] = useState(0)
@@ -32,7 +30,6 @@ export function useQuizVocabularyPools({
     setState({
       scope: null,
       base: [],
-      fallback: [],
       error: null,
     })
     setRetryToken((value) => value + 1)
@@ -44,12 +41,10 @@ export function useQuizVocabularyPools({
 
     ;(async () => {
       const base = await loadVocabularyScope(vocabScope)
-      const fallback = base.length >= 4 ? base : await loadVocabularyScope("all")
       if (cancelled) return
       setState({
         scope: vocabScope,
         base,
-        fallback,
         error: null,
       })
     })().catch(() => {
@@ -57,7 +52,6 @@ export function useQuizVocabularyPools({
       setState({
         scope: vocabScope,
         base: [],
-        fallback: [],
         error: "Failed to load vocabulary",
       })
     })
@@ -73,14 +67,9 @@ export function useQuizVocabularyPools({
     return mode === "meaning-vocab" && !loading ? state.base : []
   }, [loading, mode, state.base])
 
-  const fallbackPool = useMemo(() => {
-    return mode === "meaning-vocab" && !loading ? state.fallback : []
-  }, [loading, mode, state.fallback])
-
   return {
     loading,
     basePool,
-    fallbackPool,
     error: mode === "meaning-vocab" ? state.error : null,
     retry,
   }

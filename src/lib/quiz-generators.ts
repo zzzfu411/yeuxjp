@@ -11,7 +11,7 @@ import type { QuizMode } from "@/lib/quiz-types"
 import type { Question } from "@/lib/questions"
 
 export { LONG_VOWEL_MINIMAL_PAIRS, PARTICLE_QUESTIONS, SOKUON_MINIMAL_PAIRS } from "@/lib/quiz-data"
-export { filterUnlearnedVocab, filterUnmasteredKana, getKanaPool, getVocabPool } from "@/lib/quiz-pools"
+export { filterUnlearnedVocab, filterUnmasteredKana, getKanaPool } from "@/lib/quiz-pools"
 export { parseQuizMode, QUIZ_MODE_SET } from "@/lib/quiz-types"
 export type { KanaQuizScope, QuizMode, VocabQuizScope } from "@/lib/quiz-types"
 
@@ -21,7 +21,6 @@ export function generateQuizQuestion({
   kanaTargetPool,
   vocabBasePool,
   vocabTargetPool,
-  allVocab,
   random = Math.random,
 }: {
   mode: QuizMode
@@ -29,7 +28,6 @@ export function generateQuizQuestion({
   kanaTargetPool: Kana[]
   vocabBasePool: Vocabulary[]
   vocabTargetPool: Vocabulary[]
-  allVocab: Vocabulary[]
   random?: () => number
 }): Question | null {
   if (mode === "hiragana-romaji" || mode === "audio-kana") {
@@ -53,7 +51,6 @@ export function generateQuizQuestion({
     mode,
     basePool: vocabBasePool,
     targetPool: vocabTargetPool,
-    allVocab,
     random,
   })
 }
