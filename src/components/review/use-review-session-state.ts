@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import {
   advanceReviewQueue,
   createReviewStats,
@@ -9,6 +9,7 @@ import {
 } from "@/lib/review-session"
 
 export function useReviewSessionState<T>(initialQueue: T[]) {
+  const answerPendingRef = useRef(false)
   const [queue, setQueue] = useState<T[]>(() => initialQueue)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null)
@@ -23,8 +24,14 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     return getReviewCompletionStats(initialCount, stats)
   }, [initialCount, stats])
 
-  const recordAnswer = useCallback((answer: string, correct: boolean) => {
-    if (selectedAnswer != null) return false
+  const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean) => {
+    if (selectedAnswer != null || answerPendingRef.current) return false
+    answerPendingRef.current = true
+
+    if (beforeCommit && !beforeCommit()) {
+      answerPendingRef.current = false
+      return false
+    }
 
     setSelectedAnswer(answer)
     setLastAnswerCorrect(correct)
@@ -36,6 +43,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     setQueue((prev) => advanceReviewQueue(prev, lastAnswerCorrect))
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
+    answerPendingRef.current = false
   }, [lastAnswerCorrect])
 
   return {

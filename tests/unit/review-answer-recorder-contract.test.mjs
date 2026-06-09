@@ -42,8 +42,17 @@ test("useReviewAnswerRecorder owns question result and learning record writes", 
   const source = read("src/components/review/use-review-answer-recorder.ts")
 
   assert.match(source, /makeQuestionResult/)
-  assert.match(source, /recordAnswer\(selectedAnswer, result\.correct\)/)
-  assert.match(source, /if \(!recordQuestionPractice\(\{ progress, notebook, result \}\)\) return false/)
+  assert.match(source, /recordAnswer\(selectedAnswer, result\.correct, \(\) => recordQuestionPractice\(\{ progress, notebook, result \}\)\)/)
   assert.match(source, /grade\(result\)/)
   assert.match(source, /return true/)
+})
+
+test("useReviewSessionState supports a before-commit guard for persisted answer writes", () => {
+  const source = read("src/components/review/use-review-session-state.ts")
+
+  assert.match(source, /useRef\(false\)/)
+  assert.match(source, /beforeCommit\?: \(\) => boolean/)
+  assert.match(source, /selectedAnswer != null \|\| answerPendingRef\.current/)
+  assert.match(source, /if \(beforeCommit && !beforeCommit\(\)\) \{/)
+  assert.match(source, /answerPendingRef\.current = false/)
 })

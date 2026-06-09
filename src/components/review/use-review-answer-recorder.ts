@@ -17,14 +17,14 @@ export function useReviewAnswerRecorder({
 }: {
   progress: LearningProgressApi
   notebook: MistakeNotebookApi
-  recordAnswer: (answer: string, correct: boolean) => boolean
+  recordAnswer: (answer: string, correct: boolean, beforeCommit?: () => boolean) => boolean
   grade: (result: QuestionResult) => void
 }) {
   return useCallback((question: Question, selectedAnswer: string) => {
     const result = makeQuestionResult(question, selectedAnswer)
-    if (!recordAnswer(selectedAnswer, result.correct)) return false
-
-    if (!recordQuestionPractice({ progress, notebook, result })) return false
+    if (!recordAnswer(selectedAnswer, result.correct, () => recordQuestionPractice({ progress, notebook, result }))) {
+      return false
+    }
     grade(result)
     return true
   }, [grade, notebook, progress, recordAnswer])
