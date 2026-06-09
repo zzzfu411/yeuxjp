@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { loadVocabularyForIds, loadVocabularyScope } from "@/data/vocabulary/loader"
+import { loadVocabularyReviewPool, loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
 
 export function useAllVocabulary(enabled: boolean) {
@@ -38,7 +38,7 @@ export function useAllVocabulary(enabled: boolean) {
   }
 }
 
-export function useVocabularyForReviewIds(ids: readonly string[], enabled: boolean) {
+export function useVocabularyReviewPool(ids: readonly string[], enabled: boolean) {
   const [state, setState] = useState<{ data: Vocabulary[]; loadedKey: string | null; error: string | null }>({
     data: [],
     loadedKey: null,
@@ -52,7 +52,7 @@ export function useVocabularyForReviewIds(ids: readonly string[], enabled: boole
     let cancelled = false
     const reviewIds = key ? key.split("\n") : []
 
-    loadVocabularyForIds(reviewIds)
+    loadVocabularyReviewPool(reviewIds)
       .then((data) => {
         if (cancelled) return
         setState({ data, loadedKey: key, error: null })

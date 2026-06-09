@@ -62,7 +62,7 @@ try {
     page.getByTestId("lesson-next").waitFor({ state: "visible", timeout: 10_000 }),
     "lesson page should load before offline cache verification"
   )
-  const animCjkPath = "/animcjk/hiragana/05042.svg"
+  const animCjkPath = "/animcjk/kana/12354.svg"
   const onlineAnimCjkSvg = await page.evaluate(async (path) => {
     const response = await fetch(path)
     return {
@@ -79,6 +79,9 @@ try {
   }, sentinel)
 
   await context.setOffline(true)
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
+  assert.ok(await page.getByTestId("home-start-learning").isVisible(), "offline static cache should serve the app home page")
+
   await page.goto(visitedLessonUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("lesson-next").isVisible(), "offline navigation cache should serve a visited lesson page")
   const offlineAnimCjkSvg = await page.evaluate(async (path) => {

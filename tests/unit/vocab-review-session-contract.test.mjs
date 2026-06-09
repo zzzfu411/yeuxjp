@@ -17,14 +17,14 @@ test("review runner delegates vocab deck sessions to VocabReviewSession", () => 
   assert.doesNotMatch(runner, /function VocabReviewSession/)
   assert.doesNotMatch(runner, /makeVocabReviewQuestion\(item\.id, vocabulary\.data\)/)
   assert.doesNotMatch(runner, /<VocabReviewPrompt\b/)
-  assert.doesNotMatch(runner, /useVocabularyForReviewIds/)
+  assert.doesNotMatch(runner, /useVocabularyReviewPool/)
 })
 
 test("VocabReviewSession owns vocabulary loading, prompt, question, and SRS grading", () => {
   const source = read("src/components/review/vocab-review-session.tsx")
 
   assert.match(source, /export function VocabReviewSession/)
-  assert.match(source, /useVocabularyForReviewIds\(ids, ids\.length > 0\)/)
+  assert.match(source, /useVocabularyReviewPool\(ids, ids\.length > 0\)/)
   assert.match(source, /useReviewSessionState\(ids\)/)
   assert.match(source, /makeVocabReviewQuestion\(item\.id, vocabulary\.data\)/)
   assert.match(source, /<VocabReviewPrompt\b/)

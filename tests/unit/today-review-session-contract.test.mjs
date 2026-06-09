@@ -20,7 +20,7 @@ test("review runner delegates today deck sessions to TodayReviewSession", () => 
   assert.doesNotMatch(runner, /makeKanaReviewQuestion/)
   assert.doesNotMatch(runner, /makeVocabReviewQuestion/)
   assert.doesNotMatch(runner, /mistakeToQuestion\(item\)/)
-  assert.doesNotMatch(runner, /useVocabularyForReviewIds/)
+  assert.doesNotMatch(runner, /useVocabularyReviewPool/)
 })
 
 test("TodayReviewSession owns mixed queue data, shared prompts, and all SRS deck grading", () => {
@@ -29,7 +29,7 @@ test("TodayReviewSession owns mixed queue data, shared prompts, and all SRS deck
   assert.match(source, /export function TodayReviewSession/)
   assert.match(source, /useReviewSessionState\(items\)/)
   assert.match(source, /const vocabIds = useMemo/)
-  assert.match(source, /useVocabularyForReviewIds\(vocabIds, vocabIds\.length > 0\)/)
+  assert.match(source, /useVocabularyReviewPool\(vocabIds, vocabIds\.length > 0\)/)
   assert.match(source, /makeKanaReviewQuestion\(current\.id\)/)
   assert.match(source, /makeVocabReviewQuestion\(current\.id, vocabulary\.data\)/)
   assert.match(source, /mistakeToQuestion\(item\)/)

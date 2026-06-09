@@ -27,10 +27,21 @@ test("vocabulary scope all combines every level", async () => {
   assert.deepEqual(new Set(all.map((item) => item.level)), new Set(["survival", "daily", "fluent"]))
 })
 
-test("vocabulary loader only loads levels referenced by review ids", async () => {
+test("vocabulary loader returns only requested ids while preserving order", async () => {
   const survival = await loader.loadVocabularyForIds(["sur-g-1", "sur-v-1"])
   const mixed = await loader.loadVocabularyForIds(["sur-g-1", "flu-abs-1", "missing"])
 
+  assert.deepEqual(survival.map((item) => item.id), ["sur-g-1", "sur-v-1"])
+  assert.deepEqual(mixed.map((item) => item.id), ["sur-g-1", "flu-abs-1"])
   assert.deepEqual(new Set(survival.map((item) => item.level)), new Set(["survival"]))
   assert.deepEqual(new Set(mixed.map((item) => item.level)), new Set(["survival", "fluent"]))
+})
+
+test("vocabulary review pool adds same-level distractors without losing target ids", async () => {
+  const pool = await loader.loadVocabularyReviewPool(["sur-g-1"])
+
+  assert.equal(pool.length, 4)
+  assert.equal(pool[0].id, "sur-g-1")
+  assert.equal(pool.every((item) => item.level === "survival"), true)
+  assert.equal(new Set(pool.map((item) => item.id)).size, pool.length)
 })

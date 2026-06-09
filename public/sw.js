@@ -74,6 +74,8 @@ async function networkFirstNavigation(request) {
   } catch {
     const cached = await cache.match(request);
     if (cached) return cached;
+    const staticCached = await caches.match(request);
+    if (staticCached) return staticCached;
     return caches.match(OFFLINE_FALLBACK_URL);
   }
 }

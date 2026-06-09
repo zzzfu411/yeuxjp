@@ -187,27 +187,29 @@ function walkFiles(dir, predicate, out = []) {
 
 function validateNoMojibakeMarkers() {
   const sourceFiles = walkFiles(srcDir, (file) => /\.(ts|tsx|js|jsx|mjs)$/.test(file))
+  const scriptFiles = walkFiles(path.join(root, "scripts"), (file) => /\.(js|mjs|ts)$/.test(file))
+  const testFiles = walkFiles(path.join(root, "tests"), (file) => /\.(js|mjs|ts|tsx)$/.test(file))
   const markdownFiles = [
     path.join(root, "README.md"),
     path.join(workspaceRoot, "CLAUDE.md"),
     path.join(workspaceRoot, "README_CODEX.md"),
   ]
     .filter((file) => fs.existsSync(file))
-  const files = [...sourceFiles, ...markdownFiles]
+  const files = [...sourceFiles, ...scriptFiles, ...testFiles, ...markdownFiles]
   const markerPattern = /[\u9287\u9288\u9289\u934b\u9354\u95ab\u9435\u704f]/
   const markerFragments = [
-    "绗旈",
-    "寰楀",
-    "褰撳",
-    "瀛︿",
-    "澶囦",
-    "鏃犳",
-    "娓呯",
-    "閿欓",
-    "瀵煎",
-    "鏈",
-    "杩涘",
-    "銇裤",
+    "绗旈", // mojibake-ok detector fixture
+    "寰楀", // mojibake-ok detector fixture
+    "褰撳", // mojibake-ok detector fixture
+    "瀛︿", // mojibake-ok detector fixture
+    "澶囦", // mojibake-ok detector fixture
+    "鏃犳", // mojibake-ok detector fixture
+    "娓呯", // mojibake-ok detector fixture
+    "閿欓", // mojibake-ok detector fixture
+    "瀵煎", // mojibake-ok detector fixture
+    "鏈", // mojibake-ok detector fixture
+    "杩涘", // mojibake-ok detector fixture
+    "銇裤", // mojibake-ok detector fixture
   ]
   const replacementPattern = /\?{4,}/
   const failures = []
@@ -216,14 +218,15 @@ function validateNoMojibakeMarkers() {
     const relPath = path.relative(workspaceRoot, file).replace(/\\/g, "/")
     const lines = fs.readFileSync(file, "utf8").split(/\r?\n/)
     lines.forEach((line, index) => {
+      if (line.includes("mojibake-ok")) return
       if (markerPattern.test(line)) failures.push(`${relPath}:${index + 1}`)
       if (markerFragments.some((marker) => line.includes(marker))) failures.push(`${relPath}:${index + 1}`)
       if (replacementPattern.test(line)) failures.push(`${relPath}:${index + 1}`)
     })
   }
 
-  if (failures.length) fail(`source/docs text contains likely mojibake markers: ${failures.join(", ")}`)
-  else pass("source/docs text has no known mojibake markers")
+  if (failures.length) fail(`source/scripts/tests/docs text contains likely mojibake markers: ${failures.join(", ")}`)
+  else pass("source/scripts/tests/docs text has no known mojibake markers")
 }
 
 const kanaText = read("src/data/kana-data.ts")

@@ -4,7 +4,7 @@ import { dailyVocab } from "./daily";
 import { fluentVocab } from "./fluent";
 
 export * from "./types";
-export { loadVocabularyLevel, loadVocabularyScope } from "./loader";
+export { loadVocabularyForIds, loadVocabularyLevel, loadVocabularyReviewPool, loadVocabularyScope } from "./loader";
 export { vocabLevelCounts } from "./stats";
 
 export const vocabData: Vocabulary[] = [

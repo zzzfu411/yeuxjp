@@ -306,6 +306,6 @@ test("browser E2E text assertions reject mojibake fallbacks", () => {
 
   assert.match(e2e, /getByLabel\(\/Stroke order\|笔顺\/\)/)
   assert.match(e2e, /getByText\(\/得分:\/\)/)
-  assert.doesNotMatch(e2e, /绗旈/)
-  assert.doesNotMatch(e2e, /寰楀垎/)
+  assert.doesNotMatch(e2e, /绗旈/) // mojibake-ok detector fixture
+  assert.doesNotMatch(e2e, /寰楀垎/) // mojibake-ok detector fixture
 })

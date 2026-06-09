@@ -33,8 +33,8 @@ test("review vocabulary hook owns scoped vocabulary loading", () => {
 
   assert.match(source, /export function useAllVocabulary/)
   assert.match(source, /loadVocabularyScope\("all"\)/)
-  assert.match(source, /export function useVocabularyForReviewIds/)
-  assert.match(source, /loadVocabularyForIds\(reviewIds\)/)
+  assert.match(source, /export function useVocabularyReviewPool/)
+  assert.match(source, /loadVocabularyReviewPool\(reviewIds\)/)
 
   for (const relPath of [
     "src/components/review/vocab-review-session.tsx",

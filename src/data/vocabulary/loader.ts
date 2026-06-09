@@ -23,5 +23,35 @@ export async function loadVocabularyForIds(ids: readonly string[]): Promise<Voca
   )
 
   const chunks = await Promise.all(levels.map(loadVocabularyLevel))
-  return chunks.flat()
+  const byId = new Map(chunks.flat().map((item) => [item.id, item]))
+  const seen = new Set<string>()
+  const entries: Vocabulary[] = []
+
+  for (const id of ids) {
+    if (seen.has(id)) continue
+    seen.add(id)
+    const item = byId.get(id)
+    if (item) entries.push(item)
+  }
+
+  return entries
+}
+
+export async function loadVocabularyReviewPool(ids: readonly string[], minSize: number = 4): Promise<Vocabulary[]> {
+  const targets = await loadVocabularyForIds(ids)
+  if (!targets.length || targets.length >= minSize) return targets
+
+  const levels = Array.from(new Set(targets.map((item) => item.level)))
+  const chunks = await Promise.all(levels.map(loadVocabularyLevel))
+  const seen = new Set(targets.map((item) => item.id))
+  const pool = [...targets]
+
+  for (const item of chunks.flat()) {
+    if (pool.length >= minSize) break
+    if (seen.has(item.id)) continue
+    seen.add(item.id)
+    pool.push(item)
+  }
+
+  return pool
 }

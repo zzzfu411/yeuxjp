@@ -7,7 +7,7 @@ import { VocabReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
-import { useVocabularyForReviewIds } from "@/components/review/review-vocabulary"
+import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import type { useLearningProgress } from "@/lib/learning-progress"
@@ -29,7 +29,7 @@ export function VocabReviewSession({
   learning: ReturnType<typeof useLearningProgress>
   srs: ReturnType<typeof useSrsDeck>
 }) {
-  const vocabulary = useVocabularyForReviewIds(ids, ids.length > 0)
+  const vocabulary = useVocabularyReviewPool(ids, ids.length > 0)
   const [question, setQuestion] = useState<Question | null>(null)
   const [saveError, setSaveError] = useState(false)
   const review = useReviewSessionState(ids)

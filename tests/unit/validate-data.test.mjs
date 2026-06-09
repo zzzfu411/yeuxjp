@@ -16,19 +16,22 @@ test("data validation script passes for the current repository", () => {
   assert.match(result.stdout, /Data validation passed/)
 })
 
-test("data validation scans source and docs for common mojibake fragments", () => {
+test("data validation scans source, scripts, tests, and docs for common mojibake fragments", () => {
   const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /function validateNoMojibakeMarkers/)
   assert.match(source, /walkFiles\(srcDir/)
+  assert.match(source, /path\.join\(root, "scripts"\)/)
+  assert.match(source, /path\.join\(root, "tests"\)/)
+  assert.match(source, /mojibake-ok/)
   assert.match(source, /README\.md/)
   assert.match(source, /workspaceRoot/)
   assert.match(source, /CLAUDE\.md/)
   assert.match(source, /README_CODEX\.md/)
-  for (const marker of ["绗旈", "寰楀", "褰撳", "瀛︿", "澶囦", "鏃犳", "娓呯", "閿欓", "瀵煎", "銇裤"]) {
+  for (const marker of ["绗旈", "寰楀", "褰撳", "瀛︿", "澶囦", "鏃犳", "娓呯", "閿欓", "瀵煎", "銇裤"]) { // mojibake-ok detector fixture
     assert.ok(source.includes(marker), `validator should detect ${marker}`)
   }
-  assert.match(source, /source\/docs text contains likely mojibake markers/)
+  assert.match(source, /source\/scripts\/tests\/docs text contains likely mojibake markers/)
 })
 
 test("data validation checks lesson practice metadata and references", () => {
