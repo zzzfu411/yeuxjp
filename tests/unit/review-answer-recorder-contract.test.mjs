@@ -43,7 +43,7 @@ test("useReviewAnswerRecorder owns question result and learning record writes", 
 
   assert.match(source, /makeQuestionResult/)
   assert.match(source, /recordAnswer\(selectedAnswer, result\.correct\)/)
+  assert.match(source, /if \(!recordQuestionPractice\(\{ progress, notebook, result \}\)\) return false/)
   assert.match(source, /grade\(result\)/)
-  assert.match(source, /recordQuestionPractice/)
   assert.match(source, /return true/)
 })

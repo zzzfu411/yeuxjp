@@ -20,22 +20,24 @@ export function getReviewStorageKey(itemType: PracticeResult["itemType"]) {
 
 export function enrollReviewItem(itemType: PracticeResult["itemType"], itemId: string) {
   const storageKey = getReviewStorageKey(itemType)
-  if (!storageKey) return
-  if (itemType === "kana" && !isReviewableKanaId(itemId)) return
-  enrollSrs(storageKey, itemId)
+  if (!storageKey) return true
+  if (itemType === "kana" && !isReviewableKanaId(itemId)) return true
+  return enrollSrs(storageKey, itemId)
 }
 
 export function recordPracticeResult(progress: LearningProgressApi, result: Omit<PracticeResult, "createdAt">) {
-  progress.recordPractice(result)
+  const recorded = progress.recordPractice(result)
+  if (!recorded) return false
   if (result.correct) {
-    enrollReviewItem(result.itemType, result.itemId)
+    return enrollReviewItem(result.itemType, result.itemId)
   }
+  return true
 }
 
 export function recordMistakeIfWrong(notebook: MistakeNotebookApi, result: QuestionResult) {
   const input = questionToMistakeInput(result)
-  if (!input) return
-  notebook.recordWrong(input)
+  if (!input) return true
+  return notebook.recordWrong(input)
 }
 
 export function recordQuestionPractice({
@@ -54,7 +56,7 @@ export function recordQuestionPractice({
   const { question } = result
 
   if (progress && question.itemId && question.itemType && question.mode) {
-    recordPracticeResult(progress, {
+    if (!recordPracticeResult(progress, {
       lessonId,
       lessonStepId,
       itemId: question.itemId,
@@ -62,10 +64,14 @@ export function recordQuestionPractice({
       mode: question.mode,
       correct: result.correct,
       answer: result.selectedAnswer,
-    })
+    })) {
+      return false
+    }
   }
 
   if (notebook) {
-    recordMistakeIfWrong(notebook, result)
+    return recordMistakeIfWrong(notebook, result)
   }
+
+  return true
 }

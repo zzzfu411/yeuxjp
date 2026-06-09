@@ -58,13 +58,14 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       const next = upsertWrongMistake(previous, input, now)
       const previousSrs = readSrsMap(MISTAKE_SRS_STORAGE_KEY)
 
-      if (!setSrsState(MISTAKE_SRS_STORAGE_KEY, id, applySrsResult(createSrsState(now), "again", now))) return
+      if (!setSrsState(MISTAKE_SRS_STORAGE_KEY, id, applySrsResult(createSrsState(now), "again", now))) return false
       if (!writeMistakeList(storageKey, next)) {
         if (writeSrsMap(MISTAKE_SRS_STORAGE_KEY, previousSrs)) notifySrs(MISTAKE_SRS_STORAGE_KEY)
-        return
+        return false
       }
 
       setList(next)
+      return true
     },
     [storageKey]
   )

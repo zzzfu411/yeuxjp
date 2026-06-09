@@ -216,18 +216,26 @@ export function useLearningProgress() {
 
   const recordPractice = useCallback((result: Omit<PracticeResult, "createdAt">) => {
     const createdAt = Date.now()
-    const nextResults = appendPracticeResult(readLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, []), result, createdAt)
+    const previousResults = normalizePracticeResults(readLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, []))
+    const previousItems = normalizeItemProgressMap(readLearningJson(STORAGE_KEYS.ITEM_PROGRESS, {}))
+    const nextResults = appendPracticeResult(previousResults, result, createdAt)
     const nextResult = nextResults.at(-1)
-    if (!nextResult) return
+    if (!nextResult) return false
 
-    if (writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, nextResults)) {
-      setResults(nextResults)
+    const nextItems = updateItemProgressForPractice(previousItems, nextResult)
+
+    if (!writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, nextResults)) {
+      return false
     }
 
-    const nextItems = updateItemProgressForPractice(readLearningJson(STORAGE_KEYS.ITEM_PROGRESS, {}), nextResult)
-    if (writeLearningJson(STORAGE_KEYS.ITEM_PROGRESS, nextItems)) {
-      setItems(nextItems)
+    if (!writeLearningJson(STORAGE_KEYS.ITEM_PROGRESS, nextItems)) {
+      writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, previousResults)
+      return false
     }
+
+    setResults(nextResults)
+    setItems(nextItems)
+    return true
   }, [])
 
   const completedLessonIds = useMemo(() => {

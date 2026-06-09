@@ -24,8 +24,8 @@ export function useReviewAnswerRecorder({
     const result = makeQuestionResult(question, selectedAnswer)
     if (!recordAnswer(selectedAnswer, result.correct)) return false
 
+    if (!recordQuestionPractice({ progress, notebook, result })) return false
     grade(result)
-    recordQuestionPractice({ progress, notebook, result })
     return true
   }, [grade, notebook, progress, recordAnswer])
 }
