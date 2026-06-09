@@ -15,6 +15,8 @@ test("quiz runner delegates shared answer recording to useQuizAnswerRecorder", (
   assert.match(source, /from "@\/components\/quiz\/use-quiz-answer-recorder"/)
   assert.match(source, /useQuizAnswerRecorder\(/)
   assert.match(source, /recordAnswer\(currentQuestion, val\)/)
+  assert.match(source, /if \(!result\) return/)
+  assert.match(source, /setSelectedOption\(val\)/)
   assert.doesNotMatch(source, /makeQuestionResult/)
   assert.doesNotMatch(source, /recordQuestionPractice/)
   assert.doesNotMatch(source, /recordQuizAnswer/)
@@ -25,7 +27,7 @@ test("useQuizAnswerRecorder owns question result, stats, and learning record wri
 
   assert.match(source, /export function useQuizAnswerRecorder/)
   assert.match(source, /makeQuestionResult\(question, selectedAnswer\)/)
+  assert.match(source, /if \(!recordQuestionPractice\(\{ progress, notebook, result \}\)\) return null/)
   assert.match(source, /setQuizStats\(\(prev\) => recordQuizAnswer\(prev, result\.correct\)\)/)
-  assert.match(source, /recordQuestionPractice\(\{ progress, notebook, result \}\)/)
   assert.match(source, /return result/)
 })

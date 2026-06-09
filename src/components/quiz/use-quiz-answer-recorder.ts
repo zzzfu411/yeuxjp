@@ -22,8 +22,9 @@ export function useQuizAnswerRecorder({
 }) {
   return useCallback((question: Question, selectedAnswer: string) => {
     const result = makeQuestionResult(question, selectedAnswer)
+    if (!recordQuestionPractice({ progress, notebook, result })) return null
+
     setQuizStats((prev) => recordQuizAnswer(prev, result.correct))
-    recordQuestionPractice({ progress, notebook, result })
     return result
   }, [notebook, progress, setQuizStats])
 }

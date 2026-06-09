@@ -121,21 +121,27 @@ export default function LessonPage() {
 
   const submitChoice = (answer: string) => {
     if (current.type !== "multipleChoice" || result) return
-    const ok = recordAnswer(current, answer)?.correct ?? false
+    const recorded = recordAnswer(current, answer)
+    if (!recorded) return
+    const ok = recorded.correct
     setSelected(answer)
     setResult(ok ? "correct" : "wrong")
   }
 
   const submitTyping = () => {
     if ((current.type !== "typing" && current.type !== "dictation") || result) return
-    const ok = recordAnswer(current, typed)?.correct ?? false
+    const recorded = recordAnswer(current, typed)
+    if (!recorded) return
+    const ok = recorded.correct
     setResult(ok ? "correct" : "wrong")
   }
 
   const submitSentence = () => {
     if (current.type !== "sentenceBuild" || result) return
     const answer = built.join("")
-    const ok = recordAnswer(current, answer)?.correct ?? false
+    const recorded = recordAnswer(current, answer)
+    if (!recorded) return
+    const ok = recorded.correct
     setResult(ok ? "correct" : "wrong")
   }
 

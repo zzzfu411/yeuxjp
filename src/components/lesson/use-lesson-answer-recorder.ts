@@ -29,13 +29,16 @@ export function useLessonAnswerRecorder({
     const question = lessonStepToQuestion(step)
     const result = makeQuestionResult(question, answer)
 
-    recordQuestionPractice({
+    if (!recordQuestionPractice({
       progress,
       notebook,
       result,
       lessonId,
       lessonStepId: step.id,
-    })
+    })) {
+      return null
+    }
+
     setAnswered((prev) => ({ ...prev, [step.id]: result.correct }))
     return result
   }, [lessonId, notebook, progress, setAnswered])

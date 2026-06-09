@@ -109,11 +109,11 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
 
   const handleSelect = (val: string) => {
     if (selectedOption) return
-    setSelectedOption(val)
+    if (!currentQuestion) return
 
-    if (currentQuestion) {
-      recordAnswer(currentQuestion, val)
-    }
+    const result = recordAnswer(currentQuestion, val)
+    if (!result) return
+    setSelectedOption(val)
   }
 
   if (!currentQuestion) {
