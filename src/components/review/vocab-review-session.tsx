@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { VocabReviewPrompt } from "@/components/review/review-prompt-content"
@@ -12,7 +12,7 @@ import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
-import type { Question, QuestionResult } from "@/lib/questions"
+import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { makeVocabReviewQuestion } from "@/lib/review-questions"
 
@@ -30,33 +30,13 @@ export function VocabReviewSession({
   srs: ReturnType<typeof useSrsDeck>
 }) {
   const vocabulary = useVocabularyReviewPool(ids, ids.length > 0)
-  const [question, setQuestion] = useState<Question | null>(null)
   const [saveError, setSaveError] = useState(false)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
 
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
-
-  useEffect(() => {
-    let cancelled = false
-
-    Promise.resolve().then(() => {
-      if (cancelled) return
-      if (!item) {
-        setQuestion(null)
-        setSaveError(false)
-        return
-      }
-
-      setQuestion(makeVocabReviewQuestion(item.id, vocabulary.data))
-      setSaveError(false)
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [item, vocabulary.data])
+  const question = useMemo(() => (item ? makeVocabReviewQuestion(item.id, vocabulary.data) : null), [item, vocabulary.data])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: item?.kana,
@@ -87,12 +67,11 @@ export function VocabReviewSession({
     return <ReviewLoadingState label="正在加载单词复习..." />
   }
 
-  if (!item) {
-    return <ReviewDone title="题库变更：当前条目不存在" onExit={onExit} />
+  if (!item || !question) {
+    return <ReviewDone title="题库变更：当前条目或选项不足" onExit={onExit} />
   }
 
   const handleSelect = (val: string) => {
-    if (!question) return
     const recorded = recordAnswerSelection(question, val)
     setSaveError(!recorded)
   }
@@ -113,7 +92,7 @@ export function VocabReviewSession({
       </ReviewPromptCard>
 
       <ReviewOptionGrid
-        options={question?.options ?? []}
+        options={question.options}
         correctAnswer={item.id}
         selectedAnswer={selected}
         onSelect={handleSelect}

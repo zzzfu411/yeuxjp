@@ -81,4 +81,19 @@ test("review question generators produce shared Question objects", () => {
   assert.equal(kanaQuestion.correctAnswer, "a")
   assert.equal(vocabQuestion.itemType, "vocab")
   assert.equal(vocabQuestion.correctAnswer, "v1")
+  assert.equal(vocabQuestion.options.length, 4)
+})
+
+test("vocabulary review questions require enough distractor options", () => {
+  const question = review.makeVocabReviewQuestion(
+    "v1",
+    [
+      { id: "v1", kana: "みず", romaji: "mizu", meaning: "water", category: "food", level: "survival" },
+      { id: "v2", kana: "ちゃ", romaji: "cha", meaning: "tea", category: "food", level: "survival" },
+      { id: "v3", kana: "ごはん", romaji: "gohan", meaning: "rice", category: "food", level: "survival" },
+    ],
+    () => 0
+  )
+
+  assert.equal(question, null)
 })

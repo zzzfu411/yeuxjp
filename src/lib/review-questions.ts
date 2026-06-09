@@ -104,6 +104,8 @@ export function makeVocabReviewQuestion(id: string, vocab: Vocabulary[], random:
   if (!item) return null
 
   const wrong = shuffleList(vocab.filter((v) => v.id !== item.id).map((v) => v.id), random).slice(0, 3)
+  if (wrong.length < 3) return null
+
   return {
     type: "review:vocab",
     itemId: item.id,
