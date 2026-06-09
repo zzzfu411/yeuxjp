@@ -13,12 +13,12 @@ const requiredSelectors = [
   },
   {
     testId: "lesson-next",
-    source: "src/app/learn/[lessonId]/page.tsx",
+    source: "src/components/lesson/lesson-runner.tsx",
     pattern: /data-testid="lesson-next"/,
   },
   {
     testId: "lesson-locked-preview",
-    source: "src/app/learn/[lessonId]/page.tsx",
+    source: "src/components/lesson/lesson-runner.tsx",
     pattern: /data-testid="lesson-locked-preview"/,
   },
   {

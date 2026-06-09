@@ -9,8 +9,8 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("lesson page restores a saved lesson step only after progress storage has loaded", () => {
-  const source = read("src/app/learn/[lessonId]/page.tsx")
+test("LessonRunner restores a saved lesson step only after progress storage has loaded", () => {
+  const source = read("src/components/lesson/lesson-runner.tsx")
 
   assert.match(source, /const \{ lessons, results, loaded, startLesson, completeLesson, saveLessonPosition \} = progress/)
   assert.match(source, /if \(!lesson \|\| !loaded\) return 0/)
@@ -20,8 +20,8 @@ test("lesson page restores a saved lesson step only after progress storage has l
   assert.doesNotMatch(source, /setState.*resumeIndex/)
 })
 
-test("lesson page restores answered practice state from persisted results", () => {
-  const source = read("src/app/learn/[lessonId]/page.tsx")
+test("LessonRunner restores answered practice state from persisted results", () => {
+  const source = read("src/components/lesson/lesson-runner.tsx")
 
   assert.match(source, /getLessonAnsweredFromResults/)
   assert.match(source, /getLessonAnsweredFromResults\(lesson\.id, lesson\.steps, results\)/)
@@ -31,8 +31,8 @@ test("lesson page restores answered practice state from persisted results", () =
   assert.match(source, /Object\.values\(answered\)\.filter\(Boolean\)\.length/)
 })
 
-test("lesson page saves step position through the shared learning progress facade", () => {
-  const source = read("src/app/learn/[lessonId]/page.tsx")
+test("LessonRunner saves step position through the shared learning progress facade", () => {
+  const source = read("src/components/lesson/lesson-runner.tsx")
 
   assert.match(source, /if \(!lesson \|\| !loaded\) return/)
   assert.match(source, /if \(!lessonUnlocked\) return/)
@@ -46,8 +46,8 @@ test("lesson page saves step position through the shared learning progress facad
   assert.doesNotMatch(source, /localStorage\.setItem/)
 })
 
-test("lesson page warns on locked direct lesson visits without auto-starting progress", () => {
-  const source = read("src/app/learn/[lessonId]/page.tsx")
+test("LessonRunner warns on locked direct lesson visits without auto-starting progress", () => {
+  const source = read("src/components/lesson/lesson-runner.tsx")
 
   assert.match(source, /from "@\/lib\/learning-entry"/)
   assert.match(source, /isLessonUnlocked\(lesson, progress\.completedLessonIds\)/)
@@ -59,8 +59,8 @@ test("lesson page warns on locked direct lesson visits without auto-starting pro
   assert.match(source, /查看技能树/)
 })
 
-test("lesson page keeps locked lesson previews read-only", () => {
-  const source = read("src/app/learn/[lessonId]/page.tsx")
+test("LessonRunner keeps locked lesson previews read-only", () => {
+  const source = read("src/components/lesson/lesson-runner.tsx")
 
   assert.match(source, /const lessonReadOnly = !loaded \|\| !lessonUnlocked/)
   assert.match(source, /if \(lessonReadOnly\) return/)

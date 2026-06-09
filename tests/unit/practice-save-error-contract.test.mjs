@@ -21,7 +21,7 @@ test("PracticeSaveError exposes an accessible shared persistence failure message
 
 test("all answer surfaces render the shared save failure message", () => {
   const sources = [
-    "src/app/learn/[lessonId]/page.tsx",
+    "src/components/lesson/lesson-runner.tsx",
     "src/components/quiz/quiz-runner.tsx",
     "src/components/review/kana-review-session.tsx",
     "src/components/review/vocab-review-session.tsx",

@@ -9,8 +9,8 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("lesson page delegates step rendering to LessonStepBody", () => {
-  const source = read("src/app/learn/[lessonId]/page.tsx")
+test("LessonRunner delegates step rendering to LessonStepBody", () => {
+  const source = read("src/components/lesson/lesson-runner.tsx")
 
   assert.match(source, /from "@\/components\/lesson\/lesson-step-body"/)
   assert.match(source, /<LessonStepBody\b/)
