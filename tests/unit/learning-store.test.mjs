@@ -49,6 +49,25 @@ function installWindow({ failSetKeys = new Set(), failRemoveKeys = new Set(), fa
   return { map, events }
 }
 
+function installReadFailingWindow() {
+  global.window = {
+    localStorage: {
+      getItem: () => {
+        throw new Error("read failed")
+      },
+      setItem: () => {},
+      removeItem: () => {},
+    },
+    dispatchEvent: () => true,
+  }
+  global.CustomEvent = class CustomEvent extends Event {
+    constructor(type, init) {
+      super(type)
+      this.detail = init?.detail
+    }
+  }
+}
+
 test("learning backups include existing learning keys and can restore them", () => {
   const { map } = installWindow()
   map.set(storage.STORAGE_KEYS.USER_PROFILE, '{"goal":"balanced"}')
@@ -64,6 +83,17 @@ test("learning backups include existing learning keys and can restore them", () 
   assert.equal(store.restoreLearningBackup(backup), true)
   assert.equal(map.get(storage.STORAGE_KEYS.SRS_KANA), '{"a":{"box":1}}')
   assert.equal(map.has(storage.STORAGE_KEYS.MISTAKES), false)
+})
+
+test("safe learning backup creation fails instead of exporting partial data when storage reads fail", () => {
+  installReadFailingWindow()
+
+  assert.equal(store.tryCreateLearningBackup(123), null)
+  assert.deepEqual(store.createLearningBackup(123), {
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 123,
+    entries: {},
+  })
 })
 
 test("resetLearningData removes all managed keys but leaves unrelated localStorage alone", () => {

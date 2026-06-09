@@ -71,12 +71,20 @@ export function getLearningBackupKeys() {
 }
 
 export function createLearningBackup(now: number = Date.now()): LearningBackup {
+  return tryCreateLearningBackup(now) ?? { version: LEARNING_BACKUP_VERSION, exportedAt: now, entries: {} }
+}
+
+export function tryCreateLearningBackup(now: number = Date.now()): LearningBackup | null {
   const entries: LearningBackup["entries"] = {}
 
   if (typeof window !== "undefined") {
-    for (const key of BACKUP_KEYS) {
-      const value = window.localStorage.getItem(key)
-      if (value !== null) entries[key] = value
+    try {
+      for (const key of BACKUP_KEYS) {
+        const value = window.localStorage.getItem(key)
+        if (value !== null) entries[key] = value
+      }
+    } catch {
+      return null
     }
   }
 

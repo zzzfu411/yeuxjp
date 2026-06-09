@@ -157,7 +157,7 @@ function VocabularyPageContent() {
 
   const handleClearLearned = useCallback(() => {
     if (typeof window === "undefined") return
-    const ok = window.confirm("纭娓呯┖璇嶆眹鎺屾彙杩涘害鍚楋紵")
+    const ok = window.confirm("确认清空词汇掌握进度吗？")
     if (ok) clearLearned()
   }, [clearLearned])
 

@@ -4,10 +4,10 @@ import * as React from "react"
 import { Download, RotateCcw, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
-  createLearningBackup,
   parseLearningBackup,
   restoreLearningBackup,
   resetLearningData,
+  tryCreateLearningBackup,
 } from "@/lib/learning-store"
 import { cn } from "@/lib/utils"
 
@@ -26,16 +26,30 @@ export function LearningDataPanel({ className }: { className?: string }) {
   const [confirmReset, setConfirmReset] = React.useState(false)
 
   const exportData = React.useCallback(() => {
-    const backup = createLearningBackup()
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement("a")
-    anchor.href = url
-    anchor.download = backupFileName(backup.exportedAt)
-    anchor.click()
-    URL.revokeObjectURL(url)
-    setNotice({ tone: "success", text: "备份已生成。" })
     setConfirmReset(false)
+    const backup = tryCreateLearningBackup()
+    if (!backup) {
+      setNotice({ tone: "error", text: "无法读取本地学习数据，导出失败。" })
+      return
+    }
+
+    let url: string | null = null
+    let anchor: HTMLAnchorElement | null = null
+    try {
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" })
+      url = URL.createObjectURL(blob)
+      anchor = document.createElement("a")
+      anchor.href = url
+      anchor.download = backupFileName(backup.exportedAt)
+      document.body.appendChild(anchor)
+      anchor.click()
+      setNotice({ tone: "success", text: "备份已生成。" })
+    } catch {
+      setNotice({ tone: "error", text: "备份文件生成失败。" })
+    } finally {
+      anchor?.remove()
+      if (url) URL.revokeObjectURL(url)
+    }
   }, [])
 
   const importData = React.useCallback((file: File) => {

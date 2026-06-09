@@ -19,6 +19,8 @@ test("vocabulary page delegates search, filters, and category chips to Vocabular
   assert.match(page, /onToggleOnlyUnlearned=\{handleToggleOnlyUnlearned\}/)
   assert.match(page, /onClearLearned=\{handleClearLearned\}/)
   assert.match(page, /onSelectCategory=\{scrollToCategory\}/)
+  assert.match(page, /确认清空词汇掌握进度吗？/)
+  assert.doesNotMatch(page, /\u7ead|\u7487|\u5a13|\u934a|\u7d35/)
   assert.doesNotMatch(page, /data-testid="vocabulary-search"/)
   assert.doesNotMatch(page, /hasCategoryIcon/)
 })
