@@ -6,6 +6,8 @@ import test from "node:test"
 const root = path.resolve(import.meta.dirname, "..", "..")
 const rootPackage = fs.readFileSync(path.join(root, "..", "package.json"), "utf8")
 const webPackage = fs.readFileSync(path.join(root, "package.json"), "utf8")
+const rootPackageJson = JSON.parse(rootPackage)
+const webPackageJson = JSON.parse(webPackage)
 const harness = fs.readFileSync(path.join(root, "tests/e2e/harness.mjs"), "utf8")
 const smoke = fs.readFileSync(path.join(root, "tests/e2e/smoke.mjs"), "utf8")
 
@@ -39,6 +41,14 @@ test("HTTP smoke reuses the shared E2E server harness", () => {
 test("root check command includes the browser-free HTTP smoke gate", () => {
   assert.match(rootPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
   assert.match(rootPackage, /"check:release": "npm run check:release --prefix web"/)
+})
+
+test("root package remains a dependency-free forwarding entrypoint", () => {
+  assert.deepEqual(rootPackageJson.dependencies ?? {}, {})
+  assert.deepEqual(rootPackageJson.devDependencies ?? {}, {})
+  assert.equal(rootPackageJson.scripts["validate:data"], "npm run validate:data --prefix web")
+  assert.equal(rootPackageJson.scripts["check:release"], "npm run check:release --prefix web")
+  assert.notEqual(rootPackageJson.scripts["validate:data"], webPackageJson.scripts["validate:data"])
 })
 
 test("app-local check command matches the root quality gate", () => {
