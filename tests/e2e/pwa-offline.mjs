@@ -62,6 +62,16 @@ try {
     page.getByTestId("lesson-next").waitFor({ state: "visible", timeout: 10_000 }),
     "lesson page should load before offline cache verification"
   )
+  const animCjkPath = "/animcjk/hiragana/05042.svg"
+  const onlineAnimCjkSvg = await page.evaluate(async (path) => {
+    const response = await fetch(path)
+    return {
+      ok: response.ok,
+      body: await response.text(),
+    }
+  }, animCjkPath)
+  assert.equal(onlineAnimCjkSvg.ok, true, "AnimCJK SVG should load online before offline cache verification")
+  assert.match(onlineAnimCjkSvg.body, /<svg/i, "AnimCJK online response should be an SVG")
 
   const sentinel = JSON.stringify({ pwaOfflineSmoke: true, savedAt: 123 })
   await page.evaluate((value) => {
@@ -71,6 +81,15 @@ try {
   await context.setOffline(true)
   await page.goto(visitedLessonUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("lesson-next").isVisible(), "offline navigation cache should serve a visited lesson page")
+  const offlineAnimCjkSvg = await page.evaluate(async (path) => {
+    const response = await fetch(path)
+    return {
+      ok: response.ok,
+      body: await response.text(),
+    }
+  }, animCjkPath)
+  assert.equal(offlineAnimCjkSvg.ok, true, "offline cache should serve a visited AnimCJK SVG")
+  assert.match(offlineAnimCjkSvg.body, /<svg/i, "offline AnimCJK response should remain an SVG")
 
   await page.goto(`${baseUrl}/offline-smoke-${Date.now()}`, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByText("当前离线").isVisible(), "navigation failures should render the offline fallback")
