@@ -70,11 +70,12 @@ export function useSrsDeck(storageKey: string) {
 
   const enroll = useCallback(
     (id: string) => {
-      setMap((prev) => {
-        if (prev[id]) return prev
+      setMap(() => {
+        const previous = readSrsMap(storageKey)
+        if (previous[id]) return previous
         const now = Date.now()
-        const next = { ...prev, [id]: createSrsState(now) }
-        writeSrsMap(storageKey, next)
+        const next = { ...previous, [id]: createSrsState(now) }
+        if (!writeSrsMap(storageKey, next)) return previous
         notifySrs(storageKey)
         return next
       })
@@ -84,11 +85,12 @@ export function useSrsDeck(storageKey: string) {
 
   const remove = useCallback(
     (id: string) => {
-      setMap((prev) => {
-        if (!prev[id]) return prev
-        const next = { ...prev }
+      setMap(() => {
+        const previous = readSrsMap(storageKey)
+        if (!previous[id]) return previous
+        const next = { ...previous }
         delete next[id]
-        writeSrsMap(storageKey, next)
+        if (!writeSrsMap(storageKey, next)) return previous
         notifySrs(storageKey)
         return next
       })
@@ -98,12 +100,13 @@ export function useSrsDeck(storageKey: string) {
 
   const grade = useCallback(
     (id: string, result: SrsResult) => {
-      setMap((prev) => {
+      setMap(() => {
         const now = Date.now()
-        const state = prev[id] ? normalizeSrsState(prev[id], now) : createSrsState(now)
+        const previous = readSrsMap(storageKey)
+        const state = previous[id] ? normalizeSrsState(previous[id], now) : createSrsState(now)
         const nextState = applySrsResult(state, result, now)
-        const next = { ...prev, [id]: nextState }
-        writeSrsMap(storageKey, next)
+        const next = { ...previous, [id]: nextState }
+        if (!writeSrsMap(storageKey, next)) return previous
         notifySrs(storageKey)
         return next
       })
@@ -113,7 +116,8 @@ export function useSrsDeck(storageKey: string) {
 
   const clear = useCallback(() => {
     setMap(() => {
-      writeSrsMap(storageKey, {})
+      const previous = readSrsMap(storageKey)
+      if (!writeSrsMap(storageKey, {})) return previous
       notifySrs(storageKey)
       return {}
     })

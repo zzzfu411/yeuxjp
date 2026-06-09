@@ -46,33 +46,37 @@ export function notifySrs(storageKey: string) {
 }
 
 export function enrollSrs(storageKey: string, id: string, now: number = Date.now()) {
-  if (typeof window === "undefined") return
+  if (typeof window === "undefined") return false
   const map = readSrsMap(storageKey)
-  if (map[id]) return
+  if (map[id]) return true
   map[id] = createSrsState(now)
-  writeSrsMap(storageKey, map)
+  if (!writeSrsMap(storageKey, map)) return false
   notifySrs(storageKey)
+  return true
 }
 
 export function setSrsState(storageKey: string, id: string, state: SrsState) {
-  if (typeof window === "undefined") return
+  if (typeof window === "undefined") return false
   const map = readSrsMap(storageKey)
   map[id] = normalizeSrsState(state, Date.now())
-  writeSrsMap(storageKey, map)
+  if (!writeSrsMap(storageKey, map)) return false
   notifySrs(storageKey)
+  return true
 }
 
 export function removeSrs(storageKey: string, id: string) {
-  if (typeof window === "undefined") return
+  if (typeof window === "undefined") return false
   const map = readSrsMap(storageKey)
-  if (!map[id]) return
+  if (!map[id]) return true
   delete map[id]
-  writeSrsMap(storageKey, map)
+  if (!writeSrsMap(storageKey, map)) return false
   notifySrs(storageKey)
+  return true
 }
 
 export function clearSrs(storageKey: string) {
-  if (typeof window === "undefined") return
-  writeSrsMap(storageKey, {})
+  if (typeof window === "undefined") return false
+  if (!writeSrsMap(storageKey, {})) return false
   notifySrs(storageKey)
+  return true
 }

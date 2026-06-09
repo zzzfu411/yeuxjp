@@ -5,14 +5,17 @@ import { loadTsModule } from "./load-ts-module.mjs"
 const model = await loadTsModule("src/lib/srs-model.ts")
 const storage = await loadTsModule("src/lib/srs-storage.ts")
 
-function installWindow() {
+function installWindow({ failSet = false } = {}) {
   const map = new Map()
   const events = []
 
   global.window = {
     localStorage: {
       getItem: (key) => (map.has(key) ? map.get(key) : null),
-      setItem: (key, value) => map.set(key, String(value)),
+      setItem: (key, value) => {
+        if (failSet) throw new Error("quota")
+        map.set(key, String(value))
+      },
     },
     dispatchEvent: (event) => {
       events.push(event)
@@ -60,8 +63,8 @@ test("enrollSrs creates a review item and dispatches an update", () => {
   const { map, events } = installWindow()
   const now = 1_700_000_000_000
 
-  storage.enrollSrs("deck", "kana:a", now)
-  storage.enrollSrs("deck", "kana:a", now + 1_000)
+  assert.equal(storage.enrollSrs("deck", "kana:a", now), true)
+  assert.equal(storage.enrollSrs("deck", "kana:a", now + 1_000), true)
 
   const deck = JSON.parse(map.get("deck"))
   assert.deepEqual(Object.keys(deck), ["kana:a"])
@@ -77,21 +80,31 @@ test("setSrsState, removeSrs, and clearSrs persist changes and notify listeners"
   const now = 1_700_000_000_000
   const state = model.createSrsState(now)
 
-  storage.setSrsState("deck", "vocab:neko", { ...state, box: 2, right: 1 })
+  assert.equal(storage.setSrsState("deck", "vocab:neko", { ...state, box: 2, right: 1 }), true)
   let deck = JSON.parse(map.get("deck"))
   assert.equal(deck["vocab:neko"].box, 2)
   assert.equal(deck["vocab:neko"].right, 1)
 
-  storage.removeSrs("deck", "missing")
+  assert.equal(storage.removeSrs("deck", "missing"), true)
   assert.equal(events.length, 1)
 
-  storage.removeSrs("deck", "vocab:neko")
+  assert.equal(storage.removeSrs("deck", "vocab:neko"), true)
   deck = JSON.parse(map.get("deck"))
   assert.deepEqual(deck, {})
   assert.equal(events.length, 2)
 
-  storage.clearSrs("deck")
+  assert.equal(storage.clearSrs("deck"), true)
   assert.deepEqual(JSON.parse(map.get("deck")), {})
   assert.equal(events.length, 3)
   assert.ok(events.every((event) => event.type === storage.SRS_EVENT))
+})
+
+test("srs storage does not notify when writes fail", () => {
+  const { events } = installWindow({ failSet: true })
+  const state = model.createSrsState(1_700_000_000_000)
+
+  assert.equal(storage.enrollSrs("deck", "kana:a"), false)
+  assert.equal(storage.setSrsState("deck", "kana:a", state), false)
+  assert.equal(storage.clearSrs("deck"), false)
+  assert.equal(events.length, 0)
 })
