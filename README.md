@@ -29,6 +29,7 @@ npm run lint           # ESLint + Next/TypeScript rules
 npm run test           # Node built-in unit tests
 npm run build          # production Next build
 npm run check          # validate:data + lint + test + build + HTTP smoke
+npm run check:release  # check + strict browser/PWA Playwright E2E
 npm run e2e            # HTTP smoke test for key routes
 npm run e2e:browser    # optional real browser click-flow E2E; skips if Playwright is unavailable
 npm run e2e:browser:required # strict browser E2E; fails if Playwright is unavailable
@@ -36,7 +37,7 @@ npm run e2e:pwa        # optional production PWA/offline E2E; skips if Playwrigh
 npm run e2e:pwa:required # strict production PWA/offline E2E
 ```
 
-The current merge gate is `npm run check`; it includes the HTTP smoke E2E gate. `npm run e2e` verifies HTTP route health for the core top-level pages plus the first lesson. `npm run e2e:browser` exercises real interactions with Playwright, including lesson resume persistence, lesson answer recording, kana stroke playback, vocabulary search, quiz mistakes, and review queue startup. `npm run e2e:pwa` runs against a production build, waits for the service worker, simulates offline navigation, and verifies the fallback page does not overwrite local learning state. Optional browser scripts exit cleanly with a skip message when Playwright is not installed. Use the `:required` variants in CI or release checks that must fail when the browser stack is missing.
+The current merge gate is `npm run check`; it includes the HTTP smoke E2E gate. Use `npm run check:release` for release or CI environments that have Playwright installed; it runs the merge gate plus strict browser click-flow and PWA/offline checks. `npm run e2e` verifies HTTP route health for the core top-level pages plus the first lesson. `npm run e2e:browser` exercises real interactions with Playwright, including lesson resume persistence, lesson answer recording, kana stroke playback, vocabulary search, quiz mistakes, review queue startup, and learning data backup/restore/reset. `npm run e2e:pwa` runs against a production build, waits for the service worker, simulates offline navigation, and verifies the fallback page does not overwrite local learning state. Optional browser scripts exit cleanly with a skip message when Playwright is not installed. Use the `:required` variants or `check:release` in CI or release checks that must fail when the browser stack is missing.
 
 Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale. Treat that as dependency maintenance, not a functional failure.
 

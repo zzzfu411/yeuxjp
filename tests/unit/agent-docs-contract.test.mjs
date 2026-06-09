@@ -16,18 +16,21 @@ for (const [name, source] of [
 ]) {
   test(`${name} documents the current E2E quality gates`, () => {
     assert.match(source, /npm run e2e\b/)
+    assert.match(source, /npm run check:release\b/)
     assert.match(source, /npm run e2e:browser\b/)
     assert.match(source, /npm run e2e:browser:required\b/)
     assert.match(source, /npm run e2e:pwa\b/)
     assert.match(source, /npm run e2e:pwa:required\b/)
     assert.match(source, /Playwright is not installed/)
     assert.match(source, /required/)
+    assert.match(source, /release|CI/)
   })
 }
 
 test("app README documents the current E2E coverage layers", () => {
   assert.match(webReadme, /inside `web\/`/)
   assert.match(webReadme, /npm run check/)
+  assert.match(webReadme, /npm run check:release/)
   assert.match(webReadme, /HTTP route health/)
   assert.match(webReadme, /real interactions with Playwright/)
   assert.match(webReadme, /production build/)
