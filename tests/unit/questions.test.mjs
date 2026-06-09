@@ -56,3 +56,21 @@ test("correct question results are not recorded as mistakes", () => {
 
   assert.equal(questions.questionToMistakeInput(result), null)
 })
+
+test("mistake review questions keep the existing mistake id when wrong again", () => {
+  const question = {
+    type: "review:mistake",
+    mistakeId: "existing-mistake-id",
+    correctAnswer: "right",
+    options: [
+      { value: "right", display: "right" },
+      { value: "wrong", display: "wrong" },
+    ],
+  }
+
+  const result = questions.makeQuestionResult(question, "wrong", 1_700_000_000_001)
+  const input = questions.questionToMistakeInput(result)
+
+  assert.equal(result.correct, false)
+  assert.equal(input.id, "existing-mistake-id")
+})

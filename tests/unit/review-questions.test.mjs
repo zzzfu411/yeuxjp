@@ -56,6 +56,7 @@ test("mistakeToQuestion preserves answers and de-duplicates options", () => {
   assert.equal(question.itemId, undefined)
   assert.equal(question.itemType, undefined)
   assert.equal(question.mode, undefined)
+  assert.equal(question.mistakeId, "m1")
   assert.equal(question.correctAnswer, "は")
   assert.deepEqual(question.options, [
     { value: "は", display: "は" },

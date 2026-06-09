@@ -70,6 +70,7 @@ export function ensureQuestionOptions(question: Pick<Question, "correctAnswer" |
 export function mistakeToQuestion(item: MistakeItem): Question {
   return {
     type: item.type,
+    mistakeId: item.id,
     questionText: item.questionText,
     questionAudio: item.questionAudio,
     correctAnswer: item.correctAnswer,

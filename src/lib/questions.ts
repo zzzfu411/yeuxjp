@@ -13,6 +13,7 @@ export interface Question {
   itemId?: string
   itemType?: PracticeItemType
   mode?: PracticeMode
+  mistakeId?: string
   questionText?: string
   questionAudio?: string
   autoPlayAudio?: boolean
@@ -71,6 +72,7 @@ export function questionToMistakeInput(result: QuestionResult) {
     explanation: question.explanation,
     meta: question.meta,
     options: normalizeMistakeOptions(question, result.selectedAnswer),
+    id: question.mistakeId,
   }
 }
 
