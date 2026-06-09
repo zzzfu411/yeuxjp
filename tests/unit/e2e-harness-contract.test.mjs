@@ -56,3 +56,10 @@ test("app-local check command matches the root quality gate", () => {
   assert.match(webPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
   assert.match(webPackage, /"check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required"/)
 })
+
+test("app-local lint command scans source-owned code instead of generated assets", () => {
+  assert.equal(webPackageJson.scripts.lint, "eslint src scripts tests")
+  assert.doesNotMatch(webPackageJson.scripts.lint, /eslint\s*$/)
+  assert.doesNotMatch(webPackageJson.scripts.lint, /\bpublic\b/)
+  assert.doesNotMatch(webPackageJson.scripts.lint, /\.git/)
+})

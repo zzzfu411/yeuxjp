@@ -42,37 +42,84 @@ test("semantics and pragmatics reference pages keep static lists in server compo
   const pages = [
     {
       page: "src/app/semantics/page.tsx",
+      shell: "src/components/reference/semantics-reference-page.tsx",
       modal: "src/components/reference/semantics-focus-modal.tsx",
       route: "/semantics",
       data: "semanticsData",
     },
     {
       page: "src/app/pragmatics/page.tsx",
+      shell: "src/components/reference/pragmatics-reference-page.tsx",
       modal: "src/components/reference/pragmatics-focus-modal.tsx",
       route: "/pragmatics",
       data: "pragmaticsData",
     },
   ]
 
-  for (const { page, modal, route, data } of pages) {
-    const source = read(page)
+  for (const { page, shell, modal, route, data } of pages) {
+    const pageSource = read(page)
+    const shellSource = read(shell)
     const modalSource = read(modal)
 
-    assert.doesNotMatch(source, /"use client"/, page)
-    assert.match(source, /searchParams\?: Promise<\{ item\?: string \}>/, page)
-    assert.match(source, new RegExp(`${data}\\.findIndex`), page)
-    assert.match(source, new RegExp(`${route}\\?item=\\$\\{encodeURIComponent`), page)
-    assert.match(source, /selectedIndex === null \? null/, page)
-    assert.match(source, /closeHref="/, page)
-    assert.match(source, /prevHref=\{prevHref\}/, page)
-    assert.match(source, /nextHref=\{nextHref\}/, page)
-    assert.doesNotMatch(source, /useIndexedModalNavigation/, page)
-    assert.doesNotMatch(source, /useState/, page)
+    assert.doesNotMatch(pageSource, /"use client"/, page)
+    assert.doesNotMatch(pageSource, /searchParams/, page)
+    assert.match(pageSource, /enableQueryRedirect/, page)
+
+    assert.doesNotMatch(shellSource, /"use client"/, shell)
+    assert.match(shellSource, new RegExp(`${data}\\.findIndex`), shell)
+    assert.match(shellSource, new RegExp(`${route}/\\$\\{encodeURIComponent`), shell)
+    assert.match(shellSource, /selectedIndex === null \? null/, shell)
+    assert.match(shellSource, /closeHref="/, shell)
+    assert.match(shellSource, /prevHref=\{prevHref\}/, shell)
+    assert.match(shellSource, /nextHref=\{nextHref\}/, shell)
+    assert.match(shellSource, /<Suspense fallback=\{null\}>/, shell)
+    assert.match(shellSource, /ReferenceQueryRedirect/, shell)
+    assert.doesNotMatch(shellSource, /useIndexedModalNavigation/, shell)
+    assert.doesNotMatch(shellSource, /useState/, shell)
 
     assert.match(modalSource, /UrlControlledReferenceModal/, modal)
     assert.match(modalSource, /SpeakButton/, modal)
     assert.match(modalSource, /selectedPosition/, modal)
   }
+})
+
+test("semantics and pragmatics reference detail routes are statically generated", () => {
+  const routes = [
+    {
+      source: "src/app/semantics/[itemId]/page.tsx",
+      data: "semanticsData",
+      shell: "SemanticsReferencePage",
+      guard: "getSemanticsIndex",
+    },
+    {
+      source: "src/app/pragmatics/[itemId]/page.tsx",
+      data: "pragmaticsData",
+      shell: "PragmaticsReferencePage",
+      guard: "getPragmaticsIndex",
+    },
+  ]
+
+  for (const { source: relPath, data, shell, guard } of routes) {
+    const source = read(relPath)
+
+    assert.doesNotMatch(source, /"use client"/, relPath)
+    assert.match(source, /export function generateStaticParams\(\)/, relPath)
+    assert.match(source, new RegExp(`${data}\\.map`), relPath)
+    assert.match(source, /params: Promise<\{ itemId: string \}>/, relPath)
+    assert.match(source, new RegExp(`${guard}\\(itemId\\) === null`), relPath)
+    assert.match(source, /notFound\(\)/, relPath)
+    assert.match(source, new RegExp(`<${shell} selectedItemId=\\{itemId\\}`), relPath)
+  }
+})
+
+test("legacy reference query URLs redirect to static detail routes", () => {
+  const source = read("src/components/reference/reference-query-redirect.tsx")
+
+  assert.match(source, /"use client"/)
+  assert.match(source, /useSearchParams\(\)/)
+  assert.match(source, /searchParams\.get\("item"\)/)
+  assert.match(source, /validIds\.includes\(itemId\)/)
+  assert.match(source, /router\.replace\(`\$\{basePath\}\/\$\{encodeURIComponent\(itemId\)\}`\)/)
 })
 
 test("URL-controlled reference modal owns client-side close and arrow-key navigation", () => {

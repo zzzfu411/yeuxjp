@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint src scripts tests",
     "test": "node --test tests/unit/*.test.mjs",
     "validate:data": "node scripts/validate-data.mjs",
     "check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e",

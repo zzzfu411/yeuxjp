@@ -7,7 +7,9 @@ export const appHealthRoutes = [
   "/path",
   "/grammar",
   "/semantics",
+  "/semantics/s-shiru-wakaru",
   "/pragmatics",
+  "/pragmatics/p-aisatsu-morning",
   "/learn/day-1-a-row-hello",
 ]
 

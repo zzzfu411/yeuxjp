@@ -26,7 +26,9 @@ test("E2E app health recognizes current app pages", () => {
     "/path",
     "/grammar",
     "/semantics",
+    "/semantics/s-shiru-wakaru",
     "/pragmatics",
+    "/pragmatics/p-aisatsu-morning",
     "/learn/day-1-a-row-hello",
   ])
   assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>"), true)
