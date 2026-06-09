@@ -31,7 +31,47 @@ async function seedReviewState(page) {
   })
 }
 
+async function seedLearningDataBackupState(page) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await page.evaluate(() => {
+    const now = Date.now()
+    localStorage.clear()
+    localStorage.setItem("yasashi.e2e.unmanaged", "keep")
+    localStorage.setItem(
+      "yasashi.learning.profile.v1",
+      JSON.stringify({ goal: "balanced", dailyMinutes: 15, startedAt: now - 1000, updatedAt: now })
+    )
+    localStorage.setItem(
+      "yasashi.mistakes.v1",
+      JSON.stringify([
+        {
+          id: "kana:a:hiragana-romaji",
+          type: "hiragana-romaji",
+          prompt: "あ",
+          correctAnswer: "a",
+          wrongAnswer: "i",
+          options: [
+            { id: "a", text: "a" },
+            { id: "i", text: "i" },
+          ],
+          wrongCount: 1,
+          createdAt: now - 1000,
+          lastWrongAt: now,
+          meta: { itemId: "a", itemType: "kana" },
+        },
+      ])
+    )
+    localStorage.setItem(
+      "yasashi.srs.mistakes.v1",
+      JSON.stringify({
+        "kana:a:hiragana-romaji": { box: 1, dueAt: now - 1, createdAt: now - 1000, right: 0, wrong: 1 },
+      })
+    )
+  })
+}
+
 let browser = null
+let context = null
 let failure = null
 
 try {
@@ -43,7 +83,8 @@ try {
   })
   await ensureServer()
   browser = await chromium.launch({ headless: true })
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
+  context = await browser.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 900 } })
+  const page = await context.newPage()
 
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   await assert.doesNotReject(() => page.getByTestId("home-start-learning").click())
@@ -119,11 +160,63 @@ try {
   await page.getByTestId("review-start-today").click()
   assert.ok(await page.getByTestId("review-remaining").isVisible())
 
+  await seedLearningDataBackupState(page)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("learning-data-panel").waitFor({ state: "visible" })
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByTestId("learning-data-export").click(),
+  ])
+  assert.match(download.suggestedFilename(), /^yasashi-learning-backup-\d{4}-\d{2}-\d{2}\.json$/)
+  const backupPath = await download.path()
+  assert.ok(backupPath, "learning data export should create a downloadable backup file")
+
+  await page.getByTestId("learning-data-reset").click()
+  await page.getByTestId("learning-data-reset").click()
+  await page.waitForFunction(() =>
+    localStorage.getItem("yasashi.learning.profile.v1") === null &&
+    localStorage.getItem("yasashi.mistakes.v1") === null &&
+    localStorage.getItem("yasashi.srs.mistakes.v1") === null
+  )
+  assert.equal(
+    await page.evaluate(() => localStorage.getItem("yasashi.e2e.unmanaged")),
+    "keep",
+    "learning data reset should leave unmanaged browser state alone"
+  )
+
+  const fileChooserPromise = page.waitForEvent("filechooser")
+  await page.getByTestId("learning-data-import").click()
+  const fileChooser = await fileChooserPromise
+  await fileChooser.setFiles(backupPath)
+  await page.waitForFunction(() =>
+    localStorage.getItem("yasashi.learning.profile.v1") !== null &&
+    localStorage.getItem("yasashi.mistakes.v1") !== null &&
+    localStorage.getItem("yasashi.srs.mistakes.v1") !== null
+  )
+  const restoredProfile = await readJsonStorage(page, "yasashi.learning.profile.v1")
+  assert.equal(restoredProfile?.goal, "balanced", "learning data import should restore the profile backup")
+  const restoredMistakes = await readJsonStorage(page, "yasashi.mistakes.v1")
+  assert.ok(
+    Array.isArray(restoredMistakes) && restoredMistakes.some((item) => item.id === "kana:a:hiragana-romaji"),
+    "learning data import should restore the mistake notebook backup"
+  )
+  const restoredMistakeSrs = await readJsonStorage(page, "yasashi.srs.mistakes.v1")
+  assert.ok(
+    restoredMistakeSrs?.["kana:a:hiragana-romaji"]?.dueAt,
+    "learning data import should restore mistake SRS state"
+  )
+  assert.equal(
+    await page.evaluate(() => localStorage.getItem("yasashi.e2e.unmanaged")),
+    "keep",
+    "learning data import should leave unmanaged browser state alone"
+  )
+
   console.log(`Browser E2E checks passed at ${baseUrl}`)
 } catch (error) {
   console.error(serverController.output)
   failure = error
 } finally {
+  await context?.close()
   await browser?.close()
   serverController.stop()
 }

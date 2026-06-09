@@ -56,6 +56,26 @@ const requiredSelectors = [
     source: "src/components/review/today-review-session.tsx",
     pattern: /data-testid="review-remaining"/,
   },
+  {
+    testId: "learning-data-panel",
+    source: "src/components/review/learning-data-panel.tsx",
+    pattern: /data-testid="learning-data-panel"/,
+  },
+  {
+    testId: "learning-data-export",
+    source: "src/components/review/learning-data-panel.tsx",
+    pattern: /data-testid="learning-data-export"/,
+  },
+  {
+    testId: "learning-data-import",
+    source: "src/components/review/learning-data-panel.tsx",
+    pattern: /data-testid="learning-data-import"/,
+  },
+  {
+    testId: "learning-data-reset",
+    source: "src/components/review/learning-data-panel.tsx",
+    pattern: /data-testid="learning-data-reset"/,
+  },
 ]
 
 test("browser E2E uses only declared stable test ids", () => {
@@ -117,6 +137,29 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /item\.type === "hiragana-romaji"/)
   assert.match(e2e, /item\.correctAnswer === "a"/)
   assert.match(e2e, /wrong quiz answer should record kana a in mistakes/)
+})
+
+test("browser E2E verifies learning data export reset and import through the UI", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /acceptDownloads: true/)
+  assert.match(e2e, /seedLearningDataBackupState/)
+  assert.match(e2e, /yasashi\.learning\.profile\.v1/)
+  assert.match(e2e, /yasashi\.mistakes\.v1/)
+  assert.match(e2e, /yasashi\.srs\.mistakes\.v1/)
+  assert.match(e2e, /yasashi\.e2e\.unmanaged/)
+  assert.match(e2e, /waitForEvent\("download"\)/)
+  assert.match(e2e, /getByTestId\("learning-data-export"\)/)
+  assert.match(e2e, /suggestedFilename\(\)/)
+  assert.match(e2e, /getByTestId\("learning-data-reset"\)\.click\(\)/)
+  assert.match(e2e, /waitForEvent\("filechooser"\)/)
+  assert.match(e2e, /getByTestId\("learning-data-import"\)/)
+  assert.match(e2e, /fileChooser\.setFiles\(backupPath\)/)
+  assert.match(e2e, /learning data import should restore the profile backup/)
+  assert.match(e2e, /learning data import should restore the mistake notebook backup/)
+  assert.match(e2e, /learning data import should restore mistake SRS state/)
+  assert.match(e2e, /learning data reset should leave unmanaged browser state alone/)
+  assert.match(e2e, /learning data import should leave unmanaged browser state alone/)
 })
 
 test("browser E2E text assertions reject mojibake fallbacks", () => {
