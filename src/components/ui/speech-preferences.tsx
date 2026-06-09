@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { Button } from "@/components/ui/button"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { cn } from "@/lib/utils"
 import {
   DEFAULT_SPEECH_PREFERENCES,
@@ -38,14 +40,27 @@ export function SpeechPreferencesProvider({
   React.useEffect(() => {
     let cancelled = false
 
-    Promise.resolve().then(() => {
-      if (cancelled) return
+    const syncPreferences = () => {
       const loaded = loadSpeechPreferences(storageKey)
       setPrefs(loaded)
+    }
+
+    Promise.resolve().then(() => {
+      if (cancelled) return
+      syncPreferences()
     })
+
+    const onLearningStore = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
+      if (!detail?.keys?.includes(STORAGE_KEYS.SPEECH_PREFS)) return
+      syncPreferences()
+    }
+
+    window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
 
     return () => {
       cancelled = true
+      window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
   }, [storageKey])
 
