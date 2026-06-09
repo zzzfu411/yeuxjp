@@ -36,8 +36,8 @@ test("review status owns completion and loading surfaces", () => {
 test("review vocabulary hook owns scoped vocabulary loading", () => {
   const source = read("src/components/review/review-vocabulary.ts")
 
-  assert.match(source, /export function useAllVocabulary/)
-  assert.match(source, /loadVocabularyScope\("all"\)/)
+  assert.doesNotMatch(source, /export function useAllVocabulary/)
+  assert.doesNotMatch(source, /loadVocabularyScope/)
   assert.match(source, /export function useVocabularyReviewPool/)
   assert.match(source, /loadVocabularyReviewPool\(reviewIds\)/)
   assert.match(source, /const \[retryToken, setRetryToken\] = useState\(0\)/)
@@ -51,5 +51,6 @@ test("review vocabulary hook owns scoped vocabulary loading", () => {
     "src/components/review/today-review-session.tsx",
   ]) {
     assert.doesNotMatch(read(relPath), /useAllVocabulary\(/)
+    assert.doesNotMatch(read(relPath), /loadVocabularyScope/)
   }
 })
