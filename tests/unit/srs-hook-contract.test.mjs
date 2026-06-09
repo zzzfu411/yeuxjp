@@ -13,8 +13,11 @@ test("useSrsDeck mutates decks from current storage snapshots", () => {
   const source = read("src/lib/srs.ts")
 
   const reads = source.match(/const previous = readSrsMap\(storageKey\)/g) ?? []
-  assert.equal(reads.length, 4)
-  assert.match(source, /if \(!writeSrsMap\(storageKey, next\)\) return previous/)
-  assert.match(source, /if \(!writeSrsMap\(storageKey, \{\}\)\) return previous/)
-  assert.doesNotMatch(source, /writeSrsMap\(storageKey, next\)\s*\n\s*notifySrs\(storageKey\)\s*\n\s*return next/)
+  assert.equal(reads.length, 3)
+  assert.match(source, /if \(!writeSrsMap\(storageKey, next\)\) return false/)
+  assert.match(source, /if \(!writeSrsMap\(storageKey, \{\}\)\) return false/)
+  assert.match(source, /return true/)
+  assert.match(source, /return false/)
+  assert.match(source, /setMap\(next\)/)
+  assert.match(source, /setMap\(\{\}\)/)
 })

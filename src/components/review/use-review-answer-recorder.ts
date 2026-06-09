@@ -18,14 +18,15 @@ export function useReviewAnswerRecorder({
   progress: LearningProgressApi
   notebook: MistakeNotebookApi
   recordAnswer: (answer: string, correct: boolean, beforeCommit?: () => boolean) => boolean
-  grade: (result: QuestionResult) => void
+  grade: (result: QuestionResult) => boolean
 }) {
   return useCallback((question: Question, selectedAnswer: string) => {
     const result = makeQuestionResult(question, selectedAnswer)
-    if (!recordAnswer(selectedAnswer, result.correct, () => recordQuestionPractice({ progress, notebook, result }))) {
+    if (!recordAnswer(selectedAnswer, result.correct, () => {
+      return recordQuestionPractice({ progress, notebook, result }) && grade(result)
+    })) {
       return false
     }
-    grade(result)
     return true
   }, [grade, notebook, progress, recordAnswer])
 }

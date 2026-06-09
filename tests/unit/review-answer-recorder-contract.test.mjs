@@ -42,8 +42,8 @@ test("useReviewAnswerRecorder owns question result and learning record writes", 
   const source = read("src/components/review/use-review-answer-recorder.ts")
 
   assert.match(source, /makeQuestionResult/)
-  assert.match(source, /recordAnswer\(selectedAnswer, result\.correct, \(\) => recordQuestionPractice\(\{ progress, notebook, result \}\)\)/)
-  assert.match(source, /grade\(result\)/)
+  assert.match(source, /return recordQuestionPractice\(\{ progress, notebook, result \}\) && grade\(result\)/)
+  assert.match(source, /recordAnswer\(selectedAnswer, result\.correct, \(\) => \{/)
   assert.match(source, /return true/)
 })
 

@@ -109,10 +109,11 @@ export function TodayReviewSession({
     notebook,
     recordAnswer: review.recordAnswer,
     grade: useCallback((result: QuestionResult) => {
-      if (!current) return
-      if (current.deck === "kana") kanaSrs.grade(current.id, result.correct ? "good" : "again")
-      if (current.deck === "vocab") vocabSrs.grade(current.id, result.correct ? "good" : "again")
-      if (current.deck === "mistakes") mistakeSrs.grade(current.id, result.correct ? "good" : "again")
+      if (!current) return false
+      if (current.deck === "kana") return kanaSrs.grade(current.id, result.correct ? "good" : "again")
+      if (current.deck === "vocab") return vocabSrs.grade(current.id, result.correct ? "good" : "again")
+      if (current.deck === "mistakes") return mistakeSrs.grade(current.id, result.correct ? "good" : "again")
+      return false
     }, [current, kanaSrs, mistakeSrs, vocabSrs]),
   })
 

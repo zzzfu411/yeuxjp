@@ -27,7 +27,7 @@ export default function ReviewPage() {
   const mistakeSrs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
 
   const [session, setSession] = useState<ReviewSession | null>(null)
-  const [mistakeSaveError, setMistakeSaveError] = useState(false)
+  const [reviewSaveError, setReviewSaveError] = useState(false)
 
   const dueMistakeIds = useMemo(() => {
     return mistakeSrs.dueIds.filter((id) => mistakes.byId.has(id))
@@ -76,11 +76,13 @@ export default function ReviewPage() {
   const isFirstTime = totalEnrolled === 0 && mastered.size === 0 && learned.size === 0
   const nextDueAt = getNextSrsDueAt([kanaSrs.map, vocabSrs.map, mistakeSrs.map])
   const startSession = (nextSession: ReviewSession) => {
-    setMistakeSaveError(false)
+    setReviewSaveError(false)
     setSession(nextSession)
   }
-  const removeMistake = (id: string) => setMistakeSaveError(!mistakes.remove(id))
-  const clearMistakes = () => setMistakeSaveError(!mistakes.clear())
+  const enrollKanaMissing = () => setReviewSaveError(!kanaEnrollMissing.every((id) => kanaSrs.enroll(id)))
+  const enrollVocabMissing = () => setReviewSaveError(!vocabEnrollMissing.every((id) => vocabSrs.enroll(id)))
+  const removeMistake = (id: string) => setReviewSaveError(!mistakes.remove(id))
+  const clearMistakes = () => setReviewSaveError(!mistakes.clear())
 
   return (
     <ReviewDashboard
@@ -100,7 +102,7 @@ export default function ReviewPage() {
         mastered: mastered.size,
         enrollMissing: kanaEnrollMissing.length,
         onStart: () => startSession({ deck: "kana", ids: reviewableKanaDueIds }),
-        onEnrollMissing: () => kanaEnrollMissing.forEach((id) => kanaSrs.enroll(id)),
+        onEnrollMissing: enrollKanaMissing,
       }}
       vocab={{
         due: vocabSrs.dueIds.length,
@@ -108,13 +110,13 @@ export default function ReviewPage() {
         learned: learned.size,
         enrollMissing: vocabEnrollMissing.length,
         onStart: () => startSession({ deck: "vocab", ids: vocabSrs.dueIds }),
-        onEnrollMissing: () => vocabEnrollMissing.forEach((id) => vocabSrs.enroll(id)),
+        onEnrollMissing: enrollVocabMissing,
       }}
       mistakes={{
         due: dueMistakeIds.length,
         total: mistakes.list.length,
         recent: mistakes.list,
-        saveError: mistakeSaveError,
+        saveError: reviewSaveError,
         onStart: () => startSession({ deck: "mistakes", ids: dueMistakeIds }),
         onClear: clearMistakes,
         onRemove: removeMistake,

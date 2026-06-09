@@ -70,57 +70,58 @@ export function useSrsDeck(storageKey: string) {
 
   const enroll = useCallback(
     (id: string) => {
-      setMap(() => {
-        const previous = readSrsMap(storageKey)
-        if (previous[id]) return previous
-        const now = Date.now()
-        const next = { ...previous, [id]: createSrsState(now) }
-        if (!writeSrsMap(storageKey, next)) return previous
-        notifySrs(storageKey)
-        return next
-      })
+      const previous = readSrsMap(storageKey)
+      if (previous[id]) {
+        setMap(previous)
+        return true
+      }
+      const now = Date.now()
+      const next = { ...previous, [id]: createSrsState(now) }
+      if (!writeSrsMap(storageKey, next)) return false
+      notifySrs(storageKey)
+      setMap(next)
+      return true
     },
     [storageKey]
   )
 
   const remove = useCallback(
     (id: string) => {
-      setMap(() => {
-        const previous = readSrsMap(storageKey)
-        if (!previous[id]) return previous
-        const next = { ...previous }
-        delete next[id]
-        if (!writeSrsMap(storageKey, next)) return previous
-        notifySrs(storageKey)
-        return next
-      })
+      const previous = readSrsMap(storageKey)
+      if (!previous[id]) {
+        setMap(previous)
+        return true
+      }
+      const next = { ...previous }
+      delete next[id]
+      if (!writeSrsMap(storageKey, next)) return false
+      notifySrs(storageKey)
+      setMap(next)
+      return true
     },
     [storageKey]
   )
 
   const grade = useCallback(
     (id: string, result: SrsResult) => {
-      setMap(() => {
-        const now = Date.now()
-        const previous = readSrsMap(storageKey)
-        const state = previous[id] ? normalizeSrsState(previous[id], now) : createSrsState(now)
-        const nextState = applySrsResult(state, result, now)
-        const next = { ...previous, [id]: nextState }
-        if (!writeSrsMap(storageKey, next)) return previous
-        notifySrs(storageKey)
-        return next
-      })
+      const now = Date.now()
+      const previous = readSrsMap(storageKey)
+      const state = previous[id] ? normalizeSrsState(previous[id], now) : createSrsState(now)
+      const nextState = applySrsResult(state, result, now)
+      const next = { ...previous, [id]: nextState }
+      if (!writeSrsMap(storageKey, next)) return false
+      notifySrs(storageKey)
+      setMap(next)
+      return true
     },
     [storageKey]
   )
 
   const clear = useCallback(() => {
-    setMap(() => {
-      const previous = readSrsMap(storageKey)
-      if (!writeSrsMap(storageKey, {})) return previous
-      notifySrs(storageKey)
-      return {}
-    })
+    if (!writeSrsMap(storageKey, {})) return false
+    notifySrs(storageKey)
+    setMap({})
+    return true
   }, [storageKey])
 
   return { map, dueIds, enroll, remove, grade, clear }

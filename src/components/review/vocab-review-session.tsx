@@ -68,8 +68,8 @@ export function VocabReviewSession({
     notebook,
     recordAnswer: review.recordAnswer,
     grade: useCallback((result: QuestionResult) => {
-      if (!item) return
-      srs.grade(item.id, result.correct ? "good" : "again")
+      if (!item) return false
+      return srs.grade(item.id, result.correct ? "good" : "again")
     }, [item, srs]),
   })
 
