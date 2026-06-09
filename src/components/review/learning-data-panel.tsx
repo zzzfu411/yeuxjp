@@ -17,7 +17,8 @@ type Notice = {
 }
 
 function backupFileName(exportedAt: number) {
-  return `yasashi-learning-backup-${new Date(exportedAt).toISOString().slice(0, 10)}.json`
+  const stamp = new Date(exportedAt).toISOString().slice(0, 19).replace(/:/g, "-").replace("T", "-")
+  return `yasashi-learning-backup-${stamp}.json`
 }
 
 export function LearningDataPanel({ className }: { className?: string }) {

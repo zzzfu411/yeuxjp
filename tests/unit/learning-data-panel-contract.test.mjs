@@ -18,6 +18,8 @@ test("review page exposes local learning data management through the shared stor
   assert.match(panel, /parseLearningBackup/)
   assert.match(panel, /restoreLearningBackup/)
   assert.match(panel, /resetLearningData/)
+  assert.match(panel, /function backupFileName/)
+  assert.match(panel, /slice\(0, 19\)\.replace\(\/:\/g, "-"\)\.replace\("T", "-"\)/)
   assert.match(panel, /document\.body\.appendChild\(anchor\)/)
   assert.match(panel, /anchor\?\.remove\(\)/)
   assert.match(panel, /URL\.revokeObjectURL\(url\)/)

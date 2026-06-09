@@ -310,6 +310,7 @@ test("browser E2E verifies learning data export reset and import through the UI"
   assert.match(e2e, /waitForEvent\("download"\)/)
   assert.match(e2e, /getByTestId\("learning-data-export"\)/)
   assert.match(e2e, /suggestedFilename\(\)/)
+  assert.match(e2e, /yasashi-learning-backup-\\d\{4\}-\\d\{2\}-\\d\{2\}-\\d\{2\}-\\d\{2\}-\\d\{2\}/)
   assert.match(e2e, /getByTestId\("learning-data-reset"\)\.click\(\)/)
   assert.match(e2e, /waitForEvent\("filechooser"\)/)
   assert.match(e2e, /getByTestId\("learning-data-import"\)/)

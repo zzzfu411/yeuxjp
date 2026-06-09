@@ -284,7 +284,7 @@ try {
     page.waitForEvent("download"),
     page.getByTestId("learning-data-export").click(),
   ])
-  assert.match(download.suggestedFilename(), /^yasashi-learning-backup-\d{4}-\d{2}-\d{2}\.json$/)
+  assert.match(download.suggestedFilename(), /^yasashi-learning-backup-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.json$/)
   const backupPath = await download.path()
   assert.ok(backupPath, "learning data export should create a downloadable backup file")
 
