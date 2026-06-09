@@ -1,5 +1,5 @@
 import type { PracticeItemType, PracticeMode } from "@/lib/learning-progress"
-import type { MistakeItem } from "@/lib/mistake-notebook"
+import type { MistakeItem } from "@/lib/mistake-notebook-model"
 
 export type QuestionOption = {
   value: string

@@ -1,0 +1,174 @@
+export type MistakeOption = { value: string; display: string }
+
+export type MistakeMeta = {
+  verb?: { dict: string; kanji?: string; meaning: string; kind: string }
+  askedForm?: { id: string; label: string }
+}
+
+export type MistakeItem = {
+  id: string
+  type: string
+  questionText?: string
+  questionAudio?: string
+  correctAnswer: string
+  correctDisplay?: string
+  lastWrongAnswer?: string
+  explanation?: string
+  meta?: MistakeMeta
+  options: MistakeOption[]
+  wrongCount: number
+  createdAt: number
+  lastWrongAt: number
+}
+
+export type RecordMistakeInput = {
+  type: string
+  questionText?: string
+  questionAudio?: string
+  correctAnswer: string
+  correctDisplay?: string
+  wrongAnswer: string
+  explanation?: string
+  meta?: MistakeMeta
+  options?: MistakeOption[]
+  id?: string
+}
+
+type MistakeIdentityInput = {
+  type: string
+  questionText?: string
+  questionAudio?: string
+  correctAnswer: string
+}
+
+function stringOrUndefined(value: unknown) {
+  return typeof value === "string" ? value : undefined
+}
+
+function safeTimestamp(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+}
+
+function safeCount(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? Math.max(1, Math.floor(value)) : 1
+}
+
+export function buildMistakeId(input: MistakeIdentityInput) {
+  const qt = input.questionText ?? ""
+  const qa = input.questionAudio ?? ""
+  return `${input.type}::${qt}::${qa}::${input.correctAnswer}`
+}
+
+export function normalizeMistakeMeta(meta: unknown): MistakeMeta | undefined {
+  if (!meta || typeof meta !== "object") return undefined
+
+  const source = meta as Record<string, unknown>
+  const normalized: MistakeMeta = {}
+
+  if (source.verb && typeof source.verb === "object") {
+    const verb = source.verb as Record<string, unknown>
+    if (typeof verb.dict === "string" && typeof verb.meaning === "string" && typeof verb.kind === "string") {
+      normalized.verb = {
+        dict: verb.dict,
+        kanji: stringOrUndefined(verb.kanji),
+        meaning: verb.meaning,
+        kind: verb.kind,
+      }
+    }
+  }
+
+  if (source.askedForm && typeof source.askedForm === "object") {
+    const askedForm = source.askedForm as Record<string, unknown>
+    if (typeof askedForm.id === "string" && typeof askedForm.label === "string") {
+      normalized.askedForm = { id: askedForm.id, label: askedForm.label }
+    }
+  }
+
+  return normalized.verb || normalized.askedForm ? normalized : undefined
+}
+
+export function normalizeMistakeOptions(options: unknown): MistakeOption[] {
+  if (!Array.isArray(options)) return []
+
+  const seen = new Set<string>()
+  const normalized: MistakeOption[] = []
+
+  for (const option of options) {
+    if (!option || typeof option !== "object") continue
+    const item = option as Record<string, unknown>
+    if (typeof item.value !== "string" || typeof item.display !== "string") continue
+    if (seen.has(item.value)) continue
+    seen.add(item.value)
+    normalized.push({ value: item.value, display: item.display })
+  }
+
+  return normalized
+}
+
+export function normalizeMistakeList(input: unknown, now: number = Date.now()): MistakeItem[] {
+  if (!Array.isArray(input)) return []
+
+  const byId = new Map<string, MistakeItem>()
+
+  for (const value of input) {
+    if (!value || typeof value !== "object") continue
+    const item = value as Record<string, unknown>
+    if (typeof item.id !== "string" || typeof item.type !== "string" || typeof item.correctAnswer !== "string") continue
+
+    const normalized: MistakeItem = {
+      id: item.id,
+      type: item.type,
+      questionText: stringOrUndefined(item.questionText),
+      questionAudio: stringOrUndefined(item.questionAudio),
+      correctAnswer: item.correctAnswer,
+      correctDisplay: stringOrUndefined(item.correctDisplay),
+      lastWrongAnswer: stringOrUndefined(item.lastWrongAnswer),
+      explanation: stringOrUndefined(item.explanation),
+      meta: normalizeMistakeMeta(item.meta),
+      options: normalizeMistakeOptions(item.options),
+      wrongCount: safeCount(item.wrongCount),
+      createdAt: safeTimestamp(item.createdAt, now),
+      lastWrongAt: safeTimestamp(item.lastWrongAt, now),
+    }
+
+    const previous = byId.get(normalized.id)
+    if (!previous || normalized.lastWrongAt >= previous.lastWrongAt) {
+      byId.set(normalized.id, normalized)
+    }
+  }
+
+  return Array.from(byId.values()).sort((a, b) => b.lastWrongAt - a.lastWrongAt)
+}
+
+export function upsertWrongMistake(previous: readonly MistakeItem[], input: RecordMistakeInput, now: number = Date.now()) {
+  const id = input.id ?? buildMistakeId(input)
+  const index = previous.findIndex((item) => item.id === id)
+  const base = index >= 0 ? previous[index] : null
+
+  const updated: MistakeItem = {
+    id,
+    type: input.type,
+    questionText: input.questionText,
+    questionAudio: input.questionAudio,
+    correctAnswer: input.correctAnswer,
+    correctDisplay: input.correctDisplay,
+    lastWrongAnswer: input.wrongAnswer,
+    explanation: input.explanation,
+    meta: input.meta,
+    options: normalizeMistakeOptions(input.options),
+    wrongCount: (base?.wrongCount ?? 0) + 1,
+    createdAt: base?.createdAt ?? now,
+    lastWrongAt: now,
+  }
+
+  const next = [...previous]
+  if (index >= 0) next[index] = updated
+  else next.unshift(updated)
+
+  return normalizeMistakeList(next, now)
+}
+
+export function removeMistakeById(previous: readonly MistakeItem[], id: string) {
+  if (!previous.some((item) => item.id === id)) return previous
+  return previous.filter((item) => item.id !== id)
+}
