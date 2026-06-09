@@ -5,6 +5,7 @@ import test from "node:test"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
 const harness = fs.readFileSync(path.join(root, "tests/e2e/harness.mjs"), "utf8")
+const smoke = fs.readFileSync(path.join(root, "tests/e2e/smoke.mjs"), "utf8")
 
 test("E2E harness owns shared Playwright optional dependency handling", () => {
   assert.match(harness, /export async function importPlaywrightOrSkip/)
@@ -22,4 +23,13 @@ test("E2E harness owns server lifecycle and storage helpers", () => {
   assert.match(harness, /npmCommand\(\), \["run", "build"\]/)
   assert.match(harness, /npmCommand\(\), \["run", "start"/)
   assert.match(harness, /export async function readJsonStorage/)
+})
+
+test("HTTP smoke reuses the shared E2E server harness", () => {
+  assert.match(smoke, /createServerController/)
+  assert.match(smoke, /reuseOrStartDevServer\(\{ baseUrl, port, controller: serverController \}\)/)
+  assert.match(smoke, /serverController\.stop\(\)/)
+  assert.doesNotMatch(smoke, /from "node:child_process"/)
+  assert.doesNotMatch(smoke, /spawnSync\("taskkill"/)
+  assert.doesNotMatch(smoke, /waitForServer/)
 })
