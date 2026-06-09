@@ -1,0 +1,44 @@
+"use client"
+
+import type { ReactNode } from "react"
+import { useCallback, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Modal } from "@/components/ui/modal"
+
+interface UrlControlledReferenceModalProps {
+  children: ReactNode
+  className?: string
+  closeHref: string
+  nextHref: string
+  prevHref: string
+}
+
+export function UrlControlledReferenceModal({
+  children,
+  className,
+  closeHref,
+  nextHref,
+  prevHref,
+}: UrlControlledReferenceModalProps) {
+  const router = useRouter()
+
+  const close = useCallback(() => {
+    router.push(closeHref)
+  }, [closeHref, router])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight") router.push(nextHref)
+      if (event.key === "ArrowLeft") router.push(prevHref)
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [nextHref, prevHref, router])
+
+  return (
+    <Modal isOpen onClose={close} className={className}>
+      {children}
+    </Modal>
+  )
+}

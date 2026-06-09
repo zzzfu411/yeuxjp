@@ -1,24 +1,34 @@
-"use client"
+import Link from "next/link"
+import { MessageCircle, Users } from "lucide-react"
+import { pragmaticsData } from "@/data/pragmatics-data"
+import { PragmaticsFocusModal } from "@/components/reference/pragmatics-focus-modal"
 
-import { pragmaticsData, PragmaticScenario } from "@/data/pragmatics-data"
-import { cn } from "@/lib/utils"
-import { MessageCircle, Users, XCircle, CheckCircle2, Crown, ChevronLeft, ChevronRight } from "lucide-react"
-import { Modal } from "@/components/ui/modal"
-import { Button } from "@/components/ui/button"
-import { SpeakButton } from "@/components/ui/speak-button"
-import { useIndexedModalNavigation } from "@/lib/use-indexed-modal-navigation"
+interface PragmaticsPageProps {
+  searchParams?: Promise<{ item?: string }>
+}
 
-export default function PragmaticsPage() {
-  const {
-    selectedIndex,
-    selectedPosition,
-    isOpen,
-    openAt,
-    close,
-    goNext,
-    goPrev,
-  } = useIndexedModalNavigation(pragmaticsData.length)
-  const selectedScenario = selectedIndex !== null ? pragmaticsData[selectedIndex] : null
+function getSelectedIndex(itemId: string | undefined) {
+  if (!itemId) return null
+  const index = pragmaticsData.findIndex((scenario) => scenario.id === itemId)
+  return index >= 0 ? index : null
+}
+
+function pragmaticsItemHref(index: number) {
+  return `/pragmatics?item=${encodeURIComponent(pragmaticsData[index].id)}`
+}
+
+export default async function PragmaticsPage({ searchParams }: PragmaticsPageProps) {
+  const params = await searchParams
+  const selectedIndex = getSelectedIndex(params?.item)
+  const selectedScenario = selectedIndex === null ? null : pragmaticsData[selectedIndex]
+  const prevHref =
+    selectedIndex === null
+      ? "/pragmatics"
+      : pragmaticsItemHref((selectedIndex - 1 + pragmaticsData.length) % pragmaticsData.length)
+  const nextHref =
+    selectedIndex === null
+      ? "/pragmatics"
+      : pragmaticsItemHref((selectedIndex + 1) % pragmaticsData.length)
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-12 max-w-4xl mb-20">
@@ -27,18 +37,15 @@ export default function PragmaticsPage() {
           <Users className="w-8 h-8 text-primary" />
           情境模拟 (Context Dojo)
         </h1>
-        <p className="text-muted-foreground text-lg">
-          选择一个情境进行挑战。
-        </p>
+        <p className="text-muted-foreground text-lg">选择一个情境进行挑战。</p>
       </div>
 
-      {/* List View (Restored Detailed) */}
       <div className="grid gap-8">
         {pragmaticsData.map((scenario, index) => (
-          <div 
-            key={scenario.id} 
-            onClick={() => openAt(index)}
-            className="cursor-pointer border-l-4 border-primary/50 pl-6 py-4 space-y-4 hover:bg-muted/20 transition-colors rounded-r-xl"
+          <Link
+            key={scenario.id}
+            href={pragmaticsItemHref(index)}
+            className="border-l-4 border-primary/50 pl-6 py-4 space-y-4 hover:bg-muted/20 transition-colors rounded-r-xl"
           >
             <div>
               <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-sm mb-1">
@@ -46,114 +53,31 @@ export default function PragmaticsPage() {
                 Scenario: {scenario.situation}
               </div>
               <h2 className="text-2xl font-bold mb-2">{scenario.title}</h2>
-              <p className="text-lg text-foreground/80 font-medium">
-                {scenario.context}
-              </p>
+              <p className="text-lg text-foreground/80 font-medium">{scenario.context}</p>
             </div>
 
-            {/* Preview of responses */}
             <div className="flex gap-2 opacity-60">
-               {scenario.responses.slice(0, 2).map((r, i) => (
-                 <div key={i} className="text-xs bg-muted px-2 py-1 rounded border">
-                   {r.expression}
-                 </div>
-               ))}
-               {scenario.responses.length > 2 && <div className="text-xs self-center">...</div>}
+              {scenario.responses.slice(0, 2).map((response, responseIndex) => (
+                <div key={responseIndex} className="text-xs bg-muted px-2 py-1 rounded border">
+                  {response.expression}
+                </div>
+              ))}
+              {scenario.responses.length > 2 && <div className="text-xs self-center">...</div>}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
-      {/* Focus Modal */}
-      <Modal isOpen={isOpen} onClose={close} className="max-w-2xl h-[85vh] flex flex-col p-0">
-        {selectedScenario && (
-          <>
-            <div className="flex-1 overflow-y-auto p-8 space-y-8">
-              {/* Header */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-sm">
-                  <MessageCircle className="w-4 h-4" />
-                  Scenario: {selectedScenario.situation}
-                </div>
-                <h2 className="text-4xl font-bold tracking-tight">{selectedScenario.title}</h2>
-                <div className="text-xl font-medium text-foreground bg-muted/30 p-6 rounded-xl border-l-4 border-primary">
-                  {selectedScenario.context}
-                </div>
-              </div>
-
-              {/* Cultural Note */}
-              <div className="bg-secondary/40 p-6 rounded-xl text-base text-muted-foreground italic border border-border/50 shadow-sm">
-                <span className="font-bold not-italic text-foreground/80 block mb-2 text-sm uppercase tracking-wide flex items-center gap-2">
-                  <span>💡</span> Cultural Context
-                </span>
-                {selectedScenario.culturalNote}
-              </div>
-
-              {/* Responses */}
-              <div className="space-y-5">
-                <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground border-b pb-2">Response Analysis</h3>
-                <div className="grid gap-5">
-                  {selectedScenario.responses.map((res: PragmaticScenario['responses'][number], idx: number) => {
-                    const isBad = res.type === "Bad"
-                    const isNative = res.type === "Native" || res.type === "Anime"
-                    
-                    return (
-                      <div 
-                        key={idx}
-                        className={cn(
-                          "flex flex-col gap-3 p-5 rounded-xl border transition-all shadow-sm",
-                          isBad ? "bg-red-50/50 dark:bg-red-950/10 border-red-200/50 dark:border-red-900/30" : 
-                          isNative ? "bg-primary/5 border-primary/20" : 
-                          "bg-card border-border"
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={cn(
-                            "text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide shadow-sm",
-                            isBad ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300" :
-                            isNative ? "bg-primary text-primary-foreground" :
-                            "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
-                          )}>
-                            {res.type}
-                          </span>
-                          {isBad && <XCircle className="w-5 h-5 text-red-500/70" />}
-                          {res.type === "Good" && <CheckCircle2 className="w-5 h-5 text-green-500/70" />}
-                          {isNative && <Crown className="w-5 h-5 text-primary/70" />}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="text-2xl font-bold text-foreground font-serif leading-relaxed">
-                              {res.expression}
-                            </div>
-                            <SpeakButton text={res.expression} label="朗读表达" className="shrink-0" />
-                          </div>
-                          <div className="text-base text-muted-foreground">
-                            {res.explanation}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t bg-muted/20 flex justify-between items-center shrink-0">
-              <Button variant="ghost" onClick={goPrev} className="gap-2 pl-2">
-                <ChevronLeft className="w-5 h-5" /> Prev
-              </Button>
-              <div className="text-sm text-muted-foreground font-mono">
-                {selectedPosition} / {pragmaticsData.length}
-              </div>
-              <Button variant="ghost" onClick={goNext} className="gap-2 pr-2">
-                Next <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          </>
-        )}
-      </Modal>
+      {selectedIndex !== null && selectedScenario && (
+        <PragmaticsFocusModal
+          scenario={selectedScenario}
+          selectedPosition={selectedIndex + 1}
+          total={pragmaticsData.length}
+          closeHref="/pragmatics"
+          prevHref={prevHref}
+          nextHref={nextHref}
+        />
+      )}
     </div>
   )
 }
