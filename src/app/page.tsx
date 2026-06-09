@@ -12,6 +12,7 @@ import { useLearningProfile, useLearningProgress } from "@/lib/learning-progress
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { MISTAKE_SRS_STORAGE_KEY, useMistakeNotebook } from "@/lib/mistake-notebook"
+import { getLessonEntryBadge, getLessonEntryStatus, resolveLearningEntry } from "@/lib/learning-entry"
 import { getNextLesson, STARTER_LESSONS } from "@/data/lessons"
 
 export default function Home() {
@@ -26,6 +27,7 @@ export default function Home() {
   const dueMistakeIds = useMemo(() => mistakeSrs.dueIds.filter((id) => mistakes.byId.has(id)), [mistakeSrs.dueIds, mistakes.byId])
   const totalDue = kanaSrs.dueIds.length + vocabSrs.dueIds.length + dueMistakeIds.length
   const nextLesson = useMemo(() => getNextLesson(learning.completedLessonIds), [learning.completedLessonIds])
+  const learningEntry = useMemo(() => resolveLearningEntry({ nextLesson }), [nextLesson])
   const completedCount = learning.completedLessonIds.size
 
   const weakest = useMemo(() => {
@@ -77,8 +79,8 @@ export default function Home() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="gap-2 rounded-full px-7">
-                <Link href={nextLesson ? `/learn/${nextLesson.id}` : "/review"} data-testid="home-start-learning">
-                  开始今日学习 <ArrowRight className="h-4 w-4" />
+                <Link href={learningEntry.href} data-testid="home-start-learning">
+                  {learningEntry.cta} <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="gap-2 rounded-full">
@@ -101,8 +103,8 @@ export default function Home() {
                 </div>
                 <div className="rounded-2xl border bg-background/70 p-4">
                   <div className="text-sm font-semibold">下一课</div>
-                  <div className="mt-1 text-lg font-bold">{nextLesson?.title ?? "Starter 已完成"}</div>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{nextLesson?.subtitle ?? "可以进入复习页巩固并继续扩展词汇。"}</p>
+                  <div className="mt-1 text-lg font-bold">{learningEntry.title}</div>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{learningEntry.subtitle}</p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <MiniStat icon={<BookOpenCheck className="h-4 w-4" />} label="已完成" value={`${completedCount}/14`} />
@@ -139,18 +141,12 @@ export default function Home() {
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             {STARTER_LESSONS.slice(0, 6).map((lesson) => {
-              const done = learning.completedLessonIds.has(lesson.id)
-              const active = nextLesson?.id === lesson.id
-              return (
-                <Link
-                  key={lesson.id}
-                  href={`/learn/${lesson.id}`}
-                  className={cn(
-                    "rounded-2xl border bg-background/70 p-4 transition hover:border-primary/50 hover:bg-primary/5",
-                    done && "border-green-200 bg-green-50/70 dark:border-green-900/40 dark:bg-green-900/10",
-                    active && "border-primary/60 bg-primary/10"
-                  )}
-                >
+              const status = getLessonEntryStatus(lesson, learning.completedLessonIds, nextLesson?.id)
+              const done = status === "done"
+              const active = status === "active"
+              const locked = status === "locked"
+              const cardContent = (
+                <>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-xs font-semibold text-muted-foreground">Day {lesson.order}</div>
@@ -159,6 +155,34 @@ export default function Home() {
                     {done ? <BookOpenCheck className="h-4 w-4 text-green-600" /> : active ? <ArrowRight className="h-4 w-4 text-primary" /> : null}
                   </div>
                   <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{lesson.subtitle}</p>
+                  <div className="mt-3 inline-flex rounded-full border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                    {getLessonEntryBadge(status)}
+                  </div>
+                </>
+              )
+
+              const className = cn(
+                "rounded-2xl border bg-background/70 p-4 transition hover:border-primary/50 hover:bg-primary/5",
+                done && "border-green-200 bg-green-50/70 dark:border-green-900/40 dark:bg-green-900/10",
+                active && "border-primary/60 bg-primary/10",
+                locked && "opacity-60 hover:border-border hover:bg-background/70"
+              )
+
+              if (locked) {
+                return (
+                  <div key={lesson.id} aria-disabled="true" className={className}>
+                    {cardContent}
+                  </div>
+                )
+              }
+
+              return (
+                <Link
+                  key={lesson.id}
+                  href={`/learn/${lesson.id}`}
+                  className={className}
+                >
+                  {cardContent}
                 </Link>
               )
             })}

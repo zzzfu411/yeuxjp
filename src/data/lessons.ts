@@ -518,7 +518,7 @@ export function getLessonById(id: string) {
 }
 
 export function getNextLesson(completedLessonIds: Set<string>) {
-  return STARTER_LESSONS.find((lesson) => !completedLessonIds.has(lesson.id)) ?? STARTER_LESSONS[STARTER_LESSONS.length - 1]
+  return STARTER_LESSONS.find((lesson) => !completedLessonIds.has(lesson.id)) ?? null
 }
 
 export function getLessonSummary(lessonId: string) {

@@ -11,6 +11,7 @@ import { useVocabProgress } from "@/lib/vocab-progress"
 import { SKILL_TREE } from "@/lib/skill-tree"
 import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
 import { useLearningProgress } from "@/lib/learning-progress"
+import { resolveLearningEntry } from "@/lib/learning-entry"
 import { getKanaSkillStats, getRecommendedSkillId } from "@/lib/path-page-model"
 
 export function NextStepCard({ className }: { className?: string }) {
@@ -26,7 +27,7 @@ export function NextStepCard({ className }: { className?: string }) {
 
   const skill = useMemo(() => SKILL_TREE.find((s) => s.id === nextSkillId) ?? null, [nextSkillId])
   const nextLesson = useMemo(() => getNextLesson(learning.completedLessonIds), [learning.completedLessonIds])
-  if (!skill) return null
+  const entry = useMemo(() => resolveLearningEntry({ nextLesson, skill }), [nextLesson, skill])
 
   return (
     <div
@@ -37,8 +38,8 @@ export function NextStepCard({ className }: { className?: string }) {
     >
       <div className="space-y-1">
         <div className="text-xs font-semibold text-muted-foreground tracking-wider">下一步推荐</div>
-        <div className="text-lg font-bold">{nextLesson?.title ?? skill.title}</div>
-        <div className="text-sm text-muted-foreground">{nextLesson?.subtitle ?? skill.short}</div>
+        <div className="text-lg font-bold">{entry.title}</div>
+        <div className="text-sm text-muted-foreground">{entry.subtitle}</div>
         <div className="text-xs text-muted-foreground pt-1">
           已完成 Starter {learning.completedLessonIds.size}/{STARTER_LESSONS.length}。旧的五十音/词汇标记仍会作为兜底推荐依据。
         </div>
@@ -46,7 +47,7 @@ export function NextStepCard({ className }: { className?: string }) {
 
       <div className="flex flex-wrap items-center gap-2">
         <Button asChild className="rounded-full">
-          <Link href={nextLesson ? `/learn/${nextLesson.id}` : skill.href}>开始下一步练习</Link>
+          <Link href={entry.href}>{entry.cta}</Link>
         </Button>
         <Button asChild variant="outline" className="rounded-full">
           <Link href="/path">打开技能树</Link>

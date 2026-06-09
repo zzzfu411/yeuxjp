@@ -18,6 +18,7 @@ import {
   getRecommendedSkillId,
   getSkillStatus,
 } from "@/lib/path-page-model"
+import { getLessonEntryBadge, getLessonEntryStatus, resolveLearningEntry } from "@/lib/learning-entry"
 
 export default function SkillTreePage() {
   const { isMastered } = useKanaProgress()
@@ -29,8 +30,10 @@ export default function SkillTreePage() {
   const vocabStats = useMemo(() => summarizeLearnedVocabIds(learned), [learned])
 
   const nextSkillId = useMemo(() => getRecommendedSkillId(kanaStats, vocabStats), [kanaStats, vocabStats])
+  const recommendedSkill = useMemo(() => SKILL_TREE.find((s) => s.id === nextSkillId) ?? null, [nextSkillId])
 
   const nextLesson = useMemo(() => getNextLesson(learning.completedLessonIds), [learning.completedLessonIds])
+  const learningEntry = useMemo(() => resolveLearningEntry({ nextLesson, skill: recommendedSkill }), [nextLesson, recommendedSkill])
   const masterySummary = useMemo(() => getPathMasterySummary(learning.items), [learning.items])
 
   return (
@@ -52,14 +55,14 @@ export default function SkillTreePage() {
       <div className="rounded-2xl border bg-muted/10 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="text-xs font-semibold text-muted-foreground tracking-wider">下一步推荐</div>
-          <div className="text-lg font-bold">{nextLesson?.title ?? SKILL_TREE.find((s) => s.id === nextSkillId)?.title}</div>
-          <div className="text-sm text-muted-foreground">{nextLesson?.subtitle ?? SKILL_TREE.find((s) => s.id === nextSkillId)?.short}</div>
+          <div className="text-lg font-bold">{learningEntry.title}</div>
+          <div className="text-sm text-muted-foreground">{learningEntry.subtitle}</div>
           <div className="text-xs text-muted-foreground pt-1">
             新路线优先按课程完成和五维掌握度推荐；旧的五十音/词汇标记继续作为兜底依据。
           </div>
         </div>
         <Button asChild>
-          <Link href={nextLesson ? `/learn/${nextLesson.id}` : SKILL_TREE.find((s) => s.id === nextSkillId)?.href ?? "/kana"}>开始练习</Link>
+          <Link href={learningEntry.href}>{learningEntry.cta}</Link>
         </Button>
       </div>
 
@@ -74,20 +77,39 @@ export default function SkillTreePage() {
           </div>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {STARTER_LESSONS.slice(0, 8).map((lesson) => {
-              const done = learning.completedLessonIds.has(lesson.id)
-              const active = nextLesson?.id === lesson.id
-              return (
-                <Link
-                  key={lesson.id}
-                  href={`/learn/${lesson.id}`}
-                  className={cn(
-                    "rounded-xl border bg-background/70 p-3 text-sm transition hover:border-primary/50",
-                    done && "border-green-200 bg-green-50/70 dark:border-green-900/40 dark:bg-green-900/10",
-                    active && "border-primary/60 bg-primary/10"
-                  )}
-                >
-                  <div className="font-semibold">Day {lesson.order}</div>
+              const status = getLessonEntryStatus(lesson, learning.completedLessonIds, nextLesson?.id)
+              const done = status === "done"
+              const active = status === "active"
+              const locked = status === "locked"
+              const cardContent = (
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-semibold">Day {lesson.order}</div>
+                    <span className="rounded-full border bg-background px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                      {getLessonEntryBadge(status)}
+                    </span>
+                  </div>
                   <div className="mt-1 text-muted-foreground">{lesson.title.replace(/^Day \d+：/, "")}</div>
+                </>
+              )
+              const className = cn(
+                "rounded-xl border bg-background/70 p-3 text-sm transition hover:border-primary/50",
+                done && "border-green-200 bg-green-50/70 dark:border-green-900/40 dark:bg-green-900/10",
+                active && "border-primary/60 bg-primary/10",
+                locked && "opacity-60 hover:border-border"
+              )
+
+              if (locked) {
+                return (
+                  <div key={lesson.id} aria-disabled="true" className={className}>
+                    {cardContent}
+                  </div>
+                )
+              }
+
+              return (
+                <Link key={lesson.id} href={`/learn/${lesson.id}`} className={className}>
+                  {cardContent}
                 </Link>
               )
             })}
@@ -167,7 +189,7 @@ export default function SkillTreePage() {
 
                     <div className="flex flex-wrap items-center gap-2 pt-1">
                       <Button asChild variant="outline" className="rounded-full">
-                        <Link href={skill.href}>{status === "locked" ? "仍可尝试" : "去学习"}</Link>
+                        <Link href={skill.href}>{status === "locked" ? "查看内容" : "去学习"}</Link>
                       </Button>
                       {!!skill.glossary?.length && (
                         <GlossaryButton termId={skill.glossary[0]} className="h-auto px-2 py-1 rounded-md">
