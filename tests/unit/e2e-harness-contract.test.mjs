@@ -42,7 +42,7 @@ test("root check command includes the browser-free HTTP smoke gate", () => {
 })
 
 test("app-local check command matches the root quality gate", () => {
-  assert.match(webPackage, /"validate:data": "node \.\.\/scripts\/validate-data\.mjs"/)
+  assert.match(webPackage, /"validate:data": "node scripts\/validate-data\.mjs"/)
   assert.match(webPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
   assert.match(webPackage, /"check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required"/)
 })

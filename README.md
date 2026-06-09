@@ -8,6 +8,7 @@ Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana
 - The repository root keeps convenience scripts that forward into `web/`.
 - Runtime and development dependencies belong in `web/package.json` and are locked by `web/package-lock.json`.
 - Learning data lives under `web/src/data/`; vocabulary has a single source of truth in `web/src/data/vocabulary/*`.
+- Data validation is self-contained in `web/scripts/validate-data.mjs`.
 
 ## Install And Run
 
