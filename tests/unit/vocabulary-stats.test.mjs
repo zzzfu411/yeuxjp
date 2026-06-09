@@ -37,3 +37,16 @@ test("recommendation surfaces do not import the aggregated vocabulary dataset", 
     assert.match(source, /summarizeLearnedVocabIds/)
   }
 })
+
+test("vocabulary public index does not re-export eager aggregate datasets", () => {
+  const source = fs.readFileSync(path.join(root, "src/data/vocabulary/index.ts"), "utf8")
+
+  assert.doesNotMatch(source, /survivalVocab/)
+  assert.doesNotMatch(source, /dailyVocab/)
+  assert.doesNotMatch(source, /fluentVocab/)
+  assert.doesNotMatch(source, /vocabData/)
+  assert.doesNotMatch(source, /vocabByLevel/)
+  assert.match(source, /loadVocabularyLevel/)
+  assert.match(source, /loadVocabularyScope/)
+  assert.match(source, /vocabLevelCounts/)
+})
