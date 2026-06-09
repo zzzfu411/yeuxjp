@@ -1,4 +1,4 @@
-const STATIC_CACHE_NAME = "yasashi-static-v3";
+const STATIC_CACHE_NAME = "yasashi-static-v4";
 const NAVIGATION_CACHE_NAME = "yasashi-navigation-v1";
 const OFFLINE_FALLBACK_URL = "/offline.html";
 
@@ -10,11 +10,34 @@ const STATIC_ASSETS = [
   "/apple-touch-icon.png",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
+  "/brand/logo-mark.svg",
+  "/brand/logo-wordmark.svg",
   "/assets/hero/hero-watercolor.webp",
+  "/assets/hero/hero-watercolor@2x.webp",
   "/assets/hero/hero-watercolor-dark.webp",
+  "/assets/hero/hero-watercolor-dark@2x.webp",
+  "/assets/kana/kana-seion.webp",
+  "/assets/kana/kana-seion@2x.webp",
+  "/assets/kana/kana-dakuon.webp",
+  "/assets/kana/kana-dakuon@2x.webp",
+  "/assets/kana/kana-yoon.webp",
+  "/assets/kana/kana-yoon@2x.webp",
+  "/assets/kana/kana-sokuon.webp",
+  "/assets/kana/kana-sokuon@2x.webp",
+  "/assets/kana/kana-all.webp",
+  "/assets/kana/kana-all@2x.webp",
   "/assets/states/state-empty.webp",
+  "/assets/states/state-empty@2x.webp",
   "/assets/states/state-complete.webp",
-  "/assets/review/review-streak.webp"
+  "/assets/states/state-complete@2x.webp",
+  "/assets/review/review-streak.webp",
+  "/assets/review/review-streak@2x.webp",
+  "/assets/textures/paper-washi-tile.png",
+  "/assets/vocab-categories/greetings.webp",
+  "/assets/vocab-categories/food.webp",
+  "/assets/vocab-categories/nature.webp",
+  "/assets/vocab-categories/daily.webp",
+  "/assets/vocab-categories/numbers.webp"
 ];
 
 self.addEventListener("install", (event) => {

@@ -74,7 +74,11 @@ export function runLearningStorageTransaction(commit: () => boolean) {
   const previous = snapshotLearningKeys()
   if (!previous) return false
 
-  if (commit()) return true
+  try {
+    if (commit()) return true
+  } catch {
+    // Treat thrown storage/persistence failures like false commits so callers get rollback semantics.
+  }
 
   if (applyLearningSnapshot(previous)) {
     notifyLearningStore({ action: "rollback", keys: BACKUP_KEYS })
