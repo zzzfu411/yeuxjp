@@ -25,7 +25,7 @@ const romajiOptions: { value: RomajiMode; label: string }[] = [
   { value: "hidden", label: "尽量不显示" },
 ]
 
-export function OnboardingPanel({ onSave }: { onSave: (input: Omit<UserProfile, "createdAt" | "updatedAt">) => void }) {
+export function OnboardingPanel({ onSave }: { onSave: (input: Omit<UserProfile, "createdAt" | "updatedAt">) => boolean }) {
   const [goal, setGoal] = useState<LearningGoal>("balanced")
   const [kanaLevel, setKanaLevel] = useState<KanaLevel>("none")
   const [romajiMode, setRomajiMode] = useState<RomajiMode>("practice")

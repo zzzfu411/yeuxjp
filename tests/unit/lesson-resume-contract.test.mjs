@@ -35,7 +35,11 @@ test("lesson page saves step position through the shared learning progress facad
   const source = read("src/app/learn/[lessonId]/page.tsx")
 
   assert.match(source, /if \(!lesson \|\| !loaded\) return/)
-  assert.match(source, /saveLessonPosition\(lesson\.id, stepIndex, step\?\.id\)/)
+  assert.match(source, /const saved = startLesson\(lesson\.id\)/)
+  assert.match(source, /const saved = saveLessonPosition\(lesson\.id, stepIndex, step\?\.id\)/)
+  assert.match(source, /window\.setTimeout\(\(\) => setSaveError\(!saved\), 0\)/)
+  assert.match(source, /window\.clearTimeout\(timer\)/)
+  assert.match(source, /setSaveError\(!completeLesson\(lesson\.id, completionScore\)\)/)
   assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index: Math\.min\(stepIndex \+ 1, lesson\.steps\.length - 1\) \}\)/)
   assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index: Math\.max\(stepIndex - 1, 0\) \}\)/)
   assert.doesNotMatch(source, /localStorage\.setItem/)
@@ -46,11 +50,13 @@ test("learning progress preserves compatible lesson keys while adding resume fie
   const model = read("src/lib/learning-progress-model.ts")
 
   assert.match(progress, /normalizeLessonProgressMap/)
-  assert.match(progress, /mergeLessonProgressMaps/)
   assert.match(progress, /normalizeStepIndex/)
   assert.match(progress, /saveLessonPosition/)
   assert.match(progress, /readLessonProgressMap\(\)/)
+  assert.match(progress, /const base = readLessonProgressMap\(\)/)
+  assert.doesNotMatch(progress, /mergeLessonProgressState/)
   assert.match(progress, /loaded/)
+  assert.match(model, /mergeLessonProgressMaps/)
   assert.match(model, /currentStepIndex\?: number/)
   assert.match(model, /lastStepId\?: string/)
   assert.match(model, /lessonStepId\?: string/)
@@ -75,6 +81,9 @@ test("learning profile saves from the current storage snapshot", () => {
   assert.match(progress, /function readUserProfile\(\)/)
   assert.match(progress, /const current = readUserProfile\(\)/)
   assert.match(progress, /createdAt: current\?\.createdAt \?\? now/)
+  assert.match(progress, /if \(!writeLearningJson\(STORAGE_KEYS\.USER_PROFILE, next\)\) return false/)
+  assert.match(progress, /setProfileState\(next\)/)
+  assert.match(progress, /return true/)
   assert.doesNotMatch(progress, /profile\?\.createdAt/)
   assert.match(progress, /}, \[\]\)/)
 })
@@ -82,6 +91,9 @@ test("learning profile saves from the current storage snapshot", () => {
 test("lesson progress updates state only after storage writes succeed", () => {
   const progress = read("src/lib/learning-progress.ts")
 
-  const guardedWrites = progress.match(/writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next\) \? next : prev/g) ?? []
+  const guardedWrites = progress.match(/if \(!writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next\)\) return false/g) ?? []
   assert.equal(guardedWrites.length, 3)
+  assert.match(progress, /setLessons\(next\)/)
+  assert.match(progress, /return true/)
+  assert.doesNotMatch(progress, /writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next\) \? next : prev/)
 })

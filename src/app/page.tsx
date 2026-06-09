@@ -2,19 +2,21 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { ArrowRight, BookOpenCheck, CalendarDays, Flame, Headphones, Route, Sparkles, Target } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { OnboardingPanel } from "@/components/home/onboarding-panel"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { cn } from "@/lib/utils"
 import { useLearningProfile, useLearningProgress } from "@/lib/learning-progress"
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { MISTAKE_SRS_STORAGE_KEY, useMistakeNotebook } from "@/lib/mistake-notebook"
 import { getNextLesson, STARTER_LESSONS } from "@/data/lessons"
-import { OnboardingPanel } from "@/components/home/onboarding-panel"
 
 export default function Home() {
   const { profile, saveProfile } = useLearningProfile()
+  const [profileSaveError, setProfileSaveError] = useState(false)
   const learning = useLearningProgress()
   const kanaSrs = useSrsDeck(STORAGE_KEYS.SRS_KANA)
   const vocabSrs = useSrsDeck(STORAGE_KEYS.SRS_VOCAB)
@@ -109,7 +111,16 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <OnboardingPanel onSave={saveProfile} />
+              <>
+                <OnboardingPanel
+                  onSave={(input) => {
+                    const saved = saveProfile(input)
+                    setProfileSaveError(!saved)
+                    return saved
+                  }}
+                />
+                <PracticeSaveError show={profileSaveError} />
+              </>
             )}
           </div>
         </div>

@@ -46,7 +46,9 @@ export default function LessonPage() {
 
   useEffect(() => {
     if (!lesson) return
-    startLesson(lesson.id)
+    const saved = startLesson(lesson.id)
+    const timer = window.setTimeout(() => setSaveError(!saved), 0)
+    return () => window.clearTimeout(timer)
   }, [lesson, startLesson])
 
   const resumedStepIndex = useMemo(() => {
@@ -59,7 +61,9 @@ export default function LessonPage() {
   useEffect(() => {
     if (!lesson || !loaded) return
     const step = lesson.steps[stepIndex]
-    saveLessonPosition(lesson.id, stepIndex, step?.id)
+    const saved = saveLessonPosition(lesson.id, stepIndex, step?.id)
+    const timer = window.setTimeout(() => setSaveError(!saved), 0)
+    return () => window.clearTimeout(timer)
   }, [lesson, loaded, stepIndex, saveLessonPosition])
 
   const current = lesson?.steps[stepIndex]
@@ -110,7 +114,7 @@ export default function LessonPage() {
 
   const goNext = () => {
     if (isLast) {
-      completeLesson(lesson.id, completionScore)
+      setSaveError(!completeLesson(lesson.id, completionScore))
       return
     }
     setManualStep({ lessonId: lesson.id, index: Math.min(stepIndex + 1, lesson.steps.length - 1) })

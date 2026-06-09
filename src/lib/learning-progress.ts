@@ -6,7 +6,6 @@ import { LEARNING_EVENT, readLearningJson, writeLearningJson } from "@/lib/learn
 import {
   clampScore,
   appendPracticeResult,
-  mergeLessonProgressMaps,
   normalizeItemProgressMap,
   normalizeLessonProgressMap,
   normalizePracticeResults,
@@ -36,10 +35,6 @@ export {
 
 function readLessonProgressMap() {
   return normalizeLessonProgressMap(readLearningJson(STORAGE_KEYS.LESSON_PROGRESS, {}))
-}
-
-function mergeLessonProgressState(prev: LessonProgressMap) {
-  return mergeLessonProgressMaps(readLessonProgressMap(), prev)
 }
 
 function readUserProfile() {
@@ -91,7 +86,9 @@ export function useLearningProfile() {
       createdAt: current?.createdAt ?? now,
       updatedAt: now,
     }
-    if (writeLearningJson(STORAGE_KEYS.USER_PROFILE, next)) setProfileState(next)
+    if (!writeLearningJson(STORAGE_KEYS.USER_PROFILE, next)) return false
+    setProfileState(next)
+    return true
   }, [])
 
   return { profile, saveProfile }
@@ -161,57 +158,57 @@ export function useLearningProgress() {
   }, [load])
 
   const startLesson = useCallback((lessonId: string) => {
-    setLessons((prev) => {
-      const base = mergeLessonProgressState(prev)
-      if (base[lessonId]) return base
-      const now = Date.now()
-      const next = { ...base, [lessonId]: { lessonId, status: "started" as const, startedAt: now, updatedAt: now } }
-      return writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next) ? next : prev
-    })
+    const base = readLessonProgressMap()
+    if (base[lessonId]) return true
+    const now = Date.now()
+    const next = { ...base, [lessonId]: { lessonId, status: "started" as const, startedAt: now, updatedAt: now } }
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)) return false
+    setLessons(next)
+    return true
   }, [])
 
   const completeLesson = useCallback((lessonId: string, score?: number) => {
-    setLessons((prev) => {
-      const base = mergeLessonProgressState(prev)
-      const current = base[lessonId]
-      const now = Date.now()
-      const next = {
-        ...base,
-        [lessonId]: {
-          lessonId,
-          status: "completed" as const,
-          startedAt: current?.startedAt ?? now,
-          completedAt: now,
-          score: typeof score === "number" ? clampScore(score) : undefined,
-          currentStepIndex: current?.currentStepIndex,
-          lastStepId: current?.lastStepId,
-          updatedAt: now,
-        },
-      }
-      return writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next) ? next : prev
-    })
+    const base = readLessonProgressMap()
+    const current = base[lessonId]
+    const now = Date.now()
+    const next = {
+      ...base,
+      [lessonId]: {
+        lessonId,
+        status: "completed" as const,
+        startedAt: current?.startedAt ?? now,
+        completedAt: now,
+        score: typeof score === "number" ? clampScore(score) : undefined,
+        currentStepIndex: current?.currentStepIndex,
+        lastStepId: current?.lastStepId,
+        updatedAt: now,
+      },
+    }
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)) return false
+    setLessons(next)
+    return true
   }, [])
 
   const saveLessonPosition = useCallback((lessonId: string, currentStepIndex: number, lastStepId?: string) => {
-    setLessons((prev) => {
-      const base = mergeLessonProgressState(prev)
-      const current = base[lessonId]
-      const now = Date.now()
-      const next = {
-        ...base,
-        [lessonId]: {
-          lessonId,
-          status: current?.status ?? ("started" as const),
-          startedAt: current?.startedAt ?? now,
-          completedAt: current?.completedAt,
-          score: current?.score,
-          currentStepIndex: normalizeStepIndex(currentStepIndex),
-          lastStepId: lastStepId || current?.lastStepId,
-          updatedAt: now,
-        },
-      }
-      return writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next) ? next : prev
-    })
+    const base = readLessonProgressMap()
+    const current = base[lessonId]
+    const now = Date.now()
+    const next = {
+      ...base,
+      [lessonId]: {
+        lessonId,
+        status: current?.status ?? ("started" as const),
+        startedAt: current?.startedAt ?? now,
+        completedAt: current?.completedAt,
+        score: current?.score,
+        currentStepIndex: normalizeStepIndex(currentStepIndex),
+        lastStepId: lastStepId || current?.lastStepId,
+        updatedAt: now,
+      },
+    }
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)) return false
+    setLessons(next)
+    return true
   }, [])
 
   const recordPractice = useCallback((result: Omit<PracticeResult, "createdAt">) => {

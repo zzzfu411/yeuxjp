@@ -13,7 +13,11 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
   const page = read("src/app/page.tsx")
 
   assert.match(page, /from "@\/components\/home\/onboarding-panel"/)
-  assert.match(page, /<OnboardingPanel onSave=\{saveProfile\} \/>/)
+  assert.match(page, /from "@\/components\/practice\/practice-save-error"/)
+  assert.match(page, /const \[profileSaveError, setProfileSaveError\] = useState\(false\)/)
+  assert.match(page, /const saved = saveProfile\(input\)/)
+  assert.match(page, /setProfileSaveError\(!saved\)/)
+  assert.match(page, /<PracticeSaveError show=\{profileSaveError\} \/>/)
   assert.doesNotMatch(page, /const goalOptions/)
   assert.doesNotMatch(page, /const kanaOptions/)
   assert.doesNotMatch(page, /const romajiOptions/)
@@ -25,6 +29,7 @@ test("OnboardingPanel owns profile option state and save payload", () => {
   const source = read("src/components/home/onboarding-panel.tsx")
 
   assert.match(source, /export function OnboardingPanel/)
+  assert.match(source, /onSave: \(input: Omit<UserProfile, "createdAt" \| "updatedAt">\) => boolean/)
   assert.match(source, /const goalOptions/)
   assert.match(source, /const kanaOptions/)
   assert.match(source, /const romajiOptions/)
