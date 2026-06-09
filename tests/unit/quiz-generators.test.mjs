@@ -49,6 +49,19 @@ test("kana quiz generators require enough unique options", () => {
   assert.equal(question, null)
 })
 
+test("kana unmastered filter stays empty when every item is mastered", () => {
+  const base = quiz.getKanaPool("seion").slice(0, 4)
+
+  assert.deepEqual(
+    quiz.filterUnmasteredKana(base, () => true, true),
+    []
+  )
+  assert.deepEqual(
+    quiz.filterUnmasteredKana(base, () => true, false),
+    base
+  )
+})
+
 test("vocabulary quiz generators return meaning questions", () => {
   const question = quiz.generateQuizQuestion({
     mode: "meaning-vocab",
@@ -79,6 +92,17 @@ test("vocabulary quiz generators require enough unique options", () => {
   })
 
   assert.equal(question, null)
+})
+
+test("vocabulary unlearned filter stays empty when every item is learned", () => {
+  assert.deepEqual(
+    quiz.filterUnlearnedVocab(vocab, () => true, true),
+    []
+  )
+  assert.deepEqual(
+    quiz.filterUnlearnedVocab(vocab, () => true, false),
+    vocab
+  )
 })
 
 test("audio contrast and verb conjugation modes include explanations or audio", () => {

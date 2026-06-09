@@ -8,8 +8,7 @@ export function getKanaPool(scope: KanaQuizScope) {
 
 export function filterUnmasteredKana(pool: Kana[], isMastered: (id: string) => boolean, onlyUnmastered: boolean) {
   if (!onlyUnmastered) return pool
-  const filtered = pool.filter((k) => !isMastered(k.romaji))
-  return filtered.length ? filtered : pool
+  return pool.filter((k) => !isMastered(k.romaji))
 }
 
 export function getVocabPool(scope: VocabQuizScope, vocabByLevel: Record<VocabLevel, Vocabulary[]>, allVocab: Vocabulary[]) {
@@ -18,6 +17,5 @@ export function getVocabPool(scope: VocabQuizScope, vocabByLevel: Record<VocabLe
 
 export function filterUnlearnedVocab(pool: Vocabulary[], isLearned: (id: string) => boolean, onlyUnlearned: boolean) {
   if (!onlyUnlearned) return pool
-  const filtered = pool.filter((v) => !isLearned(v.id))
-  return filtered.length ? filtered : pool
+  return pool.filter((v) => !isLearned(v.id))
 }

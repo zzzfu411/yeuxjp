@@ -25,6 +25,21 @@ test("quiz runner delegates shared answer recording to useQuizAnswerRecorder", (
   assert.doesNotMatch(source, /recordQuizAnswer/)
 })
 
+test("quiz runner explains empty question states instead of showing stale questions", () => {
+  const source = read("src/components/quiz/quiz-runner.tsx")
+
+  assert.match(source, /type QuizEmptyReason = "loading" \| "filter-empty" \| "pool-too-small"/)
+  assert.match(source, /function getQuizEmptyMessage/)
+  assert.match(source, /setEmptyReason\("loading"\)/)
+  assert.match(source, /setEmptyReason\(/)
+  assert.match(source, /"filter-empty"/)
+  assert.match(source, /"pool-too-small"/)
+  assert.match(source, /setCurrentQuestion\(null\)/)
+  assert.match(source, /当前题库不足以生成 4 个唯一选项/)
+  assert.match(source, /data-testid="quiz-empty-state"/)
+  assert.doesNotMatch(source, /: "加载中\.\.\."\}/)
+})
+
 test("useQuizAnswerRecorder owns question result, stats, and learning record writes", () => {
   const source = read("src/components/quiz/use-quiz-answer-recorder.ts")
 

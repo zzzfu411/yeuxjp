@@ -29,11 +29,35 @@ import {
   type VocabQuizScope,
 } from "@/lib/quiz-generators"
 
+type QuizEmptyReason = "loading" | "filter-empty" | "pool-too-small"
+
+function getQuizEmptyMessage({
+  mode,
+  reason,
+}: {
+  mode: QuizMode
+  reason: QuizEmptyReason
+}) {
+  if (reason === "loading") return "加载中..."
+
+  if (reason === "filter-empty") {
+    if (mode === "hiragana-romaji" || mode === "audio-kana") {
+      return "恭喜！你已掌握当前范围内的假名。请取消「只出未掌握」过滤，或切换到其他假名范围。"
+    }
+    if (mode === "meaning-vocab") {
+      return "恭喜！你已掌握当前范围内的词汇。请取消「只出未掌握」过滤，或切换到其他词汇范围。"
+    }
+  }
+
+  return "当前题库不足以生成 4 个唯一选项。请切换范围、取消筛选，或补充更多学习数据。"
+}
+
 export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => void }) {
   const speech = useSpeechPreferences()
   const mistakes = useMistakeNotebook()
   const progress = useLearningProgress()
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
+  const [emptyReason, setEmptyReason] = useState<QuizEmptyReason>("loading")
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [saveError, setSaveError] = useState(false)
   const [quizStats, setQuizStats] = useState(createQuizStats)
@@ -78,6 +102,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       setCurrentQuestion(null)
       setSelectedOption(null)
       setSaveError(false)
+      setEmptyReason("loading")
       return
     }
 
@@ -94,14 +119,38 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       setCurrentQuestion(q)
       setSelectedOption(null)
       setSaveError(false)
+      setEmptyReason("loading")
       
       // Auto-play audio if in audio mode
       const autoPlay = speech?.prefs.autoPlay ?? true
       if (q.questionAudio && q.autoPlayAudio && autoPlay) {
         setTimeout(() => playAudio(q.questionAudio!), 500)
       }
+      return
     }
-  }, [allVocab, kanaBasePool, kanaTargetPool, mode, playAudio, speech?.prefs.autoPlay, vocabBasePool, vocabLoading, vocabTargetPool])
+
+    setCurrentQuestion(null)
+    setSelectedOption(null)
+    setSaveError(false)
+    setEmptyReason(
+      ((mode === "hiragana-romaji" || mode === "audio-kana") && onlyUnmasteredKana) ||
+        (mode === "meaning-vocab" && onlyUnlearnedVocab)
+        ? "filter-empty"
+        : "pool-too-small"
+    )
+  }, [
+    allVocab,
+    kanaBasePool,
+    kanaTargetPool,
+    mode,
+    onlyUnlearnedVocab,
+    onlyUnmasteredKana,
+    playAudio,
+    speech?.prefs.autoPlay,
+    vocabBasePool,
+    vocabLoading,
+    vocabTargetPool,
+  ])
 
   // Initial load
   useEffect(() => {
@@ -128,12 +177,8 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     return (
       <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6">
         <div className="text-center space-y-4">
-          <p className="text-lg text-muted-foreground">
-            {(mode === 'hiragana-romaji' || mode === 'audio-kana') && onlyUnmasteredKana
-              ? "恭喜！你已掌握所有假名。请取消「只出未掌握」过滤，或返回选择其他模式。"
-              : mode === 'meaning-vocab' && onlyUnlearnedVocab
-              ? "恭喜！你已掌握所有词汇。请取消「只出未掌握」过滤，或返回选择其他模式。"
-              : "加载中..."}
+          <p className="text-lg text-muted-foreground" data-testid="quiz-empty-state">
+            {getQuizEmptyMessage({ mode, reason: emptyReason })}
           </p>
           <Button variant="outline" onClick={onExit} className="gap-2">
             <ArrowLeft className="w-4 h-4" /> 返回选择模式
