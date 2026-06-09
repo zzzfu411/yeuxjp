@@ -68,3 +68,13 @@ test("learning progress listens for cross-tab storage updates", () => {
   assert.match(progress, /window\.addEventListener\("storage", onStorage\)/)
   assert.match(progress, /window\.removeEventListener\("storage", onStorage\)/)
 })
+
+test("learning profile saves from the current storage snapshot", () => {
+  const progress = read("src/lib/learning-progress.ts")
+
+  assert.match(progress, /function readUserProfile\(\)/)
+  assert.match(progress, /const current = readUserProfile\(\)/)
+  assert.match(progress, /createdAt: current\?\.createdAt \?\? now/)
+  assert.doesNotMatch(progress, /profile\?\.createdAt/)
+  assert.match(progress, /}, \[\]\)/)
+})

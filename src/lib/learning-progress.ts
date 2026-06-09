@@ -42,30 +42,34 @@ function mergeLessonProgressState(prev: LessonProgressMap) {
   return mergeLessonProgressMaps(readLessonProgressMap(), prev)
 }
 
+function readUserProfile() {
+  return normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null))
+}
+
 export function useLearningProfile() {
   const [profile, setProfileState] = useState<UserProfile | null>(null)
 
   useEffect(() => {
     let cancelled = false
     Promise.resolve().then(() => {
-      if (!cancelled) setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
+      if (!cancelled) setProfileState(readUserProfile())
     })
 
     const sync = (event: Event) => {
       const detail = (event as CustomEvent).detail as { key?: string } | undefined
       if (detail?.key !== STORAGE_KEYS.USER_PROFILE) return
-      setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
+      setProfileState(readUserProfile())
     }
 
     const syncStore = (event: Event) => {
       const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
       if (!detail?.keys?.includes(STORAGE_KEYS.USER_PROFILE)) return
-      setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
+      setProfileState(readUserProfile())
     }
 
     const onStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEYS.USER_PROFILE) return
-      setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
+      setProfileState(readUserProfile())
     }
 
     window.addEventListener("storage", onStorage)
@@ -81,13 +85,14 @@ export function useLearningProfile() {
 
   const saveProfile = useCallback((input: Omit<UserProfile, "createdAt" | "updatedAt">) => {
     const now = Date.now()
+    const current = readUserProfile()
     const next: UserProfile = {
       ...input,
-      createdAt: profile?.createdAt ?? now,
+      createdAt: current?.createdAt ?? now,
       updatedAt: now,
     }
     if (writeLearningJson(STORAGE_KEYS.USER_PROFILE, next)) setProfileState(next)
-  }, [profile?.createdAt])
+  }, [])
 
   return { profile, saveProfile }
 }
