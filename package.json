@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test tests/unit/*.test.mjs",
+    "validate:data": "node ../scripts/validate-data.mjs",
+    "check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e",
     "e2e": "node tests/e2e/smoke.mjs",
     "e2e:browser": "node tests/e2e/browser.mjs",
     "e2e:browser:required": "node tests/e2e/browser.mjs --required",

@@ -19,6 +19,7 @@ npm run dev
 ```
 
 The dev server defaults to `http://localhost:3000`.
+If you are already inside `web/`, use the same script names without `--prefix web`, for example `npm run check`.
 
 ## Verification
 

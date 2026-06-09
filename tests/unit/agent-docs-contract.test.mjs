@@ -26,6 +26,8 @@ for (const [name, source] of [
 }
 
 test("app README documents the current E2E coverage layers", () => {
+  assert.match(webReadme, /inside `web\/`/)
+  assert.match(webReadme, /npm run check/)
   assert.match(webReadme, /HTTP route health/)
   assert.match(webReadme, /real interactions with Playwright/)
   assert.match(webReadme, /production build/)
