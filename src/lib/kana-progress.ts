@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
-import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
 import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressList, writeProgressList } from "@/lib/progress-list-storage"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
-import { notifySrs, readSrsMap, writeSrsMap } from "@/lib/srs-storage"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
 const DEFAULT_STORAGE_KEY = STORAGE_KEYS.KANA_MASTERED
@@ -65,16 +64,14 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
         next.add(romaji)
       }
 
-      const previousSrs = readSrsMap(KANA_SRS_STORAGE_KEY)
-      const srsSuccess = wasMastered ? removeSrs(KANA_SRS_STORAGE_KEY, romaji) : enrollSrs(KANA_SRS_STORAGE_KEY, romaji)
-      if (!srsSuccess) return false
+      const saved = runLearningStorageTransaction(() => {
+        const srsSuccess = wasMastered ? removeSrs(KANA_SRS_STORAGE_KEY, romaji) : enrollSrs(KANA_SRS_STORAGE_KEY, romaji)
+        return srsSuccess && writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
+      })
 
-      const writeSuccess = writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
-
-      if (!writeSuccess) {
-        if (writeSrsMap(KANA_SRS_STORAGE_KEY, previousSrs)) notifySrs(KANA_SRS_STORAGE_KEY)
+      if (!saved) {
         if (process.env.NODE_ENV === "development") {
-          console.warn("[kana-progress] Write failed, rolling back state change")
+          console.warn("[kana-progress] Save failed, rolling back state change")
         }
         return false
       }
@@ -87,17 +84,13 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
   )
 
   const clearMastered = useCallback(() => {
-    const previousSrs = readSrsMap(KANA_SRS_STORAGE_KEY)
-    if (!clearSrs(KANA_SRS_STORAGE_KEY)) return false
-
-    const writeSuccess = writeProgressList(storageKey, [], STORAGE_LABEL)
-    if (writeSuccess) {
+    const saved = runLearningStorageTransaction(() => clearSrs(KANA_SRS_STORAGE_KEY) && writeProgressList(storageKey, [], STORAGE_LABEL))
+    if (saved) {
       setMastered(new Set())
       notifyProgressList(storageKey)
       return true
     }
 
-    if (writeSrsMap(KANA_SRS_STORAGE_KEY, previousSrs)) notifySrs(KANA_SRS_STORAGE_KEY)
     if (process.env.NODE_ENV === "development") {
       console.warn("[kana-progress] Clear failed, keeping current state")
     }
