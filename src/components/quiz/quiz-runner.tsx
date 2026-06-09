@@ -29,7 +29,7 @@ import {
   type VocabQuizScope,
 } from "@/lib/quiz-generators"
 
-type QuizEmptyReason = "loading" | "filter-empty" | "pool-too-small"
+type QuizEmptyReason = "loading" | "load-error" | "filter-empty" | "pool-too-small"
 
 function getQuizEmptyMessage({
   mode,
@@ -39,6 +39,7 @@ function getQuizEmptyMessage({
   reason: QuizEmptyReason
 }) {
   if (reason === "loading") return "加载中..."
+  if (reason === "load-error") return "词汇题库加载失败。请返回重新进入测验，或稍后再试。"
 
   if (reason === "filter-empty") {
     if (mode === "hiragana-romaji" || mode === "audio-kana") {
@@ -75,6 +76,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   })
   const {
     loading: vocabLoading,
+    error: vocabError,
     basePool: vocabBasePool,
     fallbackPool: allVocab,
   } = useQuizVocabularyPools({ mode, vocabScope })
@@ -98,7 +100,15 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   }, [speech?.prefs.gapMs, speech?.prefs.repeat])
 
   const generateQuestion = useCallback(() => {
-    if (mode === "meaning-vocab" && (vocabLoading || vocabBasePool.length === 0)) {
+    if (mode === "meaning-vocab" && vocabError) {
+      setCurrentQuestion(null)
+      setSelectedOption(null)
+      setSaveError(false)
+      setEmptyReason("load-error")
+      return
+    }
+
+    if (mode === "meaning-vocab" && vocabLoading) {
       setCurrentQuestion(null)
       setSelectedOption(null)
       setSaveError(false)
@@ -148,6 +158,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     playAudio,
     speech?.prefs.autoPlay,
     vocabBasePool,
+    vocabError,
     vocabLoading,
     vocabTargetPool,
   ])

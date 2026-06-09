@@ -14,10 +14,12 @@ test("quiz runner delegates vocabulary loading to useQuizVocabularyPools", () =>
 
   assert.match(source, /from "@\/components\/quiz\/use-quiz-vocabulary-pools"/)
   assert.match(source, /useQuizVocabularyPools\(\{ mode, vocabScope \}\)/)
+  assert.match(source, /error: vocabError/)
+  assert.match(source, /if \(mode === "meaning-vocab" && vocabError\)/)
+  assert.match(source, /setEmptyReason\("load-error"\)/)
   assert.doesNotMatch(source, /loadVocabularyScope/)
   assert.doesNotMatch(source, /setVocabPools/)
   assert.doesNotMatch(source, /vocabPools/)
-  assert.doesNotMatch(source, /Failed to load vocabulary/)
 })
 
 test("useQuizVocabularyPools owns scoped vocabulary loading and fallback pool logic", () => {
