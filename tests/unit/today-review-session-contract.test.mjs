@@ -32,6 +32,7 @@ test("TodayReviewSession owns mixed queue data, shared prompts, and all SRS deck
   assert.match(source, /useVocabularyReviewPool\(vocabIds, vocabIds\.length > 0\)/)
   assert.match(source, /ReviewErrorState/)
   assert.match(source, /if \(vocabulary\.error\)/)
+  assert.match(source, /onRetry=\{vocabulary\.retry\}/)
   assert.match(source, /今日复习题库加载失败/)
   assert.match(source, /makeKanaReviewQuestion\(current\.id\)/)
   assert.match(source, /makeVocabReviewQuestion\(current\.id, vocabulary\.data\)/)

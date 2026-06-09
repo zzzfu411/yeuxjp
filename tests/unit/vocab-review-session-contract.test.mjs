@@ -31,6 +31,7 @@ test("VocabReviewSession owns vocabulary loading, prompt, question, and SRS grad
   assert.match(source, /ReviewLoadingState/)
   assert.match(source, /ReviewErrorState/)
   assert.match(source, /if \(vocabulary\.error\)/)
+  assert.match(source, /onRetry=\{vocabulary\.retry\}/)
   assert.match(source, /单词复习题库加载失败/)
   assert.match(source, /if \(!item \|\| !question\)/)
   assert.match(source, /当前条目或选项不足/)

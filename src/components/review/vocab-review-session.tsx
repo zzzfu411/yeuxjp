@@ -73,6 +73,7 @@ export function VocabReviewSession({
         title="单词复习题库加载失败"
         message="请返回复习页后重新进入，或稍后再试。"
         onExit={onExit}
+        onRetry={vocabulary.retry}
       />
     )
   }

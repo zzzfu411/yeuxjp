@@ -18,10 +18,12 @@ export function ReviewErrorState({
   title,
   message,
   onExit,
+  onRetry,
 }: {
   title: string
   message: string
   onExit: () => void
+  onRetry?: () => void
 }) {
   return (
     <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-5 text-center">
@@ -29,9 +31,16 @@ export function ReviewErrorState({
         <div className="text-lg font-semibold text-destructive">{title}</div>
         <div className="mt-2 text-sm text-muted-foreground">{message}</div>
       </div>
-      <Button type="button" variant="outline" className="rounded-full" onClick={onExit}>
-        返回复习
-      </Button>
+      <div className="flex flex-wrap justify-center gap-2">
+        {onRetry ? (
+          <Button type="button" className="rounded-full" onClick={onRetry} data-testid="review-retry-load">
+            重试加载
+          </Button>
+        ) : null}
+        <Button type="button" variant="outline" className="rounded-full" onClick={onExit}>
+          返回复习
+        </Button>
+      </div>
     </div>
   )
 }

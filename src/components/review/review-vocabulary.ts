@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { loadVocabularyReviewPool, loadVocabularyScope } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
 
@@ -44,7 +44,14 @@ export function useVocabularyReviewPool(ids: readonly string[], enabled: boolean
     loadedKey: null,
     error: null,
   })
+  const [retryToken, setRetryToken] = useState(0)
   const key = ids.join("\n")
+
+  const retry = useCallback(() => {
+    if (!enabled) return
+    setState({ data: [], loadedKey: null, error: null })
+    setRetryToken((value) => value + 1)
+  }, [enabled])
 
   useEffect(() => {
     if (!enabled) return
@@ -65,11 +72,12 @@ export function useVocabularyReviewPool(ids: readonly string[], enabled: boolean
     return () => {
       cancelled = true
     }
-  }, [enabled, key])
+  }, [enabled, key, retryToken])
 
   return {
     data: enabled && state.loadedKey === key ? state.data : [],
     loading: enabled && state.loadedKey !== key,
     error: enabled && state.loadedKey === key ? state.error : null,
+    retry,
   }
 }

@@ -28,6 +28,9 @@ test("review status owns completion and loading surfaces", () => {
   assert.match(source, /export function ReviewDone/)
   assert.match(source, /state-complete\.webp/)
   assert.match(source, /border-destructive\/30/)
+  assert.match(source, /onRetry\?: \(\) => void/)
+  assert.match(source, /data-testid="review-retry-load"/)
+  assert.match(source, /onClick=\{onRetry\}/)
 })
 
 test("review vocabulary hook owns scoped vocabulary loading", () => {
@@ -37,6 +40,11 @@ test("review vocabulary hook owns scoped vocabulary loading", () => {
   assert.match(source, /loadVocabularyScope\("all"\)/)
   assert.match(source, /export function useVocabularyReviewPool/)
   assert.match(source, /loadVocabularyReviewPool\(reviewIds\)/)
+  assert.match(source, /const \[retryToken, setRetryToken\] = useState\(0\)/)
+  assert.match(source, /const retry = useCallback/)
+  assert.match(source, /setRetryToken\(\(value\) => value \+ 1\)/)
+  assert.match(source, /\[enabled, key, retryToken\]/)
+  assert.match(source, /retry,/)
 
   for (const relPath of [
     "src/components/review/vocab-review-session.tsx",
