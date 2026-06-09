@@ -1,9 +1,9 @@
 import type { Kana } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
+import { pickUniqueQuestionOptions, shuffleList } from "@/lib/question-options"
 import { LONG_VOWEL_MINIMAL_PAIRS, PARTICLE_QUESTIONS, SOKUON_MINIMAL_PAIRS } from "@/lib/quiz-data"
 import type { QuizMode } from "@/lib/quiz-types"
 import type { Question } from "@/lib/questions"
-import { shuffleList } from "@/lib/review-questions"
 import { VERB_CONJ_FORMS, VERB_CONJ_VERBS, conjugateVerb, explainConjugation } from "@/lib/verb-conjugation"
 
 type RandomFn = () => number
@@ -27,8 +27,13 @@ export function generateKanaQuizQuestion({
   if (targetPool.length === 0) return null
 
   const target = randomItem(targetPool, random)
-  const wrong = shuffleList(basePool.filter((k) => k.romaji !== target.romaji), random).slice(0, 3)
-  const options = shuffleList([target, ...wrong], random)
+  const options = pickUniqueQuestionOptions({
+    target,
+    pool: basePool,
+    getValue: (kana) => kana.romaji,
+    random,
+  })
+  if (!options) return null
 
   if (mode === "hiragana-romaji") {
     return {
@@ -141,7 +146,14 @@ export function generateVocabularyQuizQuestion({
   if (targetSource.length === 0) return null
 
   const target = randomItem(targetSource, random)
-  const wrong = shuffleList(base.filter((v) => v.id !== target.id), random).slice(0, 3)
+  const options = pickUniqueQuestionOptions({
+    target,
+    pool: base,
+    getValue: (entry) => entry.id,
+    random,
+  })
+  if (!options) return null
+
   return {
     type: mode,
     itemId: target.id,
@@ -149,6 +161,6 @@ export function generateVocabularyQuizQuestion({
     mode: "meaning",
     questionText: target.kana,
     correctAnswer: target.id,
-    options: shuffleList([target, ...wrong], random).map((v) => ({ value: v.id, display: v.meaning })),
+    options: options.map((v) => ({ value: v.id, display: v.meaning })),
   }
 }

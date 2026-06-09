@@ -28,4 +28,6 @@ test("quiz question builders own mode-specific question construction", () => {
   assert.match(builders, /export function generateAudioContrastQuestion/)
   assert.match(builders, /export function generateVerbConjugationQuestion/)
   assert.match(builders, /export function generateVocabularyQuizQuestion/)
+  assert.match(builders, /from "@\/lib\/question-options"/)
+  assert.doesNotMatch(builders, /from "@\/lib\/review-questions"/)
 })

@@ -31,6 +31,22 @@ test("kana quiz generators return shared Question objects", () => {
   assert.equal(question.itemType, "kana")
   assert.equal(question.mode, "recognition")
   assert.equal(question.correctAnswer, "a")
+  assert.equal(question.options.length, 4)
+})
+
+test("kana quiz generators require enough unique options", () => {
+  const base = quiz.getKanaPool("seion").slice(0, 3)
+  const question = quiz.generateQuizQuestion({
+    mode: "hiragana-romaji",
+    kanaBasePool: base,
+    kanaTargetPool: base,
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    allVocab: vocab,
+    random: () => 0,
+  })
+
+  assert.equal(question, null)
 })
 
 test("vocabulary quiz generators return meaning questions", () => {
@@ -47,6 +63,22 @@ test("vocabulary quiz generators return meaning questions", () => {
   assert.equal(question.itemType, "vocab")
   assert.equal(question.mode, "meaning")
   assert.equal(question.correctAnswer, "v1")
+  assert.equal(question.options.length, 4)
+})
+
+test("vocabulary quiz generators require enough unique options", () => {
+  const smallVocab = vocab.slice(0, 3)
+  const question = quiz.generateQuizQuestion({
+    mode: "meaning-vocab",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: smallVocab,
+    vocabTargetPool: smallVocab,
+    allVocab: smallVocab,
+    random: () => 0,
+  })
+
+  assert.equal(question, null)
 })
 
 test("audio contrast and verb conjugation modes include explanations or audio", () => {

@@ -1,6 +1,7 @@
 import { kanaData } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
+import { pickUniqueQuestionOptions } from "@/lib/question-options"
 import type { Question } from "@/lib/questions"
 import { sortSrsIdsByDue, type SrsMap } from "@/lib/srs"
 
@@ -13,16 +14,7 @@ export function isReviewableKanaId(id: string) {
   return REVIEWABLE_KANA_IDS.has(id)
 }
 
-export function shuffleList<T>(list: T[], random: () => number = Math.random) {
-  const arr = [...list]
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(random() * (i + 1))
-    const tmp = arr[i]
-    arr[i] = arr[j]!
-    arr[j] = tmp!
-  }
-  return arr
-}
+export { shuffleList } from "@/lib/question-options"
 
 export function buildTodayReviewQueue({
   dueMistakeIds,
@@ -85,7 +77,14 @@ export function makeKanaReviewQuestion(id: string, random: () => number = Math.r
   const item = kanaData.find((k) => k.romaji === id)
   if (!item) return null
 
-  const wrong = shuffleList(kanaData.filter((k) => k.romaji !== item.romaji).map((k) => k.romaji), random).slice(0, 3)
+  const options = pickUniqueQuestionOptions({
+    target: item,
+    pool: kanaData,
+    getValue: (kana) => kana.romaji,
+    random,
+  })
+  if (!options) return null
+
   return {
     type: "review:kana",
     itemId: item.romaji,
@@ -95,7 +94,7 @@ export function makeKanaReviewQuestion(id: string, random: () => number = Math.r
     questionAudio: item.hiragana,
     correctAnswer: item.romaji,
     correctDisplay: item.romaji,
-    options: shuffleList([item.romaji, ...wrong], random).map((value) => ({ value, display: value })),
+    options: options.map((option) => ({ value: option.romaji, display: option.romaji })),
   }
 }
 
@@ -103,8 +102,13 @@ export function makeVocabReviewQuestion(id: string, vocab: Vocabulary[], random:
   const item = vocab.find((v) => v.id === id)
   if (!item) return null
 
-  const wrong = shuffleList(vocab.filter((v) => v.id !== item.id).map((v) => v.id), random).slice(0, 3)
-  if (wrong.length < 3) return null
+  const options = pickUniqueQuestionOptions({
+    target: item,
+    pool: vocab,
+    getValue: (entry) => entry.id,
+    random,
+  })
+  if (!options) return null
 
   return {
     type: "review:vocab",
@@ -115,9 +119,6 @@ export function makeVocabReviewQuestion(id: string, vocab: Vocabulary[], random:
     questionAudio: item.kana,
     correctAnswer: item.id,
     correctDisplay: item.meaning,
-    options: shuffleList([item.id, ...wrong], random).map((optionId) => {
-      const option = vocab.find((v) => v.id === optionId)
-      return { value: optionId, display: option?.meaning ?? optionId }
-    }),
+    options: options.map((option) => ({ value: option.id, display: option.meaning })),
   }
 }
