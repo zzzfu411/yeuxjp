@@ -36,6 +36,7 @@ test("VocabularyToolbar owns vocabulary search, level tabs, filters, and categor
 
   assert.match(toolbar, /export function VocabularyToolbar/)
   assert.match(toolbar, /data-testid="vocabulary-search"/)
+  assert.match(toolbar, /data-testid=\{`vocabulary-level-\$\{level\.id\}`\}/)
   assert.match(toolbar, /onSearchChange\(event\.target\.value\)/)
   assert.match(toolbar, /onLevelChange\(level\.id\)/)
   assert.match(toolbar, /onToggleOnlyUnlearned/)

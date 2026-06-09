@@ -159,6 +159,12 @@ try {
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").fill("みせ")
   assert.ok(await page.getByText("みせ").first().isVisible())
+  await page.getByTestId("vocabulary-level-daily").click()
+  await page.getByTestId("vocabulary-search").fill("Yakusoku")
+  assert.ok(await page.getByText("約束").first().isVisible(), "daily vocabulary level should load its dynamic vocabulary chunk")
+  await page.getByTestId("vocabulary-level-fluent").click()
+  await page.getByTestId("vocabulary-search").fill("Gainen")
+  assert.ok(await page.getByText("概念").first().isVisible(), "fluent vocabulary level should load its dynamic vocabulary chunk")
 
   await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
   await page.evaluate(() => {

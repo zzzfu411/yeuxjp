@@ -65,6 +65,7 @@ export function VocabularyToolbar({
             {levels.map((level) => (
               <button
                 key={level.id}
+                data-testid={`vocabulary-level-${level.id}`}
                 onClick={() => onLevelChange(level.id)}
                 className={cn(
                   "rounded-full px-6 py-2 text-sm font-medium transition-all",

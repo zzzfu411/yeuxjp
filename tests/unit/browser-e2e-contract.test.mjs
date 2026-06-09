@@ -47,6 +47,16 @@ const requiredSelectors = [
     pattern: /data-testid="vocabulary-search"/,
   },
   {
+    testId: "vocabulary-level-daily",
+    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
+    pattern: /data-testid=\{`vocabulary-level-\$\{level\.id\}`\}/,
+  },
+  {
+    testId: "vocabulary-level-fluent",
+    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
+    pattern: /data-testid=\{`vocabulary-level-\$\{level\.id\}`\}/,
+  },
+  {
     testId: "quiz-mode-hiragana-romaji",
     source: "src/lib/quiz-mode-options.ts",
     pattern: /testId: "quiz-mode-hiragana-romaji"/,
@@ -216,6 +226,17 @@ test("browser E2E verifies review empty and due states", () => {
   assert.match(e2e, /getByTestId\("review-due-state"\)/)
   assert.match(e2e, /getByTestId\("review-today-due"\)/)
   assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
+})
+
+test("browser E2E verifies non-default vocabulary levels load dynamically", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /getByTestId\("vocabulary-level-daily"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-level-fluent"\)\.click\(\)/)
+  assert.match(e2e, /fill\("Yakusoku"\)/)
+  assert.match(e2e, /fill\("Gainen"\)/)
+  assert.match(e2e, /daily vocabulary level should load its dynamic vocabulary chunk/)
+  assert.match(e2e, /fluent vocabulary level should load its dynamic vocabulary chunk/)
 })
 
 test("browser E2E verifies learning data export reset and import through the UI", () => {
