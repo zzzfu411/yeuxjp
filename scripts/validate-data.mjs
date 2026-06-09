@@ -59,9 +59,62 @@ function requiredString(block, file, id, name) {
   return value
 }
 
+function arrayStrings(block, name) {
+  const match = block.match(new RegExp(`${name}:\\s*\\[([\\s\\S]*?)\\]`))
+  if (!match) return []
+  return matches(match[1], /['"]([^'"]*)['"]/g)
+}
+
 function requireFile(relPath, label = relPath) {
   if (exists(relPath)) pass(`${label} exists`)
   else fail(`${label} is missing`)
+}
+
+function validateLessonPracticeMetadata(lessonText, { kanaIdSet, vocabIdSet, grammarIdSet }) {
+  const practiceTypes = new Set(["multipleChoice", "typing", "dictation", "sentenceBuild"])
+  const itemTypes = new Set(["kana", "vocab", "grammar", "sentence"])
+  const modes = new Set(["recognition", "listening", "meaning", "recall", "production"])
+  let checked = 0
+
+  for (const block of objectBlocks(lessonText)) {
+    const type = prop(block, "type")
+    if (!practiceTypes.has(type)) continue
+    if (!/id:\s*['"]/.test(block)) continue
+
+    checked += 1
+    const stepId = requiredString(block, "lesson practice step", "(unknown)", "id") ?? "(unknown)"
+    const itemId = requiredString(block, "lesson practice step", stepId, "itemId")
+    const itemType = requiredString(block, "lesson practice step", stepId, "itemType")
+    const mode = requiredString(block, "lesson practice step", stepId, "mode")
+    const answer = requiredString(block, "lesson practice step", stepId, "answer")
+
+    if (itemType && !itemTypes.has(itemType)) fail(`lesson practice step ${stepId} has unknown itemType: ${itemType}`)
+    if (mode && !modes.has(mode)) fail(`lesson practice step ${stepId} has unknown mode: ${mode}`)
+
+    if (itemId && itemType === "kana" && !kanaIdSet.has(itemId)) fail(`lesson practice step ${stepId} references missing kana itemId: ${itemId}`)
+    if (itemId && itemType === "vocab" && !vocabIdSet.has(itemId)) fail(`lesson practice step ${stepId} references missing vocabulary itemId: ${itemId}`)
+    if (itemId && itemType === "grammar" && !grammarIdSet.has(itemId)) fail(`lesson practice step ${stepId} references missing grammar itemId: ${itemId}`)
+    if (itemId && itemType === "sentence" && !itemId.startsWith("sentence-")) fail(`lesson practice step ${stepId} sentence itemId must start with sentence-: ${itemId}`)
+
+    if (type === "multipleChoice") {
+      const options = arrayStrings(block, "options")
+      if (options.length < 2) fail(`lesson practice step ${stepId} multipleChoice needs at least two options`)
+      if (answer && options.length && !options.includes(answer)) fail(`lesson practice step ${stepId} answer is not present in options`)
+    }
+
+    if (type === "dictation") {
+      requiredString(block, "lesson practice step", stepId, "audioText")
+    }
+
+    if (type === "sentenceBuild") {
+      const chunks = arrayStrings(block, "chunks")
+      if (chunks.length < 2) fail(`lesson practice step ${stepId} sentenceBuild needs at least two chunks`)
+      requiredString(block, "lesson practice step", stepId, "meaning")
+    }
+  }
+
+  if (checked) pass(`lesson practice metadata checked (${checked})`)
+  else fail("lesson practice metadata did not find any practice steps")
 }
 
 function validatePwaManifest() {
@@ -276,6 +329,7 @@ const grammarIdSet = new Set(grammarIds)
 const lessonText = read("src/data/lessons.ts")
 const lessonIds = matches(lessonText, /id:\s*["'](day-\d+[^"']*)["']/g)
 unique("lesson id", lessonIds)
+validateLessonPracticeMetadata(lessonText, { kanaIdSet, vocabIdSet, grammarIdSet })
 
 const lessonIdSet = new Set(lessonIds)
 const prereqIds = matches(lessonText, /prerequisites:\s*\[([^\]]*)\]/g)

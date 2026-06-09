@@ -27,3 +27,17 @@ test("data validation scans source and docs for common mojibake fragments", () =
   }
   assert.match(source, /source\/docs text contains likely mojibake markers/)
 })
+
+test("data validation checks lesson practice metadata and references", () => {
+  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+
+  assert.match(source, /function validateLessonPracticeMetadata/)
+  assert.match(source, /lesson practice metadata checked/)
+  assert.match(source, /itemType/)
+  assert.match(source, /mode/)
+  assert.match(source, /references missing kana itemId/)
+  assert.match(source, /references missing vocabulary itemId/)
+  assert.match(source, /references missing grammar itemId/)
+  assert.match(source, /answer is not present in options/)
+  assert.match(source, /sentence itemId must start with sentence-/)
+})
