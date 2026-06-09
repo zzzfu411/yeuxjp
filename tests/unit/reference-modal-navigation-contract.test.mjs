@@ -24,11 +24,25 @@ test("reference modal navigation hook owns selected index and arrow-key behavior
   assert.match(source, /window\.removeEventListener\("keydown", handleKeyDown\)/)
 })
 
-test("grammar page delegates modal navigation to the shared hook", () => {
-  const source = read("src/app/grammar/page.tsx")
+test("grammar route is a server shell around GrammarReferencePage", () => {
+  const page = read("src/app/grammar/page.tsx")
+
+  assert.doesNotMatch(page, /"use client"/)
+  assert.match(page, /from "react"/)
+  assert.match(page, /Suspense/)
+  assert.match(page, /from "@\/components\/reference\/grammar-reference-page"/)
+  assert.match(page, /<GrammarReferencePage \/>/)
+})
+
+test("GrammarReferencePage delegates modal navigation to the shared hook", () => {
+  const source = read("src/components/reference/grammar-reference-page.tsx")
 
   assert.match(source, /from "@\/lib\/use-indexed-modal-navigation"/)
   assert.match(source, /useIndexedModalNavigation\(/)
+  assert.match(source, /from "@\/lib\/grammar-page-model"/)
+  assert.match(source, /parseGrammarLevel\(urlLevel\)/)
+  assert.match(source, /filterGrammarPoints\(grammarData\[activeLevel\] \|\| \[\], searchQuery\)/)
+  assert.match(source, /GRAMMAR_LEVELS\.map/)
   assert.match(source, /openAt\(index\)/)
   assert.match(source, /onClose=\{close\}/)
   assert.match(source, /onClick=\{goPrev\}/)
