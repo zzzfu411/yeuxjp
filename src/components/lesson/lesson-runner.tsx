@@ -267,7 +267,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
             <PracticeSaveError show={saveError} />
 
             {current.type === "summary" && hasCompletedLesson ? (
-              <div className="mt-5 rounded-2xl border bg-primary/10 p-5">
+              <div className="mt-5 rounded-2xl border bg-primary/10 p-5" data-testid="lesson-completed-summary">
                 <div className="flex items-center gap-2 font-semibold">
                   <Sparkles className="h-4 w-4" />
                   课程已完成，掌握度已写入今日学习记录。
@@ -284,10 +284,10 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
               {current.type === "summary" && hasCompletedLesson ? (
                 <div className="flex flex-wrap gap-2">
                   <Button asChild variant="outline" className="rounded-full">
-                    <Link href="/review">去复习</Link>
+                    <Link href="/review" data-testid="lesson-review-link">去复习</Link>
                   </Button>
                   <Button asChild className="gap-2 rounded-full">
-                    <Link href={nextLesson ? `/learn/${nextLesson.id}` : "/"}>
+                    <Link href={nextLesson ? `/learn/${nextLesson.id}` : "/"} data-testid="lesson-next-lesson-link">
                       {nextLesson ? "下一课" : "回到首页"}
                       <ArrowRight className="h-4 w-4" />
                     </Link>

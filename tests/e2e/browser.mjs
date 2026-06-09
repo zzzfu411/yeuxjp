@@ -124,6 +124,27 @@ try {
   assert.equal(itemProgress?.a?.correct, 1, "lesson answer should increment correct count")
   const kanaSrs = await readJsonStorage(page, "yasashi.srs.kana.v1")
   assert.ok(kanaSrs?.a?.dueAt, "correct kana lesson answer should enroll SRS")
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-answer-お").waitFor({ state: "visible" })
+  await page.getByTestId("lesson-answer-お").click()
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-typing-input").fill("こんにちは")
+  await page.getByTestId("lesson-submit-typing").click()
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-completed-summary").waitFor({ state: "visible" })
+  const completedLessonProgress = await readJsonStorage(page, "yasashi.learning.lessons.v1")
+  assert.equal(
+    completedLessonProgress?.["day-1-a-row-hello"]?.status,
+    "completed",
+    "finishing the first lesson should mark it completed"
+  )
+  assert.ok(await page.getByTestId("lesson-review-link").isVisible(), "completed lesson should recommend review")
+  assert.equal(
+    await page.getByTestId("lesson-next-lesson-link").getAttribute("href"),
+    "/learn/day-2-ka-row-thanks",
+    "completed first lesson should link to the next starter lesson"
+  )
 
   await page.evaluate(() => localStorage.clear())
   await page.goto(`${baseUrl}/learn/day-2-ka-row-thanks`, { waitUntil: "networkidle" })

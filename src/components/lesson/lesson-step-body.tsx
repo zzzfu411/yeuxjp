@@ -129,12 +129,19 @@ export function LessonStepBody({
             onChange={(event) => onTyped(event.target.value)}
             placeholder="输入假名或答案"
             className="h-12 rounded-xl text-lg"
+            data-testid="lesson-typing-input"
             disabled={readOnly || !!result}
             onKeyDown={(event) => {
               if (event.key === "Enter" && !readOnly) onSubmitTyping()
             }}
           />
-          <Button type="button" className="h-12 rounded-xl" onClick={onSubmitTyping} disabled={readOnly || !typed.trim() || !!result}>
+          <Button
+            type="button"
+            className="h-12 rounded-xl"
+            data-testid="lesson-submit-typing"
+            onClick={onSubmitTyping}
+            disabled={readOnly || !typed.trim() || !!result}
+          >
             提交
           </Button>
         </div>

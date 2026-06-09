@@ -37,6 +37,8 @@ test("LessonStepBody owns lesson step interaction surfaces", () => {
   assert.match(source, /shouldShowCorrectAnswerIcon/)
   assert.match(source, /shouldShowWrongAnswerIcon/)
   assert.match(source, /lesson-answer-\$\{option\}/)
+  assert.match(source, /data-testid="lesson-typing-input"/)
+  assert.match(source, /data-testid="lesson-submit-typing"/)
   assert.match(source, /onSubmitSentence/)
   assert.doesNotMatch(source, /show && isCorrect/)
   assert.doesNotMatch(source, /isSelected && !isCorrect/)

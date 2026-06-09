@@ -69,6 +69,16 @@ test("LessonRunner keeps locked lesson previews read-only", () => {
   assert.match(source, /!lessonUnlocked \? \(isLast \? "预览结束" : "继续预览"\) : isLast \? "完成课程" : "继续"/)
 })
 
+test("LessonRunner exposes stable completed lesson follow-up targets", () => {
+  const source = read("src/components/lesson/lesson-runner.tsx")
+
+  assert.match(source, /data-testid="lesson-completed-summary"/)
+  assert.match(source, /data-testid="lesson-review-link"/)
+  assert.match(source, /data-testid="lesson-next-lesson-link"/)
+  assert.match(source, /href="\/review"/)
+  assert.match(source, /href=\{nextLesson \? `\/learn\/\$\{nextLesson\.id\}` : "\/"\}/)
+})
+
 test("learning progress preserves compatible lesson keys while adding resume fields", () => {
   const progress = read("src/lib/learning-progress.ts")
   const model = read("src/lib/learning-progress-model.ts")

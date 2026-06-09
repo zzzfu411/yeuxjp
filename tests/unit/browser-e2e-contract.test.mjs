@@ -32,6 +32,36 @@ const requiredSelectors = [
     pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
   },
   {
+    testId: "lesson-answer-お",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
+  },
+  {
+    testId: "lesson-typing-input",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid="lesson-typing-input"/,
+  },
+  {
+    testId: "lesson-submit-typing",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid="lesson-submit-typing"/,
+  },
+  {
+    testId: "lesson-completed-summary",
+    source: "src/components/lesson/lesson-runner.tsx",
+    pattern: /data-testid="lesson-completed-summary"/,
+  },
+  {
+    testId: "lesson-review-link",
+    source: "src/components/lesson/lesson-runner.tsx",
+    pattern: /data-testid="lesson-review-link"/,
+  },
+  {
+    testId: "lesson-next-lesson-link",
+    source: "src/components/lesson/lesson-runner.tsx",
+    pattern: /data-testid="lesson-next-lesson-link"/,
+  },
+  {
     testId: "kana-card-a",
     source: "src/components/kana/kana-card.tsx",
     pattern: /data-testid=\{`kana-card-\$\{kana\.romaji\}`\}/,
@@ -184,6 +214,15 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   assert.match(e2e, /itemId === "a"/)
   assert.match(e2e, /item\.correct === true/)
   assert.match(e2e, /correct kana lesson answer should enroll SRS/)
+  assert.match(e2e, /getByTestId\("lesson-answer-お"\)/)
+  assert.match(e2e, /getByTestId\("lesson-typing-input"\)\.fill\("こんにちは"\)/)
+  assert.match(e2e, /getByTestId\("lesson-submit-typing"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("lesson-completed-summary"\)/)
+  assert.match(e2e, /status,\s*"completed"/)
+  assert.match(e2e, /finishing the first lesson should mark it completed/)
+  assert.match(e2e, /getByTestId\("lesson-review-link"\)/)
+  assert.match(e2e, /getByTestId\("lesson-next-lesson-link"\)/)
+  assert.match(e2e, /\/learn\/day-2-ka-row-thanks/)
 })
 
 test("browser E2E verifies locked lesson previews stay read-only", () => {
