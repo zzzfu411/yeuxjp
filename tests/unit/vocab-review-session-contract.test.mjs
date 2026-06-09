@@ -30,4 +30,6 @@ test("VocabReviewSession owns vocabulary loading, prompt, question, and SRS grad
   assert.match(source, /<VocabReviewPrompt\b/)
   assert.match(source, /ReviewLoadingState/)
   assert.match(source, /srs\.grade\(item\.id/)
+  assert.match(source, /setSaveError\(!recorded\)/)
+  assert.match(source, /<PracticeSaveError show=\{saveError\} \/>/)
 })

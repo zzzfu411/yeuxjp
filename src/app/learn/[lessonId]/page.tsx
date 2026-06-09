@@ -19,6 +19,7 @@ import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feed
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
 import { LessonProgressSidebar } from "@/components/lesson/lesson-progress-sidebar"
 import { useLessonAnswerRecorder } from "@/components/lesson/use-lesson-answer-recorder"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 
 export default function LessonPage() {
   const params = useParams<{ lessonId: string }>()
@@ -32,6 +33,7 @@ export default function LessonPage() {
   const [typed, setTyped] = useState("")
   const [built, setBuilt] = useState<string[]>([])
   const [result, setResult] = useState<"correct" | "wrong" | null>(null)
+  const [saveError, setSaveError] = useState(false)
   const savedLessonProgress = lesson ? lessons[lesson.id] : undefined
 
   const resetStepState = useCallback(() => {
@@ -39,6 +41,7 @@ export default function LessonPage() {
     setTyped("")
     setBuilt([])
     setResult(null)
+    setSaveError(false)
   }, [])
 
   useEffect(() => {
@@ -122,8 +125,12 @@ export default function LessonPage() {
   const submitChoice = (answer: string) => {
     if (current.type !== "multipleChoice" || result) return
     const recorded = recordAnswer(current, answer)
-    if (!recorded) return
+    if (!recorded) {
+      setSaveError(true)
+      return
+    }
     const ok = recorded.correct
+    setSaveError(false)
     setSelected(answer)
     setResult(ok ? "correct" : "wrong")
   }
@@ -131,8 +138,12 @@ export default function LessonPage() {
   const submitTyping = () => {
     if ((current.type !== "typing" && current.type !== "dictation") || result) return
     const recorded = recordAnswer(current, typed)
-    if (!recorded) return
+    if (!recorded) {
+      setSaveError(true)
+      return
+    }
     const ok = recorded.correct
+    setSaveError(false)
     setResult(ok ? "correct" : "wrong")
   }
 
@@ -140,8 +151,12 @@ export default function LessonPage() {
     if (current.type !== "sentenceBuild" || result) return
     const answer = built.join("")
     const recorded = recordAnswer(current, answer)
-    if (!recorded) return
+    if (!recorded) {
+      setSaveError(true)
+      return
+    }
     const ok = recorded.correct
+    setSaveError(false)
     setResult(ok ? "correct" : "wrong")
   }
 
@@ -211,6 +226,8 @@ export default function LessonPage() {
             {result && isPracticeStep(current) ? (
               <LessonPracticeFeedback step={current} result={result} />
             ) : null}
+
+            <PracticeSaveError show={saveError} />
 
             {current.type === "summary" && hasCompletedLesson ? (
               <div className="mt-5 rounded-2xl border bg-primary/10 p-5">

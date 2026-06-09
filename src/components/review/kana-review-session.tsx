@@ -8,6 +8,7 @@ import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/compon
 import { ReviewDone } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useReviewAudio } from "@/components/review/use-review-audio"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { kanaData } from "@/data/kana-data"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
@@ -29,6 +30,7 @@ export function KanaReviewSession({
   srs: ReturnType<typeof useSrsDeck>
 }) {
   const [question, setQuestion] = useState<Question | null>(null)
+  const [saveError, setSaveError] = useState(false)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
 
@@ -42,10 +44,12 @@ export function KanaReviewSession({
       if (cancelled) return
       if (!item) {
         setQuestion(null)
+        setSaveError(false)
         return
       }
 
       setQuestion(makeKanaReviewQuestion(item.romaji))
+      setSaveError(false)
     })
 
     return () => {
@@ -86,7 +90,13 @@ export function KanaReviewSession({
 
   const handleSelect = (val: string) => {
     if (!question) return
-    recordAnswerSelection(question, val)
+    const recorded = recordAnswerSelection(question, val)
+    setSaveError(!recorded)
+  }
+
+  const handleNext = () => {
+    setSaveError(false)
+    review.advance()
   }
 
   return (
@@ -107,7 +117,9 @@ export function KanaReviewSession({
         optionClassName="h-16 text-lg font-medium"
       />
 
-      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
+      <PracticeSaveError show={saveError} />
+
+      <ReviewNextButton show={review.isAnswered} onNext={handleNext} />
     </ReviewSessionFrame>
   )
 }

@@ -9,6 +9,7 @@ import { ReviewDone, ReviewLoadingState } from "@/components/review/review-statu
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useAllVocabulary } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { Question, QuestionResult } from "@/lib/questions"
@@ -30,6 +31,7 @@ export function VocabReviewSession({
 }) {
   const vocabulary = useAllVocabulary(ids.length > 0)
   const [question, setQuestion] = useState<Question | null>(null)
+  const [saveError, setSaveError] = useState(false)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
 
@@ -43,10 +45,12 @@ export function VocabReviewSession({
       if (cancelled) return
       if (!item) {
         setQuestion(null)
+        setSaveError(false)
         return
       }
 
       setQuestion(makeVocabReviewQuestion(item.id, vocabulary.data))
+      setSaveError(false)
     })
 
     return () => {
@@ -89,7 +93,13 @@ export function VocabReviewSession({
 
   const handleSelect = (val: string) => {
     if (!question) return
-    recordAnswerSelection(question, val)
+    const recorded = recordAnswerSelection(question, val)
+    setSaveError(!recorded)
+  }
+
+  const handleNext = () => {
+    setSaveError(false)
+    review.advance()
   }
 
   return (
@@ -109,7 +119,9 @@ export function VocabReviewSession({
         onSelect={handleSelect}
       />
 
-      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
+      <PracticeSaveError show={saveError} />
+
+      <ReviewNextButton show={review.isAnswered} onNext={handleNext} />
     </ReviewSessionFrame>
   )
 }

@@ -31,4 +31,7 @@ test("MistakeReviewSession owns mistake question conversion, removal, feedback, 
   assert.match(source, /<ReviewAnswerFeedback/)
   assert.match(source, /showSpecialFeedback/)
   assert.match(source, /srs\.grade\(item\.id/)
+  assert.match(source, /const saveError = !!currentId && saveErrorId === currentId/)
+  assert.match(source, /setSaveErrorId\(recorded \? null : item\.id\)/)
+  assert.match(source, /<PracticeSaveError show=\{saveError\} \/>/)
 })

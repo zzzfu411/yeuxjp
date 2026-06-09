@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
@@ -10,6 +10,7 @@ import { ReviewDone, ReviewLoadingState } from "@/components/review/review-statu
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useAllVocabulary } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { kanaData } from "@/data/kana-data"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
@@ -50,9 +51,12 @@ export function TodayReviewSession({
   const needsVocabulary = useMemo(() => items.some((item) => item.deck === "vocab"), [items])
   const vocabulary = useAllVocabulary(needsVocabulary)
 
+  const [saveErrorKey, setSaveErrorKey] = useState<string | null>(null)
   const review = useReviewSessionState(items)
   const current = review.currentItem
   const selected = review.selectedAnswer
+  const currentKey = current ? `${current.deck}:${current.id}` : null
+  const saveError = !!currentKey && saveErrorKey === currentKey
 
   const data: TodayReviewData | null = useMemo(() => {
     if (!current) return null
@@ -131,7 +135,13 @@ export function TodayReviewSession({
   }
 
   const handleSelect = (value: string) => {
-    recordAnswerSelection(data.question, value)
+    const recorded = recordAnswerSelection(data.question, value)
+    setSaveErrorKey(recorded ? null : currentKey)
+  }
+
+  const handleNext = () => {
+    setSaveErrorKey(null)
+    review.advance()
   }
 
   return (
@@ -157,7 +167,9 @@ export function TodayReviewSession({
 
       <ReviewAnswerFeedback question={data.question} selectedAnswer={selected} />
 
-      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
+      <PracticeSaveError show={saveError} />
+
+      <ReviewNextButton show={review.isAnswered} onNext={handleNext} />
     </ReviewSessionFrame>
   )
 }

@@ -18,6 +18,7 @@ import { QuizQuestionPrompt } from "@/components/quiz/quiz-question-prompt"
 import { QuizScopeControls } from "@/components/quiz/quiz-scope-controls"
 import { useQuizAnswerRecorder } from "@/components/quiz/use-quiz-answer-recorder"
 import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import {
   filterUnlearnedVocab,
   filterUnmasteredKana,
@@ -34,6 +35,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   const progress = useLearningProgress()
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState(false)
   const [quizStats, setQuizStats] = useState(createQuizStats)
   const [kanaScope, setKanaScope] = useState<KanaQuizScope>("seion")
   const [onlyUnmasteredKana, setOnlyUnmasteredKana] = useState(false)
@@ -75,6 +77,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     if (mode === "meaning-vocab" && (vocabLoading || vocabBasePool.length === 0)) {
       setCurrentQuestion(null)
       setSelectedOption(null)
+      setSaveError(false)
       return
     }
 
@@ -90,6 +93,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     if (q) {
       setCurrentQuestion(q)
       setSelectedOption(null)
+      setSaveError(false)
       
       // Auto-play audio if in audio mode
       const autoPlay = speech?.prefs.autoPlay ?? true
@@ -112,7 +116,11 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     if (!currentQuestion) return
 
     const result = recordAnswer(currentQuestion, val)
-    if (!result) return
+    if (!result) {
+      setSaveError(true)
+      return
+    }
+    setSaveError(false)
     setSelectedOption(val)
   }
 
@@ -178,6 +186,8 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         selectedOption={selectedOption}
         onSelect={handleSelect}
       />
+
+      <PracticeSaveError show={saveError} />
 
       <QuizAnswerFeedback
         question={currentQuestion}

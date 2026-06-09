@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
@@ -10,6 +10,7 @@ import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/compon
 import { ReviewDone } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useReviewAudio } from "@/components/review/use-review-audio"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
@@ -29,12 +30,14 @@ export function MistakeReviewSession({
   learning: ReturnType<typeof useLearningProgress>
   srs: ReturnType<typeof useSrsDeck>
 }) {
+  const [saveErrorId, setSaveErrorId] = useState<string | null>(null)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
   const lastOk = review.lastAnswerCorrect
 
   const currentId = review.currentItem
   const item = currentId ? notebook.byId.get(currentId) ?? null : null
+  const saveError = !!currentId && saveErrorId === currentId
 
   const { playAudio } = useReviewAudio({
     autoPlayText: item?.questionAudio,
@@ -69,7 +72,13 @@ export function MistakeReviewSession({
   const correct = question.correctAnswer
 
   const handleSelect = (val: string) => {
-    recordAnswerSelection(question, val)
+    const recorded = recordAnswerSelection(question, val)
+    setSaveErrorId(recorded ? null : item.id)
+  }
+
+  const handleNext = () => {
+    setSaveErrorId(null)
+    review.advance()
   }
 
   return (
@@ -109,7 +118,9 @@ export function MistakeReviewSession({
         showSpecialFeedback
       />
 
-      <ReviewNextButton show={review.isAnswered} onNext={review.advance} />
+      <PracticeSaveError show={saveError} />
+
+      <ReviewNextButton show={review.isAnswered} onNext={handleNext} />
     </ReviewSessionFrame>
   )
 }
