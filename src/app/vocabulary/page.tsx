@@ -2,8 +2,7 @@
 
 import { useMemo, useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { loadVocabularyLevel } from "@/data/vocabulary/loader"
-import type { VocabLevel, Vocabulary } from "@/data/vocabulary/types"
+import type { VocabLevel } from "@/data/vocabulary/types"
 import { speakJapanese } from "@/lib/speech"
 import { useVocabProgress } from "@/lib/vocab-progress"
 import {
@@ -23,9 +22,8 @@ import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { VocabularyCategoryList } from "@/components/vocabulary/vocabulary-category-list"
 import { VocabularyFocusModal } from "@/components/vocabulary/vocabulary-focus-modal"
 import { VocabularyToolbar } from "@/components/vocabulary/vocabulary-toolbar"
+import { useVocabularyLevelData } from "@/components/vocabulary/use-vocabulary-level-data"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
-
-const EMPTY_VOCAB: Vocabulary[] = []
 
 function VocabularyPageContent() {
   const searchParams = useSearchParams()
@@ -34,18 +32,9 @@ function VocabularyPageContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [onlyUnlearned, setOnlyUnlearned] = useState(false)
   const [saveError, setSaveError] = useState(false)
-  const [reloadNonce, setReloadNonce] = useState(0)
-  const [vocabState, setVocabState] = useState<{
-    level: VocabLevel | null
-    data: Vocabulary[]
-    error: string | null
-  }>({
-    level: null,
-    data: [],
-    error: null,
-  })
 
   const { isLearnedId, toggleLearnedId, clearLearned } = useVocabProgress()
+  const vocabulary = useVocabularyLevelData(currentLevel)
 
   const urlLevel = searchParams.get("level")
   useEffect(() => {
@@ -63,30 +52,7 @@ function VocabularyPageContent() {
     }
   }, [urlLevel])
 
-  useEffect(() => {
-    let cancelled = false
-
-    loadVocabularyLevel(currentLevel)
-      .then((data) => {
-        if (cancelled) return
-        setVocabState({ level: currentLevel, data, error: null })
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setVocabState({
-          level: currentLevel,
-          data: [],
-          error: err instanceof Error ? err.message : String(err),
-        })
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [currentLevel, reloadNonce])
-   
-  const vocabLoading = vocabState.level !== currentLevel
-  const rawData = vocabLoading ? EMPTY_VOCAB : vocabState.data
+  const rawData = vocabulary.data
   const levelProgress = useMemo(() => {
     return getVocabularyProgress(rawData, isLearnedId)
   }, [isLearnedId, rawData])
@@ -166,15 +132,6 @@ function VocabularyPageContent() {
     setSaveError(!saved)
   }, [clearLearned])
 
-  const handleRetryLoad = useCallback(() => {
-    setVocabState((prev) => ({
-      level: prev.level === currentLevel ? null : prev.level,
-      data: prev.level === currentLevel ? [] : prev.data,
-      error: null,
-    }))
-    setReloadNonce((value) => value + 1)
-  }, [currentLevel])
-
   const handleToggleLearned = useCallback(() => {
     if (!selectedVocab) return
     const saved = toggleLearnedId(selectedVocab.id)
@@ -246,10 +203,10 @@ function VocabularyPageContent() {
         categories={categories}
         categoryNames={VOCABULARY_CATEGORY_NAMES}
         items={currentData}
-        loading={vocabLoading}
-        error={vocabState.error}
+        loading={vocabulary.loading}
+        error={vocabulary.error}
         isLearnedId={isLearnedId}
-        onRetry={handleRetryLoad}
+        onRetry={vocabulary.retry}
         onExpand={(index) => {
           openAt(index)
           setIsModalFlipped(false)

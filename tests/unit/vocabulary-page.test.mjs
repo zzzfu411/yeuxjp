@@ -38,11 +38,14 @@ const sample = [
 
 test("vocabulary page loads the active level through the dynamic loader", () => {
   const source = fs.readFileSync(path.join(root, "src/app/vocabulary/page.tsx"), "utf8")
+  const hook = fs.readFileSync(path.join(root, "src/components/vocabulary/use-vocabulary-level-data.ts"), "utf8")
 
-  assert.match(source, /loadVocabularyLevel/)
+  assert.match(source, /useVocabularyLevelData\(currentLevel\)/)
+  assert.match(hook, /loadVocabularyLevel\(level\)/)
   assert.match(source, /filterVocabularyItems/)
   assert.match(source, /getVocabularyCategories/)
   assert.match(source, /getVocabularyProgress/)
+  assert.doesNotMatch(source, /loadVocabularyLevel/)
   assert.doesNotMatch(source, /vocabByLevel/)
   assert.doesNotMatch(source, /from\s+["']@\/data\/vocabulary["']/)
 })
