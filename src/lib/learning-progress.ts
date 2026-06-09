@@ -41,6 +41,24 @@ function readUserProfile() {
   return normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null))
 }
 
+function isProfileStorageKey(key: string | null | undefined) {
+  return key === STORAGE_KEYS.USER_PROFILE
+}
+
+const PROGRESS_STORAGE_KEYS = [
+  STORAGE_KEYS.LESSON_PROGRESS,
+  STORAGE_KEYS.ITEM_PROGRESS,
+  STORAGE_KEYS.PRACTICE_RESULTS,
+] as const
+
+function includesProgressStorageKey(keys: readonly string[] | undefined) {
+  return !!keys?.some((key) => PROGRESS_STORAGE_KEYS.includes(key as (typeof PROGRESS_STORAGE_KEYS)[number]))
+}
+
+function isProgressStorageKey(key: string | null | undefined) {
+  return !!key && includesProgressStorageKey([key])
+}
+
 export function useLearningProfile() {
   const [profile, setProfileState] = useState<UserProfile | null>(null)
 
@@ -52,7 +70,7 @@ export function useLearningProfile() {
 
     const sync = (event: Event) => {
       const detail = (event as CustomEvent).detail as { key?: string } | undefined
-      if (detail?.key !== STORAGE_KEYS.USER_PROFILE) return
+      if (!isProfileStorageKey(detail?.key)) return
       setProfileState(readUserProfile())
     }
 
@@ -63,7 +81,7 @@ export function useLearningProfile() {
     }
 
     const onStorage = (event: StorageEvent) => {
-      if (event.key !== STORAGE_KEYS.USER_PROFILE) return
+      if (!isProfileStorageKey(event.key)) return
       setProfileState(readUserProfile())
     }
 
@@ -115,33 +133,20 @@ export function useLearningProgress() {
 
     const sync = (event: Event) => {
       const detail = (event as CustomEvent).detail as { key?: string } | undefined
-      if (
-        detail?.key === STORAGE_KEYS.LESSON_PROGRESS ||
-        detail?.key === STORAGE_KEYS.ITEM_PROGRESS ||
-        detail?.key === STORAGE_KEYS.PRACTICE_RESULTS
-      ) {
+      if (isProgressStorageKey(detail?.key)) {
         load()
       }
     }
 
     const syncStore = (event: Event) => {
       const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
-      const keys = detail?.keys ?? []
-      if (
-        keys.includes(STORAGE_KEYS.LESSON_PROGRESS) ||
-        keys.includes(STORAGE_KEYS.ITEM_PROGRESS) ||
-        keys.includes(STORAGE_KEYS.PRACTICE_RESULTS)
-      ) {
+      if (includesProgressStorageKey(detail?.keys)) {
         load()
       }
     }
 
     const onStorage = (event: StorageEvent) => {
-      if (
-        event.key === STORAGE_KEYS.LESSON_PROGRESS ||
-        event.key === STORAGE_KEYS.ITEM_PROGRESS ||
-        event.key === STORAGE_KEYS.PRACTICE_RESULTS
-      ) {
+      if (isProgressStorageKey(event.key)) {
         load()
       }
     }
