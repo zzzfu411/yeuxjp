@@ -28,9 +28,18 @@ test("review status owns completion and loading surfaces", () => {
   assert.match(source, /state-complete\.webp/)
 })
 
-test("review vocabulary hook owns all vocabulary loading", () => {
+test("review vocabulary hook owns scoped vocabulary loading", () => {
   const source = read("src/components/review/review-vocabulary.ts")
 
   assert.match(source, /export function useAllVocabulary/)
   assert.match(source, /loadVocabularyScope\("all"\)/)
+  assert.match(source, /export function useVocabularyForReviewIds/)
+  assert.match(source, /loadVocabularyForIds\(reviewIds\)/)
+
+  for (const relPath of [
+    "src/components/review/vocab-review-session.tsx",
+    "src/components/review/today-review-session.tsx",
+  ]) {
+    assert.doesNotMatch(read(relPath), /useAllVocabulary\(/)
+  }
 })

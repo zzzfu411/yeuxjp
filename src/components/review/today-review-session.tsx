@@ -8,7 +8,7 @@ import { MixedReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
-import { useAllVocabulary } from "@/components/review/review-vocabulary"
+import { useVocabularyForReviewIds } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { kanaData } from "@/data/kana-data"
@@ -48,8 +48,8 @@ export function TodayReviewSession({
   vocabSrs: ReturnType<typeof useSrsDeck>
   mistakeSrs: ReturnType<typeof useSrsDeck>
 }) {
-  const needsVocabulary = useMemo(() => items.some((item) => item.deck === "vocab"), [items])
-  const vocabulary = useAllVocabulary(needsVocabulary)
+  const vocabIds = useMemo(() => items.filter((item) => item.deck === "vocab").map((item) => item.id), [items])
+  const vocabulary = useVocabularyForReviewIds(vocabIds, vocabIds.length > 0)
 
   const [saveErrorKey, setSaveErrorKey] = useState<string | null>(null)
   const review = useReviewSessionState(items)

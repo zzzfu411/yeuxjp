@@ -26,3 +26,11 @@ test("vocabulary scope all combines every level", async () => {
   assert.equal(all.length, survival.length + daily.length + fluent.length)
   assert.deepEqual(new Set(all.map((item) => item.level)), new Set(["survival", "daily", "fluent"]))
 })
+
+test("vocabulary loader only loads levels referenced by review ids", async () => {
+  const survival = await loader.loadVocabularyForIds(["sur-g-1", "sur-v-1"])
+  const mixed = await loader.loadVocabularyForIds(["sur-g-1", "flu-abs-1", "missing"])
+
+  assert.deepEqual(new Set(survival.map((item) => item.level)), new Set(["survival"]))
+  assert.deepEqual(new Set(mixed.map((item) => item.level)), new Set(["survival", "fluent"]))
+})
