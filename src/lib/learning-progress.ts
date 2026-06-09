@@ -63,10 +63,17 @@ export function useLearningProfile() {
       setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
     }
 
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEYS.USER_PROFILE) return
+      setProfileState(normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null)))
+    }
+
+    window.addEventListener("storage", onStorage)
     window.addEventListener(LEARNING_EVENT, sync)
     window.addEventListener(LEARNING_STORE_EVENT, syncStore)
     return () => {
       cancelled = true
+      window.removeEventListener("storage", onStorage)
       window.removeEventListener(LEARNING_EVENT, sync)
       window.removeEventListener(LEARNING_STORE_EVENT, syncStore)
     }
@@ -127,10 +134,22 @@ export function useLearningProgress() {
       }
     }
 
+    const onStorage = (event: StorageEvent) => {
+      if (
+        event.key === STORAGE_KEYS.LESSON_PROGRESS ||
+        event.key === STORAGE_KEYS.ITEM_PROGRESS ||
+        event.key === STORAGE_KEYS.PRACTICE_RESULTS
+      ) {
+        load()
+      }
+    }
+
+    window.addEventListener("storage", onStorage)
     window.addEventListener(LEARNING_EVENT, sync)
     window.addEventListener(LEARNING_STORE_EVENT, syncStore)
     return () => {
       cancelled = true
+      window.removeEventListener("storage", onStorage)
       window.removeEventListener(LEARNING_EVENT, sync)
       window.removeEventListener(LEARNING_STORE_EVENT, syncStore)
     }

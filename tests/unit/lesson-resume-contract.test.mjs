@@ -56,3 +56,15 @@ test("learning progress preserves compatible lesson keys while adding resume fie
   assert.match(model, /lessonStepId\?: string/)
   assert.match(model, /updatedAt\?: number/)
 })
+
+test("learning progress listens for cross-tab storage updates", () => {
+  const progress = read("src/lib/learning-progress.ts")
+
+  assert.match(progress, /const onStorage = \(event: StorageEvent\) =>/)
+  assert.match(progress, /event\.key !== STORAGE_KEYS\.USER_PROFILE/)
+  assert.match(progress, /event\.key === STORAGE_KEYS\.LESSON_PROGRESS/)
+  assert.match(progress, /event\.key === STORAGE_KEYS\.ITEM_PROGRESS/)
+  assert.match(progress, /event\.key === STORAGE_KEYS\.PRACTICE_RESULTS/)
+  assert.match(progress, /window\.addEventListener\("storage", onStorage\)/)
+  assert.match(progress, /window\.removeEventListener\("storage", onStorage\)/)
+})
