@@ -59,6 +59,16 @@ test("lesson page warns on locked direct lesson visits without auto-starting pro
   assert.match(source, /查看技能树/)
 })
 
+test("lesson page keeps locked lesson previews read-only", () => {
+  const source = read("src/app/learn/[lessonId]/page.tsx")
+
+  assert.match(source, /const lessonReadOnly = !loaded \|\| !lessonUnlocked/)
+  assert.match(source, /if \(lessonReadOnly\) return/)
+  assert.match(source, /readOnly=\{lessonReadOnly\}/)
+  assert.match(source, /disabled=\{!loaded \|\| \(!lessonUnlocked && isLast\) \|\| \(lessonUnlocked && isPracticeStep\(current\) && !result\)\}/)
+  assert.match(source, /!lessonUnlocked \? \(isLast \? "预览结束" : "继续预览"\) : isLast \? "完成课程" : "继续"/)
+})
+
 test("learning progress preserves compatible lesson keys while adding resume fields", () => {
   const progress = read("src/lib/learning-progress.ts")
   const model = read("src/lib/learning-progress-model.ts")

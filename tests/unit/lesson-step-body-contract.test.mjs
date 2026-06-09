@@ -41,3 +41,15 @@ test("LessonStepBody owns lesson step interaction surfaces", () => {
   assert.doesNotMatch(source, /show && isCorrect/)
   assert.doesNotMatch(source, /isSelected && !isCorrect/)
 })
+
+test("LessonStepBody supports read-only lesson preview controls", () => {
+  const source = read("src/components/lesson/lesson-step-body.tsx")
+
+  assert.match(source, /readOnly = false/)
+  assert.match(source, /readOnly\?: boolean/)
+  assert.match(source, /disabled=\{readOnly \|\| !!result\}/)
+  assert.match(source, /event\.key === "Enter" && !readOnly/)
+  assert.match(source, /disabled=\{readOnly \|\| !typed\.trim\(\) \|\| !!result\}/)
+  assert.match(source, /const disabled = readOnly \|\| usedCount\(chunk\) >= total \|\| !!result/)
+  assert.match(source, /disabled=\{readOnly \|\| !built\.length \|\| !!result\}/)
+})

@@ -41,6 +41,7 @@ export default function LessonPage() {
     return isLessonUnlocked(lesson, progress.completedLessonIds)
   }, [lesson, loaded, progress.completedLessonIds])
   const recommendedLesson = useMemo(() => getNextLesson(progress.completedLessonIds), [progress.completedLessonIds])
+  const lessonReadOnly = !loaded || !lessonUnlocked
 
   const resetStepState = useCallback(() => {
     setSelected(null)
@@ -121,6 +122,8 @@ export default function LessonPage() {
   const playAudio = (text: string) => speakJapaneseRepeated(text, { repeat: 1, gapMs: 200 })
 
   const goNext = () => {
+    if (!loaded) return
+    if (!lessonUnlocked && isLast) return
     if (isLast) {
       setSaveError(!completeLesson(lesson.id, completionScore))
       return
@@ -135,6 +138,7 @@ export default function LessonPage() {
   }
 
   const submitChoice = (answer: string) => {
+    if (lessonReadOnly) return
     if (current.type !== "multipleChoice" || result) return
     const recorded = recordAnswer(current, answer)
     if (!recorded) {
@@ -148,6 +152,7 @@ export default function LessonPage() {
   }
 
   const submitTyping = () => {
+    if (lessonReadOnly) return
     if ((current.type !== "typing" && current.type !== "dictation") || result) return
     const recorded = recordAnswer(current, typed)
     if (!recorded) {
@@ -160,6 +165,7 @@ export default function LessonPage() {
   }
 
   const submitSentence = () => {
+    if (lessonReadOnly) return
     if (current.type !== "sentenceBuild" || result) return
     const answer = built.join("")
     const recorded = recordAnswer(current, answer)
@@ -252,6 +258,7 @@ export default function LessonPage() {
               onResetChunks={() => setBuilt([])}
               onSubmitSentence={submitSentence}
               onPlay={playAudio}
+              readOnly={lessonReadOnly}
             />
 
             {result && isPracticeStep(current) ? (
@@ -293,9 +300,9 @@ export default function LessonPage() {
                   className="gap-2 rounded-full"
                   data-testid="lesson-next"
                   onClick={goNext}
-                  disabled={isPracticeStep(current) && !result}
+                  disabled={!loaded || (!lessonUnlocked && isLast) || (lessonUnlocked && isPracticeStep(current) && !result)}
                 >
-                  {isLast ? "完成课程" : "继续"}
+                  {!lessonUnlocked ? (isLast ? "预览结束" : "继续预览") : isLast ? "完成课程" : "继续"}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               )}

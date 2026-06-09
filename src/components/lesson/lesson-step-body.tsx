@@ -26,6 +26,7 @@ export function LessonStepBody({
   onResetChunks,
   onSubmitSentence,
   onPlay,
+  readOnly = false,
 }: {
   step: LessonStep
   selected: string | null
@@ -40,6 +41,7 @@ export function LessonStepBody({
   onResetChunks: () => void
   onSubmitSentence: () => void
   onPlay: (text: string) => void
+  readOnly?: boolean
 }) {
   if (step.type === "explain") {
     return (
@@ -96,7 +98,7 @@ export function LessonStepBody({
                   getAnswerOptionClassName(feedback)
                 )}
                 onClick={() => onSelect(option)}
-                disabled={!!result}
+                disabled={readOnly || !!result}
                 data-testid={`lesson-answer-${option}`}
               >
                 {option}
@@ -127,12 +129,12 @@ export function LessonStepBody({
             onChange={(event) => onTyped(event.target.value)}
             placeholder="输入假名或答案"
             className="h-12 rounded-xl text-lg"
-            disabled={!!result}
+            disabled={readOnly || !!result}
             onKeyDown={(event) => {
-              if (event.key === "Enter") onSubmitTyping()
+              if (event.key === "Enter" && !readOnly) onSubmitTyping()
             }}
           />
-          <Button type="button" className="h-12 rounded-xl" onClick={onSubmitTyping} disabled={!typed.trim() || !!result}>
+          <Button type="button" className="h-12 rounded-xl" onClick={onSubmitTyping} disabled={readOnly || !typed.trim() || !!result}>
             提交
           </Button>
         </div>
@@ -154,7 +156,7 @@ export function LessonStepBody({
         <div className="flex flex-wrap gap-2">
           {step.chunks.map((chunk, idx) => {
             const total = step.chunks.filter((item) => item === chunk).length
-            const disabled = usedCount(chunk) >= total || !!result
+            const disabled = readOnly || usedCount(chunk) >= total || !!result
             return (
               <Button key={`${chunk}-${idx}`} type="button" variant="outline" className="rounded-full" onClick={() => onPickChunk(chunk)} disabled={disabled}>
                 {chunk}
@@ -163,14 +165,14 @@ export function LessonStepBody({
           })}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" className="gap-2 rounded-full" onClick={onUndoChunk} disabled={!built.length || !!result}>
+          <Button type="button" variant="outline" className="gap-2 rounded-full" onClick={onUndoChunk} disabled={readOnly || !built.length || !!result}>
             <RotateCcw className="h-4 w-4" />
             撤销
           </Button>
-          <Button type="button" variant="ghost" className="rounded-full" onClick={onResetChunks} disabled={!built.length || !!result}>
+          <Button type="button" variant="ghost" className="rounded-full" onClick={onResetChunks} disabled={readOnly || !built.length || !!result}>
             清空
           </Button>
-          <Button type="button" className="rounded-full" onClick={onSubmitSentence} disabled={!built.length || !!result}>
+          <Button type="button" className="rounded-full" onClick={onSubmitSentence} disabled={readOnly || !built.length || !!result}>
             提交句子
           </Button>
         </div>
