@@ -201,7 +201,9 @@ test("restoreLearningBackup rolls back partial writes when a managed key fails",
   assert.equal(store.restoreLearningBackup(backup), false)
   assert.equal(map.get(storage.STORAGE_KEYS.USER_PROFILE), "before-profile")
   assert.equal(map.get(storage.STORAGE_KEYS.SRS_KANA), "before-kana")
-  assert.equal(events.length, 0)
+  assert.equal(events.at(-1).type, store.LEARNING_STORE_EVENT)
+  assert.equal(events.at(-1).detail.action, "rollback")
+  assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
 })
 
 test("resetLearningData rolls back partial removals when a managed key fails", () => {
@@ -214,7 +216,9 @@ test("resetLearningData rolls back partial removals when a managed key fails", (
   assert.equal(map.get(storage.STORAGE_KEYS.USER_PROFILE), "profile")
   assert.equal(map.get(storage.STORAGE_KEYS.SRS_KANA), "kana")
   assert.equal(map.get("unrelated"), "keep")
-  assert.equal(events.length, 0)
+  assert.equal(events.at(-1).type, store.LEARNING_STORE_EVENT)
+  assert.equal(events.at(-1).detail.action, "rollback")
+  assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
 })
 
 test("parseLearningBackup rejects invalid JSON and wrong versions", () => {
@@ -265,8 +269,9 @@ test("learning store restore and reset snapshot managed keys before mutating", (
 
   assert.match(source, /function snapshotLearningKeys/)
   assert.match(source, /function applyLearningSnapshot/)
+  assert.match(source, /function rollbackLearningKeys/)
   assert.match(source, /const previous = snapshotLearningKeys\(\)/)
-  assert.match(source, /applyLearningSnapshot\(previous\)/)
+  assert.match(source, /rollbackLearningKeys\(previous\)/)
   assert.match(source, /notifyLearningStore\(\{ action: "restore", keys: BACKUP_KEYS \}\)/)
   assert.match(source, /notifyLearningStore\(\{ action: "reset", keys: BACKUP_KEYS \}\)/)
 })

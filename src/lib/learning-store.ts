@@ -75,6 +75,12 @@ function applyLearningSnapshot(snapshot: Partial<Record<LearningBackupKey, strin
   }
 }
 
+function rollbackLearningKeys(snapshot: Partial<Record<LearningBackupKey, string | null>>) {
+  if (!applyLearningSnapshot(snapshot)) return false
+  notifyLearningStore({ action: "rollback", keys: BACKUP_KEYS })
+  return true
+}
+
 export function getLearningBackupKeys() {
   return [...BACKUP_KEYS]
 }
@@ -89,9 +95,7 @@ export function runLearningStorageTransaction(commit: () => boolean) {
     // Treat thrown storage/persistence failures like false commits so callers get rollback semantics.
   }
 
-  if (applyLearningSnapshot(previous)) {
-    notifyLearningStore({ action: "rollback", keys: BACKUP_KEYS })
-  }
+  rollbackLearningKeys(previous)
   return false
 }
 
@@ -134,7 +138,7 @@ export function restoreLearningBackup(backup: LearningBackup) {
       }
     }
   } catch {
-    applyLearningSnapshot(previous)
+    rollbackLearningKeys(previous)
     return false
   }
 
@@ -153,7 +157,7 @@ export function resetLearningData() {
       window.localStorage.removeItem(key)
     }
   } catch {
-    applyLearningSnapshot(previous)
+    rollbackLearningKeys(previous)
     return false
   }
 
