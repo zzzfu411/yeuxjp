@@ -1,9 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
 import { removeSrs, setSrsState, clearSrs } from "@/lib/srs"
-import { notifySrs, readSrsMap, writeSrsMap } from "@/lib/srs-storage"
 import { applySrsResult, createSrsState } from "@/lib/srs-model"
 import { buildMistakeId, removeMistakeById, upsertWrongMistake, type MistakeItem, type RecordMistakeInput } from "@/lib/mistake-notebook-model"
 import { readMistakeList, writeMistakeList } from "@/lib/mistake-notebook-storage"
@@ -56,13 +55,14 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       const id = input.id ?? buildMistakeId(input)
       const previous = readMistakeList(storageKey)
       const next = upsertWrongMistake(previous, input, now)
-      const previousSrs = readSrsMap(MISTAKE_SRS_STORAGE_KEY)
+      const saved = runLearningStorageTransaction(() => {
+        return (
+          setSrsState(MISTAKE_SRS_STORAGE_KEY, id, applySrsResult(createSrsState(now), "again", now)) &&
+          writeMistakeList(storageKey, next)
+        )
+      })
 
-      if (!setSrsState(MISTAKE_SRS_STORAGE_KEY, id, applySrsResult(createSrsState(now), "again", now))) return false
-      if (!writeMistakeList(storageKey, next)) {
-        if (writeSrsMap(MISTAKE_SRS_STORAGE_KEY, previousSrs)) notifySrs(MISTAKE_SRS_STORAGE_KEY)
-        return false
-      }
+      if (!saved) return false
 
       setList(next)
       return true
@@ -75,15 +75,16 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       const previous = readMistakeList(storageKey)
       const next = removeMistakeById(previous, id)
       if (next === previous) {
+        const saved = runLearningStorageTransaction(() => removeSrs(MISTAKE_SRS_STORAGE_KEY, id))
+        if (!saved) return false
         setList(previous)
-        return removeSrs(MISTAKE_SRS_STORAGE_KEY, id)
+        return true
       }
-      const previousSrs = readSrsMap(MISTAKE_SRS_STORAGE_KEY)
-      if (!removeSrs(MISTAKE_SRS_STORAGE_KEY, id)) return false
-      if (!writeMistakeList(storageKey, next)) {
-        if (writeSrsMap(MISTAKE_SRS_STORAGE_KEY, previousSrs)) notifySrs(MISTAKE_SRS_STORAGE_KEY)
-        return false
-      }
+      const saved = runLearningStorageTransaction(() => {
+        return removeSrs(MISTAKE_SRS_STORAGE_KEY, id) && writeMistakeList(storageKey, next)
+      })
+
+      if (!saved) return false
 
       setList([...next])
       return true
@@ -92,12 +93,8 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
   )
 
   const clear = useCallback(() => {
-    const previousSrs = readSrsMap(MISTAKE_SRS_STORAGE_KEY)
-    if (!clearSrs(MISTAKE_SRS_STORAGE_KEY)) return false
-    if (!writeMistakeList(storageKey, [])) {
-      if (writeSrsMap(MISTAKE_SRS_STORAGE_KEY, previousSrs)) notifySrs(MISTAKE_SRS_STORAGE_KEY)
-      return false
-    }
+    const saved = runLearningStorageTransaction(() => clearSrs(MISTAKE_SRS_STORAGE_KEY) && writeMistakeList(storageKey, []))
+    if (!saved) return false
 
     setList([])
     return true
