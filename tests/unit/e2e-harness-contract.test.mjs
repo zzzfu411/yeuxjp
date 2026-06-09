@@ -4,6 +4,7 @@ import path from "node:path"
 import test from "node:test"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
+const rootPackage = fs.readFileSync(path.join(root, "..", "package.json"), "utf8")
 const harness = fs.readFileSync(path.join(root, "tests/e2e/harness.mjs"), "utf8")
 const smoke = fs.readFileSync(path.join(root, "tests/e2e/smoke.mjs"), "utf8")
 
@@ -32,4 +33,8 @@ test("HTTP smoke reuses the shared E2E server harness", () => {
   assert.doesNotMatch(smoke, /from "node:child_process"/)
   assert.doesNotMatch(smoke, /spawnSync\("taskkill"/)
   assert.doesNotMatch(smoke, /waitForServer/)
+})
+
+test("root check command includes the browser-free HTTP smoke gate", () => {
+  assert.match(rootPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
 })
