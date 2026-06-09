@@ -53,6 +53,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
   }, [])
 
   const importData = React.useCallback((file: File) => {
+    setConfirmReset(false)
     const reader = new FileReader()
     reader.onload = () => {
       const backup = parseLearningBackup(String(reader.result ?? ""))
@@ -70,7 +71,11 @@ export function LearningDataPanel({ className }: { className?: string }) {
       setConfirmReset(false)
     }
     reader.onerror = () => setNotice({ tone: "error", text: "备份文件无法读取。" })
-    reader.readAsText(file)
+    try {
+      reader.readAsText(file)
+    } catch {
+      setNotice({ tone: "error", text: "备份文件无法读取。" })
+    }
   }, [])
 
   const resetData = React.useCallback(() => {
