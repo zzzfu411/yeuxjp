@@ -1,0 +1,26 @@
+import assert from "node:assert/strict"
+import fs from "node:fs"
+import path from "node:path"
+import test from "node:test"
+
+const root = path.resolve(import.meta.dirname, "..", "..")
+
+function read(relPath) {
+  return fs.readFileSync(path.join(root, relPath), "utf8")
+}
+
+for (const relPath of ["src/lib/kana-progress.ts", "src/lib/vocab-progress.ts"]) {
+  test(`${relPath} delegates string-list persistence to progress-list-storage`, () => {
+    const source = read(relPath)
+
+    assert.match(source, /from "@\/lib\/progress-list-storage"/)
+    assert.match(source, /readProgressList\(storageKey, STORAGE_LABEL\)/)
+    assert.match(source, /writeProgressList\(storageKey,/)
+    assert.match(source, /notifyProgressList\(storageKey\)/)
+    assert.match(source, /PROGRESS_UPDATE_EVENT/)
+    assert.doesNotMatch(source, /window\.localStorage/)
+    assert.doesNotMatch(source, /function readList/)
+    assert.doesNotMatch(source, /function writeList/)
+    assert.doesNotMatch(source, /const PROGRESS_UPDATE_EVENT =/)
+  })
+}
