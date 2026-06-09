@@ -206,6 +206,19 @@ export function getAnimCjkTimelineEvents({
   return events
 }
 
+export function getAnimCjkPlaybackStartStroke({
+  activeStroke,
+  totalStrokes,
+}: {
+  activeStroke: number
+  totalStrokes: number
+}) {
+  if (totalStrokes <= 0) return null
+  if (activeStroke > totalStrokes) return null
+  if (activeStroke >= totalStrokes) return totalStrokes
+  return Math.max(1, activeStroke + 1)
+}
+
 export function getNextAnimCjkSpeed(current: AnimCjkSpeedValue) {
   const index = ANIMCJK_SPEEDS.findIndex((speed) => speed.value === current)
   return ANIMCJK_SPEEDS[(index + 1) % ANIMCJK_SPEEDS.length].value

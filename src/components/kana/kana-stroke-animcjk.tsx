@@ -7,6 +7,7 @@ import { KanaStrokeControls } from "@/components/kana/kana-stroke-controls"
 import { useAnimCjkSvgs } from "@/components/kana/use-animcjk-svgs"
 import {
   getAnimCjkLocalActiveStroke,
+  getAnimCjkPlaybackStartStroke,
   getAnimCjkSpeedLabel,
   getAnimCjkStrokeOffsets,
   getAnimCjkTimelineEvents,
@@ -83,9 +84,8 @@ export function KanaStrokeAnimCJK({
   useEffect(() => {
     if (!svgs || !totalStrokes) return
     if (isPaused) return
-    if (activeStroke > totalStrokes) return // already finished
-
-    const startFrom = Math.max(1, activeStroke + 1)
+    const startFrom = getAnimCjkPlaybackStartStroke({ activeStroke, totalStrokes })
+    if (startFrom === null) return
     scheduleTimeline(startFrom)
 
     return () => clearTimers()

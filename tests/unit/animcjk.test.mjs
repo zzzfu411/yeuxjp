@@ -72,3 +72,11 @@ test("AnimCJK timeline helpers schedule draw and finished sentinel events", () =
   assert.equal(animcjk.getNextAnimCjkSpeed(0.6), 1.6)
   assert.equal(animcjk.getAnimCjkSpeedLabel(0.6), "快")
 })
+
+test("AnimCJK playback start helper resumes from safe stroke positions", () => {
+  assert.equal(animcjk.getAnimCjkPlaybackStartStroke({ activeStroke: 0, totalStrokes: 3 }), 1)
+  assert.equal(animcjk.getAnimCjkPlaybackStartStroke({ activeStroke: 1, totalStrokes: 3 }), 2)
+  assert.equal(animcjk.getAnimCjkPlaybackStartStroke({ activeStroke: 3, totalStrokes: 3 }), 3)
+  assert.equal(animcjk.getAnimCjkPlaybackStartStroke({ activeStroke: 4, totalStrokes: 3 }), null)
+  assert.equal(animcjk.getAnimCjkPlaybackStartStroke({ activeStroke: 0, totalStrokes: 0 }), null)
+})
