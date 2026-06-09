@@ -81,13 +81,18 @@ export function MistakeReviewSession({
     review.advance()
   }
 
+  const handleRemove = () => {
+    const removed = notebook.remove(item.id)
+    setSaveErrorId(removed ? null : item.id)
+  }
+
   return (
     <ReviewSessionFrame
       onExit={onExit}
       headerRight={
         <div className="flex items-center gap-2">
           <div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>
-          <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={() => notebook.remove(item.id)}>
+          <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={handleRemove}>
             移除
           </Button>
         </div>

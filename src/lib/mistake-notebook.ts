@@ -76,30 +76,31 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       const next = removeMistakeById(previous, id)
       if (next === previous) {
         setList(previous)
-        removeSrs(MISTAKE_SRS_STORAGE_KEY, id)
-        return
+        return removeSrs(MISTAKE_SRS_STORAGE_KEY, id)
       }
       const previousSrs = readSrsMap(MISTAKE_SRS_STORAGE_KEY)
-      if (!removeSrs(MISTAKE_SRS_STORAGE_KEY, id)) return
+      if (!removeSrs(MISTAKE_SRS_STORAGE_KEY, id)) return false
       if (!writeMistakeList(storageKey, next)) {
         if (writeSrsMap(MISTAKE_SRS_STORAGE_KEY, previousSrs)) notifySrs(MISTAKE_SRS_STORAGE_KEY)
-        return
+        return false
       }
 
       setList([...next])
+      return true
     },
     [storageKey]
   )
 
   const clear = useCallback(() => {
     const previousSrs = readSrsMap(MISTAKE_SRS_STORAGE_KEY)
-    if (!clearSrs(MISTAKE_SRS_STORAGE_KEY)) return
+    if (!clearSrs(MISTAKE_SRS_STORAGE_KEY)) return false
     if (!writeMistakeList(storageKey, [])) {
       if (writeSrsMap(MISTAKE_SRS_STORAGE_KEY, previousSrs)) notifySrs(MISTAKE_SRS_STORAGE_KEY)
-      return
+      return false
     }
 
     setList([])
+    return true
   }, [storageKey])
 
   return { list, byId, recordWrong, remove, clear }

@@ -27,6 +27,7 @@ export default function ReviewPage() {
   const mistakeSrs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
 
   const [session, setSession] = useState<ReviewSession | null>(null)
+  const [mistakeSaveError, setMistakeSaveError] = useState(false)
 
   const dueMistakeIds = useMemo(() => {
     return mistakeSrs.dueIds.filter((id) => mistakes.byId.has(id))
@@ -74,6 +75,12 @@ export default function ReviewPage() {
     reviewableKanaDueIds.length + vocabSrs.dueIds.length + dueMistakeIds.length
   const isFirstTime = totalEnrolled === 0 && mastered.size === 0 && learned.size === 0
   const nextDueAt = getNextSrsDueAt([kanaSrs.map, vocabSrs.map, mistakeSrs.map])
+  const startSession = (nextSession: ReviewSession) => {
+    setMistakeSaveError(false)
+    setSession(nextSession)
+  }
+  const removeMistake = (id: string) => setMistakeSaveError(!mistakes.remove(id))
+  const clearMistakes = () => setMistakeSaveError(!mistakes.clear())
 
   return (
     <ReviewDashboard
@@ -92,7 +99,7 @@ export default function ReviewPage() {
         total: Object.keys(kanaSrs.map).length,
         mastered: mastered.size,
         enrollMissing: kanaEnrollMissing.length,
-        onStart: () => setSession({ deck: "kana", ids: reviewableKanaDueIds }),
+        onStart: () => startSession({ deck: "kana", ids: reviewableKanaDueIds }),
         onEnrollMissing: () => kanaEnrollMissing.forEach((id) => kanaSrs.enroll(id)),
       }}
       vocab={{
@@ -100,18 +107,19 @@ export default function ReviewPage() {
         total: Object.keys(vocabSrs.map).length,
         learned: learned.size,
         enrollMissing: vocabEnrollMissing.length,
-        onStart: () => setSession({ deck: "vocab", ids: vocabSrs.dueIds }),
+        onStart: () => startSession({ deck: "vocab", ids: vocabSrs.dueIds }),
         onEnrollMissing: () => vocabEnrollMissing.forEach((id) => vocabSrs.enroll(id)),
       }}
       mistakes={{
         due: dueMistakeIds.length,
         total: mistakes.list.length,
         recent: mistakes.list,
-        onStart: () => setSession({ deck: "mistakes", ids: dueMistakeIds }),
-        onClear: mistakes.clear,
-        onRemove: mistakes.remove,
+        saveError: mistakeSaveError,
+        onStart: () => startSession({ deck: "mistakes", ids: dueMistakeIds }),
+        onClear: clearMistakes,
+        onRemove: removeMistake,
       }}
-      onStartToday={() => setSession({ deck: "today", items: todayQueue })}
+      onStartToday={() => startSession({ deck: "today", items: todayQueue })}
     />
   )
 }

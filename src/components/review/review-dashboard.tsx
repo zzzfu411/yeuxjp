@@ -6,6 +6,7 @@ import { LearningDataPanel } from "@/components/review/learning-data-panel"
 import { RecentMistakes } from "@/components/review/recent-mistakes"
 import { ReviewDeckCard } from "@/components/review/review-deck-card"
 import { FirstReviewBanner, ReviewStreakBanner, TodayReviewPanel } from "@/components/review/review-banners"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import type { MistakeItem } from "@/lib/mistake-notebook"
 import { formatReviewNextDueAt } from "@/lib/review-dashboard-model"
 
@@ -40,6 +41,7 @@ export interface ReviewDashboardProps {
     due: number
     total: number
     recent: MistakeItem[]
+    saveError: boolean
     onStart: () => void
     onClear: () => void
     onRemove: (id: string) => void
@@ -140,6 +142,8 @@ export function ReviewDashboard({
           }
         />
       </div>
+
+      <PracticeSaveError show={mistakes.saveError} />
 
       {!!mistakes.total && <RecentMistakes mistakes={mistakes.recent} onRemove={mistakes.onRemove} />}
 
