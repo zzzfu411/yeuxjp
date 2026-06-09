@@ -84,8 +84,29 @@ test("learning store events include changed keys for UI sync", () => {
 test("parseLearningBackup rejects invalid JSON and wrong versions", () => {
   assert.equal(store.parseLearningBackup("not json"), null)
   assert.equal(store.parseLearningBackup(JSON.stringify({ version: 999, exportedAt: 1, entries: {} })), null)
+  assert.equal(store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: null, entries: {} })), null)
   assert.deepEqual(
     store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: 1, entries: {} })),
     { version: store.LEARNING_BACKUP_VERSION, exportedAt: 1, entries: {} }
   )
+})
+
+test("parseLearningBackup keeps only managed string entries", () => {
+  const parsed = store.parseLearningBackup(JSON.stringify({
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 123,
+    entries: {
+      [storage.STORAGE_KEYS.USER_PROFILE]: "{\"goal\":\"balanced\"}",
+      [storage.STORAGE_KEYS.SRS_KANA]: { a: { box: 1 } },
+      "not-yasashi": "ignore",
+    },
+  }))
+
+  assert.deepEqual(parsed, {
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 123,
+    entries: {
+      [storage.STORAGE_KEYS.USER_PROFILE]: "{\"goal\":\"balanced\"}",
+    },
+  })
 })

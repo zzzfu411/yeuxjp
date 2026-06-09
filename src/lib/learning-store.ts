@@ -20,6 +20,7 @@ const BACKUP_KEYS = [
 ] as const satisfies readonly StorageKey[]
 
 export type LearningBackupKey = (typeof BACKUP_KEYS)[number]
+const BACKUP_KEY_SET = new Set<string>(BACKUP_KEYS)
 
 export interface LearningBackup {
   version: typeof LEARNING_BACKUP_VERSION
@@ -84,12 +85,18 @@ export function parseLearningBackup(input: string): LearningBackup | null {
     if (!parsed || typeof parsed !== "object") return null
     const backup = parsed as Partial<LearningBackup>
     if (backup.version !== LEARNING_BACKUP_VERSION) return null
-    if (typeof backup.exportedAt !== "number") return null
+    if (typeof backup.exportedAt !== "number" || !Number.isFinite(backup.exportedAt)) return null
     if (!backup.entries || typeof backup.entries !== "object") return null
+    const entries: LearningBackup["entries"] = {}
+    for (const [key, value] of Object.entries(backup.entries)) {
+      if (!BACKUP_KEY_SET.has(key)) continue
+      if (typeof value !== "string") continue
+      entries[key as LearningBackupKey] = value
+    }
     return {
       version: LEARNING_BACKUP_VERSION,
       exportedAt: backup.exportedAt,
-      entries: backup.entries,
+      entries,
     }
   } catch {
     return null
