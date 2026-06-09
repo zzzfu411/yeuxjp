@@ -28,6 +28,15 @@ export interface LearningBackup {
   entries: Partial<Record<LearningBackupKey, string>>
 }
 
+function isStoredJson(value: string) {
+  try {
+    JSON.parse(value)
+    return true
+  } catch {
+    return false
+  }
+}
+
 function notifyLearningStore(detail: { action: "backup" | "restore" | "reset" | "rollback"; keys: readonly string[] }) {
   if (typeof window === "undefined") return
   window.dispatchEvent(new CustomEvent(LEARNING_STORE_EVENT, { detail }))
@@ -164,6 +173,7 @@ export function parseLearningBackup(input: string): LearningBackup | null {
     for (const [key, value] of Object.entries(backup.entries)) {
       if (!BACKUP_KEY_SET.has(key)) continue
       if (typeof value !== "string") continue
+      if (!isStoredJson(value)) return null
       entries[key as LearningBackupKey] = value
     }
     return {

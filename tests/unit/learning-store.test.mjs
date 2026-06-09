@@ -247,6 +247,19 @@ test("parseLearningBackup keeps only managed string entries", () => {
   })
 })
 
+test("parseLearningBackup rejects managed entries that are not valid stored JSON", () => {
+  assert.equal(
+    store.parseLearningBackup(JSON.stringify({
+      version: store.LEARNING_BACKUP_VERSION,
+      exportedAt: 123,
+      entries: {
+        [storage.STORAGE_KEYS.USER_PROFILE]: "{bad-json",
+      },
+    })),
+    null
+  )
+})
+
 test("learning store restore and reset snapshot managed keys before mutating", () => {
   const source = read("src/lib/learning-store.ts")
 
