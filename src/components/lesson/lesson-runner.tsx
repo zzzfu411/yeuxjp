@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState, type SetStateAction } from "react"
-import { ArrowLeft, ArrowRight, Sparkles, Volume2 } from "lucide-react"
+import { ArrowLeft, Sparkles, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { STARTER_LESSONS, getNextLesson, isPracticeStep, type Lesson, type LessonStep } from "@/data/lessons"
 import { useLearningProgress } from "@/lib/learning-progress"
@@ -18,6 +18,8 @@ import { speakJapaneseRepeated } from "@/lib/speech"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
 import { LessonProgressSidebar } from "@/components/lesson/lesson-progress-sidebar"
+import { LessonLockedPreview } from "@/components/lesson/lesson-locked-preview"
+import { LessonNavigationBar } from "@/components/lesson/lesson-navigation-bar"
 import { useLessonAnswerRecorder } from "@/components/lesson/use-lesson-answer-recorder"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 
@@ -194,24 +196,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
           </div>
         </div>
 
-        {loaded && !lessonUnlocked ? (
-          <div className="mb-6 rounded-2xl border bg-muted/40 p-4 text-sm" data-testid="lesson-locked-preview">
-            <div className="font-semibold">这节课还没有解锁</div>
-            <p className="mt-1 leading-relaxed text-muted-foreground">
-              你可以先预览内容，但当前课程不会自动写入学习进度。建议先完成前置课程，再回来练习。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {recommendedLesson ? (
-                <Button asChild size="sm" className="rounded-full">
-                  <Link href={`/learn/${recommendedLesson.id}`}>去推荐课程</Link>
-                </Button>
-              ) : null}
-              <Button asChild size="sm" variant="outline" className="rounded-full">
-                <Link href="/path">查看技能树</Link>
-              </Button>
-            </div>
-          </div>
-        ) : null}
+        {loaded && !lessonUnlocked ? <LessonLockedPreview recommendedLesson={recommendedLesson} /> : null}
 
         <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <LessonProgressSidebar
@@ -275,37 +260,18 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
               </div>
             ) : null}
 
-            <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t pt-5">
-              <Button type="button" variant="outline" className="gap-2 rounded-full" onClick={goBack} disabled={stepIndex === 0}>
-                <ArrowLeft className="h-4 w-4" />
-                上一步
-              </Button>
-
-              {current.type === "summary" && hasCompletedLesson ? (
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild variant="outline" className="rounded-full">
-                    <Link href="/review" data-testid="lesson-review-link">去复习</Link>
-                  </Button>
-                  <Button asChild className="gap-2 rounded-full">
-                    <Link href={nextLesson ? `/learn/${nextLesson.id}` : "/"} data-testid="lesson-next-lesson-link">
-                      {nextLesson ? "下一课" : "回到首页"}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  className="gap-2 rounded-full"
-                  data-testid="lesson-next"
-                  onClick={goNext}
-                  disabled={!loaded || (!lessonUnlocked && isLast) || (lessonUnlocked && isPracticeStep(current) && !result)}
-                >
-                  {!lessonUnlocked ? (isLast ? "预览结束" : "继续预览") : isLast ? "完成课程" : "继续"}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            <LessonNavigationBar
+              current={current}
+              hasCompletedLesson={hasCompletedLesson}
+              isLast={isLast}
+              lessonUnlocked={lessonUnlocked}
+              loaded={loaded}
+              nextLesson={nextLesson}
+              onBack={goBack}
+              onNext={goNext}
+              result={result}
+              stepIndex={stepIndex}
+            />
           </main>
         </div>
       </div>

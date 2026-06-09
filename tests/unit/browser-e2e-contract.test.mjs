@@ -13,12 +13,12 @@ const requiredSelectors = [
   },
   {
     testId: "lesson-next",
-    source: "src/components/lesson/lesson-runner.tsx",
+    source: "src/components/lesson/lesson-navigation-bar.tsx",
     pattern: /data-testid="lesson-next"/,
   },
   {
     testId: "lesson-locked-preview",
-    source: "src/components/lesson/lesson-runner.tsx",
+    source: "src/components/lesson/lesson-locked-preview.tsx",
     pattern: /data-testid="lesson-locked-preview"/,
   },
   {
@@ -53,12 +53,12 @@ const requiredSelectors = [
   },
   {
     testId: "lesson-review-link",
-    source: "src/components/lesson/lesson-runner.tsx",
+    source: "src/components/lesson/lesson-navigation-bar.tsx",
     pattern: /data-testid="lesson-review-link"/,
   },
   {
     testId: "lesson-next-lesson-link",
-    source: "src/components/lesson/lesson-runner.tsx",
+    source: "src/components/lesson/lesson-navigation-bar.tsx",
     pattern: /data-testid="lesson-next-lesson-link"/,
   },
   {

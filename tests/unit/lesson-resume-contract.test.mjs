@@ -48,35 +48,43 @@ test("LessonRunner saves step position through the shared learning progress faca
 
 test("LessonRunner warns on locked direct lesson visits without auto-starting progress", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
+  const preview = read("src/components/lesson/lesson-locked-preview.tsx")
 
   assert.match(source, /from "@\/lib\/learning-entry"/)
+  assert.match(source, /from "@\/components\/lesson\/lesson-locked-preview"/)
   assert.match(source, /isLessonUnlocked\(lesson, progress\.completedLessonIds\)/)
   assert.match(source, /getNextLesson\(progress\.completedLessonIds\)/)
   assert.match(source, /if \(!lesson \|\| !loaded\) return/)
   assert.match(source, /if \(!lessonUnlocked\) return/)
-  assert.match(source, /这节课还没有解锁/)
-  assert.match(source, /去推荐课程/)
-  assert.match(source, /查看技能树/)
+  assert.match(source, /<LessonLockedPreview recommendedLesson=\{recommendedLesson\} \/>/)
+  assert.match(preview, /data-testid="lesson-locked-preview"/)
+  assert.match(preview, /这节课还没有解锁/)
+  assert.match(preview, /去推荐课程/)
+  assert.match(preview, /查看技能树/)
 })
 
 test("LessonRunner keeps locked lesson previews read-only", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
+  const navigation = read("src/components/lesson/lesson-navigation-bar.tsx")
 
   assert.match(source, /const lessonReadOnly = !loaded \|\| !lessonUnlocked/)
   assert.match(source, /if \(lessonReadOnly\) return/)
   assert.match(source, /readOnly=\{lessonReadOnly\}/)
-  assert.match(source, /disabled=\{!loaded \|\| \(!lessonUnlocked && isLast\) \|\| \(lessonUnlocked && isPracticeStep\(current\) && !result\)\}/)
-  assert.match(source, /!lessonUnlocked \? \(isLast \? "预览结束" : "继续预览"\) : isLast \? "完成课程" : "继续"/)
+  assert.match(source, /<LessonNavigationBar/)
+  assert.match(navigation, /disabled=\{!loaded \|\| \(!lessonUnlocked && isLast\) \|\| \(lessonUnlocked && isPracticeStep\(current\) && !result\)\}/)
+  assert.match(navigation, /!lessonUnlocked \? \(isLast \? "预览结束" : "继续预览"\) : isLast \? "完成课程" : "继续"/)
 })
 
 test("LessonRunner exposes stable completed lesson follow-up targets", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
+  const navigation = read("src/components/lesson/lesson-navigation-bar.tsx")
 
   assert.match(source, /data-testid="lesson-completed-summary"/)
-  assert.match(source, /data-testid="lesson-review-link"/)
-  assert.match(source, /data-testid="lesson-next-lesson-link"/)
-  assert.match(source, /href="\/review"/)
-  assert.match(source, /href=\{nextLesson \? `\/learn\/\$\{nextLesson\.id\}` : "\/"\}/)
+  assert.match(source, /<LessonNavigationBar/)
+  assert.match(navigation, /data-testid="lesson-review-link"/)
+  assert.match(navigation, /data-testid="lesson-next-lesson-link"/)
+  assert.match(navigation, /href="\/review"/)
+  assert.match(navigation, /href=\{nextLesson \? `\/learn\/\$\{nextLesson\.id\}` : "\/"\}/)
 })
 
 test("learning progress preserves compatible lesson keys while adding resume fields", () => {
