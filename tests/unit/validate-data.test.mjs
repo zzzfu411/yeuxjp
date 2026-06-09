@@ -41,3 +41,15 @@ test("data validation checks lesson practice metadata and references", () => {
   assert.match(source, /answer is not present in options/)
   assert.match(source, /sentence itemId must start with sentence-/)
 })
+
+test("data validation requires explicit vocabulary fields and matching levels", () => {
+  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+
+  assert.match(source, /requiredString\(block, file, id, "kana"\)/)
+  assert.match(source, /requiredString\(block, file, id, "romaji"\)/)
+  assert.match(source, /requiredString\(block, file, id, "meaning"\)/)
+  assert.match(source, /requiredString\(block, file, id, "category"\)/)
+  assert.match(source, /requiredString\(block, file, id, "level"\)/)
+  assert.match(source, /level must match file level/)
+  assert.doesNotMatch(source, /prop\(block, "level"\) \?\? defaultLevel/)
+})

@@ -302,9 +302,10 @@ for (const { file, defaultLevel } of vocabFiles) {
     requiredString(block, file, id, "romaji")
     requiredString(block, file, id, "meaning")
     const category = requiredString(block, file, id, "category")
-    const level = prop(block, "level") ?? defaultLevel
+    const level = requiredString(block, file, id, "level")
     if (category && !vocabCategories.has(category)) fail(`${file} ${id} has unknown category: ${category}`)
     if (level && !vocabLevels.has(level)) fail(`${file} ${id} has unknown level: ${level}`)
+    if (level && level !== defaultLevel) fail(`${file} ${id} level must match file level: expected ${defaultLevel}, got ${level}`)
   }
 }
 unique("vocabulary id", vocabIds)
