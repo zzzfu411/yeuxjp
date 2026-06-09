@@ -125,6 +125,28 @@ try {
   const kanaSrs = await readJsonStorage(page, "yasashi.srs.kana.v1")
   assert.ok(kanaSrs?.a?.dueAt, "correct kana lesson answer should enroll SRS")
 
+  await page.evaluate(() => localStorage.clear())
+  await page.goto(`${baseUrl}/learn/day-2-ka-row-thanks`, { waitUntil: "networkidle" })
+  await page.getByTestId("lesson-locked-preview").waitFor({ state: "visible" })
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-answer-ka").waitFor({ state: "visible" })
+  assert.ok(await page.getByTestId("lesson-answer-ka").isDisabled(), "locked lesson preview should disable practice answers")
+  assert.equal(
+    await page.evaluate(() => localStorage.getItem("yasashi.learning.lessons.v1")),
+    null,
+    "locked lesson preview should not start lesson progress"
+  )
+  assert.equal(
+    await page.evaluate(() => localStorage.getItem("yasashi.learning.practice.v1")),
+    null,
+    "locked lesson preview should not record practice history"
+  )
+  assert.equal(
+    await page.evaluate(() => localStorage.getItem("yasashi.srs.kana.v1")),
+    null,
+    "locked lesson preview should not enroll SRS"
+  )
+
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").click()
   await page.getByTestId("kana-stroke-toggle").click()

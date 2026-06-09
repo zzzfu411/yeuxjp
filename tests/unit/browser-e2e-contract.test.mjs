@@ -17,7 +17,17 @@ const requiredSelectors = [
     pattern: /data-testid="lesson-next"/,
   },
   {
+    testId: "lesson-locked-preview",
+    source: "src/app/learn/[lessonId]/page.tsx",
+    pattern: /data-testid="lesson-locked-preview"/,
+  },
+  {
     testId: "lesson-answer-a",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
+  },
+  {
+    testId: "lesson-answer-ka",
     source: "src/components/lesson/lesson-step-body.tsx",
     pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
   },
@@ -124,6 +134,20 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   assert.match(e2e, /itemId === "a"/)
   assert.match(e2e, /item\.correct === true/)
   assert.match(e2e, /correct kana lesson answer should enroll SRS/)
+})
+
+test("browser E2E verifies locked lesson previews stay read-only", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /localStorage\.clear\(\)/)
+  assert.match(e2e, /\/learn\/day-2-ka-row-thanks/)
+  assert.match(e2e, /getByTestId\("lesson-locked-preview"\)/)
+  assert.match(e2e, /getByTestId\("lesson-answer-ka"\)/)
+  assert.match(e2e, /isDisabled\(\)/)
+  assert.match(e2e, /locked lesson preview should disable practice answers/)
+  assert.match(e2e, /locked lesson preview should not start lesson progress/)
+  assert.match(e2e, /locked lesson preview should not record practice history/)
+  assert.match(e2e, /locked lesson preview should not enroll SRS/)
 })
 
 test("browser E2E verifies wrong quiz answers enter the mistake notebook", () => {
