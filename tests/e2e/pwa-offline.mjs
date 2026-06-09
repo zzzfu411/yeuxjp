@@ -56,12 +56,22 @@ try {
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   await waitForServiceWorker(page)
 
+  const visitedLessonUrl = `${baseUrl}/learn/day-1-a-row-hello`
+  await page.goto(visitedLessonUrl, { waitUntil: "networkidle" })
+  await assert.doesNotReject(
+    page.getByTestId("lesson-next").waitFor({ state: "visible", timeout: 10_000 }),
+    "lesson page should load before offline cache verification"
+  )
+
   const sentinel = JSON.stringify({ pwaOfflineSmoke: true, savedAt: 123 })
   await page.evaluate((value) => {
     localStorage.setItem("yasashi.learning.lessons.v1", value)
   }, sentinel)
 
   await context.setOffline(true)
+  await page.goto(visitedLessonUrl, { waitUntil: "domcontentloaded" })
+  assert.ok(await page.getByTestId("lesson-next").isVisible(), "offline navigation cache should serve a visited lesson page")
+
   await page.goto(`${baseUrl}/offline-smoke-${Date.now()}`, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByText("当前离线").isVisible(), "navigation failures should render the offline fallback")
 

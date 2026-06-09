@@ -19,14 +19,19 @@ test("PWA registers a production service worker and exposes install metadata", (
   assert.match(register, /navigator\.serviceWorker\.register\("\/sw\.js"\)/)
 })
 
-test("service worker caches only static shell resources and AnimCJK SVGs", () => {
-  assert.match(sw, /const CACHE_NAME = "yasashi-static-v\d+"/)
+test("service worker caches static assets and visited navigation pages without learning state", () => {
+  assert.match(sw, /const STATIC_CACHE_NAME = "yasashi-static-v\d+"/)
+  assert.match(sw, /const NAVIGATION_CACHE_NAME = "yasashi-navigation-v\d+"/)
   assert.match(sw, /const OFFLINE_FALLBACK_URL = "\/offline\.html"/)
   assert.match(sw, /const requestUrl = new URL\(request\.url\)/)
   assert.match(sw, /requestUrl\.origin !== self\.location\.origin/)
   assert.match(sw, /request\.method !== "GET"/)
   assert.match(sw, /request\.mode === "navigate"/)
+  assert.match(sw, /networkFirstNavigation\(request\)/)
+  assert.match(sw, /cache\.put\(request, response\.clone\(\)\)/)
+  assert.match(sw, /cache\.match\(request\)/)
   assert.match(sw, /caches\.match\(OFFLINE_FALLBACK_URL\)/)
+  assert.match(sw, /cacheFirstStaticAsset\(request, requestUrl\)/)
   assert.match(sw, /request\.destination === "image"/)
   assert.match(sw, /request\.destination === "style"/)
   assert.match(sw, /request\.destination === "script"/)
@@ -38,7 +43,7 @@ test("service worker caches only static shell resources and AnimCJK SVGs", () =>
   assert.doesNotMatch(sw, /yasashi\.mistakes/)
 })
 
-test("PWA offline E2E verifies production service worker fallback without state writes", () => {
+test("PWA offline E2E verifies visited-page cache, fallback, and local state preservation", () => {
   assert.match(webPackage, /"e2e:pwa": "node tests\/e2e\/pwa-offline\.mjs"/)
   assert.match(webPackage, /"e2e:pwa:required": "node tests\/e2e\/pwa-offline\.mjs --required"/)
   assert.match(pwaE2e, /isE2ERequired\("E2E_PWA_REQUIRED"\)/)
@@ -50,8 +55,11 @@ test("PWA offline E2E verifies production service worker fallback without state 
   assert.match(harness, /npmCommand\(\), \["run", "start"/)
   assert.match(pwaE2e, /navigator\.serviceWorker\.ready/)
   assert.match(pwaE2e, /context\.setOffline\(true\)/)
+  assert.match(pwaE2e, /\/learn\/day-1-a-row-hello/)
+  assert.match(pwaE2e, /lesson-next/)
+  assert.match(pwaE2e, /offline navigation cache should serve a visited lesson page/)
   assert.match(pwaE2e, /page\.goto\(`\$\{baseUrl\}\/offline-smoke-/)
-  assert.match(pwaE2e, /getByText\("当前离线"\)/)
+  assert.match(pwaE2e, /navigation failures should render the offline fallback/)
   assert.match(pwaE2e, /yasashi\.learning\.lessons\.v1/)
   assert.match(pwaE2e, /offline fallback must not overwrite local learning state/)
 })
