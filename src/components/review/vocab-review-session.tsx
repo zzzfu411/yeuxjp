@@ -5,7 +5,7 @@ import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-r
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { VocabReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
-import { ReviewDone, ReviewLoadingState } from "@/components/review/review-status"
+import { ReviewDone, ReviewErrorState, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
@@ -65,6 +65,16 @@ export function VocabReviewSession({
 
   if (vocabulary.loading) {
     return <ReviewLoadingState label="正在加载单词复习..." />
+  }
+
+  if (vocabulary.error) {
+    return (
+      <ReviewErrorState
+        title="单词复习题库加载失败"
+        message="请返回复习页后重新进入，或稍后再试。"
+        onExit={onExit}
+      />
+    )
   }
 
   if (!item || !question) {

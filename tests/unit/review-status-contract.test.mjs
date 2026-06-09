@@ -24,8 +24,10 @@ test("review status owns completion and loading surfaces", () => {
   const source = read("src/components/review/review-status.tsx")
 
   assert.match(source, /export function ReviewLoadingState/)
+  assert.match(source, /export function ReviewErrorState/)
   assert.match(source, /export function ReviewDone/)
   assert.match(source, /state-complete\.webp/)
+  assert.match(source, /border-destructive\/30/)
 })
 
 test("review vocabulary hook owns scoped vocabulary loading", () => {

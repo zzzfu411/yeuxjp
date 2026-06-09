@@ -14,6 +14,28 @@ export function ReviewLoadingState({ label }: { label: string }) {
   )
 }
 
+export function ReviewErrorState({
+  title,
+  message,
+  onExit,
+}: {
+  title: string
+  message: string
+  onExit: () => void
+}) {
+  return (
+    <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-5 text-center">
+      <div className="rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4">
+        <div className="text-lg font-semibold text-destructive">{title}</div>
+        <div className="mt-2 text-sm text-muted-foreground">{message}</div>
+      </div>
+      <Button type="button" variant="outline" className="rounded-full" onClick={onExit}>
+        返回复习
+      </Button>
+    </div>
+  )
+}
+
 export function ReviewDone({
   title,
   onExit,
