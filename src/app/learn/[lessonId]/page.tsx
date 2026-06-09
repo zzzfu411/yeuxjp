@@ -5,9 +5,10 @@ import { notFound, useParams } from "next/navigation"
 import { useCallback, useEffect, useMemo, useState, type SetStateAction } from "react"
 import { ArrowLeft, ArrowRight, Sparkles, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { STARTER_LESSONS, getLessonById, isPracticeStep, type LessonStep } from "@/data/lessons"
+import { STARTER_LESSONS, getLessonById, getNextLesson, isPracticeStep, type LessonStep } from "@/data/lessons"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
+import { isLessonUnlocked } from "@/lib/learning-entry"
 import {
   countPracticeSteps,
   calculateLessonCompletionScore,
@@ -35,6 +36,11 @@ export default function LessonPage() {
   const [result, setResult] = useState<"correct" | "wrong" | null>(null)
   const [saveError, setSaveError] = useState(false)
   const savedLessonProgress = lesson ? lessons[lesson.id] : undefined
+  const lessonUnlocked = useMemo(() => {
+    if (!lesson || !loaded) return true
+    return isLessonUnlocked(lesson, progress.completedLessonIds)
+  }, [lesson, loaded, progress.completedLessonIds])
+  const recommendedLesson = useMemo(() => getNextLesson(progress.completedLessonIds), [progress.completedLessonIds])
 
   const resetStepState = useCallback(() => {
     setSelected(null)
@@ -45,11 +51,12 @@ export default function LessonPage() {
   }, [])
 
   useEffect(() => {
-    if (!lesson) return
+    if (!lesson || !loaded) return
+    if (!lessonUnlocked) return
     const saved = startLesson(lesson.id)
     const timer = window.setTimeout(() => setSaveError(!saved), 0)
     return () => window.clearTimeout(timer)
-  }, [lesson, startLesson])
+  }, [lesson, lessonUnlocked, loaded, startLesson])
 
   const resumedStepIndex = useMemo(() => {
     if (!lesson || !loaded) return 0
@@ -60,11 +67,12 @@ export default function LessonPage() {
 
   useEffect(() => {
     if (!lesson || !loaded) return
+    if (!lessonUnlocked) return
     const step = lesson.steps[stepIndex]
     const saved = saveLessonPosition(lesson.id, stepIndex, step?.id)
     const timer = window.setTimeout(() => setSaveError(!saved), 0)
     return () => window.clearTimeout(timer)
-  }, [lesson, loaded, stepIndex, saveLessonPosition])
+  }, [lesson, lessonUnlocked, loaded, stepIndex, saveLessonPosition])
 
   const current = lesson?.steps[stepIndex]
   const isLast = lesson ? stepIndex === lesson.steps.length - 1 : false
@@ -180,6 +188,25 @@ export default function LessonPage() {
             Starter 14 · Day {lessonPosition}/14 · {lesson.estimatedMinutes} 分钟
           </div>
         </div>
+
+        {loaded && !lessonUnlocked ? (
+          <div className="mb-6 rounded-2xl border bg-muted/40 p-4 text-sm">
+            <div className="font-semibold">这节课还没有解锁</div>
+            <p className="mt-1 leading-relaxed text-muted-foreground">
+              你可以先预览内容，但当前课程不会自动写入学习进度。建议先完成前置课程，再回来练习。
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {recommendedLesson ? (
+                <Button asChild size="sm" className="rounded-full">
+                  <Link href={`/learn/${recommendedLesson.id}`}>去推荐课程</Link>
+                </Button>
+              ) : null}
+              <Button asChild size="sm" variant="outline" className="rounded-full">
+                <Link href="/path">查看技能树</Link>
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <LessonProgressSidebar

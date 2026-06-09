@@ -35,6 +35,7 @@ test("lesson page saves step position through the shared learning progress facad
   const source = read("src/app/learn/[lessonId]/page.tsx")
 
   assert.match(source, /if \(!lesson \|\| !loaded\) return/)
+  assert.match(source, /if \(!lessonUnlocked\) return/)
   assert.match(source, /const saved = startLesson\(lesson\.id\)/)
   assert.match(source, /const saved = saveLessonPosition\(lesson\.id, stepIndex, step\?\.id\)/)
   assert.match(source, /window\.setTimeout\(\(\) => setSaveError\(!saved\), 0\)/)
@@ -43,6 +44,19 @@ test("lesson page saves step position through the shared learning progress facad
   assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index: Math\.min\(stepIndex \+ 1, lesson\.steps\.length - 1\) \}\)/)
   assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index: Math\.max\(stepIndex - 1, 0\) \}\)/)
   assert.doesNotMatch(source, /localStorage\.setItem/)
+})
+
+test("lesson page warns on locked direct lesson visits without auto-starting progress", () => {
+  const source = read("src/app/learn/[lessonId]/page.tsx")
+
+  assert.match(source, /from "@\/lib\/learning-entry"/)
+  assert.match(source, /isLessonUnlocked\(lesson, progress\.completedLessonIds\)/)
+  assert.match(source, /getNextLesson\(progress\.completedLessonIds\)/)
+  assert.match(source, /if \(!lesson \|\| !loaded\) return/)
+  assert.match(source, /if \(!lessonUnlocked\) return/)
+  assert.match(source, /这节课还没有解锁/)
+  assert.match(source, /去推荐课程/)
+  assert.match(source, /查看技能树/)
 })
 
 test("learning progress preserves compatible lesson keys while adding resume fields", () => {
