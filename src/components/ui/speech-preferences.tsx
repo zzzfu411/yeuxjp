@@ -56,10 +56,17 @@ export function SpeechPreferencesProvider({
       syncPreferences()
     }
 
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== storageKey) return
+      syncPreferences()
+    }
+
+    window.addEventListener("storage", onStorage)
     window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
 
     return () => {
       cancelled = true
+      window.removeEventListener("storage", onStorage)
       window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
   }, [storageKey])

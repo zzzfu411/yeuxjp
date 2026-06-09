@@ -20,3 +20,12 @@ test("SpeechPreferencesProvider reloads preferences after learning data restore 
   assert.match(source, /window\.removeEventListener\(LEARNING_STORE_EVENT, onLearningStore\)/)
   assert.match(source, /detail\?\.keys\?\.includes\(STORAGE_KEYS\.SPEECH_PREFS\)/)
 })
+
+test("SpeechPreferencesProvider reloads preferences after cross-tab storage changes", () => {
+  const source = read("src/components/ui/speech-preferences.tsx")
+
+  assert.match(source, /const onStorage = \(event: StorageEvent\) => \{/)
+  assert.match(source, /if \(event\.key !== storageKey\) return/)
+  assert.match(source, /window\.addEventListener\("storage", onStorage\)/)
+  assert.match(source, /window\.removeEventListener\("storage", onStorage\)/)
+})
