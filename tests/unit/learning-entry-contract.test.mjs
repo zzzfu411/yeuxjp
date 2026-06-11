@@ -10,7 +10,7 @@ function read(relPath) {
 }
 
 test("learning entry surfaces share the centralized entry model", () => {
-  for (const relPath of ["src/app/path/page.tsx", "src/components/learning/next-step-card.tsx"]) {
+  for (const relPath of ["src/components/path/skill-tree-page.tsx", "src/components/learning/next-step-card.tsx"]) {
     const source = read(relPath)
     assert.match(source, /from "@\/lib\/learning-recommendation"/, relPath)
     assert.match(source, /useLearningRecommendation\(/, relPath)
@@ -35,7 +35,7 @@ test("learning entry surfaces share the centralized entry model", () => {
 })
 
 test("starter lesson grids render locked future lessons as non-link cards", () => {
-  for (const relPath of ["src/app/page.tsx", "src/app/path/page.tsx"]) {
+  for (const relPath of ["src/app/page.tsx", "src/components/path/skill-tree-page.tsx"]) {
     const source = read(relPath)
     assert.match(source, /getLessonEntryStatus\(lesson, learning\.completedLessonIds, nextLesson\?\.id\)/, relPath)
     assert.match(source, /if \(locked\)/, relPath)

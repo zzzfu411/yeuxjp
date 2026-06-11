@@ -111,8 +111,14 @@ test("path page model summarizes five-dimension mastery", () => {
 })
 
 test("path and next-step surfaces consume the shared recommendation hook", () => {
-  const pathPage = fs.readFileSync(path.join(root, "src/app/path/page.tsx"), "utf8")
+  const pathRoute = fs.readFileSync(path.join(root, "src/app/path/page.tsx"), "utf8")
+  const pathPage = fs.readFileSync(path.join(root, "src/components/path/skill-tree-page.tsx"), "utf8")
   const nextStep = fs.readFileSync(path.join(root, "src/components/learning/next-step-card.tsx"), "utf8")
+
+  assert.doesNotMatch(pathRoute, /"use client"/)
+  assert.match(pathRoute, /from "@\/components\/path\/skill-tree-page"/)
+  assert.match(pathRoute, /<SkillTreePage \/>/)
+  assert.doesNotMatch(pathRoute, /useLearningRecommendation\(\)/)
 
   for (const source of [pathPage, nextStep]) {
     assert.match(source, /from "@\/lib\/learning-recommendation"/)

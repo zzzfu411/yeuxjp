@@ -43,7 +43,7 @@ test("learned vocabulary ids are summarized by stable level prefixes", () => {
 test("recommendation surfaces do not import the aggregated vocabulary dataset", () => {
   const surfaceFiles = [
     "src/components/learning/next-step-card.tsx",
-    "src/app/path/page.tsx",
+    "src/components/path/skill-tree-page.tsx",
   ]
 
   for (const file of surfaceFiles) {
