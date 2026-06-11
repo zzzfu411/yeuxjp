@@ -4,10 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { ArrowLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { speakJapaneseRepeated } from "@/lib/speech"
-import { useKanaProgress } from "@/lib/kana-progress"
-import { useVocabProgress } from "@/lib/vocab-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
-import { useLearningProgress } from "@/lib/learning-progress"
+import { useLearningStatus } from "@/lib/learning-status"
 import type { Question } from "@/lib/questions"
 import { createQuizStats } from "@/lib/quiz-session"
 import { SpeechSettingsBar, useSpeechPreferences } from "@/components/ui/speech-preferences"
@@ -38,7 +36,7 @@ import {
 export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => void }) {
   const speech = useSpeechPreferences()
   const mistakes = useMistakeNotebook()
-  const progress = useLearningProgress()
+  const learning = useLearningStatus()
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [emptyReason, setEmptyReason] = useState<QuizEmptyReason>("loading")
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
@@ -49,10 +47,8 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   const [vocabScope, setVocabScope] = useState<VocabQuizScope>("survival")
   const [onlyUnlearnedVocab, setOnlyUnlearnedVocab] = useState(false)
 
-  const { isMastered: isKanaMastered } = useKanaProgress()
-  const { isLearnedId } = useVocabProgress()
   const recordAnswer = useQuizAnswerRecorder({
-    progress,
+    progress: learning,
     notebook: mistakes,
     setQuizStats,
   })
@@ -68,12 +64,12 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   }, [kanaScope])
 
   const kanaTargetPool = useMemo(() => {
-    return filterUnmasteredKana(kanaBasePool, isKanaMastered, onlyUnmasteredKana)
-  }, [isKanaMastered, kanaBasePool, onlyUnmasteredKana])
+    return filterUnmasteredKana(kanaBasePool, learning.isKanaMastered, onlyUnmasteredKana)
+  }, [learning.isKanaMastered, kanaBasePool, onlyUnmasteredKana])
 
   const vocabTargetPool = useMemo(() => {
-    return filterUnlearnedVocab(vocabBasePool, isLearnedId, onlyUnlearnedVocab)
-  }, [isLearnedId, onlyUnlearnedVocab, vocabBasePool])
+    return filterUnlearnedVocab(vocabBasePool, learning.isVocabLearned, onlyUnlearnedVocab)
+  }, [learning.isVocabLearned, onlyUnlearnedVocab, vocabBasePool])
 
   const playAudio = useCallback((text: string) => {
     const repeat = speech?.prefs.repeat ?? 1

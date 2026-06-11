@@ -116,8 +116,13 @@ test("path and next-step surfaces share path-page-model recommendation rules", (
 
   for (const source of [pathPage, nextStep]) {
     assert.match(source, /from "@\/lib\/path-page-model"/)
-    assert.match(source, /getKanaSkillStats\(kanaData, isMastered\)/)
+    assert.match(source, /from "@\/lib\/learning-status"/)
+    assert.match(source, /useLearningStatus\(\)/)
+    assert.match(source, /getKanaSkillStats\(kanaData, learning\.isKanaMastered\)/)
+    assert.match(source, /summarizeLearnedVocabIds\(learning\.learnedVocabIds\)/)
     assert.match(source, /getRecommendedSkillId\(kanaStats, vocabStats\)/)
+    assert.doesNotMatch(source, /useKanaProgress/)
+    assert.doesNotMatch(source, /useVocabProgress/)
     assert.doesNotMatch(source, /if \(kanaStats\.seion\.ratio < 0\.7\)/)
   }
 

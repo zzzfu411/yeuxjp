@@ -12,6 +12,9 @@ function read(relPath) {
 test("quiz runner delegates shared answer recording to useQuizAnswerRecorder", () => {
   const source = read("src/components/quiz/quiz-runner.tsx")
 
+  assert.match(source, /from "@\/lib\/learning-status"/)
+  assert.match(source, /const learning = useLearningStatus\(\)/)
+  assert.match(source, /progress: learning/)
   assert.match(source, /from "@\/components\/quiz\/use-quiz-answer-recorder"/)
   assert.match(source, /useQuizAnswerRecorder\(/)
   assert.match(source, /recordAnswer\(currentQuestion, val\)/)
@@ -20,6 +23,9 @@ test("quiz runner delegates shared answer recording to useQuizAnswerRecorder", (
   assert.match(source, /setSaveError\(false\)/)
   assert.match(source, /setSelectedOption\(val\)/)
   assert.match(source, /<PracticeSaveError show=\{saveError\} \/>/)
+  assert.doesNotMatch(source, /useKanaProgress/)
+  assert.doesNotMatch(source, /useVocabProgress/)
+  assert.doesNotMatch(source, /useLearningProgress/)
   assert.doesNotMatch(source, /makeQuestionResult/)
   assert.doesNotMatch(source, /recordQuestionPractice/)
   assert.doesNotMatch(source, /recordQuizAnswer/)
@@ -41,6 +47,8 @@ test("quiz runner delegates empty question states to QuizEmptyState", () => {
   assert.match(source, /vocabError/)
   assert.match(source, /onlyUnmasteredKana/)
   assert.match(source, /onlyUnlearnedVocab/)
+  assert.match(source, /filterUnmasteredKana\(kanaBasePool, learning\.isKanaMastered, onlyUnmasteredKana\)/)
+  assert.match(source, /filterUnlearnedVocab\(vocabBasePool, learning\.isVocabLearned, onlyUnlearnedVocab\)/)
   assert.match(source, /setCurrentQuestion\(null\)/)
   assert.doesNotMatch(source, /"filter-empty"/)
   assert.doesNotMatch(source, /"pool-too-small"/)

@@ -1,0 +1,42 @@
+import assert from "node:assert/strict"
+import fs from "node:fs"
+import path from "node:path"
+import test from "node:test"
+
+const root = path.resolve(import.meta.dirname, "..", "..")
+
+function read(relPath) {
+  return fs.readFileSync(path.join(root, relPath), "utf8")
+}
+
+test("useLearningStatus is the shared read facade over legacy marks and item progress", () => {
+  const source = read("src/lib/learning-status.ts")
+
+  assert.match(source, /"use client"/)
+  assert.match(source, /useKanaProgress/)
+  assert.match(source, /useVocabProgress/)
+  assert.match(source, /useLearningProgress/)
+  assert.match(source, /buildLearningStatusModel/)
+  assert.match(source, /masteredKanaIds/)
+  assert.match(source, /learnedVocabIds/)
+  assert.match(source, /isKanaMastered/)
+  assert.match(source, /isVocabLearned/)
+  assert.match(source, /toggleKanaMastered/)
+  assert.match(source, /toggleVocabLearned/)
+})
+
+test("high-level recommendation and review surfaces use the shared learning status facade", () => {
+  const files = [
+    "src/app/path/page.tsx",
+    "src/components/learning/next-step-card.tsx",
+    "src/components/quiz/quiz-runner.tsx",
+    "src/app/review/page.tsx",
+  ]
+
+  for (const file of files) {
+    const source = read(file)
+    assert.match(source, /useLearningStatus\(\)/, file)
+    assert.doesNotMatch(source, /useKanaProgress/, file)
+    assert.doesNotMatch(source, /useVocabProgress/, file)
+  }
+})

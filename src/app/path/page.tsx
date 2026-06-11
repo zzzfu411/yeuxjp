@@ -7,11 +7,9 @@ import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { cn } from "@/lib/utils"
 import { kanaData } from "@/data/kana-data"
 import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
-import { useKanaProgress } from "@/lib/kana-progress"
-import { useVocabProgress } from "@/lib/vocab-progress"
 import { SKILL_CATEGORY_LABEL, SKILL_TREE, SKILL_TREE_BY_CATEGORY, type SkillCategory } from "@/lib/skill-tree"
 import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
-import { useLearningProgress } from "@/lib/learning-progress"
+import { useLearningStatus } from "@/lib/learning-status"
 import {
   getKanaSkillStats,
   getPathMasterySummary,
@@ -21,13 +19,11 @@ import {
 import { getLessonEntryBadge, getLessonEntryStatus, resolveLearningEntry } from "@/lib/learning-entry"
 
 export default function SkillTreePage() {
-  const { isMastered } = useKanaProgress()
-  const { learned } = useVocabProgress()
-  const learning = useLearningProgress()
+  const learning = useLearningStatus()
 
-  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, isMastered), [isMastered])
+  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, learning.isKanaMastered), [learning.isKanaMastered])
 
-  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learned), [learned])
+  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learning.learnedVocabIds), [learning.learnedVocabIds])
 
   const nextSkillId = useMemo(() => getRecommendedSkillId(kanaStats, vocabStats), [kanaStats, vocabStats])
   const recommendedSkill = useMemo(() => SKILL_TREE.find((s) => s.id === nextSkillId) ?? null, [nextSkillId])

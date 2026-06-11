@@ -1,21 +1,19 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useKanaProgress } from "@/lib/kana-progress"
-import { useVocabProgress } from "@/lib/vocab-progress"
 import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-notebook"
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { ReviewRunner, type ReviewSession } from "@/components/review/review-runner"
 import { ReviewDashboard } from "@/components/review/review-dashboard"
 import { buildReviewDashboardModel } from "@/lib/review-dashboard-model"
+import { useLearningStatus } from "@/lib/learning-status"
 
 const KANA_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_KANA
 const VOCAB_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_VOCAB
 
 export default function ReviewPage() {
-  const { mastered } = useKanaProgress()
-  const { learned } = useVocabProgress()
+  const learning = useLearningStatus()
   const mistakes = useMistakeNotebook()
 
   const kanaSrs = useSrsDeck(KANA_SRS_STORAGE_KEY)
@@ -27,8 +25,8 @@ export default function ReviewPage() {
 
   const dashboard = useMemo(() => {
     return buildReviewDashboardModel({
-      masteredIds: mastered,
-      learnedIds: learned,
+      masteredIds: learning.masteredKanaIds,
+      learnedIds: learning.learnedVocabIds,
       mistakeIds: mistakes.byId.keys(),
       kanaSrsMap: kanaSrs.map,
       kanaDueIds: kanaSrs.dueIds,
@@ -38,8 +36,8 @@ export default function ReviewPage() {
       mistakeDueIds: mistakeSrs.dueIds,
     })
   }, [
-    mastered,
-    learned,
+    learning.masteredKanaIds,
+    learning.learnedVocabIds,
     mistakes.byId,
     kanaSrs.map,
     kanaSrs.dueIds,

@@ -6,22 +6,18 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { kanaData } from "@/data/kana-data"
 import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
-import { useKanaProgress } from "@/lib/kana-progress"
-import { useVocabProgress } from "@/lib/vocab-progress"
 import { SKILL_TREE } from "@/lib/skill-tree"
 import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
-import { useLearningProgress } from "@/lib/learning-progress"
+import { useLearningStatus } from "@/lib/learning-status"
 import { resolveLearningEntry } from "@/lib/learning-entry"
 import { getKanaSkillStats, getRecommendedSkillId } from "@/lib/path-page-model"
 
 export function NextStepCard({ className }: { className?: string }) {
-  const { isMastered } = useKanaProgress()
-  const { learned } = useVocabProgress()
-  const learning = useLearningProgress()
+  const learning = useLearningStatus()
 
-  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, isMastered), [isMastered])
+  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, learning.isKanaMastered), [learning.isKanaMastered])
 
-  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learned), [learned])
+  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learning.learnedVocabIds), [learning.learnedVocabIds])
 
   const nextSkillId = useMemo(() => getRecommendedSkillId(kanaStats, vocabStats), [kanaStats, vocabStats])
 
