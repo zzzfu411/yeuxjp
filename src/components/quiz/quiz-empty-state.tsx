@@ -3,8 +3,8 @@
 import { ArrowLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { QuizMode } from "@/lib/quiz-generators"
-
-export type QuizEmptyReason = "loading" | "load-error" | "filter-empty" | "pool-too-small"
+import type { QuizEmptyReason } from "@/lib/quiz-runner-model"
+export type { QuizEmptyReason } from "@/lib/quiz-runner-model"
 
 function getQuizEmptyMessage({
   mode,

@@ -12,7 +12,7 @@ function read(relPath) {
 test("QuizEmptyState owns empty quiz copy and recovery actions", () => {
   const source = read("src/components/quiz/quiz-empty-state.tsx")
 
-  assert.match(source, /export type QuizEmptyReason/)
+  assert.match(source, /export type \{ QuizEmptyReason \} from "@\/lib\/quiz-runner-model"/)
   assert.match(source, /export function QuizEmptyState/)
   assert.match(source, /function getQuizEmptyMessage/)
   assert.match(source, /加载中\.\.\./)

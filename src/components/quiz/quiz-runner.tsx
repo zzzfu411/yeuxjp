@@ -21,6 +21,11 @@ import { useQuizAnswerRecorder } from "@/components/quiz/use-quiz-answer-recorde
 import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import {
+  getQuizNoQuestionReason,
+  getQuizPreflightEmptyReason,
+  shouldShowQuizSpeechOptions,
+} from "@/lib/quiz-runner-model"
+import {
   filterUnlearnedVocab,
   filterUnmasteredKana,
   generateQuizQuestion,
@@ -77,19 +82,16 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   }, [speech?.prefs.gapMs, speech?.prefs.repeat])
 
   const generateQuestion = useCallback(() => {
-    if (mode === "meaning-vocab" && vocabError) {
+    const preflightReason = getQuizPreflightEmptyReason({
+      mode,
+      vocabLoading,
+      vocabError: Boolean(vocabError),
+    })
+    if (preflightReason) {
       setCurrentQuestion(null)
       setSelectedOption(null)
       setSaveError(false)
-      setEmptyReason("load-error")
-      return
-    }
-
-    if (mode === "meaning-vocab" && vocabLoading) {
-      setCurrentQuestion(null)
-      setSelectedOption(null)
-      setSaveError(false)
-      setEmptyReason("loading")
+      setEmptyReason(preflightReason)
       return
     }
 
@@ -117,12 +119,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     setCurrentQuestion(null)
     setSelectedOption(null)
     setSaveError(false)
-    setEmptyReason(
-      ((mode === "hiragana-romaji" || mode === "audio-kana") && onlyUnmasteredKana) ||
-        (mode === "meaning-vocab" && onlyUnlearnedVocab)
-        ? "filter-empty"
-        : "pool-too-small"
-    )
+    setEmptyReason(getQuizNoQuestionReason({ mode, onlyUnmasteredKana, onlyUnlearnedVocab }))
   }, [
     kanaBasePool,
     kanaTargetPool,
@@ -182,9 +179,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       <QuizModeHint mode={mode} />
 
       <SpeechSettingsBar
-        showQuizOptions={
-          mode === "audio-kana" || mode === "audio-sokuon" || mode === "audio-longvowel" || mode === "particle"
-        }
+        showQuizOptions={shouldShowQuizSpeechOptions(mode)}
       />
 
       <QuizScopeControls
