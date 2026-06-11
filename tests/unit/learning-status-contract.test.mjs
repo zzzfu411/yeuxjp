@@ -32,7 +32,7 @@ test("high-level recommendation and review surfaces use the shared learning stat
   assert.doesNotMatch(recommendationHook, /summarizeLearnedVocabIds/)
 
   const recommendationSurfaces = [
-    "src/app/page.tsx",
+    "src/components/home/home-page.tsx",
     "src/components/path/skill-tree-page.tsx",
     "src/components/learning/next-step-card.tsx",
   ]

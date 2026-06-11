@@ -24,8 +24,12 @@ test("learning entry surfaces share the centralized entry model", () => {
   assert.match(recommendationModel, /from "@\/lib\/learning-entry"/)
   assert.match(recommendationModel, /resolveLearningEntry\(/)
 
-  const home = read("src/app/page.tsx")
+  const homeRoute = read("src/app/page.tsx")
+  const home = read("src/components/home/home-page.tsx")
   const model = read("src/lib/home-page-model.ts")
+  assert.doesNotMatch(homeRoute, /"use client"/)
+  assert.match(homeRoute, /from "@\/components\/home\/home-page"/)
+  assert.match(homeRoute, /<HomePage \/>/)
   assert.match(home, /from "@\/lib\/learning-recommendation"/)
   assert.match(home, /useLearningRecommendation\(/)
   assert.match(home, /buildHomePageModel\(/)
@@ -35,7 +39,7 @@ test("learning entry surfaces share the centralized entry model", () => {
 })
 
 test("starter lesson grids render locked future lessons as non-link cards", () => {
-  for (const relPath of ["src/app/page.tsx", "src/components/path/skill-tree-page.tsx"]) {
+  for (const relPath of ["src/components/home/home-page.tsx", "src/components/path/skill-tree-page.tsx"]) {
     const source = read(relPath)
     assert.match(source, /getLessonEntryStatus\(lesson, learning\.completedLessonIds, nextLesson\?\.id\)/, relPath)
     assert.match(source, /if \(locked\)/, relPath)

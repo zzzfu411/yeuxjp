@@ -8,7 +8,7 @@ const root = path.resolve(import.meta.dirname, "..", "..")
 const requiredSelectors = [
   {
     testId: "home-start-learning",
-    source: "src/app/page.tsx",
+    source: "src/components/home/home-page.tsx",
     pattern: /data-testid="home-start-learning"/,
   },
   {

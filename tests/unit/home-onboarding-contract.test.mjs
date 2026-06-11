@@ -10,8 +10,12 @@ function read(relPath) {
 }
 
 test("home page delegates first-run profile setup to OnboardingPanel", () => {
-  const page = read("src/app/page.tsx")
+  const route = read("src/app/page.tsx")
+  const page = read("src/components/home/home-page.tsx")
 
+  assert.doesNotMatch(route, /"use client"/)
+  assert.match(route, /from "@\/components\/home\/home-page"/)
+  assert.match(route, /<HomePage \/>/)
   assert.match(page, /from "@\/components\/home\/onboarding-panel"/)
   assert.match(page, /from "@\/components\/practice\/practice-save-error"/)
   assert.match(page, /from "@\/lib\/home-page-model"/)
