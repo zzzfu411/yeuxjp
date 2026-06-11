@@ -34,6 +34,22 @@ test("PWA registration surfaces service worker updates without forcing a reload"
   assert.doesNotMatch(register, /skipWaiting\(\)/)
 })
 
+test("PWA registration lets offline links fall back to document navigation", () => {
+  assert.match(register, /function getOfflineNavigationAnchor\(event: MouseEvent\)/)
+  assert.match(register, /event\.button !== 0/)
+  assert.match(register, /event\.metaKey \|\| event\.ctrlKey \|\| event\.shiftKey \|\| event\.altKey/)
+  assert.match(register, /closest<HTMLAnchorElement>\("a\[href\]"\)/)
+  assert.match(register, /anchor\.hasAttribute\("download"\)/)
+  assert.match(register, /anchor\.target && anchor\.target !== "_self"/)
+  assert.match(register, /url\.origin !== window\.location\.origin/)
+  assert.match(register, /if \(navigator\.onLine\) return/)
+  assert.match(register, /document\.addEventListener\("click", onOfflineLinkClick, true\)/)
+  assert.match(register, /document\.removeEventListener\("click", onOfflineLinkClick, true\)/)
+  assert.match(register, /event\.preventDefault\(\)/)
+  assert.match(register, /event\.stopPropagation\(\)/)
+  assert.match(register, /window\.location\.assign\(anchor\.href\)/)
+})
+
 test("service worker caches static assets and visited navigation pages without learning state", () => {
   assert.match(sw, /const STATIC_CACHE_NAME = "yasashi-static-v\d+"/)
   assert.match(sw, /const NAVIGATION_CACHE_NAME = "yasashi-navigation-v\d+"/)
@@ -90,6 +106,9 @@ test("PWA offline E2E verifies visited-page cache, fallback, and local state pre
   assert.match(pwaE2e, /AnimCJK SVG should load online before offline cache verification/)
   assert.match(pwaE2e, /home-start-learning/)
   assert.match(pwaE2e, /offline static cache should serve the app home page/)
+  assert.match(pwaE2e, /page\.getByTestId\("home-start-learning"\)\.click\(\)/)
+  assert.match(pwaE2e, /page\.waitForURL\(\/\\\/learn\\\/day-1-a-row-hello\/\)/)
+  assert.match(pwaE2e, /offline client-side links should fall back to document navigation for cached pages/)
   assert.match(pwaE2e, /offline cache should serve a visited AnimCJK SVG/)
   assert.match(pwaE2e, /offline AnimCJK response should remain an SVG/)
   assert.match(pwaE2e, /context\.route\(fallbackUrl, \(route\) => route\.abort\("failed"\)\)/)

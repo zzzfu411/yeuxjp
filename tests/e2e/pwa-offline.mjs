@@ -79,6 +79,11 @@ try {
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("home-start-learning").isVisible(), "offline static cache should serve the app home page")
 
+  await page.getByTestId("home-start-learning").click()
+  await page.waitForURL(/\/learn\/day-1-a-row-hello/)
+  assert.ok(await page.getByTestId("lesson-next").isVisible(), "offline client-side links should fall back to document navigation for cached pages")
+
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   await page.goto(visitedLessonUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("lesson-next").isVisible(), "offline navigation cache should serve a visited lesson page")
   const offlineAnimCjkSvg = await page.evaluate(async (path) => {

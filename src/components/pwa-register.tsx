@@ -5,6 +5,26 @@ import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 
+function getOfflineNavigationAnchor(event: MouseEvent) {
+  if (event.defaultPrevented) return null
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null
+  if (!(event.target instanceof Element)) return null
+
+  const anchor = event.target.closest<HTMLAnchorElement>("a[href]")
+  if (!anchor) return null
+  if (anchor.hasAttribute("download")) return null
+  if (anchor.target && anchor.target !== "_self") return null
+
+  const href = anchor.getAttribute("href")
+  if (!href || href.startsWith("#")) return null
+
+  const url = new URL(anchor.href, window.location.href)
+  if (url.origin !== window.location.origin) return null
+  if (url.pathname === window.location.pathname && url.search === window.location.search && url.hash) return null
+
+  return anchor
+}
+
 export function PwaRegister() {
   const [updateReady, setUpdateReady] = useState(false)
   const [dismissed, setDismissed] = useState(false)
@@ -30,6 +50,18 @@ export function PwaRegister() {
       markUpdateReady()
     }
 
+    const onOfflineLinkClick = (event: MouseEvent) => {
+      if (navigator.onLine) return
+
+      const anchor = getOfflineNavigationAnchor(event)
+      if (!anchor) return
+
+      event.preventDefault()
+      event.stopPropagation()
+      window.location.assign(anchor.href)
+    }
+
+    document.addEventListener("click", onOfflineLinkClick, true)
     navigator.serviceWorker.addEventListener("controllerchange", onControllerChange)
 
     navigator.serviceWorker.register("/sw.js").then((registration) => {
@@ -54,6 +86,7 @@ export function PwaRegister() {
     })
 
     return () => {
+      document.removeEventListener("click", onOfflineLinkClick, true)
       navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange)
     }
   }, [])
