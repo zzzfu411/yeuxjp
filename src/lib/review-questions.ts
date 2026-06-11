@@ -3,7 +3,7 @@ import type { Vocabulary } from "@/data/vocabulary/types"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
 import { pickUniqueQuestionOptions } from "@/lib/question-options"
 import type { Question } from "@/lib/questions"
-import { sortSrsIdsByDue, type SrsMap } from "@/lib/srs"
+import { sortSrsIdsByDue, type SrsMap } from "@/lib/srs-model"
 
 export type ReviewDeck = "kana" | "vocab" | "mistakes"
 export type TodayReviewItem = { deck: ReviewDeck; id: string }

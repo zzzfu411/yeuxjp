@@ -27,3 +27,69 @@ test("review dashboard next due formatting reports empty, due, and future schedu
   assert.equal(model.formatReviewNextDueAt(now + 2 * hour, now), "2 \u5c0f\u65f6\u540e")
   assert.equal(model.formatReviewNextDueAt(now + 3 * day, now), "3 \u5929\u540e")
 })
+
+test("review dashboard model filters visible due ids and builds the today queue", () => {
+  const now = 1_700_000_000_000
+  const state = (dueAt) => ({ dueAt, box: 1, createdAt: now - 1, right: 0, wrong: 0 })
+
+  const dashboard = model.buildReviewDashboardModel({
+    masteredIds: new Set(["a", "ka", "ta"]),
+    learnedIds: new Set(["v1", "v2"]),
+    mistakeIds: ["m1", "m2"],
+    kanaSrsMap: {
+      a: state(now - 20),
+      ka: state(now - 10),
+      "sokuon:kitte": state(now - 100),
+    },
+    kanaDueIds: ["sokuon:kitte", "ka", "a"],
+    vocabSrsMap: {
+      v1: state(now - 30),
+      v3: state(now + 120_000),
+    },
+    vocabDueIds: ["v1"],
+    mistakeSrsMap: {
+      m1: state(now + 60_000),
+      m2: state(now - 5),
+      ghost: state(now + 1_000),
+    },
+    mistakeDueIds: ["ghost", "m2"],
+    now,
+  })
+
+  assert.deepEqual(dashboard.dueMistakeIds, ["m2"])
+  assert.deepEqual(dashboard.reviewableKanaDueIds, ["ka", "a"])
+  assert.deepEqual(dashboard.kanaEnrollMissing, ["ta"])
+  assert.deepEqual(dashboard.vocabEnrollMissing, ["v2"])
+  assert.deepEqual(dashboard.todayQueue, [
+    { deck: "mistakes", id: "m2" },
+    { deck: "kana", id: "a" },
+    { deck: "kana", id: "ka" },
+    { deck: "vocab", id: "v1" },
+  ])
+  assert.equal(dashboard.totalEnrolled, 7)
+  assert.equal(dashboard.totalDue, 4)
+  assert.equal(dashboard.isFirstTime, false)
+  assert.equal(dashboard.nextDueAt, now + 60_000)
+  assert.deepEqual(dashboard.counts, { mistakesDue: 1, kanaDue: 2, vocabDue: 1 })
+  assert.deepEqual(dashboard.totals, { kana: 3, vocab: 2, mistakes: 2, mastered: 3, learned: 2 })
+})
+
+test("review dashboard model reports first-time state and empty next due schedule", () => {
+  const dashboard = model.buildReviewDashboardModel({
+    masteredIds: [],
+    learnedIds: [],
+    mistakeIds: [],
+    kanaSrsMap: {},
+    kanaDueIds: [],
+    vocabSrsMap: {},
+    vocabDueIds: [],
+    mistakeSrsMap: {},
+    mistakeDueIds: [],
+  })
+
+  assert.equal(dashboard.isFirstTime, true)
+  assert.equal(dashboard.totalEnrolled, 0)
+  assert.equal(dashboard.totalDue, 0)
+  assert.equal(dashboard.nextDueAt, null)
+  assert.deepEqual(dashboard.todayQueue, [])
+})

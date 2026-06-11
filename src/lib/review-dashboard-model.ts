@@ -1,3 +1,137 @@
+import { buildTodayReviewQueue, isReviewableKanaId, type TodayReviewItem } from "@/lib/review-questions"
+import { getNextSrsDueAt, type SrsMap } from "@/lib/srs-model"
+
+type IdCollection = Iterable<string>
+
+export type ReviewDashboardCounts = {
+  mistakesDue: number
+  kanaDue: number
+  vocabDue: number
+}
+
+export type ReviewDashboardTotals = {
+  kana: number
+  vocab: number
+  mistakes: number
+  mastered: number
+  learned: number
+}
+
+export type ReviewDashboardModelInput = {
+  masteredIds: IdCollection
+  learnedIds: IdCollection
+  mistakeIds: IdCollection
+  kanaSrsMap: SrsMap
+  kanaDueIds: readonly string[]
+  vocabSrsMap: SrsMap
+  vocabDueIds: readonly string[]
+  mistakeSrsMap: SrsMap
+  mistakeDueIds: readonly string[]
+  now?: number
+}
+
+export type ReviewDashboardModel = {
+  dueMistakeIds: string[]
+  reviewableKanaDueIds: string[]
+  vocabDueIds: string[]
+  kanaEnrollMissing: string[]
+  vocabEnrollMissing: string[]
+  todayQueue: TodayReviewItem[]
+  totalEnrolled: number
+  totalDue: number
+  isFirstTime: boolean
+  nextDueAt: number | null
+  counts: ReviewDashboardCounts
+  totals: ReviewDashboardTotals
+}
+
+function idsToSet(ids: IdCollection) {
+  return new Set(ids)
+}
+
+function findMissingSrsEnrollments(ids: Set<string>, map: SrsMap) {
+  const missing: string[] = []
+  for (const id of ids) {
+    if (!map[id]) missing.push(id)
+  }
+  return missing
+}
+
+function filterSrsMapByIds(map: SrsMap, ids: Set<string>) {
+  const filtered: SrsMap = {}
+  for (const [id, state] of Object.entries(map)) {
+    if (ids.has(id)) filtered[id] = state
+  }
+  return filtered
+}
+
+function filterSrsMapByReviewableKana(map: SrsMap) {
+  const filtered: SrsMap = {}
+  for (const [id, state] of Object.entries(map)) {
+    if (isReviewableKanaId(id)) filtered[id] = state
+  }
+  return filtered
+}
+
+export function buildReviewDashboardModel({
+  masteredIds,
+  learnedIds,
+  mistakeIds,
+  kanaSrsMap,
+  kanaDueIds,
+  vocabSrsMap,
+  vocabDueIds,
+  mistakeSrsMap,
+  mistakeDueIds,
+  now,
+}: ReviewDashboardModelInput): ReviewDashboardModel {
+  const mastered = idsToSet(masteredIds)
+  const learned = idsToSet(learnedIds)
+  const mistakeIdSet = idsToSet(mistakeIds)
+
+  const dueMistakeIds = mistakeDueIds.filter((id) => mistakeIdSet.has(id))
+  const reviewableKanaDueIds = kanaDueIds.filter(isReviewableKanaId)
+  const visibleVocabDueIds = [...vocabDueIds]
+  const visibleKanaSrsMap = filterSrsMapByReviewableKana(kanaSrsMap)
+  const visibleMistakeSrsMap = filterSrsMapByIds(mistakeSrsMap, mistakeIdSet)
+  const kanaEnrollMissing = findMissingSrsEnrollments(mastered, kanaSrsMap)
+  const vocabEnrollMissing = findMissingSrsEnrollments(learned, vocabSrsMap)
+  const todayQueue = buildTodayReviewQueue({
+    dueMistakeIds,
+    kanaDueIds: [...kanaDueIds],
+    kanaSrsMap,
+    vocabDueIds: visibleVocabDueIds,
+    vocabSrsMap,
+  })
+  const totals: ReviewDashboardTotals = {
+    kana: Object.keys(kanaSrsMap).length,
+    vocab: Object.keys(vocabSrsMap).length,
+    mistakes: mistakeIdSet.size,
+    mastered: mastered.size,
+    learned: learned.size,
+  }
+  const counts: ReviewDashboardCounts = {
+    mistakesDue: dueMistakeIds.length,
+    kanaDue: reviewableKanaDueIds.length,
+    vocabDue: visibleVocabDueIds.length,
+  }
+
+  return {
+    dueMistakeIds,
+    reviewableKanaDueIds,
+    vocabDueIds: visibleVocabDueIds,
+    kanaEnrollMissing,
+    vocabEnrollMissing,
+    todayQueue,
+    totalEnrolled: totals.kana + totals.vocab + totals.mistakes,
+    totalDue: counts.kanaDue + counts.vocabDue + counts.mistakesDue,
+    isFirstTime: totals.kana + totals.vocab + totals.mistakes === 0 && totals.mastered === 0 && totals.learned === 0,
+    nextDueAt: getNextSrsDueAt([visibleKanaSrsMap, vocabSrsMap, visibleMistakeSrsMap], now),
+    counts,
+    totals,
+  }
+}
+
 export function formatReviewDueCount(n: number) {
   if (n <= 0) return "0"
   if (n < 1000) return String(n)

@@ -4,15 +4,11 @@ import { useMemo, useState } from "react"
 import { useKanaProgress } from "@/lib/kana-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
 import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-notebook"
-import { getNextSrsDueAt, useSrsDeck } from "@/lib/srs"
+import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { ReviewRunner, type ReviewSession } from "@/components/review/review-runner"
 import { ReviewDashboard } from "@/components/review/review-dashboard"
-import {
-  buildTodayReviewQueue,
-  isReviewableKanaId,
-  type TodayReviewItem,
-} from "@/lib/review-questions"
+import { buildReviewDashboardModel } from "@/lib/review-dashboard-model"
 
 const KANA_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_KANA
 const VOCAB_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_VOCAB
@@ -29,99 +25,77 @@ export default function ReviewPage() {
   const [session, setSession] = useState<ReviewSession | null>(null)
   const [reviewSaveError, setReviewSaveError] = useState(false)
 
-  const dueMistakeIds = useMemo(() => {
-    return mistakeSrs.dueIds.filter((id) => mistakes.byId.has(id))
-  }, [mistakeSrs.dueIds, mistakes.byId])
-
-  const kanaEnrollMissing = useMemo(() => {
-    const ids: string[] = []
-    for (const id of mastered) {
-      if (!kanaSrs.map[id]) ids.push(id)
-    }
-    return ids
-  }, [kanaSrs.map, mastered])
-
-  const vocabEnrollMissing = useMemo(() => {
-    const ids: string[] = []
-    for (const id of learned) {
-      if (!vocabSrs.map[id]) ids.push(id)
-    }
-    return ids
-  }, [learned, vocabSrs.map])
-
-  const todayQueue = useMemo<TodayReviewItem[]>(() => {
-    return buildTodayReviewQueue({
-      dueMistakeIds,
-      kanaDueIds: kanaSrs.dueIds,
+  const dashboard = useMemo(() => {
+    return buildReviewDashboardModel({
+      masteredIds: mastered,
+      learnedIds: learned,
+      mistakeIds: mistakes.byId.keys(),
       kanaSrsMap: kanaSrs.map,
-      vocabDueIds: vocabSrs.dueIds,
+      kanaDueIds: kanaSrs.dueIds,
       vocabSrsMap: vocabSrs.map,
+      vocabDueIds: vocabSrs.dueIds,
+      mistakeSrsMap: mistakeSrs.map,
+      mistakeDueIds: mistakeSrs.dueIds,
     })
-  }, [dueMistakeIds, kanaSrs.dueIds, kanaSrs.map, vocabSrs.dueIds, vocabSrs.map])
-
-  const reviewableKanaDueIds = useMemo(() => {
-    return kanaSrs.dueIds.filter(isReviewableKanaId)
-  }, [kanaSrs.dueIds])
+  }, [
+    mastered,
+    learned,
+    mistakes.byId,
+    kanaSrs.map,
+    kanaSrs.dueIds,
+    vocabSrs.map,
+    vocabSrs.dueIds,
+    mistakeSrs.map,
+    mistakeSrs.dueIds,
+  ])
 
   if (session) {
     return <ReviewRunner session={session} onExit={() => setSession(null)} notebook={mistakes} />
   }
 
-  const totalEnrolled =
-    Object.keys(kanaSrs.map).length +
-    Object.keys(vocabSrs.map).length +
-    mistakes.list.length
-  const totalDue =
-    reviewableKanaDueIds.length + vocabSrs.dueIds.length + dueMistakeIds.length
-  const isFirstTime = totalEnrolled === 0 && mastered.size === 0 && learned.size === 0
-  const nextDueAt = getNextSrsDueAt([kanaSrs.map, vocabSrs.map, mistakeSrs.map])
   const startSession = (nextSession: ReviewSession) => {
     setReviewSaveError(false)
     setSession(nextSession)
   }
-  const enrollKanaMissing = () => setReviewSaveError(!kanaEnrollMissing.every((id) => kanaSrs.enroll(id)))
-  const enrollVocabMissing = () => setReviewSaveError(!vocabEnrollMissing.every((id) => vocabSrs.enroll(id)))
+  const enrollKanaMissing = () => setReviewSaveError(!dashboard.kanaEnrollMissing.every((id) => kanaSrs.enroll(id)))
+  const enrollVocabMissing = () => setReviewSaveError(!dashboard.vocabEnrollMissing.every((id) => vocabSrs.enroll(id)))
   const removeMistake = (id: string) => setReviewSaveError(!mistakes.remove(id))
   const clearMistakes = () => setReviewSaveError(!mistakes.clear())
 
   return (
     <ReviewDashboard
-      isFirstTime={isFirstTime}
-      totalDue={totalDue}
-      totalEnrolled={totalEnrolled}
-      nextDueAt={nextDueAt}
-      todayQueueLength={todayQueue.length}
-      counts={{
-        mistakesDue: dueMistakeIds.length,
-        kanaDue: reviewableKanaDueIds.length,
-        vocabDue: vocabSrs.dueIds.length,
-      }}
+      isFirstTime={dashboard.isFirstTime}
+      totalDue={dashboard.totalDue}
+      totalEnrolled={dashboard.totalEnrolled}
+      nextDueAt={dashboard.nextDueAt}
+      todayQueueLength={dashboard.todayQueue.length}
+      counts={dashboard.counts}
       kana={{
-        due: reviewableKanaDueIds.length,
-        total: Object.keys(kanaSrs.map).length,
-        mastered: mastered.size,
-        enrollMissing: kanaEnrollMissing.length,
-        onStart: () => startSession({ deck: "kana", ids: reviewableKanaDueIds }),
+        due: dashboard.counts.kanaDue,
+        total: dashboard.totals.kana,
+        mastered: dashboard.totals.mastered,
+        enrollMissing: dashboard.kanaEnrollMissing.length,
+        onStart: () => startSession({ deck: "kana", ids: dashboard.reviewableKanaDueIds }),
         onEnrollMissing: enrollKanaMissing,
       }}
       vocab={{
-        due: vocabSrs.dueIds.length,
-        total: Object.keys(vocabSrs.map).length,
-        learned: learned.size,
-        enrollMissing: vocabEnrollMissing.length,
-        onStart: () => startSession({ deck: "vocab", ids: vocabSrs.dueIds }),
+        due: dashboard.counts.vocabDue,
+        total: dashboard.totals.vocab,
+        learned: dashboard.totals.learned,
+        enrollMissing: dashboard.vocabEnrollMissing.length,
+        onStart: () => startSession({ deck: "vocab", ids: dashboard.vocabDueIds }),
         onEnrollMissing: enrollVocabMissing,
       }}
       mistakes={{
-        due: dueMistakeIds.length,
-        total: mistakes.list.length,
+        due: dashboard.counts.mistakesDue,
+        total: dashboard.totals.mistakes,
         recent: mistakes.list,
         saveError: reviewSaveError,
-        onStart: () => startSession({ deck: "mistakes", ids: dueMistakeIds }),
+        onStart: () => startSession({ deck: "mistakes", ids: dashboard.dueMistakeIds }),
         onClear: clearMistakes,
         onRemove: removeMistake,
       }}
-      onStartToday={() => startSession({ deck: "today", items: todayQueue })}
+      onStartToday={() => startSession({ deck: "today", items: dashboard.todayQueue })}
     />
   )
 }
