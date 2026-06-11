@@ -35,9 +35,14 @@ test("progress list storage returns safe fallbacks outside the browser", () => {
 
 test("progress list storage filters persisted values to strings", () => {
   const { map } = installWindow()
-  map.set("progress", JSON.stringify(["a", 1, "ka", null, { id: "bad" }]))
+  map.set("progress", JSON.stringify(["a", 1, "ka", null, { id: "bad" }, " a ", "", "ka"]))
 
   assert.deepEqual(progressStorage.readProgressList("progress"), ["a", "ka"])
+})
+
+test("progress list storage normalizes duplicate and empty values", () => {
+  assert.deepEqual(progressStorage.normalizeProgressList([" a ", "a", "", "ka", "ka", "  ", 1]), ["a", "ka"])
+  assert.deepEqual(progressStorage.normalizeProgressList({ bad: true }), [])
 })
 
 test("progress list storage falls back on invalid JSON", () => {
@@ -50,7 +55,7 @@ test("progress list storage falls back on invalid JSON", () => {
 test("progress list storage writes JSON and dispatches shared update events", () => {
   const { map, events } = installWindow()
 
-  assert.equal(progressStorage.writeProgressList("progress", ["a", "ka"]), true)
+  assert.equal(progressStorage.writeProgressList("progress", ["a", "ka", " a ", ""]), true)
   progressStorage.notifyProgressList("progress")
 
   assert.equal(map.get("progress"), "[\"a\",\"ka\"]")

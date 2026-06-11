@@ -35,3 +35,14 @@ for (const relPath of ["src/lib/kana-progress.ts", "src/lib/vocab-progress.ts"])
     assert.doesNotMatch(source, /const PROGRESS_UPDATE_EVENT =/)
   })
 }
+
+test("progress-list-storage normalizes learned item arrays before read and write", () => {
+  const source = read("src/lib/progress-list-storage.ts")
+
+  assert.match(source, /export function normalizeProgressList\(input: unknown\)/)
+  assert.match(source, /const seen = new Set<string>\(\)/)
+  assert.match(source, /const item = value\.trim\(\)/)
+  assert.match(source, /if \(!item \|\| seen\.has\(item\)\) continue/)
+  assert.match(source, /return normalizeProgressList\(JSON\.parse\(raw\)\)/)
+  assert.match(source, /JSON\.stringify\(normalizeProgressList\(list\)\)/)
+})
