@@ -117,6 +117,41 @@ const requiredSelectors = [
     pattern: /testId: "quiz-mode-hiragana-romaji"/,
   },
   {
+    testId: "quiz-mode-audio-kana",
+    source: "src/lib/quiz-mode-options.ts",
+    pattern: /testId: "quiz-mode-audio-kana"/,
+  },
+  {
+    testId: "quiz-mode-particle",
+    source: "src/lib/quiz-mode-options.ts",
+    pattern: /testId: "quiz-mode-particle"/,
+  },
+  {
+    testId: "quiz-mode-verb-conjugation",
+    source: "src/lib/quiz-mode-options.ts",
+    pattern: /testId: "quiz-mode-verb-conjugation"/,
+  },
+  {
+    testId: "quiz-mode-audio-sokuon",
+    source: "src/lib/quiz-mode-options.ts",
+    pattern: /testId: "quiz-mode-audio-sokuon"/,
+  },
+  {
+    testId: "quiz-mode-audio-longvowel",
+    source: "src/lib/quiz-mode-options.ts",
+    pattern: /testId: "quiz-mode-audio-longvowel"/,
+  },
+  {
+    testId: "quiz-mode-meaning-vocab",
+    source: "src/lib/quiz-mode-options.ts",
+    pattern: /testId: "quiz-mode-meaning-vocab"/,
+  },
+  {
+    testId: "quiz-score",
+    source: "src/components/quiz/quiz-runner.tsx",
+    pattern: /data-testid="quiz-score"/,
+  },
+  {
     testId: "quiz-question-text",
     source: "src/components/quiz/quiz-question-prompt.tsx",
     pattern: /data-testid="quiz-question-text"/,
@@ -305,6 +340,8 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
   assert.match(e2e, /seionHiraganaToRomaji/)
+  assert.match(e2e, /openQuizMode\(page, "hiragana-romaji"\)/)
+  assert.match(e2e, /getByTestId\("quiz-score"\)/)
   assert.match(e2e, /getByTestId\("quiz-question-text"\)/)
   assert.match(e2e, /querySelectorAll\('\[data-testid\^="quiz-answer-option-"\]'\)/)
   assert.match(e2e, /page\.getByTestId\(wrongOption\)\.click\(\)/)
@@ -317,6 +354,29 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /recent-mistake-\$\{recordedQuizMistake\.id\}/)
   assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("mistake-review-session"\)/)
+})
+
+test("browser E2E verifies every public quiz mode records practice", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /async function resetQuizLearningState/)
+  assert.match(e2e, /async function openQuizMode\(page, mode\)/)
+  assert.match(e2e, /async function clickFirstQuizOptionAndReadPractice/)
+  assert.match(e2e, /async function assertQuizModeRecordsPractice/)
+  assert.match(e2e, /localStorage\.setItem\("yasashi\.speech\.prefs\.v1"/)
+  assert.match(e2e, /getByTestId\("quiz-mode-audio-kana"\)/)
+  assert.match(e2e, /getByTestId\("quiz-mode-particle"\)/)
+  assert.match(e2e, /getByTestId\("quiz-mode-verb-conjugation"\)/)
+  assert.match(e2e, /getByTestId\("quiz-mode-audio-sokuon"\)/)
+  assert.match(e2e, /getByTestId\("quiz-mode-audio-longvowel"\)/)
+  assert.match(e2e, /getByTestId\("quiz-mode-meaning-vocab"\)/)
+  assert.match(e2e, /item\.itemType === itemType && item\.mode === practiceMode/)
+  assert.match(e2e, /"audio-kana"[\s\S]*"kana"[\s\S]*"listening"/)
+  assert.match(e2e, /"particle"[\s\S]*"grammar"[\s\S]*"recognition"/)
+  assert.match(e2e, /"verb-conjugation"[\s\S]*"grammar"[\s\S]*"production"/)
+  assert.match(e2e, /"audio-sokuon"[\s\S]*"kana"[\s\S]*"listening"/)
+  assert.match(e2e, /"audio-longvowel"[\s\S]*"kana"[\s\S]*"listening"/)
+  assert.match(e2e, /"meaning-vocab"[\s\S]*"vocab"[\s\S]*"meaning"/)
 })
 
 test("browser E2E verifies mastered kana filters show the quiz empty state", () => {
@@ -430,7 +490,7 @@ test("browser E2E text assertions reject mojibake fallbacks", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
   assert.match(e2e, /getByTestId\("kana-stroke-board"\)/)
-  assert.match(e2e, /getByText\(\/得分:\/\)/)
+  assert.match(e2e, /getByTestId\("quiz-score"\)/)
   assert.doesNotMatch(e2e, /绗旈/) // mojibake-ok detector fixture
   assert.doesNotMatch(e2e, /寰楀垎/) // mojibake-ok detector fixture
 })

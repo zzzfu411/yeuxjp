@@ -52,7 +52,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
           <ArrowLeft className="w-4 h-4" /> 退出
         </Button>
-        <div className="font-mono font-medium">
+        <div className="font-mono font-medium" data-testid="quiz-score">
           得分: {quizStats.score}/{quizStats.total}
         </div>
       </div>

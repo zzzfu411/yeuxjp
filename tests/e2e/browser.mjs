@@ -269,6 +269,62 @@ async function seedLearningDataBackupState(page) {
   })
 }
 
+async function resetQuizLearningState(page) {
+  await page.evaluate(() => {
+    localStorage.clear()
+    localStorage.setItem("yasashi.speech.prefs.v1", JSON.stringify({
+      rate: 1,
+      repeat: 1,
+      autoPlay: false,
+      gapMs: 250,
+    }))
+  })
+}
+
+async function openQuizMode(page, mode) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await resetQuizLearningState(page)
+  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+
+  if (mode === "hiragana-romaji") await page.getByTestId("quiz-mode-hiragana-romaji").click()
+  else if (mode === "audio-kana") await page.getByTestId("quiz-mode-audio-kana").click()
+  else if (mode === "particle") await page.getByTestId("quiz-mode-particle").click()
+  else if (mode === "verb-conjugation") await page.getByTestId("quiz-mode-verb-conjugation").click()
+  else if (mode === "audio-sokuon") await page.getByTestId("quiz-mode-audio-sokuon").click()
+  else if (mode === "audio-longvowel") await page.getByTestId("quiz-mode-audio-longvowel").click()
+  else if (mode === "meaning-vocab") await page.getByTestId("quiz-mode-meaning-vocab").click()
+  else throw new Error(`Unknown quiz mode for browser E2E: ${mode}`)
+
+  await page.getByTestId("quiz-score").waitFor({ state: "visible" })
+  await page.locator('[data-testid^="quiz-answer-option-"]').first().waitFor({ state: "visible" })
+}
+
+async function clickFirstQuizOptionAndReadPractice(page) {
+  await page.locator('[data-testid^="quiz-answer-option-"]').first().click()
+  await page.waitForFunction(() => {
+    const practice = JSON.parse(localStorage.getItem("yasashi.learning.practice.v1") ?? "[]")
+    return Array.isArray(practice) && practice.length > 0
+  })
+  assert.match(await page.getByTestId("quiz-score").innerText(), /\/1\b/)
+  return readJsonStorage(page, "yasashi.learning.practice.v1")
+}
+
+async function assertQuizModeRecordsPractice(page, { mode, itemType, practiceMode }) {
+  await openQuizMode(page, mode)
+  const practice = await clickFirstQuizOptionAndReadPractice(page)
+  assert.ok(
+    Array.isArray(practice) &&
+      practice.some((item) => item.itemType === itemType && item.mode === practiceMode),
+    `${mode} quiz should record ${itemType}/${practiceMode} practice`
+  )
+
+  const itemProgress = await readJsonStorage(page, "yasashi.learning.items.v1")
+  assert.ok(
+    Object.values(itemProgress ?? {}).some((item) => item.itemType === itemType && item.attempts >= 1),
+    `${mode} quiz should update item progress`
+  )
+}
+
 let browser = null
 let context = null
 let mobileContext = null
@@ -420,10 +476,9 @@ try {
   await page.getByTestId("vocabulary-search").fill("Gainen")
   await page.getByText("概念").first().waitFor({ state: "visible" })
 
-  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
-  await page.getByTestId("quiz-mode-hiragana-romaji").click()
+  await openQuizMode(page, "hiragana-romaji")
   await page.getByTestId("quiz-question-text").waitFor({ state: "visible" })
-  assert.ok(await page.getByText(/得分:/).isVisible())
+  assert.match(await page.getByTestId("quiz-score").innerText(), /0\/0\b/)
   const quizPrompt = (await page.getByTestId("quiz-question-text").innerText()).trim()
   const expectedAnswer = seionHiraganaToRomaji[quizPrompt]
   assert.ok(expectedAnswer, `quiz prompt should be a known seion kana, got ${quizPrompt}`)
@@ -452,6 +507,37 @@ try {
   await page.getByTestId(`recent-mistake-${recordedQuizMistake.id}`).waitFor({ state: "visible" })
   await page.getByTestId("review-start-mistakes").click()
   await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
+
+  await assertQuizModeRecordsPractice(page, {
+    mode: "audio-kana",
+    itemType: "kana",
+    practiceMode: "listening",
+  })
+  await assertQuizModeRecordsPractice(page, {
+    mode: "particle",
+    itemType: "grammar",
+    practiceMode: "recognition",
+  })
+  await assertQuizModeRecordsPractice(page, {
+    mode: "verb-conjugation",
+    itemType: "grammar",
+    practiceMode: "production",
+  })
+  await assertQuizModeRecordsPractice(page, {
+    mode: "audio-sokuon",
+    itemType: "kana",
+    practiceMode: "listening",
+  })
+  await assertQuizModeRecordsPractice(page, {
+    mode: "audio-longvowel",
+    itemType: "kana",
+    practiceMode: "listening",
+  })
+  await assertQuizModeRecordsPractice(page, {
+    mode: "meaning-vocab",
+    itemType: "vocab",
+    practiceMode: "meaning",
+  })
 
   await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
   await page.evaluate((masteredIds) => {
