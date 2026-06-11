@@ -1,29 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { kanaData } from "@/data/kana-data"
-import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
-import { SKILL_TREE } from "@/lib/skill-tree"
-import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
-import { useLearningStatus } from "@/lib/learning-status"
-import { resolveLearningEntry } from "@/lib/learning-entry"
-import { getKanaSkillStats, getRecommendedSkillId } from "@/lib/path-page-model"
+import { STARTER_LESSONS } from "@/data/lessons"
+import { useLearningRecommendation } from "@/lib/learning-recommendation"
 
 export function NextStepCard({ className }: { className?: string }) {
-  const learning = useLearningStatus()
-
-  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, learning.isKanaMastered), [learning.isKanaMastered])
-
-  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learning.learnedVocabIds), [learning.learnedVocabIds])
-
-  const nextSkillId = useMemo(() => getRecommendedSkillId(kanaStats, vocabStats), [kanaStats, vocabStats])
-
-  const skill = useMemo(() => SKILL_TREE.find((s) => s.id === nextSkillId) ?? null, [nextSkillId])
-  const nextLesson = useMemo(() => getNextLesson(learning.completedLessonIds), [learning.completedLessonIds])
-  const entry = useMemo(() => resolveLearningEntry({ nextLesson, skill }), [nextLesson, skill])
+  const { learning, learningEntry: entry } = useLearningRecommendation()
 
   return (
     <div

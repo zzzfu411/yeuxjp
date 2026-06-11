@@ -26,15 +26,29 @@ test("useLearningStatus is the shared read facade over legacy marks and item pro
 })
 
 test("high-level recommendation and review surfaces use the shared learning status facade", () => {
-  const files = [
+  const recommendationHook = read("src/lib/learning-recommendation.ts")
+  assert.match(recommendationHook, /useLearningStatus\(\)/)
+
+  const recommendationSurfaces = [
     "src/app/page.tsx",
     "src/app/path/page.tsx",
     "src/components/learning/next-step-card.tsx",
+  ]
+
+  for (const file of recommendationSurfaces) {
+    const source = read(file)
+    assert.match(source, /useLearningRecommendation\(\)/, file)
+    assert.doesNotMatch(source, /useLearningStatus/, file)
+    assert.doesNotMatch(source, /useKanaProgress/, file)
+    assert.doesNotMatch(source, /useVocabProgress/, file)
+  }
+
+  const directStatusSurfaces = [
     "src/components/quiz/quiz-runner.tsx",
     "src/app/review/page.tsx",
   ]
 
-  for (const file of files) {
+  for (const file of directStatusSurfaces) {
     const source = read(file)
     assert.match(source, /useLearningStatus\(\)/, file)
     assert.doesNotMatch(source, /useKanaProgress/, file)

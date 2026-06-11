@@ -12,13 +12,18 @@ function read(relPath) {
 test("learning entry surfaces share the centralized entry model", () => {
   for (const relPath of ["src/app/path/page.tsx", "src/components/learning/next-step-card.tsx"]) {
     const source = read(relPath)
-    assert.match(source, /from "@\/lib\/learning-entry"/, relPath)
-    assert.match(source, /resolveLearningEntry\(/, relPath)
+    assert.match(source, /from "@\/lib\/learning-recommendation"/, relPath)
+    assert.match(source, /useLearningRecommendation\(/, relPath)
   }
+
+  const recommendation = read("src/lib/learning-recommendation.ts")
+  assert.match(recommendation, /from "@\/lib\/learning-entry"/)
+  assert.match(recommendation, /resolveLearningEntry\(/)
 
   const home = read("src/app/page.tsx")
   const model = read("src/lib/home-page-model.ts")
-  assert.match(home, /from "@\/lib\/home-page-model"/)
+  assert.match(home, /from "@\/lib\/learning-recommendation"/)
+  assert.match(home, /useLearningRecommendation\(/)
   assert.match(home, /buildHomePageModel\(/)
   assert.doesNotMatch(home, /resolveLearningEntry\(/)
   assert.match(model, /from "@\/lib\/learning-entry"/)

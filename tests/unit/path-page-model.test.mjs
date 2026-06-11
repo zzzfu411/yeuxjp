@@ -110,22 +110,23 @@ test("path page model summarizes five-dimension mastery", () => {
   assert.deepEqual(model.getPathMasterySummary({}), { avg: 0, attempts: 0, production: 0 })
 })
 
-test("path and next-step surfaces share path-page-model recommendation rules", () => {
+test("path and next-step surfaces consume the shared recommendation hook", () => {
   const pathPage = fs.readFileSync(path.join(root, "src/app/path/page.tsx"), "utf8")
   const nextStep = fs.readFileSync(path.join(root, "src/components/learning/next-step-card.tsx"), "utf8")
 
   for (const source of [pathPage, nextStep]) {
-    assert.match(source, /from "@\/lib\/path-page-model"/)
-    assert.match(source, /from "@\/lib\/learning-status"/)
-    assert.match(source, /useLearningStatus\(\)/)
-    assert.match(source, /getKanaSkillStats\(kanaData, learning\.isKanaMastered\)/)
-    assert.match(source, /summarizeLearnedVocabIds\(learning\.learnedVocabIds\)/)
-    assert.match(source, /getRecommendedSkillId\(kanaStats, vocabStats\)/)
+    assert.match(source, /from "@\/lib\/learning-recommendation"/)
+    assert.match(source, /useLearningRecommendation\(\)/)
     assert.doesNotMatch(source, /useKanaProgress/)
     assert.doesNotMatch(source, /useVocabProgress/)
+    assert.doesNotMatch(source, /useLearningStatus/)
+    assert.doesNotMatch(source, /getKanaSkillStats\(kanaData/)
+    assert.doesNotMatch(source, /summarizeLearnedVocabIds/)
+    assert.doesNotMatch(source, /getRecommendedSkillId\(kanaStats, vocabStats\)/)
     assert.doesNotMatch(source, /if \(kanaStats\.seion\.ratio < 0\.7\)/)
   }
 
+  assert.match(pathPage, /from "@\/lib\/path-page-model"/)
   assert.match(pathPage, /getSkillStatus\(skill\.id, kanaStats, vocabStats\)/)
   assert.match(pathPage, /getPathMasterySummary\(learning\.items\)/)
 })

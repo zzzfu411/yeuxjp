@@ -41,16 +41,20 @@ test("learned vocabulary ids are summarized by stable level prefixes", () => {
 })
 
 test("recommendation surfaces do not import the aggregated vocabulary dataset", () => {
-  const files = [
+  const surfaceFiles = [
     "src/components/learning/next-step-card.tsx",
     "src/app/path/page.tsx",
   ]
 
-  for (const file of files) {
+  for (const file of surfaceFiles) {
     const source = fs.readFileSync(path.join(root, file), "utf8")
     assert.doesNotMatch(source, /vocabByLevel/)
-    assert.match(source, /summarizeLearnedVocabIds/)
+    assert.match(source, /useLearningRecommendation/)
   }
+
+  const recommendation = fs.readFileSync(path.join(root, "src/lib/learning-recommendation.ts"), "utf8")
+  assert.doesNotMatch(recommendation, /vocabByLevel/)
+  assert.match(recommendation, /summarizeLearnedVocabIds/)
 })
 
 test("vocabulary public index does not re-export eager aggregate datasets", () => {

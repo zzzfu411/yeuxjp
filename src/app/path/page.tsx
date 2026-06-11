@@ -5,31 +5,17 @@ import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { cn } from "@/lib/utils"
-import { kanaData } from "@/data/kana-data"
-import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
 import { SKILL_CATEGORY_LABEL, SKILL_TREE, SKILL_TREE_BY_CATEGORY, type SkillCategory } from "@/lib/skill-tree"
-import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
-import { useLearningStatus } from "@/lib/learning-status"
+import { STARTER_LESSONS } from "@/data/lessons"
+import { useLearningRecommendation } from "@/lib/learning-recommendation"
 import {
-  getKanaSkillStats,
   getPathMasterySummary,
-  getRecommendedSkillId,
   getSkillStatus,
 } from "@/lib/path-page-model"
-import { getLessonEntryBadge, getLessonEntryStatus, resolveLearningEntry } from "@/lib/learning-entry"
+import { getLessonEntryBadge, getLessonEntryStatus } from "@/lib/learning-entry"
 
 export default function SkillTreePage() {
-  const learning = useLearningStatus()
-
-  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, learning.isKanaMastered), [learning.isKanaMastered])
-
-  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learning.learnedVocabIds), [learning.learnedVocabIds])
-
-  const nextSkillId = useMemo(() => getRecommendedSkillId(kanaStats, vocabStats), [kanaStats, vocabStats])
-  const recommendedSkill = useMemo(() => SKILL_TREE.find((s) => s.id === nextSkillId) ?? null, [nextSkillId])
-
-  const nextLesson = useMemo(() => getNextLesson(learning.completedLessonIds), [learning.completedLessonIds])
-  const learningEntry = useMemo(() => resolveLearningEntry({ nextLesson, skill: recommendedSkill }), [nextLesson, recommendedSkill])
+  const { learning, kanaStats, vocabStats, nextSkillId, nextLesson, learningEntry } = useLearningRecommendation()
   const masterySummary = useMemo(() => getPathMasterySummary(learning.items), [learning.items])
 
   return (
