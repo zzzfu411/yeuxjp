@@ -1,4 +1,10 @@
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import {
+  DEFAULT_SPEECH_PREFERENCES,
+  mergeSpeechPreferencesPatch,
+  normalizeSpeechPreferences,
+  type SpeechUserPreferences,
+} from "@/lib/speech-preferences-model"
 
 export type SpeakCallbacks = {
   onStart?: () => void
@@ -152,35 +158,8 @@ export function speakJapaneseRepeated(text: string, options: SpeakRepeatOptions 
   return speakJapaneseSequence(texts, options)
 }
 
-export type SpeechUserPreferences = {
-  rate: number
-  repeat: 1 | 2 | 3
-  autoPlay: boolean
-  gapMs: number
-}
-
 export const DEFAULT_SPEECH_PREFS_STORAGE_KEY = STORAGE_KEYS.SPEECH_PREFS
-
-export const DEFAULT_SPEECH_PREFERENCES: SpeechUserPreferences = {
-  rate: 0.9,
-  repeat: 1,
-  autoPlay: true,
-  gapMs: 250,
-}
-
-function clampRepeat(value: unknown): 1 | 2 | 3 {
-  return value === 1 || value === 2 || value === 3 ? value : DEFAULT_SPEECH_PREFERENCES.repeat
-}
-
-function clampRate(value: unknown) {
-  const rate = typeof value === "number" ? value : DEFAULT_SPEECH_PREFERENCES.rate
-  return Math.max(0.6, Math.min(1.2, rate))
-}
-
-function clampGapMs(value: unknown) {
-  const gapMs = typeof value === "number" ? value : DEFAULT_SPEECH_PREFERENCES.gapMs
-  return Math.max(0, Math.min(2000, gapMs))
-}
+export { DEFAULT_SPEECH_PREFERENCES, type SpeechUserPreferences } from "@/lib/speech-preferences-model"
 
 export function applySpeechPreferences(prefs: SpeechUserPreferences) {
   setSpeechDefaults({ rate: prefs.rate })
@@ -195,23 +174,7 @@ export function readSpeechPreferences(
     const raw = window.localStorage.getItem(storageKey)
     if (!raw) return DEFAULT_SPEECH_PREFERENCES
 
-    const parsed = JSON.parse(raw) as unknown
-    if (!parsed || typeof parsed !== "object") return DEFAULT_SPEECH_PREFERENCES
-
-    const obj = parsed as Record<string, unknown>
-
-    // Back-compat: previous fields were named quizRepeat/quizAutoPlay/quizGapMs.
-    const repeat = clampRepeat(obj.repeat ?? obj.quizRepeat)
-    const autoPlay =
-      typeof obj.autoPlay === "boolean"
-        ? obj.autoPlay
-        : typeof obj.quizAutoPlay === "boolean"
-          ? obj.quizAutoPlay
-          : DEFAULT_SPEECH_PREFERENCES.autoPlay
-    const gapMs = clampGapMs(obj.gapMs ?? obj.quizGapMs)
-    const rate = clampRate(obj.rate)
-
-    return { rate, repeat, autoPlay, gapMs }
+    return normalizeSpeechPreferences(JSON.parse(raw) as unknown)
   } catch {
     return DEFAULT_SPEECH_PREFERENCES
   }
@@ -241,12 +204,7 @@ export function updateSpeechPreferences(
   storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY
 ) {
   const prev = readSpeechPreferences(storageKey)
-  const next: SpeechUserPreferences = {
-    rate: clampRate(patch.rate ?? prev.rate),
-    repeat: clampRepeat(patch.repeat ?? prev.repeat),
-    autoPlay: typeof patch.autoPlay === "boolean" ? patch.autoPlay : prev.autoPlay,
-    gapMs: clampGapMs(patch.gapMs ?? prev.gapMs),
-  }
+  const next = mergeSpeechPreferencesPatch(prev, patch)
 
   if (!writeSpeechPreferences(next, storageKey)) {
     applySpeechPreferences(prev)

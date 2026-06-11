@@ -87,6 +87,9 @@ test("speech preference writes report persistence failures to callers", () => {
   const source = read("src/lib/speech.ts")
 
   assert.match(source, /export function writeSpeechPreferences/)
+  assert.match(source, /from "@\/lib\/speech-preferences-model"/)
+  assert.match(source, /normalizeSpeechPreferences\(JSON\.parse\(raw\) as unknown\)/)
+  assert.match(source, /mergeSpeechPreferencesPatch\(prev, patch\)/)
   assert.match(source, /return true/)
   assert.match(source, /return false/)
   assert.match(source, /if \(!writeSpeechPreferences\(next, storageKey\)\)/)
