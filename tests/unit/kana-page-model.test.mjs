@@ -49,10 +49,14 @@ test("kana page model filters progress, derives visible rows, and counts mastery
 })
 
 test("kana page delegates reusable data derivation to kana-page-model", () => {
-  const source = fs.readFileSync(path.join(root, "src/app/kana/page.tsx"), "utf8")
+  const route = fs.readFileSync(path.join(root, "src/app/kana/page.tsx"), "utf8")
+  const source = fs.readFileSync(path.join(root, "src/components/kana/kana-page.tsx"), "utf8")
   const hook = fs.readFileSync(path.join(root, "src/components/kana/use-kana-page-data.ts"), "utf8")
   const controls = fs.readFileSync(path.join(root, "src/components/kana/use-kana-page-controls.ts"), "utf8")
 
+  assert.doesNotMatch(route, /"use client"/)
+  assert.match(route, /from "@\/components\/kana\/kana-page"/)
+  assert.match(route, /<KanaPage \/>/)
   assert.match(source, /from "@\/components\/kana\/use-kana-page-controls"/)
   assert.match(source, /useKanaPageControls\(\)/)
   assert.match(controls, /useSearchParams\(\)/)

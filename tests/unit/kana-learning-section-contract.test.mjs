@@ -10,7 +10,7 @@ function read(relPath) {
 }
 
 test("kana page delegates repeated section rendering to KanaLearningSection", () => {
-  const page = read("src/app/kana/page.tsx")
+  const page = read("src/components/kana/kana-page.tsx")
 
   assert.match(page, /from "@\/components\/kana\/kana-learning-section"/)
   assert.match(page, /<KanaLearningSection\b/)

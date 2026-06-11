@@ -10,8 +10,12 @@ function read(relPath) {
 }
 
 test("kana page delegates mode, set, filter, and progress controls to KanaControls", () => {
-  const page = read("src/app/kana/page.tsx")
+  const route = read("src/app/kana/page.tsx")
+  const page = read("src/components/kana/kana-page.tsx")
 
+  assert.doesNotMatch(route, /"use client"/)
+  assert.match(route, /from "@\/components\/kana\/kana-page"/)
+  assert.match(route, /<KanaPage \/>/)
   assert.match(page, /from "@\/components\/kana\/kana-controls"/)
   assert.match(page, /from "@\/components\/kana\/use-kana-page-controls"/)
   assert.match(page, /useKanaPageControls\(\)/)
