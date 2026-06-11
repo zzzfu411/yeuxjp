@@ -19,6 +19,21 @@ test("PWA registers a production service worker and exposes install metadata", (
   assert.match(register, /navigator\.serviceWorker\.register\("\/sw\.js"\)/)
 })
 
+test("PWA registration surfaces service worker updates without forcing a reload", () => {
+  assert.match(register, /useState/)
+  assert.match(register, /registration\.waiting/)
+  assert.match(register, /updatefound/)
+  assert.match(register, /worker\.state === "installed"/)
+  assert.match(register, /controllerchange/)
+  assert.match(register, /hasExistingController/)
+  assert.match(register, /navigator\.serviceWorker\.removeEventListener\("controllerchange", onControllerChange\)/)
+  assert.match(register, /data-testid="pwa-update-banner"/)
+  assert.match(register, /data-testid="pwa-update-refresh"/)
+  assert.match(register, /window\.location\.reload\(\)/)
+  assert.match(register, /data-testid="pwa-update-dismiss"/)
+  assert.doesNotMatch(register, /skipWaiting\(\)/)
+})
+
 test("service worker caches static assets and visited navigation pages without learning state", () => {
   assert.match(sw, /const STATIC_CACHE_NAME = "yasashi-static-v\d+"/)
   assert.match(sw, /const NAVIGATION_CACHE_NAME = "yasashi-navigation-v\d+"/)
