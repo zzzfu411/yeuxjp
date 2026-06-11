@@ -3,6 +3,7 @@ import {
   createServerController,
   importPlaywrightOrSkip,
   isE2ERequired,
+  skipOptionalPlaywrightRuntimeError,
   startProductionServer,
 } from "./harness.mjs"
 
@@ -103,8 +104,19 @@ try {
   await context.setOffline(false)
   console.log(`PWA offline E2E checks passed at ${baseUrl}`)
 } catch (error) {
-  console.error(serverController.output)
-  failure = error
+  if (
+    skipOptionalPlaywrightRuntimeError({
+      error,
+      required: pwaE2ERequired,
+      skipMessage:
+        "PWA E2E skipped: Playwright browser binaries are not installed. Run `npx playwright install chromium` in web/ or use `npm run e2e:pwa:required --prefix web` in a provisioned environment.",
+    })
+  ) {
+    failure = null
+  } else {
+    console.error(serverController.output)
+    failure = error
+  }
 } finally {
   await browser?.close()
   serverController.stop()

@@ -5,6 +5,7 @@ import {
   isE2ERequired,
   readJsonStorage,
   reuseOrStartDevServer,
+  skipOptionalPlaywrightRuntimeError,
 } from "./harness.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
@@ -354,8 +355,19 @@ try {
 
   console.log(`Browser E2E checks passed at ${baseUrl}`)
 } catch (error) {
-  console.error(serverController.output)
-  failure = error
+  if (
+    skipOptionalPlaywrightRuntimeError({
+      error,
+      required: browserE2ERequired,
+      skipMessage:
+        "Browser E2E skipped: Playwright browser binaries are not installed. Run `npx playwright install chromium` in web/ or use `npm run e2e:browser:required --prefix web` in a provisioned environment.",
+    })
+  ) {
+    failure = null
+  } else {
+    console.error(serverController.output)
+    failure = error
+  }
 } finally {
   await context?.close()
   await browser?.close()

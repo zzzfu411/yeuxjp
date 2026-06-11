@@ -17,6 +17,10 @@ test("E2E harness owns shared Playwright optional dependency handling", () => {
   assert.match(harness, /Cannot find package 'playwright'/)
   assert.match(harness, /process\.exit\(0\)/)
   assert.match(harness, /process\.exit\(2\)/)
+  assert.match(harness, /export function skipOptionalPlaywrightRuntimeError/)
+  assert.match(harness, /Executable doesn't exist/)
+  assert.match(harness, /playwright install/)
+  assert.match(harness, /if \(required\) return false/)
 })
 
 test("E2E harness owns server lifecycle and storage helpers", () => {
@@ -27,6 +31,17 @@ test("E2E harness owns server lifecycle and storage helpers", () => {
   assert.match(harness, /npmCommand\(\), \["run", "build"\]/)
   assert.match(harness, /npmCommand\(\), \["run", "start"/)
   assert.match(harness, /export async function readJsonStorage/)
+})
+
+test("optional browser E2E scripts skip missing Playwright browser binaries", () => {
+  const browser = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const pwa = fs.readFileSync(path.join(root, "tests/e2e/pwa-offline.mjs"), "utf8")
+
+  for (const source of [browser, pwa]) {
+    assert.match(source, /skipOptionalPlaywrightRuntimeError/)
+    assert.match(source, /browser binaries are not installed/)
+    assert.match(source, /failure = null/)
+  }
 })
 
 test("HTTP smoke reuses the shared E2E server harness", () => {
@@ -55,6 +70,8 @@ test("app-local check command matches the root quality gate", () => {
   assert.match(webPackage, /"validate:data": "node scripts\/validate-data\.mjs"/)
   assert.match(webPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
   assert.match(webPackage, /"check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required"/)
+  assert.match(webPackage, /"e2e:install": "playwright install chromium"/)
+  assert.match(webPackage, /"playwright": "\^1\.60\.0"/)
 })
 
 test("app-local lint command scans source-owned code instead of generated assets", () => {

@@ -37,6 +37,26 @@ export async function importPlaywrightOrSkip({
   }
 }
 
+export function skipOptionalPlaywrightRuntimeError({
+  error,
+  required,
+  skipMessage,
+}) {
+  if (required) return false
+
+  const message = error instanceof Error ? error.message : String(error)
+  const missingBrowser =
+    message.includes("Executable doesn't exist") ||
+    message.includes("browserType.launch") ||
+    message.includes("Please run the following command to download new browsers") ||
+    message.includes("playwright install")
+
+  if (!missingBrowser) return false
+
+  console.warn(skipMessage)
+  return true
+}
+
 export function createServerController() {
   let server = null
   let output = ""
