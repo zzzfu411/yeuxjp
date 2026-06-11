@@ -13,6 +13,7 @@
     "check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required",
     "e2e": "node tests/e2e/smoke.mjs",
     "e2e:install": "playwright install chromium",
+    "e2e:install:ci": "playwright install --with-deps chromium",
     "e2e:browser": "node tests/e2e/browser.mjs",
     "e2e:browser:required": "node tests/e2e/browser.mjs --required",
     "e2e:pwa": "node tests/e2e/pwa-offline.mjs",

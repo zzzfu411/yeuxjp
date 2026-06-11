@@ -73,6 +73,7 @@ test("root package remains a dependency-free forwarding entrypoint", () => {
   assert.equal(rootPackageJson.scripts["check:release"], "npm run check:release --prefix web")
   assert.equal(rootPackageJson.scripts["e2e"], "npm run e2e --prefix web")
   assert.equal(rootPackageJson.scripts["e2e:install"], "npm run e2e:install --prefix web")
+  assert.equal(rootPackageJson.scripts["e2e:install:ci"], "npm run e2e:install:ci --prefix web")
   assert.equal(rootPackageJson.scripts["e2e:browser"], "npm run e2e:browser --prefix web")
   assert.equal(rootPackageJson.scripts["e2e:browser:required"], "npm run e2e:browser:required --prefix web")
   assert.equal(rootPackageJson.scripts["e2e:pwa"], "npm run e2e:pwa --prefix web")
@@ -85,6 +86,7 @@ test("app-local check command matches the root quality gate", () => {
   assert.match(webPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
   assert.match(webPackage, /"check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required"/)
   assert.match(webPackage, /"e2e:install": "playwright install chromium"/)
+  assert.match(webPackage, /"e2e:install:ci": "playwright install --with-deps chromium"/)
   assert.match(webPackage, /"playwright": "\^1\.60\.0"/)
 })
 

@@ -19,6 +19,7 @@ for (const [name, source] of [
     assert.match(source, /npm run e2e\b/)
     assert.match(source, /npm run check:release\b/)
     assert.match(source, /npm run e2e:install\b/)
+    assert.match(source, /npm run e2e:install:ci\b|with-deps|system dependencies/)
     assert.match(source, /npm run e2e:browser\b/)
     assert.match(source, /npm run e2e:browser:required\b/)
     assert.match(source, /npm run e2e:pwa\b/)

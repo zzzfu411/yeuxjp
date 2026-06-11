@@ -39,6 +39,7 @@ test("web package dependency declarations match the package lock root entry", ()
 test("Playwright browser E2E dependency and install script stay declared", () => {
   assert.equal(webPackage.devDependencies.playwright, "^1.60.0")
   assert.equal(webPackage.scripts["e2e:install"], "playwright install chromium")
+  assert.equal(webPackage.scripts["e2e:install:ci"], "playwright install --with-deps chromium")
   assert.ok(webLock.packages?.["node_modules/playwright"], "package lock should include playwright")
   assert.ok(webLock.packages?.["node_modules/playwright-core"], "package lock should include playwright-core")
 })

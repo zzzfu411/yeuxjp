@@ -57,8 +57,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Chromium
-        run: npm run e2e:install
+      - name: Install Playwright Chromium and system dependencies
+        run: npm run e2e:install:ci
 
       - name: Run release gate
         run: npm run check:release
