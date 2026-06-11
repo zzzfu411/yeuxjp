@@ -22,13 +22,17 @@ test("LessonRunner restores a saved lesson step only after progress storage has 
 
 test("LessonRunner restores answered practice state from persisted results", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
+  const session = read("src/lib/lesson-session.ts")
 
   assert.match(source, /getLessonAnsweredFromResults/)
   assert.match(source, /getLessonAnsweredFromResults\(lesson\.id, lesson\.steps, results\)/)
   assert.match(source, /answeredDraft/)
   assert.match(source, /\.\.\.restoredAnswered, \.\.\.answeredDraft\.answers/)
   assert.match(source, /setAnsweredForLesson/)
-  assert.match(source, /Object\.values\(answered\)\.filter\(Boolean\)\.length/)
+  assert.match(source, /buildLessonRunnerViewModel\(\{/)
+  assert.match(source, /answered,/)
+  assert.match(session, /countCorrectLessonAnswers/)
+  assert.match(session, /Object\.values\(answered\)\.filter\(Boolean\)\.length/)
 })
 
 test("LessonRunner saves step position through the shared learning progress facade", () => {
@@ -41,6 +45,8 @@ test("LessonRunner saves step position through the shared learning progress faca
   assert.match(source, /window\.setTimeout\(\(\) => setSaveError\(!saved\), 0\)/)
   assert.match(source, /window\.clearTimeout\(timer\)/)
   assert.match(source, /setSaveError\(!completeLesson\(lesson\.id, completionScore\)\)/)
+  assert.match(source, /buildLessonRunnerViewModel/)
+  assert.match(source, /completionScore/)
   assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index: Math\.min\(stepIndex \+ 1, lesson\.steps\.length - 1\) \}\)/)
   assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index: Math\.max\(stepIndex - 1, 0\) \}\)/)
   assert.doesNotMatch(source, /localStorage\.setItem/)
@@ -68,7 +74,9 @@ test("LessonRunner keeps locked lesson previews read-only", () => {
   const navigation = read("src/components/lesson/lesson-navigation-bar.tsx")
   const practice = read("src/components/lesson/use-lesson-step-practice.ts")
 
-  assert.match(source, /const lessonReadOnly = !loaded \|\| !lessonUnlocked/)
+  assert.match(source, /lessonReadOnly/)
+  assert.match(source, /buildLessonRunnerViewModel/)
+  assert.doesNotMatch(source, /const lessonReadOnly = !loaded \|\| !lessonUnlocked/)
   assert.match(source, /readOnly: lessonReadOnly/)
   assert.match(practice, /if \(readOnly\) return/)
   assert.match(source, /readOnly=\{lessonReadOnly\}/)

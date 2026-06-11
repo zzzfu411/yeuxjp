@@ -42,6 +42,10 @@ test("lesson practice counts and completion scores are deterministic", () => {
   assert.equal(session.calculateLessonCompletionScore(0, 0), 100)
   assert.equal(session.calculateLessonCompletionScore(2, 3), 67)
   assert.equal(session.calculateLessonCompletionScore(3, 3), 100)
+  assert.equal(session.countCorrectLessonAnswers({ a: true, ka: false, sa: true }), 2)
+  assert.equal(session.calculateLessonStepProgress(1, 4), 50)
+  assert.equal(session.calculateLessonStepProgress(99, 4), 100)
+  assert.equal(session.calculateLessonStepProgress(0, 0), 0)
 })
 
 test("lesson answered state restores the latest result for each practice step", () => {
@@ -121,4 +125,53 @@ test("completed lessons reopen on the summary step", () => {
     ),
     lesson.steps.length - 1
   )
+})
+
+test("lesson runner view model derives course navigation and completion display state", () => {
+  const lesson = lessons.STARTER_LESSONS[0]
+  const nextLesson = lessons.STARTER_LESSONS[1]
+
+  const view = session.buildLessonRunnerViewModel({
+    lesson,
+    courseLessons: lessons.STARTER_LESSONS,
+    lessons: {
+      [lesson.id]: {
+        lessonId: lesson.id,
+        status: "completed",
+        startedAt: 1,
+        completedAt: 2,
+      },
+    },
+    stepIndex: 1,
+    answered: { "recognize-a": true, "type-hello": false },
+    practiceSteps: 3,
+    loaded: true,
+    lessonUnlocked: true,
+  })
+
+  assert.equal(view.lessonPosition, 1)
+  assert.equal(view.nextLesson.id, nextLesson.id)
+  assert.equal(view.stepProgress, (2 / lesson.steps.length) * 100)
+  assert.equal(view.correctCount, 1)
+  assert.equal(view.completionScore, 33)
+  assert.equal(view.lessonReadOnly, false)
+  assert.equal(view.hasCompletedLesson, true)
+
+  const lastLesson = lessons.STARTER_LESSONS.at(-1)
+  const lastView = session.buildLessonRunnerViewModel({
+    lesson: lastLesson,
+    courseLessons: lessons.STARTER_LESSONS,
+    lessons: {},
+    stepIndex: 999,
+    answered: {},
+    practiceSteps: 0,
+    loaded: false,
+    lessonUnlocked: true,
+  })
+
+  assert.equal(lastView.nextLesson, null)
+  assert.equal(lastView.stepProgress, 100)
+  assert.equal(lastView.completionScore, 100)
+  assert.equal(lastView.lessonReadOnly, true)
+  assert.equal(lastView.hasCompletedLesson, false)
 })

@@ -9,8 +9,8 @@ import { useLearningProgress } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { isLessonUnlocked } from "@/lib/learning-entry"
 import {
+  buildLessonRunnerViewModel,
   countPracticeSteps,
-  calculateLessonCompletionScore,
   getLessonAnsweredFromResults,
   resolveLessonResumeStepIndex,
 } from "@/lib/lesson-session"
@@ -41,7 +41,6 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     return isLessonUnlocked(lesson, progress.completedLessonIds)
   }, [lesson, loaded, progress.completedLessonIds])
   const recommendedLesson = useMemo(() => getNextLesson(progress.completedLessonIds), [progress.completedLessonIds])
-  const lessonReadOnly = !loaded || !lessonUnlocked
 
   useEffect(() => {
     if (!lesson || !loaded) return
@@ -95,8 +94,27 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     [lesson, restoredAnswered]
   )
 
-  const correctCount = useMemo(() => Object.values(answered).filter(Boolean).length, [answered])
-  const completionScore = calculateLessonCompletionScore(correctCount, practiceSteps)
+  const lessonView = useMemo(() => {
+    return buildLessonRunnerViewModel({
+      lesson,
+      courseLessons: STARTER_LESSONS,
+      lessons,
+      stepIndex,
+      answered,
+      practiceSteps,
+      loaded,
+      lessonUnlocked,
+    })
+  }, [answered, lesson, lessons, loaded, lessonUnlocked, practiceSteps, stepIndex])
+  const {
+    lessonPosition,
+    nextLesson,
+    stepProgress,
+    correctCount,
+    completionScore,
+    lessonReadOnly,
+    hasCompletedLesson,
+  } = lessonView
 
   const recordAnswer = useLessonAnswerRecorder({
     lessonId: lesson.id,
@@ -124,10 +142,6 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     setSaveError,
   })
 
-  const lessonPosition = STARTER_LESSONS.findIndex((item) => item.id === lesson.id) + 1
-  const nextLesson = STARTER_LESSONS[lessonPosition] ?? null
-  const stepProgress = ((stepIndex + 1) / lesson.steps.length) * 100
-
   const playAudio = (text: string) => speakJapaneseRepeated(text, { repeat: 1, gapMs: 200 })
 
   const goNext = () => {
@@ -145,8 +159,6 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     setManualStep({ lessonId: lesson.id, index: Math.max(stepIndex - 1, 0) })
     resetStepState()
   }
-
-  const hasCompletedLesson = lessons[lesson.id]?.status === "completed"
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_32rem),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted)/0.22))]">
