@@ -40,6 +40,7 @@ test("optional browser E2E scripts skip missing Playwright browser binaries", ()
   for (const source of [browser, pwa]) {
     assert.match(source, /skipOptionalPlaywrightRuntimeError/)
     assert.match(source, /browser binaries are not installed/)
+    assert.match(source, /npm run e2e:install --prefix web/)
     assert.match(source, /failure = null/)
   }
 })

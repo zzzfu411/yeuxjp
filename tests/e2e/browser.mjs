@@ -127,8 +127,8 @@ try {
   const { chromium } = await importPlaywrightOrSkip({
     required: browserE2ERequired,
     label: "Browser E2E",
-    skipMessage: "Browser E2E skipped: Playwright is not installed. Run `npm run e2e:browser:required --prefix web` when browser dependencies are available.",
-    errorMessage: "Browser E2E requires Playwright. Install browser dependencies or set E2E_BASE_URL and run in an environment with Playwright available.",
+    skipMessage: "Browser E2E skipped: Playwright is not installed. Run `npm ci --prefix web`, then `npm run e2e:install --prefix web` before the required browser E2E.",
+    errorMessage: "Browser E2E requires Playwright. Run `npm ci --prefix web`, then `npm run e2e:install --prefix web`, or set E2E_BASE_URL and run in an environment with Playwright available.",
   })
   await ensureServer()
   browser = await chromium.launch({ headless: true })
@@ -360,7 +360,7 @@ try {
       error,
       required: browserE2ERequired,
       skipMessage:
-        "Browser E2E skipped: Playwright browser binaries are not installed. Run `npx playwright install chromium` in web/ or use `npm run e2e:browser:required --prefix web` in a provisioned environment.",
+        "Browser E2E skipped: Playwright browser binaries are not installed. Run `npm run e2e:install --prefix web` or use `npm run e2e:browser:required --prefix web` in a provisioned environment.",
     })
   ) {
     failure = null
