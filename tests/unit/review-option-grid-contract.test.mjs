@@ -36,4 +36,5 @@ test("ReviewOptionGrid owns review option feedback visuals", () => {
   assert.match(source, /shouldShowCorrectAnswerIcon/)
   assert.match(source, /shouldShowWrongAnswerIcon/)
   assert.match(source, /selectedAnswer != null/)
+  assert.match(source, /data-testid=\{`review-answer-\$\{option\.value\}`\}/)
 })

@@ -1,12 +1,30 @@
 import fs from "node:fs"
+import os from "node:os"
 import path from "node:path"
 import { pathToFileURL } from "node:url"
 import ts from "typescript"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
 const runId = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
-const cacheDir = path.join(root, ".test-cache", runId)
+const cacheRoot = path.join(os.tmpdir(), "yasashi-japanese-test-cache")
+const cacheDir = path.join(cacheRoot, runId)
 const loaded = new Set()
+
+function ensureCacheRoot() {
+  fs.mkdirSync(cacheRoot, { recursive: true })
+
+  const sourceNodeModules = path.join(root, "node_modules")
+  const cacheNodeModules = path.join(cacheRoot, "node_modules")
+  if (!fs.existsSync(sourceNodeModules) || fs.existsSync(cacheNodeModules)) return
+
+  try {
+    fs.symlinkSync(sourceNodeModules, cacheNodeModules, process.platform === "win32" ? "junction" : "dir")
+  } catch {
+    // If the junction cannot be created, relative project imports still work;
+    // tests that import modules with package dependencies will surface the
+    // environment problem clearly.
+  }
+}
 
 function cachePathForRel(relPath) {
   return path.join(cacheDir, relPath.replace(/[\\/]/g, "__").replace(/\.[cm]?tsx?$/, ".mjs"))
@@ -57,6 +75,7 @@ function transpileToCache(relPath) {
     fileName: absPath,
   }).outputText
 
+  ensureCacheRoot()
   fs.mkdirSync(cacheDir, { recursive: true })
   const outPath = cachePathForRel(normalizedRelPath)
   const rewritten = output

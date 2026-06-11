@@ -20,8 +20,13 @@ export async function checkStrokeAvailability(
       try {
         const response = await fetcher(url, { method: "HEAD", cache: "force-cache" })
         if (response.ok) return true
-        if (response.status !== 405) return false
+      } catch {
+        // Service workers only receive GET fetch events. When the browser is
+        // offline, a cached AnimCJK SVG may still be available even if HEAD
+        // fails before the service worker can answer it.
+      }
 
+      try {
         const fallback = await fetcher(url, { cache: "force-cache" })
         return fallback.ok
       } catch {

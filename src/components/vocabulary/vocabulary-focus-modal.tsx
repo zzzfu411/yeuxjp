@@ -37,6 +37,7 @@ export function VocabularyFocusModal({
           <div
             className="flex-1 relative cursor-pointer group bg-gradient-to-b from-card to-secondary/10"
             onClick={onFlip}
+            data-testid="vocabulary-focus-card"
           >
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
               {!flipped ? (
@@ -78,6 +79,7 @@ export function VocabularyFocusModal({
                         event.stopPropagation()
                         onToggleLearned()
                       }}
+                      data-testid="vocabulary-learned-toggle"
                     >
                       <CheckCircle2 className="w-5 h-5" />
                       {learned ? "已掌握" : "标记已掌握"}

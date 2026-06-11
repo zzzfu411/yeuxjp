@@ -77,9 +77,29 @@ const requiredSelectors = [
     pattern: /data-testid=\{label \? "kana-stroke-board" : undefined\}/,
   },
   {
+    testId: "kana-mastery-toggle",
+    source: "src/components/kana/kana-detail-modal.tsx",
+    pattern: /data-testid="kana-mastery-toggle"/,
+  },
+  {
     testId: "vocabulary-search",
     source: "src/components/vocabulary/vocabulary-toolbar.tsx",
     pattern: /data-testid="vocabulary-search"/,
+  },
+  {
+    testId: "vocabulary-expand-sur-n-35",
+    source: "src/components/vocabulary/flashcard.tsx",
+    pattern: /data-testid=\{`vocabulary-expand-\$\{vocab\.id\}`\}/,
+  },
+  {
+    testId: "vocabulary-focus-card",
+    source: "src/components/vocabulary/vocabulary-focus-modal.tsx",
+    pattern: /data-testid="vocabulary-focus-card"/,
+  },
+  {
+    testId: "vocabulary-learned-toggle",
+    source: "src/components/vocabulary/vocabulary-focus-modal.tsx",
+    pattern: /data-testid="vocabulary-learned-toggle"/,
   },
   {
     testId: "vocabulary-level-daily",
@@ -155,6 +175,11 @@ const requiredSelectors = [
     testId: "review-remaining",
     source: "src/components/review/today-review-session.tsx",
     pattern: /data-testid="review-remaining"/,
+  },
+  {
+    testId: "review-answer-a",
+    source: "src/components/review/review-option-grid.tsx",
+    pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
   },
   {
     testId: "learning-data-panel",
@@ -297,8 +322,11 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
 test("browser E2E verifies mastered kana filters show the quiz empty state", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
-  assert.match(e2e, /const seionRomaji = \[/)
+  assert.match(e2e, /getByTestId\("kana-mastery-toggle"\)\.click\(\)/)
   assert.match(e2e, /yasashi\.kana\.mastered\.v1/)
+  assert.match(e2e, /masteredKana\.includes\("a"\)/)
+  assert.match(e2e, /masteredKanaSrs\?\.a\?\.dueAt/)
+  assert.match(e2e, /const seionRomaji = \[/)
   assert.match(e2e, /JSON\.stringify\(masteredIds\)/)
   assert.match(e2e, /getByTestId\("quiz-only-unmastered-kana"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("quiz-empty-state"\)\.waitFor\(\{ state: "visible" \}\)/)
@@ -313,6 +341,10 @@ test("browser E2E verifies review empty and due states", () => {
   assert.match(e2e, /getByTestId\("review-due-state"\)/)
   assert.match(e2e, /getByTestId\("review-today-due"\)/)
   assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("review-answer-a"\)\.click\(\)/)
+  assert.match(e2e, /reviewedKanaSrs\?\.a\?\.box > 1/)
+  assert.match(e2e, /reviewedKanaSrs\?\.a\?\.right >= 1/)
+  assert.match(e2e, /correct review answer should write practice history/)
 })
 
 test("browser E2E includes a mobile viewport smoke pass for core routes", () => {
@@ -333,6 +365,12 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
 test("browser E2E verifies non-default vocabulary levels load dynamically", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
+  assert.match(e2e, /getByTestId\("vocabulary-expand-sur-n-35"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-focus-card"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-learned-toggle"\)\.click\(\)/)
+  assert.match(e2e, /yasashi\.vocab\.learned\.v1/)
+  assert.match(e2e, /learnedVocab\.includes\("sur-n-35"\)/)
+  assert.match(e2e, /vocabSrs\?\.\["sur-n-35"\]\?\.dueAt/)
   assert.match(e2e, /getByTestId\("vocabulary-level-daily"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("vocabulary-level-fluent"\)\.click\(\)/)
   assert.match(e2e, /fill\("Yakusoku"\)/)

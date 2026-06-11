@@ -54,3 +54,10 @@ test("VocabularyCategoryList owns category sections, cards, indexes, and status 
   assert.match(source, /\\u91cd\\u65b0\\u52a0\\u8f7d/)
   assert.match(source, /\\u8be5\\u7b49\\u7ea7\\u6682\\u65e0\\u5339\\u914d\\u8bcd\\u6c47/)
 })
+
+test("Flashcard exposes stable browser hooks for expanding vocabulary cards", () => {
+  const source = read("src/components/vocabulary/flashcard.tsx")
+
+  assert.match(source, /data-testid=\{`vocabulary-expand-\$\{vocab\.id\}`\}/)
+  assert.match(source, /data-testid=\{`vocabulary-expand-back-\$\{vocab\.id\}`\}/)
+})

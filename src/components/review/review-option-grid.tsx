@@ -46,6 +46,7 @@ export function ReviewOptionGrid({
             className={cn(optionClassName, getAnswerOptionClassName(feedback))}
             onClick={() => onSelect(option.value)}
             disabled={selectedAnswer != null}
+            data-testid={`review-answer-${option.value}`}
           >
             {option.display}
             {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}

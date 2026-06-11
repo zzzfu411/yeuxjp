@@ -65,6 +65,7 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
             type="button"
             aria-label={`放大查看 ${vocab.kanji || vocab.kana}`}
             onClick={handleExpand}
+            data-testid={`vocabulary-expand-${vocab.id}`}
             className="absolute top-3 right-3 p-2 text-muted-foreground/30 hover:text-primary transition-colors hover:bg-muted rounded-full"
           >
             <Maximize2 className="w-4 h-4" />
@@ -86,6 +87,7 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
             type="button"
             aria-label={`放大查看 ${vocab.kanji || vocab.kana}`}
             onClick={handleExpand}
+            data-testid={`vocabulary-expand-back-${vocab.id}`}
             className="absolute top-3 right-3 p-2 text-muted-foreground/30 hover:text-primary transition-colors hover:bg-muted rounded-full"
           >
             <Maximize2 className="w-4 h-4" />

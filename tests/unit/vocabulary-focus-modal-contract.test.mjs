@@ -23,6 +23,8 @@ test("VocabularyFocusModal owns focused vocabulary card controls", () => {
 
   assert.match(source, /export function VocabularyFocusModal/)
   assert.match(source, /<Modal isOpen=\{vocab !== null\}/)
+  assert.match(source, /data-testid="vocabulary-focus-card"/)
+  assert.match(source, /data-testid="vocabulary-learned-toggle"/)
   assert.match(source, /Tap or Space to Flip/)
   assert.match(source, /<Volume2/)
   assert.match(source, /<CheckCircle2/)

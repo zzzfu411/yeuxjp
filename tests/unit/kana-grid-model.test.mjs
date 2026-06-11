@@ -56,6 +56,16 @@ test("kana grid model checks and prefetches AnimCJK stroke SVG resources", async
   assert.equal(await model.checkStrokeAvailability("あ", fallbackFetcher), true)
   assert.deepEqual(fallbackCalls.map((call) => call.init.method ?? "GET"), ["HEAD", "GET"])
 
+  const offlineCachedCalls = []
+  const offlineCachedFetcher = async (url, init = {}) => {
+    offlineCachedCalls.push({ url, init })
+    if (init.method === "HEAD") throw new Error("HEAD unavailable offline")
+    return { ok: true, status: 200 }
+  }
+
+  assert.equal(await model.checkStrokeAvailability("あ", offlineCachedFetcher), true)
+  assert.deepEqual(offlineCachedCalls.map((call) => call.init.method ?? "GET"), ["HEAD", "GET"])
+
   const missingFetcher = async () => ({ ok: false, status: 404 })
   assert.equal(await model.checkStrokeAvailability("あ", missingFetcher), false)
 
