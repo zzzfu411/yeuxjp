@@ -5,7 +5,7 @@ import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learn
 import { removeSrs, setSrsState, clearSrs } from "@/lib/srs"
 import { applySrsResult, createSrsState } from "@/lib/srs-model"
 import { buildMistakeId, removeMistakeById, upsertWrongMistake, type MistakeItem, type RecordMistakeInput } from "@/lib/mistake-notebook-model"
-import { readMistakeList, writeMistakeList } from "@/lib/mistake-notebook-storage"
+import { MISTAKE_NOTEBOOK_EVENT, notifyMistakeNotebook, readMistakeList, writeMistakeList } from "@/lib/mistake-notebook-storage"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
 export type { MistakeItem, MistakeMeta, MistakeOption, RecordMistakeInput } from "@/lib/mistake-notebook-model"
@@ -37,12 +37,20 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       sync()
     }
 
+    const onMistakeNotebook = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { storageKey?: string } | undefined
+      if (detail?.storageKey !== storageKey) return
+      sync()
+    }
+
     window.addEventListener("storage", onStorage)
+    window.addEventListener(MISTAKE_NOTEBOOK_EVENT, onMistakeNotebook)
     window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
 
     return () => {
       cancelled = true
       window.removeEventListener("storage", onStorage)
+      window.removeEventListener(MISTAKE_NOTEBOOK_EVENT, onMistakeNotebook)
       window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
   }, [storageKey])
@@ -65,6 +73,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       if (!saved) return false
 
       setList(next)
+      notifyMistakeNotebook(storageKey)
       return true
     },
     [storageKey]
@@ -78,6 +87,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
         const saved = runLearningStorageTransaction(() => removeSrs(MISTAKE_SRS_STORAGE_KEY, id))
         if (!saved) return false
         setList(previous)
+        notifyMistakeNotebook(storageKey)
         return true
       }
       const saved = runLearningStorageTransaction(() => {
@@ -87,6 +97,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       if (!saved) return false
 
       setList([...next])
+      notifyMistakeNotebook(storageKey)
       return true
     },
     [storageKey]
@@ -97,6 +108,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
     if (!saved) return false
 
     setList([])
+    notifyMistakeNotebook(storageKey)
     return true
   }, [storageKey])
 

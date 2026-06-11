@@ -6,6 +6,7 @@ const storage = await loadTsModule("src/lib/mistake-notebook-storage.ts")
 
 function installWindow({ failSet = false } = {}) {
   const map = new Map()
+  const events = []
 
   global.window = {
     localStorage: {
@@ -15,9 +16,19 @@ function installWindow({ failSet = false } = {}) {
         map.set(key, String(value))
       },
     },
+    dispatchEvent: (event) => {
+      events.push(event)
+      return true
+    },
+  }
+  global.CustomEvent = class CustomEvent extends Event {
+    constructor(type, init = {}) {
+      super(type)
+      this.detail = init.detail
+    }
   }
 
-  return map
+  return { map, events }
 }
 
 test("mistake notebook storage returns safe fallbacks outside the browser", () => {
@@ -28,7 +39,7 @@ test("mistake notebook storage returns safe fallbacks outside the browser", () =
 })
 
 test("mistake notebook storage reads and normalizes persisted lists", () => {
-  const map = installWindow()
+  const { map } = installWindow()
   map.set(
     "mistakes",
     JSON.stringify([
@@ -52,11 +63,22 @@ test("mistake notebook storage reads and normalizes persisted lists", () => {
 })
 
 test("mistake notebook storage falls back on invalid JSON and failed writes", () => {
-  const map = installWindow()
+  const { map } = installWindow()
   map.set("mistakes", "{")
 
   assert.deepEqual(storage.readMistakeList("mistakes"), [])
 
-  installWindow({ failSet: true })
+  const failing = installWindow({ failSet: true })
   assert.equal(storage.writeMistakeList("mistakes", []), false)
+  assert.equal(failing.events.length, 0)
+})
+
+test("mistake notebook storage dispatches same-tab update events on demand", () => {
+  const { events } = installWindow()
+
+  storage.notifyMistakeNotebook("mistakes")
+
+  assert.equal(events.length, 1)
+  assert.equal(events[0].type, storage.MISTAKE_NOTEBOOK_EVENT)
+  assert.deepEqual(events[0].detail, { storageKey: "mistakes" })
 })

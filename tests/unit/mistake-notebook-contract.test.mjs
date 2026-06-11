@@ -14,6 +14,8 @@ test("mistake notebook hook delegates model and storage logic", () => {
 
   assert.match(source, /from "@\/lib\/mistake-notebook-model"/)
   assert.match(source, /from "@\/lib\/mistake-notebook-storage"/)
+  assert.match(source, /MISTAKE_NOTEBOOK_EVENT/)
+  assert.match(source, /notifyMistakeNotebook/)
   assert.match(source, /runLearningStorageTransaction/)
   assert.match(source, /const previous = readMistakeList\(storageKey\)/)
   assert.match(source, /upsertWrongMistake\(previous, input, now\)/)
@@ -24,6 +26,9 @@ test("mistake notebook hook delegates model and storage logic", () => {
   assert.match(source, /return true/)
   assert.match(source, /return false/)
   assert.match(source, /writeMistakeList\(storageKey, next\)/)
+  assert.match(source, /window\.addEventListener\(MISTAKE_NOTEBOOK_EVENT, onMistakeNotebook\)/)
+  assert.match(source, /window\.removeEventListener\(MISTAKE_NOTEBOOK_EVENT, onMistakeNotebook\)/)
+  assert.match(source, /notifyMistakeNotebook\(storageKey\)/)
   assert.match(source, /const saved = runLearningStorageTransaction/)
   assert.match(source, /if \(!saved\) return false/)
   assert.doesNotMatch(source, /readSrsMap/)

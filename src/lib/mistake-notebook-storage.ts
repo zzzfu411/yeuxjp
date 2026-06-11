@@ -2,6 +2,8 @@
 
 import { normalizeMistakeList, type MistakeItem } from "@/lib/mistake-notebook-model"
 
+export const MISTAKE_NOTEBOOK_EVENT = "yasashi:mistake-notebook:update"
+
 export function readMistakeList(storageKey: string, label: string = "mistake-notebook") {
   if (typeof window === "undefined") return []
 
@@ -29,4 +31,9 @@ export function writeMistakeList(storageKey: string, list: readonly MistakeItem[
     }
     return false
   }
+}
+
+export function notifyMistakeNotebook(storageKey: string) {
+  if (typeof window === "undefined") return
+  window.dispatchEvent(new CustomEvent(MISTAKE_NOTEBOOK_EVENT, { detail: { storageKey } }))
 }
