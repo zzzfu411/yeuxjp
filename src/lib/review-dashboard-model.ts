@@ -112,7 +112,7 @@ export function buildReviewDashboardModel({
     vocabSrsMap,
   })
   const totals: ReviewDashboardTotals = {
-    kana: Object.keys(kanaSrsMap).length,
+    kana: Object.keys(visibleKanaSrsMap).length,
     vocab: Object.keys(vocabSrsMap).length,
     mistakes: mistakeIdSet.size,
     mastered: mastered.size,
