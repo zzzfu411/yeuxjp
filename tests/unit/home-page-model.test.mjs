@@ -56,3 +56,27 @@ test("home page model resolves completed starter courses to review and finds the
   assert.equal(home.completedCount, lessons.STARTER_LESSONS.length)
   assert.deepEqual(home.weakest, { id: "weak", label: "\u8bed\u6cd5", score: 30 })
 })
+
+test("home page model falls back to recommended skills after starter courses", () => {
+  const completed = new Set(lessons.STARTER_LESSONS.map((lesson) => lesson.id))
+  const skill = {
+    title: "Kana drill",
+    short: "Practice the next kana set",
+    href: "/kana?set=seion",
+  }
+  const home = model.buildHomePageModel({
+    completedLessonIds: completed,
+    items: {},
+    skill,
+    kanaDueIds: [],
+    vocabDueIds: [],
+    mistakeDueIds: [],
+    mistakeIds: [],
+  })
+
+  assert.equal(home.nextLesson, null)
+  assert.equal(home.learningEntry.kind, "skill")
+  assert.equal(home.learningEntry.title, skill.title)
+  assert.equal(home.learningEntry.subtitle, skill.short)
+  assert.equal(home.learningEntry.href, skill.href)
+})

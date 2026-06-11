@@ -8,33 +8,45 @@ import { Button } from "@/components/ui/button"
 import { OnboardingPanel } from "@/components/home/onboarding-panel"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { cn } from "@/lib/utils"
-import { useLearningProfile, useLearningProgress } from "@/lib/learning-progress"
+import { useLearningProfile } from "@/lib/learning-progress"
+import { useLearningStatus } from "@/lib/learning-status"
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { MISTAKE_SRS_STORAGE_KEY, useMistakeNotebook } from "@/lib/mistake-notebook"
 import { getLessonEntryBadge, getLessonEntryStatus } from "@/lib/learning-entry"
 import { STARTER_LESSONS } from "@/data/lessons"
 import { buildHomePageModel } from "@/lib/home-page-model"
+import { kanaData } from "@/data/kana-data"
+import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
+import { SKILL_TREE } from "@/lib/skill-tree"
+import { getKanaSkillStats, getRecommendedSkillId } from "@/lib/path-page-model"
 
 export default function Home() {
   const { profile, saveProfile } = useLearningProfile()
   const [profileSaveError, setProfileSaveError] = useState(false)
-  const learning = useLearningProgress()
+  const learning = useLearningStatus()
   const kanaSrs = useSrsDeck(STORAGE_KEYS.SRS_KANA)
   const vocabSrs = useSrsDeck(STORAGE_KEYS.SRS_VOCAB)
   const mistakeSrs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
   const mistakes = useMistakeNotebook()
+  const kanaStats = useMemo(() => getKanaSkillStats(kanaData, learning.isKanaMastered), [learning.isKanaMastered])
+  const vocabStats = useMemo(() => summarizeLearnedVocabIds(learning.learnedVocabIds), [learning.learnedVocabIds])
+  const recommendedSkill = useMemo(() => {
+    const skillId = getRecommendedSkillId(kanaStats, vocabStats)
+    return SKILL_TREE.find((skill) => skill.id === skillId) ?? null
+  }, [kanaStats, vocabStats])
 
   const homeModel = useMemo(() => {
     return buildHomePageModel({
       completedLessonIds: learning.completedLessonIds,
       items: learning.items,
+      skill: recommendedSkill,
       kanaDueIds: kanaSrs.dueIds,
       vocabDueIds: vocabSrs.dueIds,
       mistakeDueIds: mistakeSrs.dueIds,
       mistakeIds: mistakes.byId.keys(),
     })
-  }, [kanaSrs.dueIds, learning.completedLessonIds, learning.items, mistakeSrs.dueIds, mistakes.byId, vocabSrs.dueIds])
+  }, [kanaSrs.dueIds, learning.completedLessonIds, learning.items, mistakeSrs.dueIds, mistakes.byId, recommendedSkill, vocabSrs.dueIds])
   const { totalDue, nextLesson, learningEntry, completedCount, weakest } = homeModel
 
   return (

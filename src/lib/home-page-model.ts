@@ -1,5 +1,5 @@
 import { getNextLesson } from "@/data/lessons"
-import { resolveLearningEntry, type LearningEntry } from "@/lib/learning-entry"
+import { resolveLearningEntry, type LearningEntry, type LearningEntrySkill } from "@/lib/learning-entry"
 import { averageMastery, type ItemProgressMap, type PracticeItemType } from "@/lib/learning-progress-model"
 
 export type HomeWeakestItem = {
@@ -45,6 +45,7 @@ export function getHomeWeakestItem(items: ItemProgressMap): HomeWeakestItem | nu
 export function buildHomePageModel({
   completedLessonIds,
   items,
+  skill,
   kanaDueIds,
   vocabDueIds,
   mistakeDueIds,
@@ -52,6 +53,7 @@ export function buildHomePageModel({
 }: {
   completedLessonIds: ReadonlySet<string>
   items: ItemProgressMap
+  skill?: LearningEntrySkill | null
   kanaDueIds: readonly string[]
   vocabDueIds: readonly string[]
   mistakeDueIds: readonly string[]
@@ -64,7 +66,7 @@ export function buildHomePageModel({
     dueMistakeIds,
     totalDue: kanaDueIds.length + vocabDueIds.length + dueMistakeIds.length,
     nextLesson,
-    learningEntry: resolveLearningEntry({ nextLesson }),
+    learningEntry: resolveLearningEntry({ nextLesson, skill }),
     completedCount: completedLessonIds.size,
     weakest: getHomeWeakestItem(items),
   }

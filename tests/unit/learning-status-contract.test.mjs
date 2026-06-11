@@ -27,6 +27,7 @@ test("useLearningStatus is the shared read facade over legacy marks and item pro
 
 test("high-level recommendation and review surfaces use the shared learning status facade", () => {
   const files = [
+    "src/app/page.tsx",
     "src/app/path/page.tsx",
     "src/components/learning/next-step-card.tsx",
     "src/components/quiz/quiz-runner.tsx",
