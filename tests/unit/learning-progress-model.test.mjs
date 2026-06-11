@@ -208,3 +208,53 @@ test("learning progress helpers merge maps, normalize step indexes, and average 
     40
   )
 })
+
+test("learning progress model builds study dates and calculates current streak", () => {
+  const day = 24 * 60 * 60 * 1000
+  const today = Date.UTC(2026, 5, 12, 12)
+  const yesterday = today - day
+  const twoDaysAgo = today - 2 * day
+  const fourDaysAgo = today - 4 * day
+
+  const dates = model.buildStudyDates(
+    {
+      lessonToday: {
+        lessonId: "lessonToday",
+        status: "completed",
+        startedAt: today - 1,
+        completedAt: today,
+      },
+      lessonOld: {
+        lessonId: "lessonOld",
+        status: "completed",
+        startedAt: fourDaysAgo - 1,
+        completedAt: fourDaysAgo,
+      },
+      lessonStarted: {
+        lessonId: "lessonStarted",
+        status: "started",
+        startedAt: yesterday,
+      },
+    },
+    [
+      {
+        itemId: "ka",
+        itemType: "kana",
+        mode: "recognition",
+        correct: true,
+        createdAt: yesterday,
+      },
+      {
+        itemId: "mizu",
+        itemType: "vocab",
+        mode: "meaning",
+        correct: true,
+        createdAt: twoDaysAgo,
+      },
+    ]
+  )
+
+  assert.deepEqual(Array.from(dates).sort(), ["2026-06-08", "2026-06-10", "2026-06-11", "2026-06-12"])
+  assert.equal(model.calculateStudyStreak(dates, new Date(today)), 3)
+  assert.equal(model.calculateStudyStreak(new Set(["2026-06-11"]), new Date(today)), 0)
+})

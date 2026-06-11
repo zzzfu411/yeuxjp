@@ -109,14 +109,9 @@ test("learning progress preserves compatible lesson keys while adding resume fie
 
 test("learning progress listens for cross-tab storage updates", () => {
   const progress = read("src/lib/learning-progress.ts")
+  const keys = read("src/lib/learning-progress-keys.ts")
 
-  assert.match(progress, /function isProfileStorageKey/)
-  assert.match(progress, /const PROGRESS_STORAGE_KEYS = \[/)
-  assert.match(progress, /STORAGE_KEYS\.LESSON_PROGRESS/)
-  assert.match(progress, /STORAGE_KEYS\.ITEM_PROGRESS/)
-  assert.match(progress, /STORAGE_KEYS\.PRACTICE_RESULTS/)
-  assert.match(progress, /function includesProgressStorageKey/)
-  assert.match(progress, /function isProgressStorageKey/)
+  assert.match(progress, /from "@\/lib\/learning-progress-keys"/)
   assert.match(progress, /if \(!isProfileStorageKey\(event\.key\)\) return/)
   assert.match(progress, /const onStorage = \(event: StorageEvent\) =>/)
   assert.match(progress, /isProgressStorageKey\(detail\?\.key\)/)
@@ -124,6 +119,15 @@ test("learning progress listens for cross-tab storage updates", () => {
   assert.match(progress, /isProgressStorageKey\(event\.key\)/)
   assert.match(progress, /window\.addEventListener\("storage", onStorage\)/)
   assert.match(progress, /window\.removeEventListener\("storage", onStorage\)/)
+  assert.doesNotMatch(progress, /function isProfileStorageKey/)
+  assert.doesNotMatch(progress, /const PROGRESS_STORAGE_KEYS = \[/)
+  assert.match(keys, /export function isProfileStorageKey/)
+  assert.match(keys, /export const PROGRESS_STORAGE_KEYS = \[/)
+  assert.match(keys, /STORAGE_KEYS\.LESSON_PROGRESS/)
+  assert.match(keys, /STORAGE_KEYS\.ITEM_PROGRESS/)
+  assert.match(keys, /STORAGE_KEYS\.PRACTICE_RESULTS/)
+  assert.match(keys, /export function includesProgressStorageKey/)
+  assert.match(keys, /export function isProgressStorageKey/)
 })
 
 test("learning profile saves from the current storage snapshot", () => {

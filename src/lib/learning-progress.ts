@@ -6,18 +6,20 @@ import { LEARNING_EVENT, readLearningJson, writeLearningJson } from "@/lib/learn
 import {
   clampScore,
   appendPracticeResult,
+  buildStudyDates,
+  calculateStudyStreak,
   normalizeItemProgressMap,
   normalizeLessonProgressMap,
   normalizePracticeResults,
   normalizeProfile,
   normalizeStepIndex,
-  todayKey,
   updateItemProgressForPractice,
   type ItemProgressMap,
   type LessonProgressMap,
   type PracticeResult,
   type UserProfile,
 } from "@/lib/learning-progress-model"
+import { includesProgressStorageKey, isProfileStorageKey, isProgressStorageKey } from "@/lib/learning-progress-keys"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
 export {
@@ -39,24 +41,6 @@ function readLessonProgressMap() {
 
 function readUserProfile() {
   return normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null))
-}
-
-function isProfileStorageKey(key: string | null | undefined) {
-  return key === STORAGE_KEYS.USER_PROFILE
-}
-
-const PROGRESS_STORAGE_KEYS = [
-  STORAGE_KEYS.LESSON_PROGRESS,
-  STORAGE_KEYS.ITEM_PROGRESS,
-  STORAGE_KEYS.PRACTICE_RESULTS,
-] as const
-
-function includesProgressStorageKey(keys: readonly string[] | undefined) {
-  return !!keys?.some((key) => PROGRESS_STORAGE_KEYS.includes(key as (typeof PROGRESS_STORAGE_KEYS)[number]))
-}
-
-function isProgressStorageKey(key: string | null | undefined) {
-  return !!key && includesProgressStorageKey([key])
 }
 
 export function useLearningProfile() {
@@ -245,25 +229,11 @@ export function useLearningProgress() {
   }, [lessons])
 
   const studyDates = useMemo(() => {
-    const dates = new Set<string>()
-    for (const lesson of Object.values(lessons)) {
-      if (lesson.completedAt) dates.add(todayKey(new Date(lesson.completedAt)))
-    }
-    for (const result of results) {
-      dates.add(todayKey(new Date(result.createdAt)))
-    }
-    return dates
+    return buildStudyDates(lessons, results)
   }, [lessons, results])
 
   const streak = useMemo(() => {
-    let count = 0
-    const cursor = new Date()
-    for (;;) {
-      if (!studyDates.has(todayKey(cursor))) break
-      count += 1
-      cursor.setDate(cursor.getDate() - 1)
-    }
-    return count
+    return calculateStudyStreak(studyDates)
   }, [studyDates])
 
   return {

@@ -202,6 +202,28 @@ export function todayKey(date = new Date()) {
   return date.toISOString().slice(0, 10)
 }
 
+export function buildStudyDates(lessons: LessonProgressMap, results: readonly PracticeResult[]) {
+  const dates = new Set<string>()
+  for (const lesson of Object.values(lessons)) {
+    if (lesson.completedAt) dates.add(todayKey(new Date(lesson.completedAt)))
+  }
+  for (const result of results) {
+    dates.add(todayKey(new Date(result.createdAt)))
+  }
+  return dates
+}
+
+export function calculateStudyStreak(studyDates: ReadonlySet<string>, today: Date = new Date()) {
+  let count = 0
+  const cursor = new Date(today)
+  for (;;) {
+    if (!studyDates.has(todayKey(cursor))) break
+    count += 1
+    cursor.setDate(cursor.getDate() - 1)
+  }
+  return count
+}
+
 export function mergeLessonProgressMaps(stored: LessonProgressMap, current: LessonProgressMap) {
   return { ...stored, ...current }
 }
