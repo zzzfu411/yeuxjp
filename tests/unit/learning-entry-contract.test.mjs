@@ -16,9 +16,13 @@ test("learning entry surfaces share the centralized entry model", () => {
     assert.match(source, /useLearningRecommendation\(/, relPath)
   }
 
-  const recommendation = read("src/lib/learning-recommendation.ts")
-  assert.match(recommendation, /from "@\/lib\/learning-entry"/)
-  assert.match(recommendation, /resolveLearningEntry\(/)
+  const recommendationHook = read("src/lib/learning-recommendation.ts")
+  const recommendationModel = read("src/lib/learning-recommendation-model.ts")
+  assert.match(recommendationHook, /from "@\/lib\/learning-recommendation-model"/)
+  assert.match(recommendationHook, /buildLearningRecommendationModel\(/)
+  assert.doesNotMatch(recommendationHook, /resolveLearningEntry\(/)
+  assert.match(recommendationModel, /from "@\/lib\/learning-entry"/)
+  assert.match(recommendationModel, /resolveLearningEntry\(/)
 
   const home = read("src/app/page.tsx")
   const model = read("src/lib/home-page-model.ts")

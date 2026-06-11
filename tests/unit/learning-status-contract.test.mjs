@@ -28,6 +28,8 @@ test("useLearningStatus is the shared read facade over legacy marks and item pro
 test("high-level recommendation and review surfaces use the shared learning status facade", () => {
   const recommendationHook = read("src/lib/learning-recommendation.ts")
   assert.match(recommendationHook, /useLearningStatus\(\)/)
+  assert.match(recommendationHook, /buildLearningRecommendationModel\(/)
+  assert.doesNotMatch(recommendationHook, /summarizeLearnedVocabIds/)
 
   const recommendationSurfaces = [
     "src/app/page.tsx",

@@ -52,9 +52,12 @@ test("recommendation surfaces do not import the aggregated vocabulary dataset", 
     assert.match(source, /useLearningRecommendation/)
   }
 
-  const recommendation = fs.readFileSync(path.join(root, "src/lib/learning-recommendation.ts"), "utf8")
-  assert.doesNotMatch(recommendation, /vocabByLevel/)
-  assert.match(recommendation, /summarizeLearnedVocabIds/)
+  const recommendationHook = fs.readFileSync(path.join(root, "src/lib/learning-recommendation.ts"), "utf8")
+  const recommendationModel = fs.readFileSync(path.join(root, "src/lib/learning-recommendation-model.ts"), "utf8")
+  assert.doesNotMatch(recommendationHook, /vocabByLevel/)
+  assert.doesNotMatch(recommendationHook, /summarizeLearnedVocabIds/)
+  assert.doesNotMatch(recommendationModel, /vocabByLevel/)
+  assert.match(recommendationModel, /summarizeLearnedVocabIds/)
 })
 
 test("vocabulary public index does not re-export eager aggregate datasets", () => {
