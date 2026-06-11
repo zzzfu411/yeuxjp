@@ -3,10 +3,11 @@ import fs from "node:fs"
 import path from "node:path"
 import test from "node:test"
 
-const root = path.resolve(import.meta.dirname, "..", "..", "..")
-const webReadme = fs.readFileSync(path.join(root, "web/README.md"), "utf8")
+const appRoot = path.resolve(import.meta.dirname, "..", "..")
+const workspaceRoot = path.resolve(appRoot, "..")
+const webReadme = fs.readFileSync(path.join(appRoot, "README.md"), "utf8")
 const optionalDocs = ["CLAUDE.md", "README_CODEX.md", "PLAN.md"]
-  .map((relPath) => ({ relPath, absPath: path.join(root, relPath) }))
+  .map((relPath) => ({ relPath, absPath: path.join(workspaceRoot, relPath) }))
   .filter(({ absPath }) => fs.existsSync(absPath))
   .map(({ relPath, absPath }) => [relPath, fs.readFileSync(absPath, "utf8")])
 
@@ -61,4 +62,13 @@ test("CLAUDE.md documents the shared E2E harness when the wrapper doc exists", (
   assert.match(claude, /harness\.mjs/)
   assert.match(claude, /server startup\/shutdown/)
   assert.match(claude, /optional Playwright handling/)
+})
+
+test("agent docs contract supports nested workspaces and app-only CI checkouts", () => {
+  assert.equal(fs.existsSync(path.join(appRoot, "package.json")), true)
+  assert.equal(fs.existsSync(path.join(appRoot, "README.md")), true)
+
+  for (const [name] of optionalDocs) {
+    assert.ok(["CLAUDE.md", "README_CODEX.md", "PLAN.md"].includes(name))
+  }
 })

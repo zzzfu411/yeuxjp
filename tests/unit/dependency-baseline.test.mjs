@@ -10,12 +10,18 @@ function readJson(absPath) {
   return JSON.parse(fs.readFileSync(absPath, "utf8"))
 }
 
-const rootPackage = readJson(path.join(workspaceRoot, "package.json"))
-const rootLock = readJson(path.join(workspaceRoot, "package-lock.json"))
+function maybeReadJson(absPath) {
+  return fs.existsSync(absPath) ? readJson(absPath) : null
+}
+
+const rootPackage = maybeReadJson(path.join(workspaceRoot, "package.json"))
+const rootLock = maybeReadJson(path.join(workspaceRoot, "package-lock.json"))
 const webPackage = readJson(path.join(root, "package.json"))
 const webLock = readJson(path.join(root, "package-lock.json"))
 
-test("root package and lock remain dependency-free forwarding metadata", () => {
+test("wrapper package and lock remain dependency-free forwarding metadata when present", () => {
+  if (!rootPackage || !rootLock) return
+
   assert.deepEqual(rootPackage.dependencies ?? {}, {})
   assert.deepEqual(rootPackage.devDependencies ?? {}, {})
   assert.deepEqual(rootLock.packages?.[""]?.dependencies ?? {}, {})
@@ -35,4 +41,9 @@ test("Playwright browser E2E dependency and install script stay declared", () =>
   assert.equal(webPackage.scripts["e2e:install"], "playwright install chromium")
   assert.ok(webLock.packages?.["node_modules/playwright"], "package lock should include playwright")
   assert.ok(webLock.packages?.["node_modules/playwright-core"], "package lock should include playwright-core")
+})
+
+test("dependency baseline tests support app-only CI checkouts", () => {
+  assert.equal(webPackage.private, true)
+  assert.ok(webLock.packages?.[""], "web lock should be valid from the app repository root")
 })
