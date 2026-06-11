@@ -44,7 +44,7 @@ export function SkillTreePage() {
           </div>
         </div>
         <Button asChild>
-          <Link href={learningEntry.href}>{learningEntry.cta}</Link>
+          <Link href={learningEntry.href} data-testid="path-next-learning">{learningEntry.cta}</Link>
         </Button>
       </div>
 

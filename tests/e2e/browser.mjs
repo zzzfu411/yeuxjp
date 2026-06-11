@@ -410,6 +410,18 @@ try {
     "/learn/day-2-ka-row-thanks",
     "completed first lesson should link to the next starter lesson"
   )
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  assert.equal(
+    await page.getByTestId("home-start-learning").getAttribute("href"),
+    "/learn/day-2-ka-row-thanks",
+    "home start learning should recommend the next unlocked lesson after completing day 1"
+  )
+  await page.goto(`${baseUrl}/path`, { waitUntil: "networkidle" })
+  assert.equal(
+    await page.getByTestId("path-next-learning").getAttribute("href"),
+    "/learn/day-2-ka-row-thanks",
+    "path next step should recommend the next unlocked lesson after completing day 1"
+  )
 
   await page.evaluate(() => localStorage.clear())
   await page.goto(`${baseUrl}/learn/day-2-ka-row-thanks`, { waitUntil: "networkidle" })

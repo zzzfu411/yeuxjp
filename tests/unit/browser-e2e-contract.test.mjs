@@ -12,6 +12,11 @@ const requiredSelectors = [
     pattern: /data-testid="home-start-learning"/,
   },
   {
+    testId: "path-next-learning",
+    source: "src/components/path/skill-tree-page.tsx",
+    pattern: /data-testid="path-next-learning"/,
+  },
+  {
     testId: "lesson-next",
     source: "src/components/lesson/lesson-navigation-bar.tsx",
     pattern: /data-testid="lesson-next"/,
@@ -320,6 +325,11 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   assert.match(e2e, /getByTestId\("lesson-review-link"\)/)
   assert.match(e2e, /getByTestId\("lesson-next-lesson-link"\)/)
   assert.match(e2e, /\/learn\/day-2-ka-row-thanks/)
+  assert.match(e2e, /getByTestId\("home-start-learning"\)\.getAttribute\("href"\)/)
+  assert.match(e2e, /home start learning should recommend the next unlocked lesson after completing day 1/)
+  assert.match(e2e, /page\.goto\(`\$\{baseUrl\}\/path`/)
+  assert.match(e2e, /getByTestId\("path-next-learning"\)\.getAttribute\("href"\)/)
+  assert.match(e2e, /path next step should recommend the next unlocked lesson after completing day 1/)
 })
 
 test("browser E2E verifies locked lesson previews stay read-only", () => {
