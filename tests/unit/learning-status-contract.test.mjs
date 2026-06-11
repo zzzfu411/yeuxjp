@@ -47,7 +47,7 @@ test("high-level recommendation and review surfaces use the shared learning stat
 
   const directStatusSurfaces = [
     "src/components/quiz/quiz-runner.tsx",
-    "src/app/review/page.tsx",
+    "src/components/review/review-page.tsx",
   ]
 
   for (const file of directStatusSurfaces) {

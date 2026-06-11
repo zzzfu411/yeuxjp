@@ -10,8 +10,12 @@ function read(relPath) {
 }
 
 test("review page delegates dashboard surfaces while keeping SRS/session wiring", () => {
-  const page = read("src/app/review/page.tsx")
+  const route = read("src/app/review/page.tsx")
+  const page = read("src/components/review/review-page.tsx")
 
+  assert.doesNotMatch(route, /"use client"/)
+  assert.match(route, /from "@\/components\/review\/review-page"/)
+  assert.match(route, /<ReviewPage \/>/)
   assert.match(page, /from "@\/components\/review\/review-dashboard"/)
   assert.match(page, /from "@\/lib\/review-dashboard-model"/)
   assert.match(page, /from "@\/lib\/learning-status"/)
