@@ -12,8 +12,9 @@ import { useLearningProfile, useLearningProgress } from "@/lib/learning-progress
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { MISTAKE_SRS_STORAGE_KEY, useMistakeNotebook } from "@/lib/mistake-notebook"
-import { getLessonEntryBadge, getLessonEntryStatus, resolveLearningEntry } from "@/lib/learning-entry"
-import { getNextLesson, STARTER_LESSONS } from "@/data/lessons"
+import { getLessonEntryBadge, getLessonEntryStatus } from "@/lib/learning-entry"
+import { STARTER_LESSONS } from "@/data/lessons"
+import { buildHomePageModel } from "@/lib/home-page-model"
 
 export default function Home() {
   const { profile, saveProfile } = useLearningProfile()
@@ -24,23 +25,17 @@ export default function Home() {
   const mistakeSrs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
   const mistakes = useMistakeNotebook()
 
-  const dueMistakeIds = useMemo(() => mistakeSrs.dueIds.filter((id) => mistakes.byId.has(id)), [mistakeSrs.dueIds, mistakes.byId])
-  const totalDue = kanaSrs.dueIds.length + vocabSrs.dueIds.length + dueMistakeIds.length
-  const nextLesson = useMemo(() => getNextLesson(learning.completedLessonIds), [learning.completedLessonIds])
-  const learningEntry = useMemo(() => resolveLearningEntry({ nextLesson }), [nextLesson])
-  const completedCount = learning.completedLessonIds.size
-
-  const weakest = useMemo(() => {
-    const entries = Object.values(learning.items)
-    if (!entries.length) return null
-    return entries
-      .map((item) => ({
-        id: item.itemId,
-        label: item.itemType === "kana" ? "假名" : item.itemType === "grammar" ? "语法" : item.itemType === "sentence" ? "造句" : "词汇",
-        score: Math.round((item.recognition + item.listening + item.meaning + item.recall + item.production) / 5),
-      }))
-      .sort((a, b) => a.score - b.score)[0]
-  }, [learning.items])
+  const homeModel = useMemo(() => {
+    return buildHomePageModel({
+      completedLessonIds: learning.completedLessonIds,
+      items: learning.items,
+      kanaDueIds: kanaSrs.dueIds,
+      vocabDueIds: vocabSrs.dueIds,
+      mistakeDueIds: mistakeSrs.dueIds,
+      mistakeIds: mistakes.byId.keys(),
+    })
+  }, [kanaSrs.dueIds, learning.completedLessonIds, learning.items, mistakeSrs.dueIds, mistakes.byId, vocabSrs.dueIds])
+  const { totalDue, nextLesson, learningEntry, completedCount, weakest } = homeModel
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_15%_0%,hsl(var(--primary)/0.22),transparent_32rem),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted)/0.28))]">
