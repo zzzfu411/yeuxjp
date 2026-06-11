@@ -1,0 +1,163 @@
+"use client"
+
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { speakJapaneseRepeated } from "@/lib/speech"
+import { useMistakeNotebook } from "@/lib/mistake-notebook"
+import { useLearningStatus } from "@/lib/learning-status"
+import type { Question } from "@/lib/questions"
+import { createQuizStats } from "@/lib/quiz-session"
+import { useSpeechPreferences } from "@/components/ui/speech-preferences"
+import { useQuizAnswerRecorder } from "@/components/quiz/use-quiz-answer-recorder"
+import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
+import {
+  getQuizNoQuestionReason,
+  getQuizPreflightEmptyReason,
+  type QuizEmptyReason,
+} from "@/lib/quiz-runner-model"
+import {
+  filterUnlearnedVocab,
+  filterUnmasteredKana,
+  generateQuizQuestion,
+  getKanaPool,
+  type KanaQuizScope,
+  type QuizMode,
+  type VocabQuizScope,
+} from "@/lib/quiz-generators"
+
+export function useQuizSession(mode: QuizMode) {
+  const speech = useSpeechPreferences()
+  const mistakes = useMistakeNotebook()
+  const learning = useLearningStatus()
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
+  const [emptyReason, setEmptyReason] = useState<QuizEmptyReason>("loading")
+  const [selectedOption, setSelectedOption] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState(false)
+  const [quizStats, setQuizStats] = useState(createQuizStats)
+  const [kanaScope, setKanaScope] = useState<KanaQuizScope>("seion")
+  const [onlyUnmasteredKana, setOnlyUnmasteredKana] = useState(false)
+  const [vocabScope, setVocabScope] = useState<VocabQuizScope>("survival")
+  const [onlyUnlearnedVocab, setOnlyUnlearnedVocab] = useState(false)
+
+  const recordAnswer = useQuizAnswerRecorder({
+    progress: learning,
+    notebook: mistakes,
+    setQuizStats,
+  })
+  const {
+    loading: vocabLoading,
+    error: vocabError,
+    basePool: vocabBasePool,
+    retry: retryVocabulary,
+  } = useQuizVocabularyPools({ mode, vocabScope })
+
+  const kanaBasePool = useMemo(() => {
+    return getKanaPool(kanaScope)
+  }, [kanaScope])
+
+  const kanaTargetPool = useMemo(() => {
+    return filterUnmasteredKana(kanaBasePool, learning.isKanaMastered, onlyUnmasteredKana)
+  }, [learning.isKanaMastered, kanaBasePool, onlyUnmasteredKana])
+
+  const vocabTargetPool = useMemo(() => {
+    return filterUnlearnedVocab(vocabBasePool, learning.isVocabLearned, onlyUnlearnedVocab)
+  }, [learning.isVocabLearned, onlyUnlearnedVocab, vocabBasePool])
+
+  const playAudio = useCallback((text: string) => {
+    const repeat = speech?.prefs.repeat ?? 1
+    const gapMs = speech?.prefs.gapMs ?? 250
+    speakJapaneseRepeated(text, { repeat, gapMs })
+  }, [speech?.prefs.gapMs, speech?.prefs.repeat])
+
+  const generateQuestion = useCallback(() => {
+    const preflightReason = getQuizPreflightEmptyReason({
+      mode,
+      vocabLoading,
+      vocabError: Boolean(vocabError),
+    })
+    if (preflightReason) {
+      setCurrentQuestion(null)
+      setSelectedOption(null)
+      setSaveError(false)
+      setEmptyReason(preflightReason)
+      return
+    }
+
+    const q = generateQuizQuestion({
+      mode,
+      kanaBasePool,
+      kanaTargetPool,
+      vocabBasePool,
+      vocabTargetPool,
+    })
+
+    if (q) {
+      setCurrentQuestion(q)
+      setSelectedOption(null)
+      setSaveError(false)
+      setEmptyReason("loading")
+
+      const autoPlay = speech?.prefs.autoPlay ?? true
+      if (q.questionAudio && q.autoPlayAudio && autoPlay) {
+        setTimeout(() => playAudio(q.questionAudio!), 500)
+      }
+      return
+    }
+
+    setCurrentQuestion(null)
+    setSelectedOption(null)
+    setSaveError(false)
+    setEmptyReason(getQuizNoQuestionReason({ mode, onlyUnmasteredKana, onlyUnlearnedVocab }))
+  }, [
+    kanaBasePool,
+    kanaTargetPool,
+    mode,
+    onlyUnlearnedVocab,
+    onlyUnmasteredKana,
+    playAudio,
+    speech?.prefs.autoPlay,
+    vocabBasePool,
+    vocabError,
+    vocabLoading,
+    vocabTargetPool,
+  ])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      generateQuestion()
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [generateQuestion])
+
+  const handleSelect = useCallback((val: string) => {
+    if (selectedOption) return
+    if (!currentQuestion) return
+
+    const result = recordAnswer(currentQuestion, val)
+    if (!result) {
+      setSaveError(true)
+      return
+    }
+    setSaveError(false)
+    setSelectedOption(val)
+  }, [currentQuestion, recordAnswer, selectedOption])
+
+  return {
+    currentQuestion,
+    emptyReason,
+    selectedOption,
+    saveError,
+    quizStats,
+    kanaScope,
+    setKanaScope,
+    onlyUnmasteredKana,
+    setOnlyUnmasteredKana,
+    vocabScope,
+    setVocabScope,
+    onlyUnlearnedVocab,
+    setOnlyUnlearnedVocab,
+    retryVocabulary,
+    generateQuestion,
+    handleSelect,
+    playAudio,
+  }
+}

@@ -46,7 +46,7 @@ test("high-level recommendation and review surfaces use the shared learning stat
   }
 
   const directStatusSurfaces = [
-    "src/components/quiz/quiz-runner.tsx",
+    "src/components/quiz/use-quiz-session.ts",
     "src/components/review/review-page.tsx",
   ]
 
@@ -56,4 +56,8 @@ test("high-level recommendation and review surfaces use the shared learning stat
     assert.doesNotMatch(source, /useKanaProgress/, file)
     assert.doesNotMatch(source, /useVocabProgress/, file)
   }
+
+  const quizRunner = read("src/components/quiz/quiz-runner.tsx")
+  assert.match(quizRunner, /useQuizSession\(mode\)/)
+  assert.doesNotMatch(quizRunner, /useLearningStatus\(\)/)
 })

@@ -10,11 +10,12 @@ function read(relPath) {
 }
 
 test("quiz runner delegates vocabulary loading to useQuizVocabularyPools", () => {
-  const source = read("src/components/quiz/quiz-runner.tsx")
+  const runner = read("src/components/quiz/quiz-runner.tsx")
+  const source = read("src/components/quiz/use-quiz-session.ts")
   const emptyState = read("src/components/quiz/quiz-empty-state.tsx")
 
   assert.match(source, /from "@\/components\/quiz\/use-quiz-vocabulary-pools"/)
-  assert.match(source, /from "@\/components\/quiz\/quiz-empty-state"/)
+  assert.match(runner, /from "@\/components\/quiz\/quiz-empty-state"/)
   assert.match(source, /from "@\/lib\/quiz-runner-model"/)
   assert.match(source, /useQuizVocabularyPools\(\{ mode, vocabScope \}\)/)
   assert.match(source, /error: vocabError/)
@@ -23,7 +24,7 @@ test("quiz runner delegates vocabulary loading to useQuizVocabularyPools", () =>
   assert.match(source, /vocabLoading/)
   assert.match(source, /vocabError/)
   assert.match(source, /setEmptyReason\(preflightReason\)/)
-  assert.match(source, /onRetryVocabulary=\{retryVocabulary\}/)
+  assert.match(runner, /onRetryVocabulary=\{retryVocabulary\}/)
   assert.match(emptyState, /data-testid="quiz-retry-vocabulary"/)
   assert.match(emptyState, /onClick=\{onRetryVocabulary\}/)
   assert.doesNotMatch(source, /loadVocabularyScope/)
@@ -34,6 +35,7 @@ test("quiz runner delegates vocabulary loading to useQuizVocabularyPools", () =>
 test("useQuizVocabularyPools owns scoped vocabulary loading without all-vocabulary fallback", () => {
   const source = read("src/components/quiz/use-quiz-vocabulary-pools.ts")
   const runner = read("src/components/quiz/quiz-runner.tsx")
+  const session = read("src/components/quiz/use-quiz-session.ts")
   const generators = read("src/lib/quiz-generators.ts")
   const builders = read("src/lib/quiz-question-builders.ts")
   const pools = read("src/lib/quiz-pools.ts")
@@ -51,7 +53,9 @@ test("useQuizVocabularyPools owns scoped vocabulary loading without all-vocabula
   assert.doesNotMatch(source, /loadVocabularyScope\("all"\)/)
   assert.doesNotMatch(source, /fallbackPool/)
   assert.doesNotMatch(runner, /fallbackPool/)
+  assert.doesNotMatch(session, /fallbackPool/)
   assert.doesNotMatch(runner, /allVocab/)
+  assert.doesNotMatch(session, /allVocab/)
   assert.doesNotMatch(generators, /allVocab/)
   assert.doesNotMatch(builders, /allVocab/)
   assert.doesNotMatch(pools, /getVocabPool/)

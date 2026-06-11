@@ -10,8 +10,11 @@ function read(relPath) {
 }
 
 test("quiz runner delegates shared answer recording to useQuizAnswerRecorder", () => {
-  const source = read("src/components/quiz/quiz-runner.tsx")
+  const runner = read("src/components/quiz/quiz-runner.tsx")
+  const source = read("src/components/quiz/use-quiz-session.ts")
 
+  assert.match(runner, /from "@\/components\/quiz\/use-quiz-session"/)
+  assert.match(runner, /useQuizSession\(mode\)/)
   assert.match(source, /from "@\/lib\/learning-status"/)
   assert.match(source, /const learning = useLearningStatus\(\)/)
   assert.match(source, /progress: learning/)
@@ -22,7 +25,7 @@ test("quiz runner delegates shared answer recording to useQuizAnswerRecorder", (
   assert.match(source, /setSaveError\(true\)/)
   assert.match(source, /setSaveError\(false\)/)
   assert.match(source, /setSelectedOption\(val\)/)
-  assert.match(source, /<PracticeSaveError show=\{saveError\} \/>/)
+  assert.match(runner, /<PracticeSaveError show=\{saveError\} \/>/)
   assert.doesNotMatch(source, /useKanaProgress/)
   assert.doesNotMatch(source, /useVocabProgress/)
   assert.doesNotMatch(source, /useLearningProgress/)
@@ -32,15 +35,16 @@ test("quiz runner delegates shared answer recording to useQuizAnswerRecorder", (
 })
 
 test("quiz runner delegates empty question states to QuizEmptyState", () => {
-  const source = read("src/components/quiz/quiz-runner.tsx")
+  const runner = read("src/components/quiz/quiz-runner.tsx")
+  const source = read("src/components/quiz/use-quiz-session.ts")
   const emptyState = read("src/components/quiz/quiz-empty-state.tsx")
 
-  assert.match(source, /from "@\/components\/quiz\/quiz-empty-state"/)
+  assert.match(runner, /from "@\/components\/quiz\/quiz-empty-state"/)
   assert.match(source, /type QuizEmptyReason/)
   assert.match(source, /from "@\/lib\/quiz-runner-model"/)
   assert.match(source, /getQuizPreflightEmptyReason/)
   assert.match(source, /getQuizNoQuestionReason/)
-  assert.match(source, /<QuizEmptyState/)
+  assert.match(runner, /<QuizEmptyState/)
   assert.match(source, /setEmptyReason\("loading"\)/)
   assert.match(source, /setEmptyReason\(preflightReason\)/)
   assert.match(source, /setEmptyReason\(/)
