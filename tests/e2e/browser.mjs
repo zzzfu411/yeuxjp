@@ -121,6 +121,7 @@ async function seedLearningDataBackupState(page) {
 
 let browser = null
 let context = null
+let mobileContext = null
 let failure = null
 
 try {
@@ -353,6 +354,21 @@ try {
     "learning data import should leave unmanaged browser state alone"
   )
 
+  mobileContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+  })
+  const mobilePage = await mobileContext.newPage()
+  await mobilePage.goto(baseUrl, { waitUntil: "networkidle" })
+  await mobilePage.getByTestId("home-start-learning").waitFor({ state: "visible" })
+  await mobilePage.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
+  await mobilePage.getByTestId("kana-card-a").waitFor({ state: "visible" })
+  await mobilePage.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+  await mobilePage.getByTestId("quiz-mode-hiragana-romaji").waitFor({ state: "visible" })
+  await mobilePage.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await mobilePage.getByTestId("review-today-empty").waitFor({ state: "visible" })
+
   console.log(`Browser E2E checks passed at ${baseUrl}`)
 } catch (error) {
   if (
@@ -369,6 +385,7 @@ try {
     failure = error
   }
 } finally {
+  await mobileContext?.close()
   await context?.close()
   await browser?.close()
   serverController.stop()

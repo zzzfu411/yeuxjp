@@ -295,6 +295,21 @@ test("browser E2E verifies review empty and due states", () => {
   assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
 })
 
+test("browser E2E includes a mobile viewport smoke pass for core routes", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /mobileContext = await browser\.newContext/)
+  assert.match(e2e, /viewport: \{ width: 390, height: 844 \}/)
+  assert.match(e2e, /isMobile: true/)
+  assert.match(e2e, /hasTouch: true/)
+  assert.match(e2e, /const mobilePage = await mobileContext\.newPage\(\)/)
+  assert.match(e2e, /mobilePage\.goto\(baseUrl/)
+  assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/kana`/)
+  assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/quiz`/)
+  assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/review`/)
+  assert.match(e2e, /mobileContext\?\.close\(\)/)
+})
+
 test("browser E2E verifies non-default vocabulary levels load dynamically", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
