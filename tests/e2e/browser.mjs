@@ -269,6 +269,40 @@ async function seedLearningDataBackupState(page) {
   })
 }
 
+async function seedDueMistakeReviewState(page) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await page.evaluate(() => {
+    const now = Date.now()
+    localStorage.clear()
+    localStorage.setItem(
+      "yasashi.mistakes.v1",
+      JSON.stringify([
+        {
+          id: "e2e-mistake:kana-a",
+          type: "hiragana-romaji",
+          questionText: "あ",
+          correctAnswer: "a",
+          correctDisplay: "a",
+          lastWrongAnswer: "i",
+          options: [
+            { value: "a", display: "a" },
+            { value: "i", display: "i" },
+          ],
+          wrongCount: 2,
+          createdAt: now - 60_000,
+          lastWrongAt: now - 30_000,
+        },
+      ])
+    )
+    localStorage.setItem(
+      "yasashi.srs.mistakes.v1",
+      JSON.stringify({
+        "e2e-mistake:kana-a": { box: 1, dueAt: now - 1, createdAt: now - 60_000, right: 0, wrong: 2 },
+      })
+    )
+  })
+}
+
 async function resetQuizLearningState(page) {
   await page.evaluate(() => {
     localStorage.clear()
@@ -519,6 +553,28 @@ try {
   await page.getByTestId(`recent-mistake-${recordedQuizMistake.id}`).waitFor({ state: "visible" })
   await page.getByTestId("review-start-mistakes").click()
   await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
+
+  await seedDueMistakeReviewState(page)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-start-mistakes").click()
+  await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
+  await page.getByTestId("review-answer-a").click()
+  await page.waitForFunction(() => {
+    const mistakes = JSON.parse(localStorage.getItem("yasashi.mistakes.v1") ?? "[]")
+    const srs = JSON.parse(localStorage.getItem("yasashi.srs.mistakes.v1") ?? "{}")
+    const item = Array.isArray(mistakes) ? mistakes.find((mistake) => mistake.id === "e2e-mistake:kana-a") : null
+    return item?.wrongCount === 2 && srs?.["e2e-mistake:kana-a"]?.box > 1
+  })
+  const retainedMistakes = await readJsonStorage(page, "yasashi.mistakes.v1")
+  const retainedMistake = Array.isArray(retainedMistakes)
+    ? retainedMistakes.find((item) => item.id === "e2e-mistake:kana-a")
+    : null
+  assert.equal(retainedMistake?.wrongCount, 2, "correct mistake review should retain the historical mistake count")
+  const reviewedMistakeSrs = await readJsonStorage(page, "yasashi.srs.mistakes.v1")
+  assert.ok(
+    reviewedMistakeSrs?.["e2e-mistake:kana-a"]?.box > 1,
+    "correct mistake review should advance mistake SRS without deleting notebook history"
+  )
 
   await assertQuizModeRecordsPractice(page, {
     mode: "audio-kana",

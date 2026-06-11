@@ -366,6 +366,20 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /getByTestId\("mistake-review-session"\)/)
 })
 
+test("browser E2E verifies correct mistake reviews retain notebook history", () => {
+  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+
+  assert.match(e2e, /async function seedDueMistakeReviewState/)
+  assert.match(e2e, /"e2e-mistake:kana-a"/)
+  assert.match(e2e, /"yasashi\.srs\.mistakes\.v1"/)
+  assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("review-answer-a"\)\.click\(\)/)
+  assert.match(e2e, /item\?\.wrongCount === 2/)
+  assert.match(e2e, /srs\?\.\["e2e-mistake:kana-a"\]\?\.box > 1/)
+  assert.match(e2e, /correct mistake review should retain the historical mistake count/)
+  assert.match(e2e, /correct mistake review should advance mistake SRS without deleting notebook history/)
+})
+
 test("browser E2E verifies every public quiz mode records practice", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
