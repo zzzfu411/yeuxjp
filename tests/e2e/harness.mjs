@@ -47,7 +47,6 @@ export function skipOptionalPlaywrightRuntimeError({
   const message = error instanceof Error ? error.message : String(error)
   const missingBrowser =
     message.includes("Executable doesn't exist") ||
-    message.includes("browserType.launch") ||
     message.includes("Please run the following command to download new browsers") ||
     message.includes("playwright install")
 
