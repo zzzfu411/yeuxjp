@@ -40,6 +40,7 @@ export function QuizQuestionPrompt({
               "font-bold text-foreground block mb-2",
               mode === "verb-conjugation" ? "text-3xl" : "text-6xl"
             )}
+            data-testid="quiz-question-text"
           >
             {question.questionText}
           </span>

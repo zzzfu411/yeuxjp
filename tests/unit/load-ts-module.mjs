@@ -4,7 +4,8 @@ import { pathToFileURL } from "node:url"
 import ts from "typescript"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
-const cacheDir = path.join(root, ".test-cache", String(process.pid))
+const runId = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+const cacheDir = path.join(root, ".test-cache", runId)
 const loaded = new Set()
 
 function cachePathForRel(relPath) {

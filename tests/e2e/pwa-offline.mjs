@@ -40,6 +40,7 @@ async function waitForServiceWorker(page) {
 }
 
 let browser = null
+let context = null
 let failure = null
 
 try {
@@ -51,7 +52,7 @@ try {
   })
   await ensureProductionServer()
   browser = await chromium.launch({ headless: true })
-  const context = await browser.newContext()
+  context = await browser.newContext()
   const page = await context.newPage()
 
   await page.goto(baseUrl, { waitUntil: "networkidle" })
@@ -74,11 +75,6 @@ try {
   assert.equal(onlineAnimCjkSvg.ok, true, "AnimCJK SVG should load online before offline cache verification")
   assert.match(onlineAnimCjkSvg.body, /<svg/i, "AnimCJK online response should be an SVG")
 
-  const sentinel = JSON.stringify({ pwaOfflineSmoke: true, savedAt: 123 })
-  await page.evaluate((value) => {
-    localStorage.setItem("yasashi.learning.lessons.v1", value)
-  }, sentinel)
-
   await context.setOffline(true)
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("home-start-learning").isVisible(), "offline static cache should serve the app home page")
@@ -95,13 +91,20 @@ try {
   assert.equal(offlineAnimCjkSvg.ok, true, "offline cache should serve a visited AnimCJK SVG")
   assert.match(offlineAnimCjkSvg.body, /<svg/i, "offline AnimCJK response should remain an SVG")
 
-  await page.goto(`${baseUrl}/offline-smoke-${Date.now()}`, { waitUntil: "domcontentloaded" })
-  assert.ok(await page.getByText("当前离线").isVisible(), "navigation failures should render the offline fallback")
-
-  const persisted = await page.evaluate(() => localStorage.getItem("yasashi.learning.lessons.v1"))
-  assert.equal(persisted, sentinel, "offline fallback must not overwrite local learning state")
+  const sentinel = JSON.stringify({ goal: "balanced", dailyMinutes: 15, startedAt: 123, updatedAt: 123 })
+  await page.evaluate((value) => {
+    localStorage.setItem("yasashi.learning.profile.v1", value)
+  }, sentinel)
 
   await context.setOffline(false)
+  const fallbackUrl = `${baseUrl}/offline-smoke-${Date.now()}`
+  await context.route(fallbackUrl, (route) => route.abort("failed"))
+  await page.goto(fallbackUrl, { waitUntil: "domcontentloaded" })
+  assert.match(await page.locator("body").innerText(), /当前离线/, "navigation failures should render the offline fallback")
+
+  const persisted = await page.evaluate(() => localStorage.getItem("yasashi.learning.profile.v1"))
+  assert.equal(persisted, sentinel, "offline fallback must not overwrite local learning state")
+
   console.log(`PWA offline E2E checks passed at ${baseUrl}`)
 } catch (error) {
   if (
@@ -118,6 +121,7 @@ try {
     failure = error
   }
 } finally {
+  await context?.close()
   await browser?.close()
   serverController.stop()
 }
@@ -125,4 +129,6 @@ try {
 if (failure) {
   console.error(failure)
   process.exit(1)
+} else {
+  process.exit(0)
 }

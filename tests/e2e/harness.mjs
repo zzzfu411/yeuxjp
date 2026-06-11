@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from "node:child_process"
+import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { canServeRoutes, waitForServer } from "./app-health.mjs"
 
@@ -6,6 +7,23 @@ export const appDir = fileURLToPath(new URL("../..", import.meta.url))
 
 export function npmCommand() {
   return process.platform === "win32" ? "npm.cmd" : "npm"
+}
+
+function runNpmScriptSync(args) {
+  const env = { ...process.env, NEXT_TELEMETRY_DISABLED: "1" }
+  if (process.platform === "win32") {
+    return spawnSync("cmd.exe", ["/d", "/s", "/c", ["npm.cmd", ...args].join(" ")], {
+      cwd: appDir,
+      stdio: "inherit",
+      env,
+    })
+  }
+
+  return spawnSync("npm", args, {
+    cwd: appDir,
+    stdio: "inherit",
+    env,
+  })
 }
 
 export function isE2ERequired(envName) {
@@ -116,13 +134,10 @@ export async function reuseOrStartDevServer({ baseUrl, port, controller }) {
 
 export function runBuildIfNeeded() {
   if (process.env.E2E_BASE_URL) return
-  const result = spawnSync(npmCommand(), ["run", "build"], {
-    cwd: appDir,
-    stdio: "inherit",
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
-  })
+  const result = runNpmScriptSync(["run", "build"])
   if (result.status !== 0) {
-    throw new Error("Production build failed before PWA E2E")
+    const detail = result.error ? `: ${result.error.message}` : ""
+    throw new Error(`Production build failed before PWA E2E${detail}`)
   }
 }
 
@@ -130,7 +145,8 @@ export async function startProductionServer({ baseUrl, port, controller }) {
   if (process.env.E2E_BASE_URL && await canServeRoutes(baseUrl)) return baseUrl
 
   runBuildIfNeeded()
-  controller.spawn(npmCommand(), ["run", "start", "--", "--hostname", "127.0.0.1", "--port", String(port)], {
+  const nextCli = path.join(appDir, "node_modules", "next", "dist", "bin", "next")
+  controller.spawn(process.execPath, [nextCli, "start", "--hostname", "127.0.0.1", "--port", String(port)], {
     cwd: appDir,
     stdio: "pipe",
     env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },

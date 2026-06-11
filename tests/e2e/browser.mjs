@@ -60,6 +60,54 @@ const seionRomaji = [
   "wo",
   "n",
 ]
+const seionHiraganaToRomaji = {
+  あ: "a",
+  い: "i",
+  う: "u",
+  え: "e",
+  お: "o",
+  か: "ka",
+  き: "ki",
+  く: "ku",
+  け: "ke",
+  こ: "ko",
+  さ: "sa",
+  し: "shi",
+  す: "su",
+  せ: "se",
+  そ: "so",
+  た: "ta",
+  ち: "chi",
+  つ: "tsu",
+  て: "te",
+  と: "to",
+  な: "na",
+  に: "ni",
+  ぬ: "nu",
+  ね: "ne",
+  の: "no",
+  は: "ha",
+  ひ: "hi",
+  ふ: "fu",
+  へ: "he",
+  ほ: "ho",
+  ま: "ma",
+  み: "mi",
+  む: "mu",
+  め: "me",
+  も: "mo",
+  や: "ya",
+  ゆ: "yu",
+  よ: "yo",
+  ら: "ra",
+  り: "ri",
+  る: "ru",
+  れ: "re",
+  ろ: "ro",
+  わ: "wa",
+  を: "wo",
+  ん: "n",
+}
 
 async function ensureServer() {
   baseUrl = await reuseOrStartDevServer({
@@ -140,6 +188,10 @@ try {
   await assert.doesNotReject(() => page.getByTestId("home-start-learning").click())
   await page.waitForURL(/\/learn\//)
   await page.getByTestId("lesson-next").click()
+  await page.waitForFunction(() => {
+    const progress = JSON.parse(localStorage.getItem("yasashi.learning.lessons.v1") ?? "{}")
+    return progress?.["day-1-a-row-hello"]?.lastStepId === "hello-example"
+  })
   const lessonProgress = await readJsonStorage(page, "yasashi.learning.lessons.v1")
   assert.equal(
     lessonProgress?.["day-1-a-row-hello"]?.currentStepIndex,
@@ -148,10 +200,15 @@ try {
   )
   assert.equal(
     lessonProgress?.["day-1-a-row-hello"]?.lastStepId,
-    "recognize-a",
+    "hello-example",
     "lesson navigation should persist the current step id"
   )
   await page.reload({ waitUntil: "networkidle" })
+  await page.getByTestId("lesson-next").click()
+  await page.waitForFunction(() => {
+    const progress = JSON.parse(localStorage.getItem("yasashi.learning.lessons.v1") ?? "{}")
+    return progress?.["day-1-a-row-hello"]?.lastStepId === "recognize-a"
+  })
   await page.getByTestId("lesson-answer-a").waitFor({ state: "visible" })
   await page.getByTestId("lesson-answer-a").click()
   assert.ok(await page.getByTestId("lesson-next").isEnabled())
@@ -200,6 +257,7 @@ try {
   await page.goto(`${baseUrl}/learn/day-2-ka-row-thanks`, { waitUntil: "networkidle" })
   await page.getByTestId("lesson-locked-preview").waitFor({ state: "visible" })
   await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-answer-ka").waitFor({ state: "visible" })
   assert.ok(await page.getByTestId("lesson-answer-ka").isDisabled(), "locked lesson preview should disable practice answers")
   assert.equal(
@@ -225,41 +283,48 @@ try {
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").click()
   await page.getByTestId("kana-stroke-toggle").click()
-  assert.ok(await page.getByLabel(/Stroke order|笔顺/).isVisible())
+  await page.getByTestId("kana-stroke-board").waitFor({ state: "visible" })
 
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").fill("みせ")
-  assert.ok(await page.getByText("みせ").first().isVisible())
+  await page.getByText("みせ").first().waitFor({ state: "visible" })
   await page.getByTestId("vocabulary-level-daily").click()
   await page.getByTestId("vocabulary-search").fill("Yakusoku")
-  assert.ok(await page.getByText("約束").first().isVisible(), "daily vocabulary level should load its dynamic vocabulary chunk")
+  await page.getByText("約束").first().waitFor({ state: "visible" })
   await page.getByTestId("vocabulary-level-fluent").click()
   await page.getByTestId("vocabulary-search").fill("Gainen")
-  assert.ok(await page.getByText("概念").first().isVisible(), "fluent vocabulary level should load its dynamic vocabulary chunk")
+  await page.getByText("概念").first().waitFor({ state: "visible" })
 
   await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
-  await page.evaluate(() => {
-    Math.random = () => 0
-  })
   await page.getByTestId("quiz-mode-hiragana-romaji").click()
-  await page.waitForSelector("button")
+  await page.getByTestId("quiz-question-text").waitFor({ state: "visible" })
   assert.ok(await page.getByText(/得分:/).isVisible())
-  assert.ok(await page.getByText("あ").isVisible(), "fixed quiz random source should ask kana a")
-  await page.getByTestId("quiz-answer-option-0").click()
+  const quizPrompt = (await page.getByTestId("quiz-question-text").innerText()).trim()
+  const expectedAnswer = seionHiraganaToRomaji[quizPrompt]
+  assert.ok(expectedAnswer, `quiz prompt should be a known seion kana, got ${quizPrompt}`)
+  const wrongOption = await page.evaluate((correctAnswer) => {
+    const option = Array.from(document.querySelectorAll('[data-testid^="quiz-answer-option-"]'))
+      .find((button) => button.textContent?.trim() !== correctAnswer)
+    return option?.getAttribute("data-testid")
+  }, expectedAnswer)
+  assert.ok(wrongOption, "hiragana quiz should expose at least one wrong answer option")
+  await page.getByTestId(wrongOption).click()
+  await page.waitForFunction(() => {
+    const mistakes = JSON.parse(localStorage.getItem("yasashi.mistakes.v1") ?? "[]")
+    return Array.isArray(mistakes) && mistakes.length > 0
+  })
   const mistakes = await readJsonStorage(page, "yasashi.mistakes.v1")
   assert.ok(Array.isArray(mistakes), "wrong quiz answer should write mistake notebook")
-  assert.ok(
-    mistakes.some((item) =>
-      item.id === "kana:a:hiragana-romaji" &&
-      item.type === "hiragana-romaji" &&
-      item.correctAnswer === "a" &&
-      item.wrongCount >= 1
-    ),
-    "wrong quiz answer should record kana a in mistakes"
+  const recordedQuizMistake = mistakes.find((item) =>
+    item.type === "hiragana-romaji" &&
+    item.questionText === quizPrompt &&
+    item.correctAnswer === expectedAnswer &&
+    item.wrongCount >= 1
   )
+  assert.ok(recordedQuizMistake, "wrong quiz answer should record the current kana prompt in mistakes")
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("recent-mistakes").waitFor({ state: "visible" })
-  await page.getByTestId("recent-mistake-kana:a:hiragana-romaji").waitFor({ state: "visible" })
+  await page.getByTestId(`recent-mistake-${recordedQuizMistake.id}`).waitFor({ state: "visible" })
   await page.getByTestId("review-start-mistakes").click()
   await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
 
@@ -298,7 +363,9 @@ try {
     mimeType: "application/json",
     buffer: Buffer.from("{not-valid-json"),
   })
-  await page.getByTestId("learning-data-notice").waitFor({ state: "visible" })
+  await page.waitForFunction(() =>
+    document.querySelector('[data-testid="learning-data-notice"]')?.getAttribute("data-tone") === "error"
+  )
   assert.equal(await page.getByTestId("learning-data-notice").getAttribute("data-tone"), "error")
   assert.equal(
     (await readJsonStorage(page, "yasashi.learning.profile.v1"))?.goal,
@@ -394,4 +461,6 @@ try {
 if (failure) {
   console.error(failure)
   process.exit(1)
+} else {
+  process.exit(0)
 }

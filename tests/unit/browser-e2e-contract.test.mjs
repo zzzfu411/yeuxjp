@@ -72,6 +72,11 @@ const requiredSelectors = [
     pattern: /data-testid="kana-stroke-toggle"/,
   },
   {
+    testId: "kana-stroke-board",
+    source: "src/components/kana/kana-glyph-board.tsx",
+    pattern: /data-testid=\{label \? "kana-stroke-board" : undefined\}/,
+  },
+  {
     testId: "vocabulary-search",
     source: "src/components/vocabulary/vocabulary-toolbar.tsx",
     pattern: /data-testid="vocabulary-search"/,
@@ -92,9 +97,9 @@ const requiredSelectors = [
     pattern: /testId: "quiz-mode-hiragana-romaji"/,
   },
   {
-    testId: "quiz-answer-option-0",
-    source: "src/components/quiz/quiz-option-grid.tsx",
-    pattern: /data-testid=\{`quiz-answer-option-\$\{index\}`\}/,
+    testId: "quiz-question-text",
+    source: "src/components/quiz/quiz-question-prompt.tsx",
+    pattern: /data-testid="quiz-question-text"/,
   },
   {
     testId: "quiz-only-unmastered-kana",
@@ -135,11 +140,6 @@ const requiredSelectors = [
     testId: "recent-mistakes",
     source: "src/components/review/recent-mistakes.tsx",
     pattern: /data-testid="recent-mistakes"/,
-  },
-  {
-    testId: "recent-mistake-kana:a:hiragana-romaji",
-    source: "src/components/review/recent-mistakes.tsx",
-    pattern: /data-testid=\{`recent-mistake-\$\{mistake\.id\}`\}/,
   },
   {
     testId: "review-start-mistakes",
@@ -183,6 +183,19 @@ const requiredSelectors = [
   },
 ]
 
+const dynamicSelectorContracts = [
+  {
+    label: "quiz answer options",
+    source: "src/components/quiz/quiz-option-grid.tsx",
+    pattern: /data-testid=\{`quiz-answer-option-\$\{index\}`\}/,
+  },
+  {
+    label: "recent mistake rows",
+    source: "src/components/review/recent-mistakes.tsx",
+    pattern: /data-testid=\{`recent-mistake-\$\{mistake\.id\}`\}/,
+  },
+]
+
 test("browser E2E uses only declared stable test ids", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
   const used = Array.from(e2e.matchAll(/getByTestId\("([^"]+)"\)/g), (match) => match[1])
@@ -213,6 +226,10 @@ test("browser E2E test ids remain present in source files", () => {
     const source = fs.readFileSync(path.join(root, item.source), "utf8")
     assert.match(source, item.pattern, `${item.testId} should be declared in ${item.source}`)
   }
+  for (const item of dynamicSelectorContracts) {
+    const source = fs.readFileSync(path.join(root, item.source), "utf8")
+    assert.match(source, item.pattern, `${item.label} should be declared in ${item.source}`)
+  }
 })
 
 test("browser E2E verifies lesson progress writes after a real answer", () => {
@@ -222,7 +239,9 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   assert.match(e2e, /yasashi\.learning\.lessons\.v1/)
   assert.match(e2e, /currentStepIndex/)
   assert.match(e2e, /lastStepId/)
+  assert.match(e2e, /hello-example/)
   assert.match(e2e, /recognize-a/)
+  assert.match(e2e, /waitForFunction/)
   assert.match(e2e, /page\.reload\(\{ waitUntil: "networkidle" \}\)/)
   assert.match(e2e, /lesson-answer-a"\)\.waitFor\(\{ state: "visible" \}\)/)
   assert.match(e2e, /yasashi\.learning\.practice\.v1/)
@@ -260,16 +279,17 @@ test("browser E2E verifies locked lesson previews stay read-only", () => {
 test("browser E2E verifies wrong quiz answers enter the mistake notebook", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
-  assert.match(e2e, /getByTestId\("quiz-answer-option-0"\)/)
-  assert.match(e2e, /Math\.random = \(\) => 0/)
-  assert.match(e2e, /fixed quiz random source should ask kana a/)
+  assert.match(e2e, /seionHiraganaToRomaji/)
+  assert.match(e2e, /getByTestId\("quiz-question-text"\)/)
+  assert.match(e2e, /querySelectorAll\('\[data-testid\^="quiz-answer-option-"\]'\)/)
+  assert.match(e2e, /page\.getByTestId\(wrongOption\)\.click\(\)/)
   assert.match(e2e, /yasashi\.mistakes\.v1/)
-  assert.match(e2e, /item\.id === "kana:a:hiragana-romaji"/)
   assert.match(e2e, /item\.type === "hiragana-romaji"/)
-  assert.match(e2e, /item\.correctAnswer === "a"/)
-  assert.match(e2e, /wrong quiz answer should record kana a in mistakes/)
+  assert.match(e2e, /item\.questionText === quizPrompt/)
+  assert.match(e2e, /item\.correctAnswer === expectedAnswer/)
+  assert.match(e2e, /wrong quiz answer should record the current kana prompt in mistakes/)
   assert.match(e2e, /getByTestId\("recent-mistakes"\)/)
-  assert.match(e2e, /getByTestId\("recent-mistake-kana:a:hiragana-romaji"\)/)
+  assert.match(e2e, /recent-mistake-\$\{recordedQuizMistake\.id\}/)
   assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("mistake-review-session"\)/)
 })
@@ -317,8 +337,8 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
   assert.match(e2e, /getByTestId\("vocabulary-level-fluent"\)\.click\(\)/)
   assert.match(e2e, /fill\("Yakusoku"\)/)
   assert.match(e2e, /fill\("Gainen"\)/)
-  assert.match(e2e, /daily vocabulary level should load its dynamic vocabulary chunk/)
-  assert.match(e2e, /fluent vocabulary level should load its dynamic vocabulary chunk/)
+  assert.match(e2e, /getByText\("約束"\)\.first\(\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /getByText\("概念"\)\.first\(\)\.waitFor\(\{ state: "visible" \}\)/)
 })
 
 test("browser E2E verifies learning data export reset and import through the UI", () => {
@@ -338,6 +358,7 @@ test("browser E2E verifies learning data export reset and import through the UI"
   assert.match(e2e, /waitForEvent\("filechooser"\)/)
   assert.match(e2e, /getByTestId\("learning-data-import"\)/)
   assert.match(e2e, /invalid-yasashi-backup\.json/)
+  assert.match(e2e, /querySelector\('\[data-testid="learning-data-notice"\]'\)\?\.getAttribute\("data-tone"\) === "error"/)
   assert.match(e2e, /getByTestId\("learning-data-notice"\)/)
   assert.match(e2e, /invalid learning data import should not overwrite the current profile/)
   assert.match(e2e, /invalid learning data import should not overwrite the mistake notebook/)
@@ -353,7 +374,7 @@ test("browser E2E verifies learning data export reset and import through the UI"
 test("browser E2E text assertions reject mojibake fallbacks", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
 
-  assert.match(e2e, /getByLabel\(\/Stroke order\|笔顺\/\)/)
+  assert.match(e2e, /getByTestId\("kana-stroke-board"\)/)
   assert.match(e2e, /getByText\(\/得分:\/\)/)
   assert.doesNotMatch(e2e, /绗旈/) // mojibake-ok detector fixture
   assert.doesNotMatch(e2e, /寰楀垎/) // mojibake-ok detector fixture

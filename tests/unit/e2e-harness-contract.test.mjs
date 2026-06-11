@@ -31,8 +31,11 @@ test("E2E harness owns server lifecycle and storage helpers", () => {
   assert.match(harness, /spawnSync\("taskkill"/)
   assert.match(harness, /export async function reuseOrStartDevServer/)
   assert.match(harness, /export async function startProductionServer/)
-  assert.match(harness, /npmCommand\(\), \["run", "build"\]/)
-  assert.match(harness, /npmCommand\(\), \["run", "start"/)
+  assert.match(harness, /function runNpmScriptSync/)
+  assert.match(harness, /spawnSync\("cmd\.exe"/)
+  assert.match(harness, /runNpmScriptSync\(\["run", "build"\]\)/)
+  assert.match(harness, /path\.join\(appDir, "node_modules", "next", "dist", "bin", "next"\)/)
+  assert.match(harness, /controller\.spawn\(process\.execPath, \[nextCli, "start", "--hostname", "127\.0\.0\.1", "--port"/)
   assert.match(harness, /export async function readJsonStorage/)
 })
 
@@ -46,6 +49,17 @@ test("optional browser E2E scripts skip missing Playwright browser binaries", ()
     assert.match(source, /npm run e2e:install --prefix web/)
     assert.match(source, /failure = null/)
   }
+})
+
+test("browser-backed E2E scripts exit explicitly after cleanup", () => {
+  const browser = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const pwa = fs.readFileSync(path.join(root, "tests/e2e/pwa-offline.mjs"), "utf8")
+
+  for (const source of [browser, pwa]) {
+    assert.match(source, /process\.exit\(1\)/)
+    assert.match(source, /process\.exit\(0\)/)
+  }
+  assert.match(pwa, /await context\?\.close\(\)/)
 })
 
 test("HTTP smoke reuses the shared E2E server harness", () => {

@@ -71,6 +71,7 @@ export function KanaGlyphBoard({
       )}
       role="img"
       aria-label={label}
+      data-testid={label ? "kana-stroke-board" : undefined}
     >
       {/* Washi paper texture — tiled at low opacity. Only shows in light mode
           (paper-washi-tile is a warm cream tone that fights with dark bg). */}
