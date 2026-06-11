@@ -10,7 +10,7 @@ function read(relPath) {
 }
 
 test("vocabulary page delegates focused card modal to VocabularyFocusModal", () => {
-  const page = read("src/app/vocabulary/page.tsx")
+  const page = read("src/components/vocabulary/vocabulary-page.tsx")
 
   assert.match(page, /from "@\/components\/vocabulary\/vocabulary-focus-modal"/)
   assert.match(page, /<VocabularyFocusModal\b/)

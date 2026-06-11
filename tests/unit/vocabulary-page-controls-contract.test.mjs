@@ -36,7 +36,7 @@ test("useVocabularyPageControls owns URL level and vocabulary toolbar state", ()
 })
 
 test("vocabulary page delegates toolbar state to useVocabularyPageControls", () => {
-  const page = read("src/app/vocabulary/page.tsx")
+  const page = read("src/components/vocabulary/vocabulary-page.tsx")
 
   assert.match(page, /from "@\/components\/vocabulary\/use-vocabulary-page-controls"/)
   assert.match(page, /useVocabularyPageControls\(\)/)

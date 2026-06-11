@@ -152,7 +152,7 @@ test("URL-controlled reference modal owns client-side close and arrow-key naviga
 })
 
 test("vocabulary page keeps card-specific flip behavior while sharing indexed navigation", () => {
-  const source = read("src/app/vocabulary/page.tsx")
+  const source = read("src/components/vocabulary/vocabulary-page.tsx")
 
   assert.match(source, /from "@\/lib\/use-indexed-modal-navigation"/)
   assert.match(source, /useIndexedModalNavigation\(currentData\.length\)/)

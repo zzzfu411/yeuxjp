@@ -12,7 +12,7 @@ function read(relPath) {
 }
 
 test("vocabulary page keeps static level and category labels in a shared config module", () => {
-  const page = read("src/app/vocabulary/page.tsx")
+  const page = read("src/components/vocabulary/vocabulary-page.tsx")
   const source = read("src/lib/vocabulary-page-config.ts")
 
   assert.match(page, /from "@\/lib\/vocabulary-page-config"/)

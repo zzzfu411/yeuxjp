@@ -10,7 +10,7 @@ function read(relPath) {
 }
 
 test("vocabulary page delegates categorized card grid and status copy to VocabularyCategoryList", () => {
-  const page = read("src/app/vocabulary/page.tsx")
+  const page = read("src/components/vocabulary/vocabulary-page.tsx")
 
   assert.match(page, /from "@\/components\/vocabulary\/vocabulary-category-list"/)
   assert.match(page, /<VocabularyCategoryList\b/)

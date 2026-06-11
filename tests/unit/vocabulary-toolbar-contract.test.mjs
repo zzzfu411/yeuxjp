@@ -10,8 +10,12 @@ function read(relPath) {
 }
 
 test("vocabulary page delegates search, filters, and category chips to VocabularyToolbar", () => {
-  const page = read("src/app/vocabulary/page.tsx")
+  const route = read("src/app/vocabulary/page.tsx")
+  const page = read("src/components/vocabulary/vocabulary-page.tsx")
 
+  assert.doesNotMatch(route, /"use client"/)
+  assert.match(route, /from "@\/components\/vocabulary\/vocabulary-page"/)
+  assert.match(route, /<VocabularyPage \/>/)
   assert.match(page, /from "@\/components\/vocabulary\/vocabulary-toolbar"/)
   assert.match(page, /<VocabularyToolbar\b/)
   assert.match(page, /onSearchChange=\{handleSearchChange\}/)
