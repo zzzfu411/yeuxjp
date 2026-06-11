@@ -5,6 +5,12 @@ import {
   normalizeSpeechPreferences,
   type SpeechUserPreferences,
 } from "@/lib/speech-preferences-model"
+import {
+  buildRepeatedSpeechTexts,
+  normalizeSpeechGapMs,
+  normalizeSpeechSequenceTexts,
+  pickJapaneseVoice,
+} from "@/lib/speech-playback-model"
 
 export type SpeakCallbacks = {
   onStart?: () => void
@@ -44,14 +50,6 @@ export function isSpeechSupported() {
     typeof window !== "undefined" &&
     "speechSynthesis" in window &&
     typeof SpeechSynthesisUtterance !== "undefined"
-  )
-}
-
-function pickJapaneseVoice(voices: SpeechSynthesisVoice[]) {
-  return (
-    voices.find((v) => v.lang?.toLowerCase().startsWith("ja")) ??
-    voices.find((v) => v.lang?.toLowerCase().includes("ja")) ??
-    null
   )
 }
 
@@ -97,7 +95,7 @@ export type SpeakSequenceOptions = SpeakOptions & {
 export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOptions = {}) {
   if (!isSpeechSupported()) return null
 
-  const cleaned = (texts ?? []).map((t) => t?.trim()).filter(Boolean) as string[]
+  const cleaned = normalizeSpeechSequenceTexts(texts)
   if (!cleaned.length) return null
 
   const synth = window.speechSynthesis
@@ -105,7 +103,7 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
 
   const voices = synth.getVoices?.() ?? []
   const voice = pickJapaneseVoice(voices)
-  const gapMs = typeof options.gapMs === "number" ? Math.max(0, options.gapMs) : 0
+  const gapMs = normalizeSpeechGapMs(options.gapMs)
 
   let index = 0
   let first: SpeechSynthesisUtterance | null = null
@@ -152,9 +150,7 @@ export type SpeakRepeatOptions = SpeakSequenceOptions & {
 }
 
 export function speakJapaneseRepeated(text: string, options: SpeakRepeatOptions = {}) {
-  const count = typeof options.repeat === "number" ? Math.floor(options.repeat) : 1
-  const repeat = Math.max(1, Math.min(5, count))
-  const texts = Array.from({ length: repeat }, () => text)
+  const texts = buildRepeatedSpeechTexts(text, options.repeat)
   return speakJapaneseSequence(texts, options)
 }
 
