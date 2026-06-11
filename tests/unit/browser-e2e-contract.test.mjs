@@ -4,6 +4,8 @@ import path from "node:path"
 import test from "node:test"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
+const browserE2EPath = path.join(root, "tests/e2e/browser.mjs")
+const browserFixturesPath = path.join(root, "tests/e2e/browser-fixtures.mjs")
 
 const requiredSelectors = [
   {
@@ -262,8 +264,11 @@ const dynamicSelectorContracts = [
 ]
 
 test("browser E2E uses only declared stable test ids", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
-  const used = Array.from(e2e.matchAll(/getByTestId\("([^"]+)"\)/g), (match) => match[1])
+  const sources = [
+    fs.readFileSync(browserE2EPath, "utf8"),
+    fs.readFileSync(browserFixturesPath, "utf8"),
+  ].join("\n")
+  const used = Array.from(sources.matchAll(/getByTestId\("([^"]+)"\)/g), (match) => match[1])
   assert.deepEqual(new Set(used), new Set(requiredSelectors.map((item) => item.testId)))
 })
 
@@ -347,10 +352,13 @@ test("browser E2E verifies locked lesson previews stay read-only", () => {
 })
 
 test("browser E2E verifies wrong quiz answers enter the mistake notebook", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = fs.readFileSync(browserE2EPath, "utf8")
+  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
 
   assert.match(e2e, /seionHiraganaToRomaji/)
-  assert.match(e2e, /openQuizMode\(page, "hiragana-romaji"\)/)
+  assert.match(e2e, /from "\.\/browser-fixtures\.mjs"/)
+  assert.match(e2e, /openQuizMode\(page, baseUrl, "hiragana-romaji"\)/)
+  assert.match(fixtures, /export async function openQuizMode\(page, baseUrl, mode\)/)
   assert.match(e2e, /getByTestId\("quiz-score"\)/)
   assert.match(e2e, /getByTestId\("quiz-question-text"\)/)
   assert.match(e2e, /querySelectorAll\('\[data-testid\^="quiz-answer-option-"\]'\)/)
@@ -381,20 +389,22 @@ test("browser E2E verifies correct mistake reviews retain notebook history", () 
 })
 
 test("browser E2E verifies every public quiz mode records practice", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = fs.readFileSync(browserE2EPath, "utf8")
+  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
 
-  assert.match(e2e, /async function resetQuizLearningState/)
-  assert.match(e2e, /async function openQuizMode\(page, mode\)/)
-  assert.match(e2e, /async function clickFirstQuizOptionAndReadPractice/)
-  assert.match(e2e, /async function assertQuizModeRecordsPractice/)
-  assert.match(e2e, /localStorage\.setItem\("yasashi\.speech\.prefs\.v1"/)
-  assert.match(e2e, /getByTestId\("quiz-mode-audio-kana"\)/)
-  assert.match(e2e, /getByTestId\("quiz-mode-particle"\)/)
-  assert.match(e2e, /getByTestId\("quiz-mode-verb-conjugation"\)/)
-  assert.match(e2e, /getByTestId\("quiz-mode-audio-sokuon"\)/)
-  assert.match(e2e, /getByTestId\("quiz-mode-audio-longvowel"\)/)
-  assert.match(e2e, /getByTestId\("quiz-mode-meaning-vocab"\)/)
-  assert.match(e2e, /item\.itemType === itemType && item\.mode === practiceMode/)
+  assert.match(e2e, /assertQuizModeRecordsPractice\(page, baseUrl/)
+  assert.match(fixtures, /export async function resetQuizLearningState/)
+  assert.match(fixtures, /export async function openQuizMode\(page, baseUrl, mode\)/)
+  assert.match(fixtures, /export async function clickFirstQuizOptionAndReadPractice/)
+  assert.match(fixtures, /export async function assertQuizModeRecordsPractice/)
+  assert.match(fixtures, /localStorage\.setItem\("yasashi\.speech\.prefs\.v1"/)
+  assert.match(fixtures, /getByTestId\("quiz-mode-audio-kana"\)/)
+  assert.match(fixtures, /getByTestId\("quiz-mode-particle"\)/)
+  assert.match(fixtures, /getByTestId\("quiz-mode-verb-conjugation"\)/)
+  assert.match(fixtures, /getByTestId\("quiz-mode-audio-sokuon"\)/)
+  assert.match(fixtures, /getByTestId\("quiz-mode-audio-longvowel"\)/)
+  assert.match(fixtures, /getByTestId\("quiz-mode-meaning-vocab"\)/)
+  assert.match(fixtures, /item\.itemType === itemType && item\.mode === practiceMode/)
   assert.match(e2e, /"audio-kana"[\s\S]*"kana"[\s\S]*"listening"/)
   assert.match(e2e, /"particle"[\s\S]*"grammar"[\s\S]*"recognition"/)
   assert.match(e2e, /"verb-conjugation"[\s\S]*"grammar"[\s\S]*"production"/)
@@ -405,12 +415,13 @@ test("browser E2E verifies every public quiz mode records practice", () => {
 
 test("browser E2E verifies mastered kana filters show the quiz empty state", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
 
   assert.match(e2e, /getByTestId\("kana-mastery-toggle"\)\.click\(\)/)
   assert.match(e2e, /yasashi\.kana\.mastered\.v1/)
   assert.match(e2e, /masteredKana\.includes\("a"\)/)
   assert.match(e2e, /masteredKanaSrs\?\.a\?\.dueAt/)
-  assert.match(e2e, /const seionRomaji = \[/)
+  assert.match(fixtures, /export const seionRomaji = \[/)
   assert.match(e2e, /JSON\.stringify\(masteredIds\)/)
   assert.match(e2e, /getByTestId\("quiz-only-unmastered-kana"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("quiz-empty-state"\)\.waitFor\(\{ state: "visible" \}\)/)
@@ -418,10 +429,12 @@ test("browser E2E verifies mastered kana filters show the quiz empty state", () 
 
 test("browser E2E verifies review empty and due states", () => {
   const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
 
   assert.match(e2e, /getByTestId\("review-empty-state"\)/)
   assert.match(e2e, /getByTestId\("review-today-empty"\)/)
   assert.match(e2e, /seedReviewState/)
+  assert.match(fixtures, /export async function seedReviewState\(page, baseUrl\)/)
   assert.match(e2e, /getByTestId\("review-due-state"\)/)
   assert.match(e2e, /getByTestId\("review-today-due"\)/)
   assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
@@ -464,26 +477,28 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
 })
 
 test("browser E2E verifies learning data export reset and import through the UI", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = fs.readFileSync(browserE2EPath, "utf8")
+  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
 
   assert.match(e2e, /acceptDownloads: true/)
   assert.match(e2e, /import fs from "node:fs\/promises"/)
   assert.match(e2e, /seedLearningDataBackupState/)
-  assert.match(e2e, /const managedLearningBackupKeys = \[/)
-  assert.match(e2e, /yasashi\.learning\.profile\.v1/)
-  assert.match(e2e, /yasashi\.learning\.lessons\.v1/)
-  assert.match(e2e, /yasashi\.learning\.items\.v1/)
-  assert.match(e2e, /yasashi\.learning\.practice\.v1/)
-  assert.match(e2e, /yasashi\.srs\.kana\.v1/)
-  assert.match(e2e, /yasashi\.srs\.vocab\.v1/)
-  assert.match(e2e, /yasashi\.mistakes\.v1/)
-  assert.match(e2e, /yasashi\.srs\.mistakes\.v1/)
-  assert.match(e2e, /yasashi\.kana\.mastered\.v1/)
-  assert.match(e2e, /yasashi\.vocab\.learned\.v1/)
-  assert.match(e2e, /yasashi\.speech\.prefs\.v1/)
+  assert.match(fixtures, /export async function seedLearningDataBackupState\(page, baseUrl\)/)
+  assert.match(fixtures, /export const managedLearningBackupKeys = \[/)
+  assert.match(fixtures, /yasashi\.learning\.profile\.v1/)
+  assert.match(fixtures, /yasashi\.learning\.lessons\.v1/)
+  assert.match(fixtures, /yasashi\.learning\.items\.v1/)
+  assert.match(fixtures, /yasashi\.learning\.practice\.v1/)
+  assert.match(fixtures, /yasashi\.srs\.kana\.v1/)
+  assert.match(fixtures, /yasashi\.srs\.vocab\.v1/)
+  assert.match(fixtures, /yasashi\.mistakes\.v1/)
+  assert.match(fixtures, /yasashi\.srs\.mistakes\.v1/)
+  assert.match(fixtures, /yasashi\.kana\.mastered\.v1/)
+  assert.match(fixtures, /yasashi\.vocab\.learned\.v1/)
+  assert.match(fixtures, /yasashi\.speech\.prefs\.v1/)
   assert.match(e2e, /readManagedLearningBackupSnapshot/)
   assert.match(e2e, /assertManagedLearningSnapshot/)
-  assert.match(e2e, /yasashi\.e2e\.unmanaged/)
+  assert.match(fixtures, /yasashi\.e2e\.unmanaged/)
   assert.match(e2e, /waitForEvent\("download"\)/)
   assert.match(e2e, /getByTestId\("learning-data-export"\)/)
   assert.match(e2e, /suggestedFilename\(\)/)
