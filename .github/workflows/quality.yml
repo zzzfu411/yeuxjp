@@ -1,0 +1,64 @@
+name: Quality Gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Run strict browser and PWA release gates"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Merge Gate
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.release }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run merge gate
+        run: npm run check
+
+  release-check:
+    name: Release Gate
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.release }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npm run e2e:install
+
+      - name: Run release gate
+        run: npm run check:release
