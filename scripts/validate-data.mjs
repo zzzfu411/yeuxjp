@@ -295,6 +295,11 @@ const vocabCategories = new Set([
   "culture",
 ])
 const vocabLevels = new Set(["survival", "daily", "fluent"])
+const vocabLevelPrefixes = new Map([
+  ["survival", "sur-"],
+  ["daily", "day-"],
+  ["fluent", "flu-"],
+])
 for (const { file, defaultLevel } of vocabFiles) {
   const text = read(file)
   const ids = matches(text, /id:\s*['"]([^'"]+)['"]/g)
@@ -311,6 +316,10 @@ for (const { file, defaultLevel } of vocabFiles) {
     if (category && !vocabCategories.has(category)) fail(`${file} ${id} has unknown category: ${category}`)
     if (level && !vocabLevels.has(level)) fail(`${file} ${id} has unknown level: ${level}`)
     if (level && level !== defaultLevel) fail(`${file} ${id} level must match file level: expected ${defaultLevel}, got ${level}`)
+    const expectedPrefix = vocabLevelPrefixes.get(level)
+    if (id && expectedPrefix && !id.startsWith(expectedPrefix)) {
+      fail(`${file} ${id} id must start with ${expectedPrefix} for ${level} level`)
+    }
   }
 }
 unique("vocabulary id", vocabIds)

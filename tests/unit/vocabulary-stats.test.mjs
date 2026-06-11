@@ -15,6 +15,21 @@ test("vocabulary level counts stay aligned with the real data files", async () =
   }
 })
 
+test("vocabulary ids keep level prefixes aligned with dynamic chunk loading", async () => {
+  const expectedPrefixes = {
+    survival: "sur-",
+    daily: "day-",
+    fluent: "flu-",
+  }
+
+  for (const [level, prefix] of Object.entries(expectedPrefixes)) {
+    const data = await loader.loadVocabularyLevel(level)
+
+    assert.equal(data.every((item) => item.id.startsWith(prefix)), true)
+    assert.equal(data.every((item) => stats.getVocabLevelForId(item.id) === level), true)
+  }
+})
+
 test("learned vocabulary ids are summarized by stable level prefixes", () => {
   const summary = stats.summarizeLearnedVocabIds(["sur-g-1", "sur-v-1", "day-v-1", "flu-abs-1", "unknown-1"])
 
