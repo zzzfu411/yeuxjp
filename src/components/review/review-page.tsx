@@ -6,7 +6,7 @@ import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { ReviewRunner, type ReviewSession } from "@/components/review/review-runner"
 import { ReviewDashboard } from "@/components/review/review-dashboard"
-import { buildReviewDashboardModel } from "@/lib/review-dashboard-model"
+import { buildReviewDashboardModel, enrollMissingReviewItems } from "@/lib/review-dashboard-model"
 import { useLearningStatus } from "@/lib/learning-status"
 
 const KANA_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_KANA
@@ -55,8 +55,8 @@ export function ReviewPage() {
     setReviewSaveError(false)
     setSession(nextSession)
   }
-  const enrollKanaMissing = () => setReviewSaveError(!dashboard.kanaEnrollMissing.every((id) => kanaSrs.enroll(id)))
-  const enrollVocabMissing = () => setReviewSaveError(!dashboard.vocabEnrollMissing.every((id) => vocabSrs.enroll(id)))
+  const enrollKanaMissing = () => setReviewSaveError(!enrollMissingReviewItems(dashboard.kanaEnrollMissing, kanaSrs.enroll))
+  const enrollVocabMissing = () => setReviewSaveError(!enrollMissingReviewItems(dashboard.vocabEnrollMissing, vocabSrs.enroll))
   const removeMistake = (id: string) => setReviewSaveError(!mistakes.remove(id))
   const clearMistakes = () => setReviewSaveError(!mistakes.clear())
 

@@ -73,6 +73,14 @@ function filterSrsMapByReviewableKana(map: SrsMap) {
   return filtered
 }
 
+export function enrollMissingReviewItems(ids: readonly string[], enroll: (id: string) => boolean) {
+  let ok = true
+  for (const id of ids) {
+    ok = enroll(id) && ok
+  }
+  return ok
+}
+
 export function buildReviewDashboardModel({
   masteredIds,
   learnedIds,

@@ -93,3 +93,15 @@ test("review dashboard model reports first-time state and empty next due schedul
   assert.equal(dashboard.nextDueAt, null)
   assert.deepEqual(dashboard.todayQueue, [])
 })
+
+test("review enrollment helper attempts every missing item and reports any failure", () => {
+  const attempted = []
+  const ok = model.enrollMissingReviewItems(["a", "ka", "sa"], (id) => {
+    attempted.push(id)
+    return id !== "ka"
+  })
+
+  assert.deepEqual(attempted, ["a", "ka", "sa"])
+  assert.equal(ok, false)
+  assert.equal(model.enrollMissingReviewItems([], () => false), true)
+})
