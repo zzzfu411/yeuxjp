@@ -10,10 +10,10 @@ function read(relPath) {
 }
 
 test("LessonRunner restores a saved lesson step only after progress storage has loaded", () => {
-  const source = read("src/components/lesson/lesson-runner.tsx")
+  const source = read("src/components/lesson/use-lesson-runner-state.ts")
 
   assert.match(source, /const \{ lessons, results, loaded, startLesson, completeLesson, saveLessonPosition \} = progress/)
-  assert.match(source, /if \(!lesson \|\| !loaded\) return 0/)
+  assert.match(source, /if \(!loaded\) return 0/)
   assert.match(source, /resolveLessonResumeStepIndex\(savedLessonProgress, lesson\.steps\)/)
   assert.match(source, /manualStep\?\.lessonId === lesson\.id \? manualStep\.index : resumedStepIndex/)
   assert.doesNotMatch(source, /setStepIndex/)
@@ -21,7 +21,7 @@ test("LessonRunner restores a saved lesson step only after progress storage has 
 })
 
 test("LessonRunner restores answered practice state from persisted results", () => {
-  const source = read("src/components/lesson/lesson-runner.tsx")
+  const source = read("src/components/lesson/use-lesson-runner-state.ts")
   const session = read("src/lib/lesson-session.ts")
 
   assert.match(source, /getLessonAnsweredFromResults/)
@@ -36,9 +36,10 @@ test("LessonRunner restores answered practice state from persisted results", () 
 })
 
 test("LessonRunner saves step position through the shared learning progress facade", () => {
-  const source = read("src/components/lesson/lesson-runner.tsx")
+  const source = read("src/components/lesson/use-lesson-runner-state.ts")
+  const runner = read("src/components/lesson/lesson-runner.tsx")
 
-  assert.match(source, /if \(!lesson \|\| !loaded\) return/)
+  assert.match(source, /if \(!loaded\) return/)
   assert.match(source, /if \(!lessonUnlocked\) return/)
   assert.match(source, /const saved = startLesson\(lesson\.id\)/)
   assert.match(source, /const saved = saveLessonPosition\(lesson\.id, stepIndex, step\?\.id\)/)
@@ -47,21 +48,23 @@ test("LessonRunner saves step position through the shared learning progress faca
   assert.match(source, /setSaveError\(!completeLesson\(lesson\.id, completionScore\)\)/)
   assert.match(source, /buildLessonRunnerViewModel/)
   assert.match(source, /completionScore/)
-  assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index: Math\.min\(stepIndex \+ 1, lesson\.steps\.length - 1\) \}\)/)
-  assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index: Math\.max\(stepIndex - 1, 0\) \}\)/)
+  assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index \}\)/)
+  assert.match(runner, /setManualStepIndex\(Math\.min\(stepIndex \+ 1, lesson\.steps\.length - 1\)\)/)
+  assert.match(runner, /setManualStepIndex\(Math\.max\(stepIndex - 1, 0\)\)/)
   assert.doesNotMatch(source, /localStorage\.setItem/)
 })
 
 test("LessonRunner warns on locked direct lesson visits without auto-starting progress", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
+  const state = read("src/components/lesson/use-lesson-runner-state.ts")
   const preview = read("src/components/lesson/lesson-locked-preview.tsx")
 
-  assert.match(source, /from "@\/lib\/learning-entry"/)
+  assert.match(state, /from "@\/lib\/learning-entry"/)
   assert.match(source, /from "@\/components\/lesson\/lesson-locked-preview"/)
-  assert.match(source, /isLessonUnlocked\(lesson, progress\.completedLessonIds\)/)
-  assert.match(source, /getNextLesson\(progress\.completedLessonIds\)/)
-  assert.match(source, /if \(!lesson \|\| !loaded\) return/)
-  assert.match(source, /if \(!lessonUnlocked\) return/)
+  assert.match(state, /isLessonUnlocked\(lesson, progress\.completedLessonIds\)/)
+  assert.match(state, /getNextLesson\(progress\.completedLessonIds\)/)
+  assert.match(state, /if \(!loaded\) return/)
+  assert.match(state, /if \(!lessonUnlocked\) return/)
   assert.match(source, /<LessonLockedPreview recommendedLesson=\{recommendedLesson\} \/>/)
   assert.match(preview, /data-testid="lesson-locked-preview"/)
   assert.match(preview, /这节课还没有解锁/)
@@ -71,11 +74,12 @@ test("LessonRunner warns on locked direct lesson visits without auto-starting pr
 
 test("LessonRunner keeps locked lesson previews read-only", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
+  const state = read("src/components/lesson/use-lesson-runner-state.ts")
   const navigation = read("src/components/lesson/lesson-navigation-bar.tsx")
   const practice = read("src/components/lesson/use-lesson-step-practice.ts")
 
   assert.match(source, /lessonReadOnly/)
-  assert.match(source, /buildLessonRunnerViewModel/)
+  assert.match(state, /buildLessonRunnerViewModel/)
   assert.doesNotMatch(source, /const lessonReadOnly = !loaded \|\| !lessonUnlocked/)
   assert.match(source, /readOnly: lessonReadOnly/)
   assert.match(practice, /if \(readOnly\) return/)

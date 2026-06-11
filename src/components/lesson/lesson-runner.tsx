@@ -1,19 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useCallback, useEffect, useMemo, useState, type SetStateAction } from "react"
 import { ArrowLeft, Sparkles, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { STARTER_LESSONS, getNextLesson, isPracticeStep, type Lesson, type LessonStep } from "@/data/lessons"
-import { useLearningProgress } from "@/lib/learning-progress"
-import { useMistakeNotebook } from "@/lib/mistake-notebook"
-import { isLessonUnlocked } from "@/lib/learning-entry"
-import {
-  buildLessonRunnerViewModel,
-  countPracticeSteps,
-  getLessonAnsweredFromResults,
-  resolveLessonResumeStepIndex,
-} from "@/lib/lesson-session"
+import { isPracticeStep, type Lesson, type LessonStep } from "@/data/lessons"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
@@ -21,6 +11,7 @@ import { LessonProgressSidebar } from "@/components/lesson/lesson-progress-sideb
 import { LessonLockedPreview } from "@/components/lesson/lesson-locked-preview"
 import { LessonNavigationBar } from "@/components/lesson/lesson-navigation-bar"
 import { useLessonAnswerRecorder } from "@/components/lesson/use-lesson-answer-recorder"
+import { useLessonRunnerState } from "@/components/lesson/use-lesson-runner-state"
 import { useLessonStepPractice } from "@/components/lesson/use-lesson-step-practice"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 
@@ -29,83 +20,24 @@ interface LessonRunnerProps {
 }
 
 export function LessonRunner({ lesson }: LessonRunnerProps) {
-  const progress = useLearningProgress()
-  const mistakes = useMistakeNotebook()
-  const { lessons, results, loaded, startLesson, completeLesson, saveLessonPosition } = progress
-  const [manualStep, setManualStep] = useState<{ lessonId: string; index: number } | null>(null)
-  const [answeredDraft, setAnsweredDraft] = useState<{ lessonId: string; answers: Record<string, boolean> } | null>(null)
-  const [saveError, setSaveError] = useState(false)
-  const savedLessonProgress = lesson ? lessons[lesson.id] : undefined
-  const lessonUnlocked = useMemo(() => {
-    if (!lesson || !loaded) return true
-    return isLessonUnlocked(lesson, progress.completedLessonIds)
-  }, [lesson, loaded, progress.completedLessonIds])
-  const recommendedLesson = useMemo(() => getNextLesson(progress.completedLessonIds), [progress.completedLessonIds])
-
-  useEffect(() => {
-    if (!lesson || !loaded) return
-    if (!lessonUnlocked) return
-    const saved = startLesson(lesson.id)
-    const timer = window.setTimeout(() => setSaveError(!saved), 0)
-    return () => window.clearTimeout(timer)
-  }, [lesson, lessonUnlocked, loaded, startLesson])
-
-  const resumedStepIndex = useMemo(() => {
-    if (!lesson || !loaded) return 0
-    return resolveLessonResumeStepIndex(savedLessonProgress, lesson.steps)
-  }, [lesson, loaded, savedLessonProgress])
-
-  const stepIndex = lesson && manualStep?.lessonId === lesson.id ? manualStep.index : resumedStepIndex
-
-  useEffect(() => {
-    if (!lesson || !loaded) return
-    if (!lessonUnlocked) return
-    const step = lesson.steps[stepIndex]
-    const saved = saveLessonPosition(lesson.id, stepIndex, step?.id)
-    const timer = window.setTimeout(() => setSaveError(!saved), 0)
-    return () => window.clearTimeout(timer)
-  }, [lesson, lessonUnlocked, loaded, stepIndex, saveLessonPosition])
-
-  const current = lesson.steps[stepIndex]
-  const isLast = stepIndex === lesson.steps.length - 1
-  const practiceSteps = useMemo(() => (lesson ? countPracticeSteps(lesson.steps) : 0), [lesson])
-  const restoredAnswered = useMemo(() => {
-    return lesson ? getLessonAnsweredFromResults(lesson.id, lesson.steps, results) : {}
-  }, [lesson, results])
-
-  const answered = useMemo(() => {
-    if (!lesson) return restoredAnswered
-    if (answeredDraft?.lessonId !== lesson.id) return restoredAnswered
-    return { ...restoredAnswered, ...answeredDraft.answers }
-  }, [answeredDraft, lesson, restoredAnswered])
-
-  const setAnsweredForLesson = useCallback(
-    (update: SetStateAction<Record<string, boolean>>) => {
-      if (!lesson) return
-      setAnsweredDraft((prev) => {
-        const base = {
-          ...restoredAnswered,
-          ...(prev?.lessonId === lesson.id ? prev.answers : {}),
-        }
-        const answers = typeof update === "function" ? update(base) : update
-        return { lessonId: lesson.id, answers }
-      })
-    },
-    [lesson, restoredAnswered]
-  )
-
-  const lessonView = useMemo(() => {
-    return buildLessonRunnerViewModel({
-      lesson,
-      courseLessons: STARTER_LESSONS,
-      lessons,
-      stepIndex,
-      answered,
-      practiceSteps,
-      loaded,
-      lessonUnlocked,
-    })
-  }, [answered, lesson, lessons, loaded, lessonUnlocked, practiceSteps, stepIndex])
+  const {
+    progress,
+    mistakes,
+    loaded,
+    savedLessonProgress,
+    lessonUnlocked,
+    recommendedLesson,
+    stepIndex,
+    current,
+    isLast,
+    practiceSteps,
+    setAnsweredForLesson,
+    lessonView,
+    saveError,
+    setSaveError,
+    setManualStepIndex,
+    completeCurrentLesson,
+  } = useLessonRunnerState(lesson)
   const {
     lessonPosition,
     nextLesson,
@@ -148,15 +80,15 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     if (!loaded) return
     if (!lessonUnlocked && isLast) return
     if (isLast) {
-      setSaveError(!completeLesson(lesson.id, completionScore))
+      completeCurrentLesson(completionScore)
       return
     }
-    setManualStep({ lessonId: lesson.id, index: Math.min(stepIndex + 1, lesson.steps.length - 1) })
+    setManualStepIndex(Math.min(stepIndex + 1, lesson.steps.length - 1))
     resetStepState()
   }
 
   const goBack = () => {
-    setManualStep({ lessonId: lesson.id, index: Math.max(stepIndex - 1, 0) })
+    setManualStepIndex(Math.max(stepIndex - 1, 0))
     resetStepState()
   }
 

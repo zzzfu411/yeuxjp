@@ -31,12 +31,15 @@ test("lesson route is a static server shell around LessonRunner", () => {
 
 test("LessonRunner owns lesson browser state and shared learning hooks", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
+  const state = read("src/components/lesson/use-lesson-runner-state.ts")
 
   assert.match(source, /"use client"/)
   assert.match(source, /export function LessonRunner/)
   assert.match(source, /lesson: Lesson/)
-  assert.match(source, /useLearningProgress\(\)/)
-  assert.match(source, /useMistakeNotebook\(\)/)
+  assert.match(source, /from "@\/components\/lesson\/use-lesson-runner-state"/)
+  assert.match(source, /useLessonRunnerState\(lesson\)/)
+  assert.match(state, /useLearningProgress\(\)/)
+  assert.match(state, /useMistakeNotebook\(\)/)
   assert.match(source, /useLessonAnswerRecorder\(/)
   assert.match(source, /<LessonStepBody\b/)
   assert.match(source, /<LessonProgressSidebar\b/)
