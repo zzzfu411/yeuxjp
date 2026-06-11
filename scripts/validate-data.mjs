@@ -193,6 +193,7 @@ function validateNoMojibakeMarkers() {
     path.join(root, "README.md"),
     path.join(workspaceRoot, "CLAUDE.md"),
     path.join(workspaceRoot, "README_CODEX.md"),
+    path.join(workspaceRoot, "PLAN.md"),
   ]
     .filter((file) => fs.existsSync(file))
   const files = [...sourceFiles, ...scriptFiles, ...testFiles, ...markdownFiles]
@@ -397,6 +398,8 @@ validateServiceWorkerAssets()
 requireFile("public/offline.html", "PWA offline fallback")
 requireFile("public/favicon.ico", "favicon")
 requireFile("public/apple-touch-icon.png", "apple touch icon")
+requireFile("public/animcjk/licenses/COPYING.txt", "AnimCJK COPYING license")
+requireFile("public/animcjk/licenses/LGPL.txt", "AnimCJK LGPL license")
 validateNoMojibakeMarkers()
 
 if (failed) {

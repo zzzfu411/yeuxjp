@@ -5,7 +5,7 @@ import test from "node:test"
 
 const root = path.resolve(import.meta.dirname, "..", "..", "..")
 const webReadme = fs.readFileSync(path.join(root, "web/README.md"), "utf8")
-const optionalDocs = ["CLAUDE.md", "README_CODEX.md"]
+const optionalDocs = ["CLAUDE.md", "README_CODEX.md", "PLAN.md"]
   .map((relPath) => ({ relPath, absPath: path.join(root, relPath) }))
   .filter(({ absPath }) => fs.existsSync(absPath))
   .map(({ relPath, absPath }) => [relPath, fs.readFileSync(absPath, "utf8")])
@@ -37,6 +37,17 @@ test("app README documents the current E2E coverage layers", () => {
   assert.match(webReadme, /production build/)
   assert.match(webReadme, /service worker/)
   assert.match(webReadme, /offline/)
+})
+
+test("product docs describe the current visited-page PWA fallback strategy", () => {
+  for (const [name, source] of [
+    ["web/README.md", webReadme],
+    ...optionalDocs,
+  ]) {
+    assert.match(source, /visited|already visited|previously visited|pages the learner has already visited/, name)
+    assert.match(source, /offline\.html/, name)
+    assert.match(source, /localStorage|learning state/, name)
+  }
 })
 
 test("CLAUDE.md documents the shared E2E harness when the wrapper doc exists", () => {

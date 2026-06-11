@@ -25,7 +25,7 @@ If you are already inside `web/`, use the same script names without `--prefix we
 ## Verification
 
 ```bash
-npm run validate:data  # data integrity, lesson refs, PWA files, legacy-source guard
+npm run validate:data  # data integrity, lesson refs, PWA/license files, legacy-source guard
 npm run lint           # ESLint + Next/TypeScript rules
 npm run test           # Node built-in unit tests
 npm run build          # production Next build

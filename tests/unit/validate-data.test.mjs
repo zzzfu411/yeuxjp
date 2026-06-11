@@ -28,6 +28,7 @@ test("data validation scans source, scripts, tests, and docs for common mojibake
   assert.match(source, /workspaceRoot/)
   assert.match(source, /CLAUDE\.md/)
   assert.match(source, /README_CODEX\.md/)
+  assert.match(source, /PLAN\.md/)
   for (const marker of ["绗旈", "寰楀", "褰撳", "瀛︿", "澶囦", "鏃犳", "娓呯", "閿欓", "瀵煎", "銇裤"]) { // mojibake-ok detector fixture
     assert.ok(source.includes(marker), `validator should detect ${marker}`)
   }
@@ -46,6 +47,13 @@ test("data validation checks lesson practice metadata and references", () => {
   assert.match(source, /references missing grammar itemId/)
   assert.match(source, /answer is not present in options/)
   assert.match(source, /sentence itemId must start with sentence-/)
+})
+
+test("data validation requires AnimCJK license files for distribution", () => {
+  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+
+  assert.match(source, /public\/animcjk\/licenses\/COPYING\.txt/)
+  assert.match(source, /public\/animcjk\/licenses\/LGPL\.txt/)
 })
 
 test("data validation requires explicit vocabulary fields and matching levels", () => {
