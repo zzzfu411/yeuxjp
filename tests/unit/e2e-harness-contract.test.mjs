@@ -63,6 +63,12 @@ test("root package remains a dependency-free forwarding entrypoint", () => {
   assert.deepEqual(rootPackageJson.devDependencies ?? {}, {})
   assert.equal(rootPackageJson.scripts["validate:data"], "npm run validate:data --prefix web")
   assert.equal(rootPackageJson.scripts["check:release"], "npm run check:release --prefix web")
+  assert.equal(rootPackageJson.scripts["e2e"], "npm run e2e --prefix web")
+  assert.equal(rootPackageJson.scripts["e2e:install"], "npm run e2e:install --prefix web")
+  assert.equal(rootPackageJson.scripts["e2e:browser"], "npm run e2e:browser --prefix web")
+  assert.equal(rootPackageJson.scripts["e2e:browser:required"], "npm run e2e:browser:required --prefix web")
+  assert.equal(rootPackageJson.scripts["e2e:pwa"], "npm run e2e:pwa --prefix web")
+  assert.equal(rootPackageJson.scripts["e2e:pwa:required"], "npm run e2e:pwa:required --prefix web")
   assert.notEqual(rootPackageJson.scripts["validate:data"], webPackageJson.scripts["validate:data"])
 })
 
