@@ -32,6 +32,13 @@ export function VocabularyFocusModal({
 }) {
   const titleId = "vocabulary-focus-modal-title"
   const descriptionId = "vocabulary-focus-modal-description"
+  const handleCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return
+    if (event.key !== " " && event.key !== "Enter") return
+
+    event.preventDefault()
+    onFlip()
+  }
 
   return (
     <Modal
@@ -49,10 +56,12 @@ export function VocabularyFocusModal({
           <p id={descriptionId} className="sr-only">
             {vocab.meaning}
           </p>
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             className="group relative flex-1 cursor-pointer bg-gradient-to-b from-card to-secondary/10 text-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={onFlip}
+            onKeyDown={handleCardKeyDown}
             aria-pressed={flipped}
             data-testid="vocabulary-focus-card"
           >
@@ -105,7 +114,7 @@ export function VocabularyFocusModal({
                 </div>
               )}
             </div>
-          </button>
+          </div>
 
           <div className="p-4 bg-background border-t flex justify-between items-center shrink-0 select-none">
             <Button variant="ghost" size="sm" onClick={onPrev} className="gap-1 pl-2 text-muted-foreground hover:text-foreground">

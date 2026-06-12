@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useEffect, useCallback, Suspense } from "react"
+import { useMemo, useState, useCallback, Suspense } from "react"
 import type { VocabLevel } from "@/data/vocabulary/types"
 import { speakJapanese } from "@/lib/speech"
 import { useVocabProgress } from "@/lib/vocab-progress"
@@ -128,19 +128,6 @@ function VocabularyPageContent() {
     if (!selectedKana) return
     speakJapanese(selectedKana)
   }, [selectedKana])
-
-  // Keyboard
-  useEffect(() => {
-    if (selectedIndex === null) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === " ") {
-        e.preventDefault()
-        setIsModalFlipped(prev => !prev)
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [selectedIndex])
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-8 mb-20">

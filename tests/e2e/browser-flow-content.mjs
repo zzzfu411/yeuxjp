@@ -110,14 +110,20 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.getByTestId("vocabulary-focus-card").focus()
   await page.keyboard.press("Space")
   await page.getByTestId("vocabulary-learned-toggle").waitFor({ state: "visible" })
-  await page.getByTestId("vocabulary-learned-toggle").click()
+  await page.getByTestId("vocabulary-learned-toggle").focus()
+  await page.keyboard.press("Space")
+  await page.getByTestId("vocabulary-learned-toggle").waitFor({ state: "visible" })
+  await page.waitForFunction(() => {
+    const learned = JSON.parse(localStorage.getItem("yasashi.vocab.learned.v1") ?? "[]")
+    return Array.isArray(learned) && learned.includes("sur-n-35")
+  })
   await page.waitForFunction(() => {
     const learned = JSON.parse(localStorage.getItem("yasashi.vocab.learned.v1") ?? "[]")
     const srs = JSON.parse(localStorage.getItem("yasashi.srs.vocab.v1") ?? "{}")
     return Array.isArray(learned) && learned.includes("sur-n-35") && !!srs?.["sur-n-35"]?.dueAt
   })
   const learnedVocab = await readJsonStorage(page, "yasashi.vocab.learned.v1")
-  assert.ok(Array.isArray(learnedVocab) && learnedVocab.includes("sur-n-35"), "vocabulary learned toggle should persist the selected vocabulary id")
+  assert.ok(Array.isArray(learnedVocab) && learnedVocab.includes("sur-n-35"), "vocabulary learned toggle should support keyboard activation without flipping the modal")
   const vocabSrs = await readJsonStorage(page, "yasashi.srs.vocab.v1")
   assert.ok(vocabSrs?.["sur-n-35"]?.dueAt, "vocabulary learned toggle should enroll the selected vocabulary for SRS review")
   await page.keyboard.press("Escape")

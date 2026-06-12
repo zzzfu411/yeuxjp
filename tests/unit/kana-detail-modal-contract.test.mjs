@@ -13,6 +13,8 @@ test("KanaGrid delegates kana detail modal rendering to KanaDetailModal", () => 
   const source = read("src/components/kana/kana-grid.tsx")
 
   assert.match(source, /from "\.\/kana-detail-modal"/)
+  assert.match(source, /from "@\/lib\/keyboard-shortcuts"/)
+  assert.match(source, /shouldHandleGlobalShortcut\(e\.target\)/)
   assert.match(source, /<KanaDetailModal\b/)
   assert.match(source, /onToggleWriting=\{\(\) => setIsWriting\(\(prev\) => !prev\)\}/)
   assert.doesNotMatch(source, /<Modal\b/)
