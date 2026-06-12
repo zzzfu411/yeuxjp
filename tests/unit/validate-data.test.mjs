@@ -61,6 +61,62 @@ test("data validation requires AnimCJK license files for distribution", () => {
   assert.match(source, /public\/animcjk\/licenses\/LGPL\.txt/)
 })
 
+test("data validation normalizes every small kana variant before checking AnimCJK coverage", () => {
+  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const rootDownloaderPath = path.join(root, "scripts/download-animcjk-kana.mjs")
+  const rootDownloader = fs.existsSync(rootDownloaderPath)
+    ? fs.readFileSync(rootDownloaderPath, "utf8")
+    : null
+
+  for (const pair of [
+    '["ぁ", "あ"]',
+    '["ぃ", "い"]',
+    '["ぅ", "う"]',
+    '["ぇ", "え"]',
+    '["ぉ", "お"]',
+    '["っ", "つ"]',
+    '["ゃ", "や"]',
+    '["ゅ", "ゆ"]',
+    '["ょ", "よ"]',
+    '["ァ", "ア"]',
+    '["ィ", "イ"]',
+    '["ゥ", "ウ"]',
+    '["ェ", "エ"]',
+    '["ォ", "オ"]',
+    '["ッ", "ツ"]',
+    '["ャ", "ヤ"]',
+    '["ュ", "ユ"]',
+    '["ョ", "ヨ"]',
+  ]) {
+    assert.ok(source.includes(pair), `validator should normalize ${pair}`)
+  }
+
+  if (rootDownloader) {
+    for (const pair of [
+      '"ぁ": "あ"',
+      '"ぃ": "い"',
+      '"ぅ": "う"',
+      '"ぇ": "え"',
+      '"ぉ": "お"',
+      '"っ": "つ"',
+      '"ゃ": "や"',
+      '"ゅ": "ゆ"',
+      '"ょ": "よ"',
+      '"ァ": "ア"',
+      '"ィ": "イ"',
+      '"ゥ": "ウ"',
+      '"ェ": "エ"',
+      '"ォ": "オ"',
+      '"ッ": "ツ"',
+      '"ャ": "ヤ"',
+      '"ュ": "ユ"',
+      '"ョ": "ヨ"',
+    ]) {
+      assert.ok(rootDownloader.includes(pair), `root AnimCJK downloader should normalize ${pair}`)
+    }
+  }
+})
+
 test("data validation verifies the offline fallback copy and learning-state boundary", () => {
   const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
 

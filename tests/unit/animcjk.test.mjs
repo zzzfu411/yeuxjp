@@ -5,6 +5,8 @@ import { loadTsModule } from "./load-ts-module.mjs"
 const animcjk = await loadTsModule("src/lib/animcjk.ts")
 
 test("AnimCJK URLs normalize small kana to regular glyph SVGs", () => {
+  assert.equal(animcjk.getAnimCjkKanaUrl("ぁ"), "/animcjk/kana/12354.svg")
+  assert.equal(animcjk.getAnimCjkKanaUrl("ォ"), "/animcjk/kana/12458.svg")
   assert.equal(animcjk.getAnimCjkKanaUrl("っ"), "/animcjk/kana/12388.svg")
   assert.deepEqual(animcjk.getAnimCjkKanaUrls("きゃ"), ["/animcjk/kana/12365.svg", "/animcjk/kana/12420.svg"])
 })
