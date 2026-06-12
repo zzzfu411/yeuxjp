@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { createSrsState, isDue, type SrsMap, type SrsResult } from "@/lib/srs-model"
-import { gradeSrs, notifySrs, readSrsMap, SRS_EVENT, writeSrsMap } from "@/lib/srs-storage"
+import { canStoreSrsId, filterSrsMapForStorage, gradeSrs, notifySrs, readSrsMap, SRS_EVENT, writeSrsMap } from "@/lib/srs-storage"
 
 export {
   applySrsResult,
@@ -70,6 +70,7 @@ export function useSrsDeck(storageKey: string) {
 
   const enroll = useCallback(
     (id: string) => {
+      if (!canStoreSrsId(storageKey, id)) return true
       const previous = readSrsMap(storageKey)
       if (previous[id]) {
         setMap(previous)
@@ -79,7 +80,7 @@ export function useSrsDeck(storageKey: string) {
       const next = { ...previous, [id]: createSrsState(now) }
       if (!writeSrsMap(storageKey, next)) return false
       notifySrs(storageKey)
-      setMap(next)
+      setMap(filterSrsMapForStorage(storageKey, next))
       return true
     },
     [storageKey]

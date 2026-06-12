@@ -4,6 +4,7 @@ import { loadTsModule } from "./load-ts-module.mjs"
 
 const model = await loadTsModule("src/lib/srs-model.ts")
 const storage = await loadTsModule("src/lib/srs-storage.ts")
+const { STORAGE_KEYS } = await loadTsModule("src/lib/storage-keys.ts")
 
 function installWindow({ failSet = false } = {}) {
   const map = new Map()
@@ -52,6 +53,33 @@ test("srs storage reads valid persisted maps and normalizes values", () => {
   assert.equal(deck.item.wrong, 2)
 })
 
+test("managed kana and vocabulary decks filter stale review ids on read and write", () => {
+  const { map } = installWindow()
+  const state = model.createSrsState(1_700_000_000_000)
+  map.set(
+    STORAGE_KEYS.SRS_KANA,
+    JSON.stringify({
+      a: state,
+      "sokuon:kitte": state,
+    })
+  )
+  map.set(
+    STORAGE_KEYS.SRS_VOCAB,
+    JSON.stringify({
+      "sur-g-1": state,
+      "sur-g-999": state,
+    })
+  )
+
+  assert.deepEqual(Object.keys(storage.readSrsMap(STORAGE_KEYS.SRS_KANA)), ["a"])
+  assert.deepEqual(Object.keys(storage.readSrsMap(STORAGE_KEYS.SRS_VOCAB)), ["sur-g-1"])
+
+  assert.equal(storage.writeSrsMap(STORAGE_KEYS.SRS_KANA, { a: state, "sokuon:kitte": state }), true)
+  assert.equal(storage.writeSrsMap(STORAGE_KEYS.SRS_VOCAB, { "sur-g-1": state, "sur-g-999": state }), true)
+  assert.deepEqual(Object.keys(JSON.parse(map.get(STORAGE_KEYS.SRS_KANA))), ["a"])
+  assert.deepEqual(Object.keys(JSON.parse(map.get(STORAGE_KEYS.SRS_VOCAB))), ["sur-g-1"])
+})
+
 test("srs storage ignores invalid persisted JSON", () => {
   const { map } = installWindow()
   map.set("broken", "{")
@@ -73,6 +101,19 @@ test("enrollSrs creates a review item and dispatches an update", () => {
   assert.equal(events.length, 1)
   assert.equal(events[0].type, storage.SRS_EVENT)
   assert.deepEqual(events[0].detail, { storageKey: "deck" })
+})
+
+test("managed decks ignore invalid ids without writing or notifying", () => {
+  const { map, events } = installWindow()
+  const state = model.createSrsState(1_700_000_000_000)
+
+  assert.equal(storage.enrollSrs(STORAGE_KEYS.SRS_KANA, "sokuon:kitte"), true)
+  assert.equal(storage.gradeSrs(STORAGE_KEYS.SRS_KANA, "sokuon:kitte", "good"), true)
+  assert.equal(storage.setSrsState(STORAGE_KEYS.SRS_VOCAB, "sur-g-999", state), true)
+
+  assert.equal(map.has(STORAGE_KEYS.SRS_KANA), false)
+  assert.equal(map.has(STORAGE_KEYS.SRS_VOCAB), false)
+  assert.equal(events.length, 0)
 })
 
 test("gradeSrs applies results to existing review history", () => {
