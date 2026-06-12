@@ -105,9 +105,9 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /Cache writes are best effort and must not block a valid network response/)
   assert.match(sw, /await tryCachePut\(cache, request, response\.clone\(\)\)/)
   assert.match(sw, /cache\.match\(request\)/)
-  assert.match(sw, /const staticCached = await caches\.match\(request\)/)
+  assert.match(sw, /const staticCached = await staticCache\.match\(request\)/)
   assert.match(sw, /if \(staticCached\) return staticCached/)
-  assert.match(sw, /caches\.match\(OFFLINE_FALLBACK_URL\)/)
+  assert.match(sw, /staticCache\.match\(OFFLINE_FALLBACK_URL\)/)
   assert.match(sw, /function isCacheableStaticAsset\(request, requestUrl\)/)
   assert.match(sw, /async function refreshStaticAssetCache\(request, requestUrl\)/)
   assert.match(sw, /fetch\(request, \{ cache: "no-cache" \}\)/)
@@ -235,23 +235,109 @@ test("service worker activation removes only outdated app-owned caches", async (
   assert.equal(clientsClaimed, true)
 })
 
+test("service worker navigation fallback ignores preserved non-app caches", async () => {
+  let fetchHandler = null
+  const navigationEntries = new Map([
+    ["https://example.test/kana", new Response("current app page", { status: 200 })],
+  ])
+  const staticEntries = new Map([
+    ["https://example.test/offline.html", new Response("offline fallback", { status: 200 })],
+  ])
+  const preservedEntries = new Map([
+    ["https://example.test/kana", new Response("stale preserved page", { status: 200 })],
+    ["https://example.test/offline.html", new Response("stale preserved fallback", { status: 200 })],
+  ])
+  const sandbox = {
+    caches: {
+      async open(name) {
+        return {
+          async match(request) {
+            const url = typeof request === "string" ? request : request.url
+            const absoluteUrl = url.startsWith("/") ? `https://example.test${url}` : url
+            if (name === "yasashi-navigation-v5") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
+            if (name === "yasashi-static-v5") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
+            return preservedEntries.get(absoluteUrl) ?? preservedEntries.get(url) ?? null
+          },
+          async put() {},
+        }
+      },
+    },
+    async fetch() {
+      throw new Error("offline")
+    },
+    self: {
+      location: { origin: "https://example.test" },
+      addEventListener(type, handler) {
+        if (type === "fetch") fetchHandler = handler
+      },
+      skipWaiting() {},
+      clients: { claim() {} },
+    },
+    URL,
+    Response,
+    Promise,
+  }
+  sandbox.globalThis = sandbox
+
+  vm.runInNewContext(sw, sandbox)
+  assert.equal(typeof fetchHandler, "function")
+
+  let responded = null
+  fetchHandler({
+    request: {
+      method: "GET",
+      mode: "navigate",
+      destination: "document",
+      url: "https://example.test/kana",
+    },
+    respondWith(promise) {
+      responded = promise
+    },
+    waitUntil() {},
+  })
+
+  assert.equal(await (await responded).text(), "current app page")
+
+  navigationEntries.clear()
+  responded = null
+  fetchHandler({
+    request: {
+      method: "GET",
+      mode: "navigate",
+      destination: "document",
+      url: "https://example.test/kana",
+    },
+    respondWith(promise) {
+      responded = promise
+    },
+    waitUntil() {},
+  })
+
+  assert.equal(await (await responded).text(), "offline fallback")
+})
+
 test("service worker serves cached static assets while refreshing them in the background", async () => {
   let fetchHandler = null
-  const cacheEntries = new Map([
-    ["https://example.test/icons/icon-192.png", new Response("old icon", { status: 200 })],
+  const currentStaticEntries = new Map([
+    ["https://example.test/icons/icon-192.png", new Response("current icon", { status: 200 })],
+  ])
+  const preservedEntries = new Map([
+    ["https://example.test/icons/icon-192.png", new Response("stale preserved icon", { status: 200 })],
   ])
   const putCalls = []
   const fetchCalls = []
   const sandbox = {
     caches: {
-      async match(request) {
-        return cacheEntries.get(request.url) ?? null
-      },
-      async open() {
+      async open(name) {
         return {
+          async match(request) {
+            if (name === "yasashi-static-v5") return currentStaticEntries.get(request.url) ?? null
+            return preservedEntries.get(request.url) ?? null
+          },
           async put(request, response) {
-            putCalls.push(request.url)
-            cacheEntries.set(request.url, response)
+            putCalls.push({ cache: name, url: request.url })
+            if (name === "yasashi-static-v5") currentStaticEntries.set(request.url, response)
+            else preservedEntries.set(request.url, response)
           },
         }
       },
@@ -294,11 +380,12 @@ test("service worker serves cached static assets while refreshing them in the ba
     },
   })
 
-  assert.equal(await (await responded).text(), "old icon")
+  assert.equal(await (await responded).text(), "current icon")
   await Promise.all(waitUntilPromises)
   assert.deepEqual(fetchCalls, [{ url: "https://example.test/icons/icon-192.png", cache: "no-cache" }])
-  assert.deepEqual(putCalls, ["https://example.test/icons/icon-192.png"])
-  assert.equal(await cacheEntries.get("https://example.test/icons/icon-192.png").text(), "new icon")
+  assert.deepEqual(putCalls, [{ cache: "yasashi-static-v5", url: "https://example.test/icons/icon-192.png" }])
+  assert.equal(await currentStaticEntries.get("https://example.test/icons/icon-192.png").text(), "new icon")
+  assert.equal(await preservedEntries.get("https://example.test/icons/icon-192.png").text(), "stale preserved icon")
 })
 
 test("PWA offline E2E verifies visited-page cache, fallback, and local state preservation", () => {

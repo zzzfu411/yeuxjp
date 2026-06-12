@@ -97,11 +97,13 @@ function isCacheableStaticAsset(request, requestUrl) {
   return request.destination === "image" ||
     request.destination === "style" ||
     request.destination === "script" ||
+    requestUrl.pathname === "/manifest.webmanifest" ||
     isAnimCjkSvg;
 }
 
 async function networkFirstNavigation(request) {
   const cache = await caches.open(NAVIGATION_CACHE_NAME);
+  const staticCache = await caches.open(STATIC_CACHE_NAME);
 
   try {
     const response = await fetch(request);
@@ -112,9 +114,9 @@ async function networkFirstNavigation(request) {
   } catch {
     const cached = await cache.match(request);
     if (cached) return cached;
-    const staticCached = await caches.match(request);
+    const staticCached = await staticCache.match(request);
     if (staticCached) return staticCached;
-    return caches.match(OFFLINE_FALLBACK_URL);
+    return staticCache.match(OFFLINE_FALLBACK_URL);
   }
 }
 
@@ -132,7 +134,8 @@ async function refreshStaticAssetCache(request, requestUrl) {
 }
 
 async function cacheFirstStaticAsset(request, requestUrl, event) {
-  const cached = await caches.match(request);
+  const cache = await caches.open(STATIC_CACHE_NAME);
+  const cached = await cache.match(request);
   if (cached) {
     event.waitUntil(refreshStaticAssetCache(request, requestUrl));
     return cached;
@@ -140,7 +143,6 @@ async function cacheFirstStaticAsset(request, requestUrl, event) {
 
   const response = await fetch(request);
   if (response.ok && isCacheableStaticAsset(request, requestUrl)) {
-    const cache = await caches.open(STATIC_CACHE_NAME);
     await tryCachePut(cache, request, response.clone());
   }
 
