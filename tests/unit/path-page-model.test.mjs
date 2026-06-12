@@ -135,4 +135,20 @@ test("path and next-step surfaces consume the shared recommendation hook", () =>
   assert.match(pathPage, /from "@\/lib\/path-page-model"/)
   assert.match(pathPage, /getSkillStatus\(skill\.id, kanaStats, vocabStats\)/)
   assert.match(pathPage, /getPathMasterySummary\(learning\.items\)/)
+  assert.match(pathPage, /from "@\/components\/path\/path-starter-lessons"/)
+  assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
+  assert.doesNotMatch(pathPage, /STARTER_LESSONS\.slice/)
+})
+
+test("PathStarterLessons owns compact starter lesson cards", () => {
+  const source = fs.readFileSync(path.join(root, "src/components/path/path-starter-lessons.tsx"), "utf8")
+
+  assert.match(source, /export function PathStarterLessons/)
+  assert.match(source, /completedLessonIds: ReadonlySet<string>/)
+  assert.match(source, /activeLessonId: string \| null \| undefined/)
+  assert.match(source, /STARTER_LESSONS\.slice\(0, 8\)\.map/)
+  assert.match(source, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId\)/)
+  assert.match(source, /getLessonEntryBadge\(status\)/)
+  assert.match(source, /completedLessonIds\.size/)
+  assert.match(source, /STARTER_LESSONS\.length/)
 })

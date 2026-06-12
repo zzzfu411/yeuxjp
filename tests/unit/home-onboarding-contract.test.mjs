@@ -17,6 +17,7 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
   assert.match(route, /from "@\/components\/home\/home-page"/)
   assert.match(route, /<HomePage \/>/)
   assert.match(page, /from "@\/components\/home\/onboarding-panel"/)
+  assert.match(page, /from "@\/components\/home\/home-starter-lessons"/)
   assert.match(page, /from "@\/components\/practice\/practice-save-error"/)
   assert.match(page, /from "@\/lib\/home-page-model"/)
   assert.match(page, /from "@\/lib\/learning-recommendation"/)
@@ -27,7 +28,10 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
   assert.match(page, /const \[profileSaveError, setProfileSaveError\] = useState\(false\)/)
   assert.match(page, /const saved = saveProfile\(input\)/)
   assert.match(page, /setProfileSaveError\(!saved\)/)
+  assert.match(page, /<HomeStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
   assert.match(page, /<PracticeSaveError show=\{profileSaveError\} \/>/)
+  assert.doesNotMatch(page, /STARTER_LESSONS\.slice/)
+  assert.doesNotMatch(page, /getLessonEntryStatus\(lesson/)
   assert.doesNotMatch(page, /dueMistakeIds = useMemo/)
   assert.doesNotMatch(page, /Object\.values\(learning\.items\)/)
   assert.doesNotMatch(page, /useLearningProgress/)
@@ -42,6 +46,20 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
   assert.doesNotMatch(page, /const romajiOptions/)
   assert.doesNotMatch(page, /function SelectPills/)
   assert.doesNotMatch(page, /type UserProfile/)
+})
+
+test("HomeStarterLessons owns starter lesson cards and locked card behavior", () => {
+  const source = read("src/components/home/home-starter-lessons.tsx")
+
+  assert.match(source, /export function HomeStarterLessons/)
+  assert.match(source, /completedLessonIds: ReadonlySet<string>/)
+  assert.match(source, /activeLessonId: string \| null \| undefined/)
+  assert.match(source, /STARTER_LESSONS\.slice\(0, 6\)\.map/)
+  assert.match(source, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId\)/)
+  assert.match(source, /getLessonEntryBadge\(status\)/)
+  assert.match(source, /if \(locked\)/)
+  assert.match(source, /aria-disabled="true"/)
+  assert.match(source, /href=\{`\/learn\/\$\{lesson\.id\}`\}/)
 })
 
 test("OnboardingPanel owns profile option state and save payload", () => {

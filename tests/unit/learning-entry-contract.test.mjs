@@ -39,10 +39,18 @@ test("learning entry surfaces share the centralized entry model", () => {
 })
 
 test("starter lesson grids render locked future lessons as non-link cards", () => {
-  for (const relPath of ["src/components/home/home-page.tsx", "src/components/path/skill-tree-page.tsx"]) {
-    const source = read(relPath)
-    assert.match(source, /getLessonEntryStatus\(lesson, learning\.completedLessonIds, nextLesson\?\.id\)/, relPath)
-    assert.match(source, /if \(locked\)/, relPath)
-    assert.match(source, /aria-disabled="true"/, relPath)
-  }
+  const home = read("src/components/home/home-starter-lessons.tsx")
+  assert.match(home, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId\)/)
+  assert.match(home, /if \(locked\)/)
+  assert.match(home, /aria-disabled="true"/)
+
+  const pathPage = read("src/components/path/skill-tree-page.tsx")
+  assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
+  assert.doesNotMatch(pathPage, /getLessonEntryStatus\(lesson, learning\.completedLessonIds, nextLesson\?\.id\)/)
+
+  const pathStarterLessons = read("src/components/path/path-starter-lessons.tsx")
+  assert.match(pathStarterLessons, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId\)/)
+  assert.match(pathStarterLessons, /if \(locked\)/)
+  assert.match(pathStarterLessons, /aria-disabled="true"/)
+  assert.match(pathStarterLessons, /href=\{`\/learn\/\$\{lesson\.id\}`\}/)
 })
