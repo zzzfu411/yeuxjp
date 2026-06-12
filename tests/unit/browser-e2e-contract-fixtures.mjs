@@ -69,6 +69,31 @@ export const requiredSelectors = [
     pattern: /data-testid="home-start-learning"/,
   },
   {
+    testId: "onboarding-goal-travel",
+    source: "src/components/home/onboarding-panel.tsx",
+    pattern: /data-testid=\{`onboarding-goal-\$\{item\.value\}`\}/,
+  },
+  {
+    testId: "onboarding-some",
+    source: "src/components/home/onboarding-panel.tsx",
+    pattern: /data-testid=\{`onboarding-\$\{item\.value\}`\}/,
+  },
+  {
+    testId: "onboarding-always",
+    source: "src/components/home/onboarding-panel.tsx",
+    pattern: /data-testid=\{`onboarding-\$\{item\.value\}`\}/,
+  },
+  {
+    testId: "onboarding-minutes",
+    source: "src/components/home/onboarding-panel.tsx",
+    pattern: /data-testid="onboarding-minutes"/,
+  },
+  {
+    testId: "onboarding-save",
+    source: "src/components/home/onboarding-panel.tsx",
+    pattern: /data-testid="onboarding-save"/,
+  },
+  {
     testId: "path-next-learning",
     source: "src/components/path/skill-tree-page.tsx",
     pattern: /data-testid="path-next-learning"/,

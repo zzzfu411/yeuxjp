@@ -46,6 +46,8 @@ export function OnboardingPanel({ onSave }: { onSave: (input: Omit<UserProfile, 
             <button
               key={item.value}
               type="button"
+              aria-pressed={goal === item.value}
+              data-testid={`onboarding-goal-${item.value}`}
               onClick={() => setGoal(item.value)}
               className={cn(
                 "rounded-2xl border p-3 text-left transition hover:border-primary/50",
@@ -70,6 +72,8 @@ export function OnboardingPanel({ onSave }: { onSave: (input: Omit<UserProfile, 
           <span className="text-muted-foreground">{minutesPerDay} 分钟</span>
         </div>
         <input
+          aria-label="每天学习时长"
+          data-testid="onboarding-minutes"
           type="range"
           min={5}
           max={20}
@@ -83,6 +87,7 @@ export function OnboardingPanel({ onSave }: { onSave: (input: Omit<UserProfile, 
       <Button
         type="button"
         className="w-full gap-2 rounded-full"
+        data-testid="onboarding-save"
         onClick={() => onSave({ goal, kanaLevel, romajiMode, minutesPerDay })}
       >
         生成今日计划 <ArrowRight className="h-4 w-4" />
@@ -110,6 +115,8 @@ function SelectPills({
           <button
             key={item.value}
             type="button"
+            aria-pressed={value === item.value}
+            data-testid={`onboarding-${item.value}`}
             onClick={() => onChange(item.value)}
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
