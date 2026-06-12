@@ -16,6 +16,7 @@ function ReviewAudioButton({
       variant="outline"
       size="icon"
       className="w-20 h-20 rounded-full border-4"
+      aria-label="播放复习音频"
       onClick={() => onPlay(text)}
     >
       <Volume2 className="w-8 h-8" />

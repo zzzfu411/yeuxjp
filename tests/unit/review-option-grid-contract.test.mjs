@@ -32,9 +32,13 @@ test("ReviewOptionGrid owns review option feedback visuals", () => {
   const source = read("src/components/review/review-option-grid.tsx")
 
   assert.match(source, /getAnswerOptionFeedback/)
+  assert.match(source, /getAnswerOptionAriaLabel/)
   assert.match(source, /getAnswerOptionClassName/)
   assert.match(source, /shouldShowCorrectAnswerIcon/)
   assert.match(source, /shouldShowWrongAnswerIcon/)
   assert.match(source, /selectedAnswer != null/)
+  assert.match(source, /const ariaLabelBase = typeof option\.display === "string" \? option\.display : option\.value/)
+  assert.match(source, /aria-label=\{getAnswerOptionAriaLabel\(ariaLabelBase, feedback\)\}/)
+  assert.match(source, /aria-pressed=\{selectedAnswer === option\.value\}/)
   assert.match(source, /data-testid=\{`review-answer-\$\{option\.value\}`\}/)
 })

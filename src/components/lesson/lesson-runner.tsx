@@ -130,7 +130,14 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
                 <h2 className="text-2xl font-bold tracking-tight">{current.title}</h2>
               </div>
               {"audioText" in current && current.audioText ? (
-                <Button type="button" variant="outline" size="icon" className="shrink-0 rounded-full" onClick={() => playAudio(current.audioText!)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0 rounded-full"
+                  aria-label="朗读当前课程内容"
+                  onClick={() => playAudio(current.audioText!)}
+                >
                   <Volume2 className="h-4 w-4" />
                 </Button>
               ) : null}

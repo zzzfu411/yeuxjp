@@ -35,3 +35,10 @@ export function shouldShowCorrectAnswerIcon(feedback: AnswerOptionFeedback) {
 export function shouldShowWrongAnswerIcon(feedback: AnswerOptionFeedback) {
   return feedback === "wrong"
 }
+
+export function getAnswerOptionAriaLabel(display: string, feedback: AnswerOptionFeedback) {
+  if (feedback === "correct") return `${display}，正确答案`
+  if (feedback === "wrong") return `${display}，你的选择，回答错误`
+  if (feedback === "dimmed") return `${display}，未选择`
+  return display
+}

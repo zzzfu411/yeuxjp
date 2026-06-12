@@ -23,6 +23,7 @@ export function QuizQuestionPrompt({
             variant="outline"
             size="icon"
             className="w-24 h-24 rounded-full border-4"
+            aria-label="播放题目音频"
             onClick={() => question.questionAudio && onPlayAudio(question.questionAudio)}
           >
             <Volume2 className="w-10 h-10" />

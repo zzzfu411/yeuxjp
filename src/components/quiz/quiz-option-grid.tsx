@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
+  getAnswerOptionAriaLabel,
   getAnswerOptionClassName,
   getAnswerOptionFeedback,
   shouldShowCorrectAnswerIcon,
@@ -35,6 +36,8 @@ export function QuizOptionGrid({
             variant="outline"
             size="lg"
             className={cn("h-16 text-lg font-medium", getAnswerOptionClassName(feedback))}
+            aria-label={getAnswerOptionAriaLabel(String(option.display), feedback)}
+            aria-pressed={selectedOption === option.value}
             onClick={() => onSelect(option.value)}
             disabled={selectedOption != null}
             data-testid={`quiz-answer-option-${index}`}

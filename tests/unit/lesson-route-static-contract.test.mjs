@@ -43,6 +43,7 @@ test("LessonRunner owns lesson browser state and shared learning hooks", () => {
   assert.match(source, /useLessonAnswerRecorder\(/)
   assert.match(source, /<LessonStepBody\b/)
   assert.match(source, /<LessonProgressSidebar\b/)
+  assert.match(source, /aria-label="朗读当前课程内容"/)
   assert.match(source, /PracticeSaveError/)
   assert.doesNotMatch(source, /useParams/)
   assert.doesNotMatch(source, /notFound/)

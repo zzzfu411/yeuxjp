@@ -59,3 +59,10 @@ test("answer option class names and icons are derived from feedback state", () =
   assert.equal(feedback.shouldShowWrongAnswerIcon("wrong"), true)
   assert.equal(feedback.shouldShowWrongAnswerIcon("correct"), false)
 })
+
+test("answer option aria labels include feedback state", () => {
+  assert.equal(feedback.getAnswerOptionAriaLabel("a", "idle"), "a")
+  assert.equal(feedback.getAnswerOptionAriaLabel("a", "correct"), "a，正确答案")
+  assert.equal(feedback.getAnswerOptionAriaLabel("b", "wrong"), "b，你的选择，回答错误")
+  assert.equal(feedback.getAnswerOptionAriaLabel("c", "dimmed"), "c，未选择")
+})

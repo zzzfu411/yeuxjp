@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
+  getAnswerOptionAriaLabel,
   getAnswerOptionClassName,
   getAnswerOptionFeedback,
   shouldShowCorrectAnswerIcon,
@@ -32,6 +33,7 @@ export function ReviewOptionGrid({
   return (
     <div className="grid grid-cols-2 gap-4 w-full">
       {options.map((option) => {
+        const ariaLabelBase = typeof option.display === "string" ? option.display : option.value
         const feedback = getAnswerOptionFeedback({
           selectedAnswer,
           optionValue: option.value,
@@ -44,6 +46,8 @@ export function ReviewOptionGrid({
             variant="outline"
             size="lg"
             className={cn(optionClassName, getAnswerOptionClassName(feedback))}
+            aria-label={getAnswerOptionAriaLabel(ariaLabelBase, feedback)}
+            aria-pressed={selectedAnswer === option.value}
             onClick={() => onSelect(option.value)}
             disabled={selectedAnswer != null}
             data-testid={`review-answer-${option.value}`}

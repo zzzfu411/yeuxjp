@@ -28,6 +28,7 @@ test("QuizQuestionPrompt owns audio and prompt-specific presentation", () => {
   assert.match(source, /export function QuizQuestionPrompt/)
   assert.match(source, /Volume2/)
   assert.match(source, /question\.questionAudio \?/)
+  assert.match(source, /aria-label="播放题目音频"/)
   assert.match(source, /onPlayAudio\(question\.questionAudio\)/)
   assert.match(source, /text-6xl/)
   assert.match(source, /text-3xl/)

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { LessonStep } from "@/data/lessons"
 import {
+  getAnswerOptionAriaLabel,
   getAnswerOptionClassName,
   getAnswerOptionFeedback,
   shouldShowCorrectAnswerIcon,
@@ -97,6 +98,8 @@ export function LessonStepBody({
                   "min-h-14 justify-start whitespace-normal rounded-xl px-4 py-3 text-left text-base",
                   getAnswerOptionClassName(feedback)
                 )}
+                aria-label={getAnswerOptionAriaLabel(option, feedback)}
+                aria-pressed={selected === option}
                 onClick={() => onSelect(option)}
                 disabled={readOnly || !!result}
                 data-testid={`lesson-answer-${option}`}

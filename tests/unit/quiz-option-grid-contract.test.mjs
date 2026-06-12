@@ -28,10 +28,13 @@ test("QuizOptionGrid owns quiz option feedback visuals", () => {
 
   assert.match(source, /export function QuizOptionGrid/)
   assert.match(source, /getAnswerOptionFeedback/)
+  assert.match(source, /getAnswerOptionAriaLabel/)
   assert.match(source, /getAnswerOptionClassName/)
   assert.match(source, /shouldShowCorrectAnswerIcon/)
   assert.match(source, /shouldShowWrongAnswerIcon/)
   assert.match(source, /isQuestionAnswerCorrect\(question, option\.value\)/)
+  assert.match(source, /aria-label=\{getAnswerOptionAriaLabel\(String\(option\.display\), feedback\)\}/)
+  assert.match(source, /aria-pressed=\{selectedOption === option\.value\}/)
   assert.match(source, /disabled=\{selectedOption != null\}/)
   assert.match(source, /data-testid=\{`quiz-answer-option-\$\{index\}`\}/)
   assert.match(source, /CheckCircle2/)
