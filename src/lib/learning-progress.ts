@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
 import { LEARNING_EVENT, readLearningJson, writeLearningJson } from "@/lib/learning-storage"
 import {
   clampScore,
@@ -210,14 +210,10 @@ export function useLearningProgress() {
 
     const nextItems = updateItemProgressForPractice(previousItems, nextResult)
 
-    if (!writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, nextResults)) {
-      return false
-    }
-
-    if (!writeLearningJson(STORAGE_KEYS.ITEM_PROGRESS, nextItems)) {
-      writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, previousResults)
-      return false
-    }
+    const saved = runLearningStorageTransaction(() => {
+      return writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, nextResults) && writeLearningJson(STORAGE_KEYS.ITEM_PROGRESS, nextItems)
+    })
+    if (!saved) return false
 
     setResults(nextResults)
     setItems(nextItems)

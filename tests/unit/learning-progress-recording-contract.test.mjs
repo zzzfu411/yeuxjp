@@ -24,9 +24,10 @@ test("learning progress treats practice history and item progress as one write",
   const source = read("src/lib/learning-progress.ts")
 
   assert.match(source, /if \(!nextResult\) return false/)
-  assert.match(source, /if \(!writeLearningJson\(STORAGE_KEYS\.PRACTICE_RESULTS, nextResults\)\) \{\s*return false\s*\}/)
-  assert.match(source, /if \(!writeLearningJson\(STORAGE_KEYS\.ITEM_PROGRESS, nextItems\)\) \{/)
-  assert.match(source, /writeLearningJson\(STORAGE_KEYS\.PRACTICE_RESULTS, previousResults\)/)
+  assert.match(source, /runLearningStorageTransaction/)
+  assert.match(source, /const saved = runLearningStorageTransaction\(\(\) => \{/)
+  assert.match(source, /writeLearningJson\(STORAGE_KEYS\.PRACTICE_RESULTS, nextResults\) && writeLearningJson\(STORAGE_KEYS\.ITEM_PROGRESS, nextItems\)/)
+  assert.match(source, /if \(!saved\) return false/)
   assert.match(source, /setResults\(nextResults\)/)
   assert.match(source, /setItems\(nextItems\)/)
   assert.match(source, /return true/)
