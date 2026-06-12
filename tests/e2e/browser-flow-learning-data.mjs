@@ -70,6 +70,56 @@ export async function verifyLearningDataFlow(page, baseUrl) {
     "malformed but valid JSON backup import should not overwrite managed learning keys"
   )
 
+  const staleBackup = {
+    ...exportedBackup,
+    exportedAt: Date.now(),
+    entries: {
+      ...exportedBackup.entries,
+      "yasashi.kana.mastered.v1": JSON.stringify(["a", "sokuon:kitte", "ka", "a"]),
+      "yasashi.vocab.learned.v1": JSON.stringify(["sur-n-35", "sur-g-999", "day-v-1", "sur-n-35"]),
+      "yasashi.srs.kana.v1": JSON.stringify({
+        a: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+        "sokuon:kitte": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+      }),
+      "yasashi.srs.vocab.v1": JSON.stringify({
+        "sur-n-35": { box: 1, dueAt: 1, createdAt: 2, right: 0, wrong: 0 },
+        "sur-g-999": { box: 1, dueAt: 1, createdAt: 2, right: 0, wrong: 0 },
+      }),
+    },
+  }
+  const staleFileChooserPromise = page.waitForEvent("filechooser")
+  await page.getByTestId("learning-data-import").click()
+  const staleFileChooser = await staleFileChooserPromise
+  await staleFileChooser.setFiles({
+    name: "stale-yasashi-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(staleBackup)),
+  })
+  await page.waitForFunction(() =>
+    document.querySelector('[data-testid="learning-data-notice"]')?.getAttribute("data-tone") === "success"
+  )
+  const normalizedStaleSnapshot = await readManagedLearningBackupSnapshot(page)
+  assert.deepEqual(
+    JSON.parse(normalizedStaleSnapshot["yasashi.kana.mastered.v1"]),
+    ["a", "ka"],
+    "valid backup import should remove non-reviewable kana from mastered progress"
+  )
+  assert.deepEqual(
+    JSON.parse(normalizedStaleSnapshot["yasashi.vocab.learned.v1"]),
+    ["sur-n-35", "day-v-1"],
+    "valid backup import should remove stale vocabulary ids from learned progress"
+  )
+  assert.deepEqual(
+    Object.keys(JSON.parse(normalizedStaleSnapshot["yasashi.srs.kana.v1"])),
+    ["a"],
+    "valid backup import should remove non-reviewable kana from SRS"
+  )
+  assert.deepEqual(
+    Object.keys(JSON.parse(normalizedStaleSnapshot["yasashi.srs.vocab.v1"])),
+    ["sur-n-35"],
+    "valid backup import should remove stale vocabulary ids from SRS"
+  )
+
   await page.getByTestId("learning-data-reset").click()
   await page.getByTestId("learning-data-reset").getByText("确认清空").waitFor({ state: "visible" })
   await page.getByTestId("learning-data-reset").click()
