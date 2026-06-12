@@ -52,6 +52,31 @@ test("product docs describe the current visited-page PWA fallback strategy", () 
   }
 })
 
+test("product docs describe current learning-state hardening", () => {
+  const plan = optionalDocs.find(([name]) => name === "PLAN.md")?.[1]
+  const codex = optionalDocs.find(([name]) => name === "README_CODEX.md")?.[1]
+  const claude = optionalDocs.find(([name]) => name === "CLAUDE.md")?.[1]
+
+  assert.match(webReadme, /backup export\/import normalizes active kana\/vocabulary indexes and SRS maps/)
+  assert.match(webReadme, /Practice writes use the shared learning-store transaction helper/)
+
+  if (plan) {
+    assert.match(plan, /Filtered stale and non-reviewable kana\/vocabulary ids/)
+    assert.match(plan, /direct restore calls normalize managed entries/)
+    assert.match(plan, /practice history, item progress, SRS enrollment, and mistake recording/)
+    assert.match(plan, /currently below the 350-line target/)
+    assert.doesNotMatch(plan, /Continue splitting `quiz-runner\.tsx`/)
+  }
+
+  if (codex) {
+    assert.match(codex, /Managed learning writes should go through the existing facades and transaction helpers/)
+  }
+
+  if (claude) {
+    assert.match(claude, /Managed writes that touch more than one learning key should use the shared learning-store transaction helper/)
+  }
+})
+
 test("CLAUDE.md documents the shared E2E harness when the wrapper doc exists", () => {
   const claude = optionalDocs.find(([name]) => name === "CLAUDE.md")?.[1]
   if (!claude) return

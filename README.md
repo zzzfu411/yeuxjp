@@ -55,6 +55,8 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 - A 14-day starter path with practice steps, step feedback, local progress, SRS enrollment for correct kana/vocab practice, and automatic mistake notebook capture for wrong answers.
 - Shared learning-session helpers in `web/src/lib/learning-session.ts` and shared question helpers in `web/src/lib/questions.ts`.
 - Learning backup/restore/reset helpers in `web/src/lib/learning-store.ts`; storage keys remain compatible with existing localStorage data.
+- Learning backup export/import normalizes active kana/vocabulary indexes and SRS maps, removing stale vocabulary ids and non-reviewable kana ids while preserving practice history.
+- Practice writes use the shared learning-store transaction helper so progress history, item mastery, SRS enrollment, and mistake notebook writes do not leave partial managed state after failures.
 - Quiz and review routes use shared runner components plus pure question builders, so the route files stay focused on URL/session entry state.
 - AnimCJK rendering is split into parser/timeline helpers (`web/src/lib/animcjk.ts`) and a glyph-board component, keeping SVG parsing testable outside React.
 - Dynamic vocabulary loading helpers (`loadVocabularyLevel`, `loadVocabularyScope`) live in `web/src/data/vocabulary/loader.ts`; import that module when a route can avoid loading every level at once.
