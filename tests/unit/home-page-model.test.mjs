@@ -71,13 +71,31 @@ test("home page model ignores stale vocabulary ids when counting due work", () =
   assert.equal(home.totalDue, 0)
 })
 
+test("home page weakest item ignores stale vocabulary, non-reviewable kana, and unattempted items", () => {
+  const home = model.buildHomePageModel({
+    completedLessonIds: new Set(),
+    items: {
+      "sur-g-999": item({ itemId: "sur-g-999", itemType: "vocab", recognition: 1, attempts: 1, correct: 0 }),
+      "sokuon:kitte": item({ itemId: "sokuon:kitte", itemType: "kana", recognition: 1, attempts: 1, correct: 0 }),
+      "sur-g-1": item({ itemId: "sur-g-1", itemType: "vocab", recognition: 0, attempts: 0, correct: 0 }),
+      "sur-g-2": item({ itemId: "sur-g-2", itemType: "vocab", recognition: 30, meaning: 40, recall: 50, attempts: 2, correct: 1 }),
+    },
+    kanaDueIds: [],
+    vocabDueIds: [],
+    mistakeDueIds: [],
+    mistakeIds: [],
+  })
+
+  assert.deepEqual(home.weakest, { id: "sur-g-2", label: "\u8bcd\u6c47", score: 24 })
+})
+
 test("home page model resolves completed starter courses to review and finds the weakest item", () => {
   const completed = new Set(lessons.STARTER_LESSONS.map((lesson) => lesson.id))
   const home = model.buildHomePageModel({
     completedLessonIds: completed,
     items: {
-      strong: item({ itemId: "strong", itemType: "kana", recognition: 80, listening: 80, meaning: 80, recall: 80, production: 80 }),
-      weak: item({ itemId: "weak", itemType: "grammar", recognition: 10, listening: 20, meaning: 30, recall: 40, production: 50 }),
+      strong: item({ itemId: "a", itemType: "kana", recognition: 80, listening: 80, meaning: 80, recall: 80, production: 80, attempts: 5 }),
+      weak: item({ itemId: "weak", itemType: "grammar", recognition: 10, listening: 20, meaning: 30, recall: 40, production: 50, attempts: 5 }),
     },
     kanaDueIds: [],
     vocabDueIds: [],

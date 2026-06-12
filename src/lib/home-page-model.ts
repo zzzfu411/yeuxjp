@@ -1,9 +1,11 @@
 import { getNextLesson } from "@/data/lessons"
+import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { resolveLearningEntry, type LearningEntry, type LearningEntrySkill } from "@/lib/learning-entry"
-import { averageMastery, type ItemProgressMap, type PracticeItemType } from "@/lib/learning-progress-model"
+import { averageMastery, type ItemProgress, type ItemProgressMap, type PracticeItemType } from "@/lib/learning-progress-model"
 import {
   buildReviewVisibleIdSet,
   filterReviewableKanaIds,
+  isReviewableKanaId,
 } from "@/lib/review-visibility"
 
 export type HomeWeakestItem = {
@@ -26,6 +28,13 @@ export function getHomeDueMistakeIds(dueIds: readonly string[], mistakeIds: Iter
   return dueIds.filter((id) => existing.has(id))
 }
 
+function isHomeWeakestCandidate(item: ItemProgress) {
+  if (item.attempts <= 0) return false
+  if (item.itemType === "kana") return isReviewableKanaId(item.itemId)
+  if (item.itemType === "vocab") return isKnownVocabularyId(item.itemId)
+  return true
+}
+
 function practiceItemTypeLabel(itemType: PracticeItemType) {
   if (itemType === "kana") return "\u5047\u540d"
   if (itemType === "grammar") return "\u8bed\u6cd5"
@@ -34,7 +43,7 @@ function practiceItemTypeLabel(itemType: PracticeItemType) {
 }
 
 export function getHomeWeakestItem(items: ItemProgressMap): HomeWeakestItem | null {
-  const entries = Object.values(items)
+  const entries = Object.values(items).filter(isHomeWeakestCandidate)
   if (!entries.length) return null
 
   return entries
