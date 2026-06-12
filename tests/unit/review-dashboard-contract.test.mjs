@@ -97,6 +97,14 @@ test("review banners own first-time, streak, and today review surfaces", () => {
   assert.match(source, /data-testid="review-start-today"/)
 })
 
+test("review banners prioritize above-the-fold state artwork with bounded sizes", () => {
+  const source = read("src/components/review/review-banners.tsx")
+
+  assert.match(source, /src="\/assets\/states\/state-empty\.webp"[\s\S]*?sizes="\(max-width: 640px\) 160px, 192px"[\s\S]*?priority/)
+  assert.match(source, /src="\/assets\/review\/review-streak\.webp"[\s\S]*?sizes="\(max-width: 896px\) 100vw, 896px"[\s\S]*?priority/)
+  assert.doesNotMatch(source, /src="\/assets\/review\/review-streak\.webp"[\s\S]{0,180}sizes="100vw"/)
+})
+
 test("ReviewDeckCard owns deck counts and start action presentation", () => {
   const source = read("src/components/review/review-deck-card.tsx")
 

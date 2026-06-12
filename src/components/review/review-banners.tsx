@@ -16,6 +16,7 @@ export function FirstReviewBanner() {
           fill
           sizes="(max-width: 640px) 160px, 192px"
           className="object-contain"
+          priority
         />
       </div>
       <div className="flex-1 text-center sm:text-left space-y-2">
@@ -57,9 +58,10 @@ export function ReviewStreakBanner({
         src="/assets/review/review-streak.webp"
         alt=""
         fill
-        sizes="100vw"
+        sizes="(max-width: 896px) 100vw, 896px"
         className="object-cover object-right opacity-90"
         aria-hidden
+        priority
       />
       <div className="relative grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-center p-6 sm:pr-10">
         <div className="space-y-1">

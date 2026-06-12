@@ -58,7 +58,7 @@ export function HomePage() {
             alt=""
             fill
             priority
-            sizes="100vw"
+            sizes="(max-width: 1536px) 100vw, 1536px"
             className="object-cover object-right dark:hidden"
           />
           <Image
@@ -66,7 +66,7 @@ export function HomePage() {
             alt=""
             fill
             priority
-            sizes="100vw"
+            sizes="(max-width: 1536px) 100vw, 1536px"
             className="hidden object-cover object-right dark:block"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />

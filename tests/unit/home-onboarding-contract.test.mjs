@@ -48,6 +48,14 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
   assert.doesNotMatch(page, /type UserProfile/)
 })
 
+test("home hero images use bounded responsive sizes for LCP", () => {
+  const page = read("src/components/home/home-page.tsx")
+
+  assert.match(page, /src="\/assets\/hero\/hero-watercolor\.webp"[\s\S]*?priority[\s\S]*?sizes="\(max-width: 1536px\) 100vw, 1536px"/)
+  assert.match(page, /src="\/assets\/hero\/hero-watercolor-dark\.webp"[\s\S]*?priority[\s\S]*?sizes="\(max-width: 1536px\) 100vw, 1536px"/)
+  assert.doesNotMatch(page, /src="\/assets\/hero\/hero-watercolor[^"]*"[\s\S]{0,160}sizes="100vw"/)
+})
+
 test("HomeStarterLessons owns starter lesson cards and locked card behavior", () => {
   const source = read("src/components/home/home-starter-lessons.tsx")
 
