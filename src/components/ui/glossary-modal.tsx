@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Modal } from "@/components/ui/modal"
 import { cn } from "@/lib/utils"
-import type { GlossaryCategoryMap } from "@/lib/glossary-model"
+import { hasGlossaryMatches, type GlossaryCategoryMap } from "@/lib/glossary-model"
 
 export function GlossaryModal({
   isOpen,
@@ -27,6 +27,8 @@ export function GlossaryModal({
   onActivate: (id: string) => void
   onShowAll: () => void
 }) {
+  const hasMatches = hasGlossaryMatches(byCategory)
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-3xl h-[85vh] overflow-hidden">
       <div className="flex flex-col h-full">
@@ -55,19 +57,31 @@ export function GlossaryModal({
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-10">
-          {(Object.keys(byCategory) as GlossaryCategory[]).map((category) => {
-            const entries = byCategory[category]
-            if (!entries.length) return null
-            return (
-              <GlossarySection
-                key={category}
-                category={category}
-                entries={entries}
-                activeId={activeId}
-                onActivate={onActivate}
-              />
-            )
-          })}
+          {hasMatches ? (
+            (Object.keys(byCategory) as GlossaryCategory[]).map((category) => {
+              const entries = byCategory[category]
+              if (!entries.length) return null
+              return (
+                <GlossarySection
+                  key={category}
+                  category={category}
+                  entries={entries}
+                  activeId={activeId}
+                  onActivate={onActivate}
+                />
+              )
+            })
+          ) : (
+            <div className="rounded-xl border border-dashed bg-muted/20 px-6 py-10 text-center">
+              <div className="text-base font-semibold">没有找到匹配术语</div>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                试试换一个关键词，或回到完整术语表继续浏览。
+              </p>
+              <Button variant="outline" className="mt-4 rounded-full" onClick={onShowAll}>
+                查看全部
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </Modal>

@@ -35,3 +35,7 @@ export function groupGlossaryEntriesByCategory(entries: readonly GlossaryEntry[]
 
   return grouped
 }
+
+export function hasGlossaryMatches(grouped: GlossaryCategoryMap) {
+  return Object.values(grouped).some((entries) => entries.length > 0)
+}
