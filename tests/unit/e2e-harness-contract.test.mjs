@@ -27,16 +27,30 @@ test("E2E harness owns shared Playwright optional dependency handling", () => {
 })
 
 test("E2E harness owns server lifecycle and storage helpers", () => {
+  const buildScript = fs.readFileSync(path.join(root, "scripts/build.mjs"), "utf8")
+  const buildLock = fs.readFileSync(path.join(root, "scripts/build-lock.mjs"), "utf8")
+
   assert.match(harness, /export function createServerController/)
   assert.match(harness, /spawnSync\("taskkill"/)
   assert.match(harness, /export async function reuseOrStartDevServer/)
   assert.match(harness, /export async function startProductionServer/)
-  assert.match(harness, /function runNpmScriptSync/)
-  assert.match(harness, /spawnSync\("cmd\.exe"/)
-  assert.match(harness, /runNpmScriptSync\(\["run", "build"\]\)/)
-  assert.match(harness, /path\.join\(appDir, "node_modules", "next", "dist", "bin", "next"\)/)
+  assert.match(harness, /import net from "node:net"/)
+  assert.match(harness, /export async function findAvailablePort/)
+  assert.match(harness, /const selectedPort = await findAvailablePort\(port\)/)
+  assert.match(harness, /const selectedBaseUrl = `http:\/\/127\.0\.0\.1:\$\{selectedPort\}`/)
+  assert.match(harness, /import \{ acquireBuildLock \} from "\.\.\/\.\.\/scripts\/build-lock\.mjs"/)
+  assert.match(harness, /export const nextCli = path\.join\(appDir, "node_modules", "next", "dist", "bin", "next"\)/)
+  assert.match(harness, /function runNextBuildSync/)
+  assert.match(harness, /spawnSync\(process\.execPath, \[nextCli, "build"\]/)
+  assert.doesNotMatch(harness, /spawnSync\("cmd\.exe", \["\/d", "\/s", "\/c"/)
+  assert.match(harness, /const releaseBuildLock = await acquireBuildLock\(\{ label: "pwa production e2e" \}\)/)
+  assert.match(harness, /controller\.holdRelease\(releaseBuildLock\)/)
   assert.match(harness, /controller\.spawn\(process\.execPath, \[nextCli, "start", "--hostname", "127\.0\.0\.1", "--port"/)
   assert.match(harness, /export async function readJsonStorage/)
+  assert.match(buildScript, /withBuildLock/)
+  assert.match(buildScript, /nextCli/)
+  assert.match(buildLock, /export async function acquireBuildLock/)
+  assert.match(buildLock, /defaultBuildLockDir/)
 })
 
 test("optional browser E2E scripts skip missing Playwright browser binaries", () => {
@@ -97,6 +111,7 @@ test("root package remains a dependency-free forwarding entrypoint", () => {
 
 test("app-local check command matches the root quality gate", () => {
   assert.match(webPackage, /"validate:data": "node scripts\/validate-data\.mjs"/)
+  assert.equal(webPackageJson.scripts.build, "node scripts/build.mjs")
   assert.match(webPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
   assert.match(webPackage, /"check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required"/)
   assert.match(webPackage, /"e2e:install": "playwright install chromium"/)

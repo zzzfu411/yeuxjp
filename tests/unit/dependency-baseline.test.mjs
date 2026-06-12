@@ -46,5 +46,6 @@ test("Playwright browser E2E dependency and install script stay declared", () =>
 
 test("dependency baseline tests support app-only CI checkouts", () => {
   assert.equal(webPackage.private, true)
+  assert.equal(webPackage.scripts.build, "node scripts/build.mjs")
   assert.ok(webLock.packages?.[""], "web lock should be valid from the app repository root")
 })

@@ -1,29 +1,40 @@
 import { spawn, spawnSync } from "node:child_process"
+import net from "node:net"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { acquireBuildLock } from "../../scripts/build-lock.mjs"
 import { canServeRoutes, waitForServer } from "./app-health.mjs"
 
 export const appDir = fileURLToPath(new URL("../..", import.meta.url))
 
-export function npmCommand() {
-  return process.platform === "win32" ? "npm.cmd" : "npm"
-}
+export const nextCli = path.join(appDir, "node_modules", "next", "dist", "bin", "next")
 
-function runNpmScriptSync(args) {
+function runNextBuildSync() {
   const env = { ...process.env, NEXT_TELEMETRY_DISABLED: "1" }
-  if (process.platform === "win32") {
-    return spawnSync("cmd.exe", ["/d", "/s", "/c", ["npm.cmd", ...args].join(" ")], {
-      cwd: appDir,
-      stdio: "inherit",
-      env,
-    })
-  }
-
-  return spawnSync("npm", args, {
+  return spawnSync(process.execPath, [nextCli, "build"], {
     cwd: appDir,
     stdio: "inherit",
     env,
   })
+}
+
+function canBindPort(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer()
+    server.once("error", () => resolve(false))
+    server.once("listening", () => {
+      server.close(() => resolve(true))
+    })
+    server.listen(port, "127.0.0.1")
+  })
+}
+
+export async function findAvailablePort(preferredPort, { maxAttempts = 20 } = {}) {
+  for (let offset = 0; offset < maxAttempts; offset += 1) {
+    const candidate = preferredPort + offset
+    if (await canBindPort(candidate)) return candidate
+  }
+  throw new Error(`No available E2E port found from ${preferredPort}`)
 }
 
 export function isE2ERequired(envName) {
@@ -77,6 +88,7 @@ export function skipOptionalPlaywrightRuntimeError({
 export function createServerController() {
   let server = null
   let output = ""
+  let release = null
 
   return {
     get server() {
@@ -95,6 +107,9 @@ export function createServerController() {
       })
       return server
     },
+    holdRelease(callback) {
+      release = callback
+    },
     stop() {
       if (server?.pid) {
         if (process.platform === "win32") {
@@ -105,6 +120,8 @@ export function createServerController() {
       }
       server?.stdout.destroy()
       server?.stderr.destroy()
+      release?.()
+      release = null
     },
   }
 }
@@ -120,21 +137,23 @@ export async function reuseOrStartDevServer({ baseUrl, port, controller }) {
     if (await canServeRoutes(candidate)) return candidate
   }
 
-  const command = process.platform === "win32" ? `npm.cmd run dev -- --hostname 127.0.0.1 --port ${port}` : "npm"
-  const args = process.platform === "win32" ? [] : ["run", "dev", "--", "--hostname", "127.0.0.1", "--port", String(port)]
+  const selectedPort = await findAvailablePort(port)
+  const selectedBaseUrl = `http://127.0.0.1:${selectedPort}`
+  const command = process.platform === "win32" ? `npm.cmd run dev -- --hostname 127.0.0.1 --port ${selectedPort}` : "npm"
+  const args = process.platform === "win32" ? [] : ["run", "dev", "--", "--hostname", "127.0.0.1", "--port", String(selectedPort)]
   controller.spawn(command, args, {
     cwd: appDir,
     stdio: "pipe",
     shell: process.platform === "win32",
     env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
   })
-  await waitForServer(baseUrl)
-  return baseUrl
+  await waitForServer(selectedBaseUrl)
+  return selectedBaseUrl
 }
 
 export function runBuildIfNeeded() {
   if (process.env.E2E_BASE_URL) return
-  const result = runNpmScriptSync(["run", "build"])
+  const result = runNextBuildSync()
   if (result.status !== 0) {
     const detail = result.error ? `: ${result.error.message}` : ""
     throw new Error(`Production build failed before PWA E2E${detail}`)
@@ -144,15 +163,18 @@ export function runBuildIfNeeded() {
 export async function startProductionServer({ baseUrl, port, controller }) {
   if (process.env.E2E_BASE_URL && await canServeRoutes(baseUrl)) return baseUrl
 
+  const releaseBuildLock = await acquireBuildLock({ label: "pwa production e2e" })
+  controller.holdRelease(releaseBuildLock)
   runBuildIfNeeded()
-  const nextCli = path.join(appDir, "node_modules", "next", "dist", "bin", "next")
-  controller.spawn(process.execPath, [nextCli, "start", "--hostname", "127.0.0.1", "--port", String(port)], {
+  const selectedPort = await findAvailablePort(port)
+  const selectedBaseUrl = `http://127.0.0.1:${selectedPort}`
+  controller.spawn(process.execPath, [nextCli, "start", "--hostname", "127.0.0.1", "--port", String(selectedPort)], {
     cwd: appDir,
     stdio: "pipe",
     env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
   })
-  await waitForServer(baseUrl)
-  return baseUrl
+  await waitForServer(selectedBaseUrl)
+  return selectedBaseUrl
 }
 
 export async function readJsonStorage(page, key) {

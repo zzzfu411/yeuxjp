@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import net from "node:net"
 import test from "node:test"
 import {
   appHealthRoutes,
@@ -8,6 +9,7 @@ import {
   pageLooksLikeYasashi,
   routeLooksHealthy,
 } from "../e2e/app-health.mjs"
+import { findAvailablePort } from "../e2e/harness.mjs"
 
 function fakeResponse(status, html = "") {
   return {
@@ -71,4 +73,18 @@ test("E2E app health treats unreachable candidates as unavailable", async () => 
     }),
     false
   )
+})
+
+test("E2E harness can choose a fallback port when the preferred port is occupied", async () => {
+  const server = net.createServer()
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
+  const occupiedPort = server.address().port
+
+  try {
+    const availablePort = await findAvailablePort(occupiedPort, { maxAttempts: 5 })
+    assert.notEqual(availablePort, occupiedPort)
+    assert.equal(Number.isInteger(availablePort), true)
+  } finally {
+    await new Promise((resolve) => server.close(resolve))
+  }
 })
