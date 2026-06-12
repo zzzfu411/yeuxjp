@@ -40,6 +40,32 @@ async function waitForServiceWorker(page) {
   })
 }
 
+async function disableHttpCache(context, page) {
+  const cdp = await context.newCDPSession(page)
+  await cdp.send("Network.enable")
+  await cdp.send("Network.setCacheDisabled", { cacheDisabled: true })
+  return cdp
+}
+
+async function assertServiceWorkerStaticCache(page) {
+  const cacheState = await page.evaluate(async () => {
+    const names = await caches.keys()
+    const staticCacheName = names.find((name) => name.startsWith("yasashi-static-"))
+    if (!staticCacheName) return { staticCacheName: null, nextStaticUrls: [] }
+
+    const cache = await caches.open(staticCacheName)
+    const keys = await cache.keys()
+    const nextStaticUrls = keys
+      .map((request) => request.url)
+      .filter((url) => url.includes("/_next/static/"))
+
+    return { staticCacheName, nextStaticUrls }
+  })
+
+  assert.ok(cacheState.staticCacheName, "service worker should create the Yasashi static cache")
+  assert.ok(cacheState.nextStaticUrls.length > 0, "service worker static cache should contain Next static assets")
+}
+
 let browser = null
 let context = null
 let failure = null
@@ -55,9 +81,13 @@ try {
   browser = await chromium.launch({ headless: true })
   context = await browser.newContext()
   const page = await context.newPage()
+  const cdp = await disableHttpCache(context, page)
 
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   await waitForServiceWorker(page)
+  await page.reload({ waitUntil: "networkidle" })
+  await waitForServiceWorker(page)
+  await assertServiceWorkerStaticCache(page)
 
   const visitedLessonUrl = `${baseUrl}/learn/day-1-a-row-hello`
   await page.getByTestId("home-start-learning").click()
@@ -111,6 +141,7 @@ try {
 
   const persisted = await page.evaluate((key) => localStorage.getItem(key), E2E_STORAGE_KEYS.USER_PROFILE)
   assert.equal(persisted, sentinel, "offline fallback must not overwrite local learning state")
+  await cdp.detach()
 
   console.log(`PWA offline E2E checks passed at ${baseUrl}`)
 } catch (error) {
