@@ -5,6 +5,7 @@ import {
   dynamicSelectorContracts,
   readBrowserE2E,
   readBrowserE2ESources,
+  readBrowserFlows,
   readBrowserFixtures,
   readE2EHarness,
   readSource,
@@ -37,6 +38,33 @@ test("browser E2E can skip missing optional Playwright but has a required mode",
   assert.match(webPackage, /"e2e:browser:required": "node tests\/e2e\/browser\.mjs --required"/)
 })
 
+test("browser E2E entry delegates click flows to flow helpers", () => {
+  const e2e = readBrowserE2E()
+  const flows = readBrowserFlows()
+  const helperNames = [
+    "verifyLessonFlow",
+    "verifyInitialReviewEmptyState",
+    "verifyKanaAndVocabularyFlow",
+    "verifyQuizAndMistakeFlow",
+    "verifyDueReviewFlow",
+    "verifyLearningDataFlow",
+    "verifyMobileSmoke",
+  ]
+
+  assert.match(e2e, /from "\.\/browser-flows\.mjs"/)
+  for (const helperName of helperNames) {
+    assert.match(e2e, new RegExp(`\\b${helperName}\\b`), `${helperName} should be imported by the E2E entry`)
+    assert.match(e2e, new RegExp(`await ${helperName}\\(`), `${helperName} should be called by the E2E entry`)
+    assert.match(
+      flows,
+      new RegExp(`export async function ${helperName}\\(`),
+      `${helperName} should be implemented in browser-flows.mjs`
+    )
+  }
+  assert.doesNotMatch(e2e, /getByTestId\("lesson-answer-a"\)/)
+  assert.match(flows, /getByTestId\("lesson-answer-a"\)/)
+})
+
 test("browser E2E test ids remain present in source files", () => {
   for (const item of requiredSelectors) {
     const source = readSource(item.source)
@@ -49,7 +77,7 @@ test("browser E2E test ids remain present in source files", () => {
 })
 
 test("browser E2E verifies lesson progress writes after a real answer", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /readJsonStorage/)
   assert.match(e2e, /yasashi\.learning\.lessons\.v1/)
@@ -84,7 +112,7 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
 })
 
 test("browser E2E verifies locked lesson previews stay read-only", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /localStorage\.clear\(\)/)
   assert.match(e2e, /\/learn\/day-2-ka-row-thanks/)
@@ -98,7 +126,7 @@ test("browser E2E verifies locked lesson previews stay read-only", () => {
 })
 
 test("browser E2E verifies wrong quiz answers enter the mistake notebook", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /seionHiraganaToRomaji/)
@@ -122,7 +150,7 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
 })
 
 test("browser E2E verifies correct mistake reviews retain notebook history", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /seedDueMistakeReviewState\(page, baseUrl\)/)
@@ -138,7 +166,7 @@ test("browser E2E verifies correct mistake reviews retain notebook history", () 
 })
 
 test("browser E2E verifies every public quiz mode records practice", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /assertQuizModeRecordsPractice\(page, baseUrl/)
@@ -163,7 +191,7 @@ test("browser E2E verifies every public quiz mode records practice", () => {
 })
 
 test("browser E2E verifies mastered kana filters show the quiz empty state", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /getByTestId\("kana-mastery-toggle"\)\.click\(\)/)
@@ -177,7 +205,7 @@ test("browser E2E verifies mastered kana filters show the quiz empty state", () 
 })
 
 test("browser E2E verifies review empty and due states", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /getByTestId\("review-empty-state"\)/)
@@ -194,7 +222,7 @@ test("browser E2E verifies review empty and due states", () => {
 })
 
 test("browser E2E includes a mobile viewport smoke pass for core routes", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /mobileContext = await browser\.newContext/)
   assert.match(e2e, /viewport: \{ width: 390, height: 844 \}/)
@@ -205,11 +233,11 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
   assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/kana`/)
   assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/quiz`/)
   assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/review`/)
-  assert.match(e2e, /mobileContext\?\.close\(\)/)
+  assert.match(e2e, /mobileContext\.close\(\)/)
 })
 
 test("browser E2E verifies non-default vocabulary levels load dynamically", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /getByTestId\("vocabulary-expand-sur-n-35"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("vocabulary-focus-card"\)\.click\(\)/)
@@ -226,7 +254,7 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
 })
 
 test("browser E2E verifies learning data export reset and import through the UI", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /acceptDownloads: true/)
@@ -275,7 +303,7 @@ test("browser E2E verifies learning data export reset and import through the UI"
 })
 
 test("browser E2E text assertions reject mojibake fallbacks", () => {
-  const e2e = readBrowserE2E()
+  const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /getByTestId\("kana-stroke-board"\)/)
   assert.match(e2e, /getByTestId\("quiz-score"\)/)

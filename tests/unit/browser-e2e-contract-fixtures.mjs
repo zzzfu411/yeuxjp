@@ -3,6 +3,7 @@ import path from "node:path"
 
 export const root = path.resolve(import.meta.dirname, "..", "..")
 export const browserE2EPath = path.join(root, "tests/e2e/browser.mjs")
+export const browserFlowsPath = path.join(root, "tests/e2e/browser-flows.mjs")
 export const browserFixturesPath = path.join(root, "tests/e2e/browser-fixtures.mjs")
 
 export function readBrowserE2E() {
@@ -13,8 +14,12 @@ export function readBrowserFixtures() {
   return fs.readFileSync(browserFixturesPath, "utf8")
 }
 
+export function readBrowserFlows() {
+  return fs.readFileSync(browserFlowsPath, "utf8")
+}
+
 export function readBrowserE2ESources() {
-  return [readBrowserE2E(), readBrowserFixtures()].join("\n")
+  return [readBrowserE2E(), readBrowserFlows(), readBrowserFixtures()].join("\n")
 }
 
 export function readE2EHarness() {
