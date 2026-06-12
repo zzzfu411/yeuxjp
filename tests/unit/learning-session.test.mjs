@@ -5,6 +5,7 @@ import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const session = await loadTsModule("src/lib/learning-session.ts")
+const storage = await loadTsModule("src/lib/storage-keys.ts")
 const root = path.resolve(import.meta.dirname, "..", "..")
 
 function read(relPath) {
@@ -63,8 +64,8 @@ test("correct practice only enrolls reviewable kana and vocabulary SRS items", (
     answer: "sur-g-999",
   }), true)
 
-  const kanaSrs = JSON.parse(store.get("yasashi.srs.kana.v1"))
-  const vocabSrs = JSON.parse(store.get("yasashi.srs.vocab.v1"))
+  const kanaSrs = JSON.parse(store.get(storage.STORAGE_KEYS.SRS_KANA))
+  const vocabSrs = JSON.parse(store.get(storage.STORAGE_KEYS.SRS_VOCAB))
   assert.ok(kanaSrs.a)
   assert.equal(kanaSrs["sokuon:きって"], undefined)
   assert.ok(vocabSrs["sur-g-1"])
@@ -90,7 +91,7 @@ test("wrong practice records progress but does not enroll SRS", () => {
   }), true)
 
   assert.equal(recorded.length, 1)
-  assert.equal(store.get("yasashi.srs.kana.v1"), undefined)
+  assert.equal(store.get(storage.STORAGE_KEYS.SRS_KANA), undefined)
 })
 
 test("failed practice writes do not enroll SRS", () => {
@@ -105,7 +106,7 @@ test("failed practice writes do not enroll SRS", () => {
     answer: "a",
   }), false)
 
-  assert.equal(store.get("yasashi.srs.kana.v1"), undefined)
+  assert.equal(store.get(storage.STORAGE_KEYS.SRS_KANA), undefined)
 })
 
 test("recordQuestionPractice returns false when progress recording fails before mistakes are written", () => {
@@ -143,10 +144,10 @@ test("recordQuestionPractice returns false when progress recording fails before 
 
 test("recordQuestionPractice rolls back managed storage when a later notebook write fails", () => {
   const store = installLocalStorage()
-  store.set("yasashi.learning.practice.v1", "[]")
+  store.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "[]")
   const progress = {
     recordPractice: () => {
-      store.set("yasashi.learning.practice.v1", "[{\"itemId\":\"a\"}]")
+      store.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "[{\"itemId\":\"a\"}]")
       return true
     },
   }
@@ -171,7 +172,7 @@ test("recordQuestionPractice rolls back managed storage when a later notebook wr
   })
 
   assert.equal(ok, false)
-  assert.equal(store.get("yasashi.learning.practice.v1"), "[]")
+  assert.equal(store.get(storage.STORAGE_KEYS.PRACTICE_RESULTS), "[]")
 })
 
 test("recordQuestionPractice public entrypoint is wrapped in a managed storage transaction", () => {

@@ -21,6 +21,19 @@ function listSourceFiles(dir) {
   return files
 }
 
+function listFiles(dir, pattern) {
+  const files = []
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const absPath = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...listFiles(absPath, pattern))
+      continue
+    }
+    if (pattern.test(entry.name)) files.push(absPath)
+  }
+  return files
+}
+
 test("storage keys stay unique and versioned under the yasashi namespace", () => {
   const entries = Object.entries(storage.STORAGE_KEYS)
   const values = entries.map(([, value]) => value)
@@ -58,6 +71,26 @@ test("runtime source imports STORAGE_KEYS instead of hard-coding versioned local
       matches,
       [],
       `${path.relative(root, absPath)} should import STORAGE_KEYS instead of hard-coding storage key strings`
+    )
+  }
+})
+
+test("tests centralize versioned learning storage key strings", () => {
+  const allowedFiles = new Set([
+    path.normalize(path.join(root, "tests", "e2e", "storage-keys.mjs")),
+    path.normalize(path.join(root, "tests", "unit", "storage-keys-contract.test.mjs")),
+  ])
+  const hardCodedStorageKey = /["'`]yasashi\.[a-z0-9.-]+\.v1["'`]/g
+
+  for (const absPath of listFiles(path.join(root, "tests"), /\.(mjs|js|ts|tsx)$/)) {
+    if (allowedFiles.has(path.normalize(absPath))) continue
+
+    const source = fs.readFileSync(absPath, "utf8")
+    const matches = source.match(hardCodedStorageKey) ?? []
+    assert.deepEqual(
+      matches,
+      [],
+      `${path.relative(root, absPath)} should import STORAGE_KEYS or E2E_STORAGE_KEYS instead of hard-coding storage key strings`
     )
   }
 })
