@@ -5,9 +5,19 @@ export const LEARNING_STORE_CHANNEL = "yasashi:learning-store"
 
 type QueuedLearningNotification = () => void
 type LearningStoreEventDetail = { action: string; keys: readonly string[] }
+type LearningStoreBroadcastDetail = LearningStoreEventDetail & { sourceId?: string }
 
 let transactionDepth = 0
 let queuedLearningNotifications: QueuedLearningNotification[] = []
+const learningStoreSourceId = Math.random().toString(36).slice(2)
+
+function normalizeLearningStoreEventDetail(value: unknown): LearningStoreEventDetail | null {
+  if (!value || typeof value !== "object") return null
+  const detail = value as Partial<LearningStoreBroadcastDetail>
+  if (typeof detail.action !== "string" || !Array.isArray(detail.keys)) return null
+  if (!detail.keys.every((key) => typeof key === "string")) return null
+  return { action: detail.action, keys: detail.keys }
+}
 
 function getLearningBroadcastChannel() {
   if (typeof window === "undefined" || typeof window.BroadcastChannel === "undefined") return null
@@ -26,7 +36,7 @@ export function notifyLearningStoreEvent(detail: LearningStoreEventDetail) {
   const channel = getLearningBroadcastChannel()
   if (!channel) return
   try {
-    channel.postMessage(detail)
+    channel.postMessage({ ...detail, sourceId: learningStoreSourceId } satisfies LearningStoreBroadcastDetail)
   } finally {
     channel.close()
   }
@@ -36,14 +46,16 @@ export function addLearningStoreListener(listener: (detail: LearningStoreEventDe
   if (typeof window === "undefined") return () => {}
 
   const onWindowEvent = (event: Event) => {
-    const detail = (event as CustomEvent).detail as LearningStoreEventDetail | undefined
+    const detail = normalizeLearningStoreEventDetail((event as CustomEvent).detail)
     if (!detail) return
     listener(detail)
   }
 
   const channel = getLearningBroadcastChannel()
   const onChannelMessage = (event: MessageEvent) => {
-    const detail = event.data as LearningStoreEventDetail | undefined
+    const data = event.data as LearningStoreBroadcastDetail | undefined
+    if (data?.sourceId === learningStoreSourceId) return
+    const detail = normalizeLearningStoreEventDetail(data)
     if (!detail) return
     listener(detail)
   }
