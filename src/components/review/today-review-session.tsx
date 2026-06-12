@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
@@ -55,6 +55,7 @@ export function TodayReviewSession({
   const review = useReviewSessionState(items)
   const current = review.currentItem
   const selected = review.selectedAnswer
+  const { dropCurrent } = review
   const currentKey = current ? `${current.deck}:${current.id}` : null
   const saveError = !!currentKey && saveErrorKey === currentKey
 
@@ -97,6 +98,13 @@ export function TodayReviewSession({
       question: mistakeToQuestion(item),
     }
   }, [current, notebook.byId, vocabulary.data])
+
+  useEffect(() => {
+    if (!current) return
+    if (current.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
+    if (data) return
+    dropCurrent()
+  }, [current, data, dropCurrent, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.audio,
@@ -143,7 +151,7 @@ export function TodayReviewSession({
   }
 
   if (!current || !data) {
-    return <ReviewDone title="复习条目不存在（可能已移除）" onExit={onExit} />
+    return null
   }
 
   const handleSelect = (value: string) => {

@@ -28,6 +28,7 @@ test("TodayReviewSession owns mixed queue data, shared prompts, and all SRS deck
 
   assert.match(source, /export function TodayReviewSession/)
   assert.match(source, /useReviewSessionState\(items\)/)
+  assert.match(source, /const \{ dropCurrent \} = review/)
   assert.match(source, /const vocabIds = useMemo/)
   assert.match(source, /useVocabularyReviewPool\(vocabIds, vocabIds\.length > 0\)/)
   assert.match(source, /ReviewErrorState/)
@@ -37,6 +38,10 @@ test("TodayReviewSession owns mixed queue data, shared prompts, and all SRS deck
   assert.match(source, /makeKanaReviewQuestion\(current\.id\)/)
   assert.match(source, /makeVocabReviewQuestion\(current\.id, vocabulary\.data\)/)
   assert.match(source, /mistakeToQuestion\(item\)/)
+  assert.match(source, /if \(current\.deck === "vocab" && \(vocabulary\.loading \|\| vocabulary\.error\)\) return/)
+  assert.match(source, /if \(data\) return/)
+  assert.match(source, /dropCurrent\(\)/)
+  assert.match(source, /return null/)
   assert.match(source, /<MixedReviewPrompt\b/)
   assert.match(source, /<ReviewAnswerFeedback/)
   assert.match(source, /if \(!current\) return false/)

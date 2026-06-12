@@ -33,9 +33,16 @@ export function KanaReviewSession({
   const [saveError, setSaveError] = useState(false)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
+  const { dropCurrent } = review
 
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? kanaData.find((k) => k.romaji === currentId) ?? null : null), [currentId])
+
+  useEffect(() => {
+    if (currentId && !item) {
+      dropCurrent()
+    }
+  }, [currentId, dropCurrent, item])
 
   useEffect(() => {
     let cancelled = false
@@ -83,9 +90,7 @@ export function KanaReviewSession({
   }
 
   if (!item) {
-    return (
-      <ReviewDone title="题库变更：当前条目不存在" onExit={onExit} />
-    )
+    return null
   }
 
   const handleSelect = (val: string) => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { VocabReviewPrompt } from "@/components/review/review-prompt-content"
@@ -33,10 +33,17 @@ export function VocabReviewSession({
   const [saveError, setSaveError] = useState(false)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
+  const { dropCurrent } = review
 
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
   const question = useMemo(() => (item ? makeVocabReviewQuestion(item.id, vocabulary.data) : null), [item, vocabulary.data])
+
+  useEffect(() => {
+    if (currentId && !vocabulary.loading && !vocabulary.error && (!item || !question)) {
+      dropCurrent()
+    }
+  }, [currentId, dropCurrent, item, question, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: item?.kana,
@@ -79,7 +86,7 @@ export function VocabReviewSession({
   }
 
   if (!item || !question) {
-    return <ReviewDone title="题库变更：当前条目或选项不足" onExit={onExit} />
+    return null
   }
 
   const handleSelect = (val: string) => {
