@@ -99,8 +99,9 @@ export function buildReviewDashboardModel({
 
   const dueMistakeIds = mistakeDueIds.filter((id) => mistakeIdSet.has(id))
   const reviewableKanaDueIds = kanaDueIds.filter(isReviewableKanaId)
-  const visibleVocabDueIds = [...vocabDueIds]
+  const visibleVocabDueIds = vocabDueIds.filter((id) => learned.has(id))
   const visibleKanaSrsMap = filterSrsMapByReviewableKana(kanaSrsMap)
+  const visibleVocabSrsMap = filterSrsMapByIds(vocabSrsMap, learned)
   const visibleMistakeSrsMap = filterSrsMapByIds(mistakeSrsMap, mistakeIdSet)
   const kanaEnrollMissing = findMissingSrsEnrollments(mastered, kanaSrsMap)
   const vocabEnrollMissing = findMissingSrsEnrollments(learned, vocabSrsMap)
@@ -109,11 +110,11 @@ export function buildReviewDashboardModel({
     kanaDueIds: [...kanaDueIds],
     kanaSrsMap,
     vocabDueIds: visibleVocabDueIds,
-    vocabSrsMap,
+    vocabSrsMap: visibleVocabSrsMap,
   })
   const totals: ReviewDashboardTotals = {
     kana: Object.keys(visibleKanaSrsMap).length,
-    vocab: Object.keys(vocabSrsMap).length,
+    vocab: Object.keys(visibleVocabSrsMap).length,
     mistakes: mistakeIdSet.size,
     mastered: mastered.size,
     learned: learned.size,
@@ -134,7 +135,7 @@ export function buildReviewDashboardModel({
     totalEnrolled: totals.kana + totals.vocab + totals.mistakes,
     totalDue: counts.kanaDue + counts.vocabDue + counts.mistakesDue,
     isFirstTime: totals.kana + totals.vocab + totals.mistakes === 0 && totals.mastered === 0 && totals.learned === 0,
-    nextDueAt: getNextSrsDueAt([visibleKanaSrsMap, vocabSrsMap, visibleMistakeSrsMap], now),
+    nextDueAt: getNextSrsDueAt([visibleKanaSrsMap, visibleVocabSrsMap, visibleMistakeSrsMap], now),
     counts,
     totals,
   }

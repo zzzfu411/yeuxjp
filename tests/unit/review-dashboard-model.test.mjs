@@ -66,12 +66,12 @@ test("review dashboard model filters visible due ids and builds the today queue"
     { deck: "kana", id: "ka" },
     { deck: "vocab", id: "v1" },
   ])
-  assert.equal(dashboard.totalEnrolled, 6)
+  assert.equal(dashboard.totalEnrolled, 5)
   assert.equal(dashboard.totalDue, 4)
   assert.equal(dashboard.isFirstTime, false)
   assert.equal(dashboard.nextDueAt, now + 60_000)
   assert.deepEqual(dashboard.counts, { mistakesDue: 1, kanaDue: 2, vocabDue: 1 })
-  assert.deepEqual(dashboard.totals, { kana: 2, vocab: 2, mistakes: 2, mastered: 3, learned: 2 })
+  assert.deepEqual(dashboard.totals, { kana: 2, vocab: 1, mistakes: 2, mastered: 3, learned: 2 })
 })
 
 test("review dashboard model reports first-time state and empty next due schedule", () => {
@@ -121,6 +121,35 @@ test("review dashboard ignores legacy non-reviewable kana SRS when reporting ava
   assert.equal(dashboard.nextDueAt, null)
   assert.deepEqual(dashboard.reviewableKanaDueIds, [])
   assert.deepEqual(dashboard.todayQueue, [])
+})
+
+test("review dashboard ignores stale vocabulary SRS that is no longer learned", () => {
+  const now = 1_700_000_000_000
+  const state = (dueAt) => ({ dueAt, box: 1, createdAt: now - 1, right: 0, wrong: 0 })
+
+  const dashboard = model.buildReviewDashboardModel({
+    masteredIds: [],
+    learnedIds: ["v1"],
+    mistakeIds: [],
+    kanaSrsMap: {},
+    kanaDueIds: [],
+    vocabSrsMap: {
+      v1: state(now + 60_000),
+      stale: state(now - 10),
+    },
+    vocabDueIds: ["stale"],
+    mistakeSrsMap: {},
+    mistakeDueIds: [],
+    now,
+  })
+
+  assert.deepEqual(dashboard.vocabDueIds, [])
+  assert.deepEqual(dashboard.todayQueue, [])
+  assert.equal(dashboard.counts.vocabDue, 0)
+  assert.equal(dashboard.totals.vocab, 1)
+  assert.equal(dashboard.totalEnrolled, 1)
+  assert.equal(dashboard.totalDue, 0)
+  assert.equal(dashboard.nextDueAt, now + 60_000)
 })
 
 test("review enrollment helper attempts every missing item and reports any failure", () => {
