@@ -115,6 +115,7 @@ test("review dashboard ignores legacy non-reviewable kana SRS when reporting ava
   })
 
   assert.equal(dashboard.totals.kana, 0)
+  assert.equal(dashboard.totals.mastered, 0)
   assert.equal(dashboard.totalEnrolled, 0)
   assert.equal(dashboard.totalDue, 0)
   assert.equal(dashboard.isFirstTime, true)
@@ -288,6 +289,7 @@ test("review dashboard does not enroll non-reviewable kana practice items", () =
   assert.deepEqual(dashboard.kanaEnrollMissing, [])
   assert.equal(dashboard.isFirstTime, true)
   assert.equal(dashboard.totalEnrolled, 0)
+  assert.equal(dashboard.totals.mastered, 0)
 })
 
 test("review dashboard ignores vocabulary ids that are no longer in the current vocabulary data", () => {
@@ -325,6 +327,7 @@ test("review dashboard ignores vocabulary ids that are no longer in the current 
   assert.deepEqual(dashboard.vocabEnrollMissing, [])
   assert.deepEqual(dashboard.todayQueue, [])
   assert.equal(dashboard.totals.vocab, 0)
+  assert.equal(dashboard.totals.learned, 0)
   assert.equal(dashboard.totalDue, 0)
 })
 

@@ -111,8 +111,8 @@ export function buildReviewDashboardModel({
     kana: Object.keys(visibleKanaSrsMap).length,
     vocab: Object.keys(visibleVocabSrsMap).length,
     mistakes: mistakeIdSet.size,
-    mastered: mastered.size,
-    learned: learned.size,
+    mastered: visibleKanaIds.size,
+    learned: visibleVocabIds.size,
   }
   const counts: ReviewDashboardCounts = {
     mistakesDue: dueMistakeIds.length,
