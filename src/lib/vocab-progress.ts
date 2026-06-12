@@ -3,6 +3,7 @@ import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learn
 import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressList, writeProgressList } from "@/lib/progress-list-storage"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 
 const DEFAULT_STORAGE_KEY = STORAGE_KEYS.VOCAB_LEARNED
 const VOCAB_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_VOCAB
@@ -10,16 +11,17 @@ const STORAGE_LABEL = "vocab-progress"
 
 export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
   const [learned, setLearned] = useState<Set<string>>(() => new Set())
+  const readLearned = useCallback(() => filterKnownVocabularyIds(readProgressList(storageKey, STORAGE_LABEL)), [storageKey])
 
   useEffect(() => {
     let cancelled = false
 
     Promise.resolve().then(() => {
       if (cancelled) return
-      setLearned(new Set(readProgressList(storageKey, STORAGE_LABEL)))
+      setLearned(new Set(readLearned()))
     })
 
-    const sync = () => setLearned(new Set(readProgressList(storageKey, STORAGE_LABEL)))
+    const sync = () => setLearned(new Set(readLearned()))
 
     const onStorage = (event: StorageEvent) => {
       if (event.key !== storageKey) return
@@ -48,13 +50,15 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
       window.removeEventListener(PROGRESS_UPDATE_EVENT, onCustom)
       window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
-  }, [storageKey])
+  }, [readLearned, storageKey])
 
   const isLearnedId = useCallback((id: string) => learned.has(id), [learned])
 
   const toggleLearnedId = useCallback(
     (id: string) => {
-      const base = new Set(readProgressList(storageKey, STORAGE_LABEL))
+      if (!isKnownVocabularyId(id)) return true
+
+      const base = new Set(readLearned())
       const next = new Set(base)
       const wasLearned = next.has(id)
 
@@ -80,7 +84,7 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
       notifyProgressList(storageKey)
       return true
     },
-    [storageKey]
+    [readLearned, storageKey]
   )
 
   const clearLearned = useCallback(() => {

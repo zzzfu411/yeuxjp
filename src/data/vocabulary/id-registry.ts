@@ -71,3 +71,17 @@ export function getKnownVocabularyLevelForId(id: string): VocabLevel | null {
 export function isKnownVocabularyId(id: string) {
   return getKnownVocabularyLevelForId(id) !== null
 }
+
+export function filterKnownVocabularyIds(ids: Iterable<string>) {
+  const seen = new Set<string>()
+  const knownIds: string[] = []
+
+  for (const id of ids) {
+    const itemId = id.trim()
+    if (!itemId || !isKnownVocabularyId(itemId) || seen.has(itemId)) continue
+    seen.add(itemId)
+    knownIds.push(itemId)
+  }
+
+  return knownIds
+}

@@ -1,6 +1,7 @@
 "use client"
 
 import { STORAGE_KEYS, type StorageKey } from "@/lib/storage-keys"
+import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { normalizeMistakeList } from "@/lib/mistake-notebook-model"
 import {
   normalizeItemProgressMap,
@@ -50,52 +51,60 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value)
 }
 
-function normalizeSrsMapForBackup(input: unknown) {
+function normalizeSrsMapForBackup(input: unknown, isAllowedId: (id: string) => boolean = () => true, now: number = Date.now()) {
   if (!isPlainObject(input)) return null
   const out: Record<string, ReturnType<typeof normalizeSrsState>> = {}
   for (const [id, value] of Object.entries(input)) {
-    if (!id.trim() || !isPlainObject(value)) return null
-    out[id] = normalizeSrsState(value)
+    const itemId = id.trim()
+    if (!itemId || !isPlainObject(value)) return null
+    if (!isAllowedId(itemId)) continue
+    out[itemId] = normalizeSrsState(value, now)
   }
   return out
 }
 
-function normalizeBackupEntry(key: LearningBackupKey, rawValue: string): string | null {
+function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, now: number = Date.now()): string | null {
   const parsed = parseStoredJson(rawValue)
   if (!parsed.ok) return null
 
   switch (key) {
     case STORAGE_KEYS.USER_PROFILE: {
       if (!isPlainObject(parsed.value)) return null
-      const profile = normalizeProfile(parsed.value)
+      const profile = normalizeProfile(parsed.value, now)
       return profile ? JSON.stringify(profile) : null
     }
     case STORAGE_KEYS.LESSON_PROGRESS: {
       if (!isPlainObject(parsed.value)) return null
-      return JSON.stringify(normalizeLessonProgressMap(parsed.value))
+      return JSON.stringify(normalizeLessonProgressMap(parsed.value, now))
     }
     case STORAGE_KEYS.ITEM_PROGRESS: {
       if (!isPlainObject(parsed.value)) return null
-      return JSON.stringify(normalizeItemProgressMap(parsed.value))
+      return JSON.stringify(normalizeItemProgressMap(parsed.value, now))
     }
     case STORAGE_KEYS.PRACTICE_RESULTS: {
       if (!Array.isArray(parsed.value)) return null
-      return JSON.stringify(normalizePracticeResults(parsed.value))
+      return JSON.stringify(normalizePracticeResults(parsed.value, now))
     }
     case STORAGE_KEYS.SRS_KANA:
-    case STORAGE_KEYS.SRS_VOCAB:
     case STORAGE_KEYS.SRS_MISTAKES: {
-      const map = normalizeSrsMapForBackup(parsed.value)
+      const map = normalizeSrsMapForBackup(parsed.value, undefined, now)
+      return map ? JSON.stringify(map) : null
+    }
+    case STORAGE_KEYS.SRS_VOCAB: {
+      const map = normalizeSrsMapForBackup(parsed.value, isKnownVocabularyId, now)
       return map ? JSON.stringify(map) : null
     }
     case STORAGE_KEYS.MISTAKES: {
       if (!Array.isArray(parsed.value)) return null
-      return JSON.stringify(normalizeMistakeList(parsed.value))
+      return JSON.stringify(normalizeMistakeList(parsed.value, now))
     }
-    case STORAGE_KEYS.KANA_MASTERED:
-    case STORAGE_KEYS.VOCAB_LEARNED: {
+    case STORAGE_KEYS.KANA_MASTERED: {
       if (!Array.isArray(parsed.value)) return null
       return JSON.stringify(normalizeProgressList(parsed.value))
+    }
+    case STORAGE_KEYS.VOCAB_LEARNED: {
+      if (!Array.isArray(parsed.value)) return null
+      return JSON.stringify(filterKnownVocabularyIds(normalizeProgressList(parsed.value)))
     }
     case STORAGE_KEYS.SPEECH_PREFS:
       if (!isPlainObject(parsed.value)) return null
@@ -176,7 +185,10 @@ export function tryCreateLearningBackup(now: number = Date.now()): LearningBacku
     try {
       for (const key of BACKUP_KEYS) {
         const value = window.localStorage.getItem(key)
-        if (value !== null) entries[key] = value
+        if (value === null) continue
+        const normalized = normalizeBackupEntry(key, value, now)
+        if (normalized === null) return null
+        entries[key] = normalized
       }
     } catch {
       return null

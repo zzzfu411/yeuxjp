@@ -76,12 +76,18 @@ test("learning backups include existing learning keys and can restore them", () 
   const backup = store.createLearningBackup(123)
   assert.equal(backup.version, store.LEARNING_BACKUP_VERSION)
   assert.equal(backup.exportedAt, 123)
-  assert.equal(backup.entries[storage.STORAGE_KEYS.USER_PROFILE], '{"goal":"balanced"}')
+  const profile = JSON.parse(backup.entries[storage.STORAGE_KEYS.USER_PROFILE])
+  assert.equal(profile.goal, "balanced")
+  assert.equal(profile.minutesPerDay, 10)
+  assert.equal(profile.createdAt, 123)
 
   map.clear()
   map.set(storage.STORAGE_KEYS.MISTAKES, "[{\"id\":\"stale\"}]")
   assert.equal(store.restoreLearningBackup(backup), true)
-  assert.equal(map.get(storage.STORAGE_KEYS.SRS_KANA), '{"a":{"box":1}}')
+  const kanaSrs = JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA))
+  assert.equal(kanaSrs.a.box, 1)
+  assert.equal(kanaSrs.a.dueAt, 600123)
+  assert.equal(kanaSrs.a.createdAt, 123)
   assert.equal(map.has(storage.STORAGE_KEYS.MISTAKES), false)
 })
 
@@ -94,6 +100,28 @@ test("safe learning backup creation fails instead of exporting partial data when
     exportedAt: 123,
     entries: {},
   })
+})
+
+test("learning backup export normalizes active vocabulary indexes", () => {
+  const { map } = installWindow()
+  map.set(storage.STORAGE_KEYS.VOCAB_LEARNED, JSON.stringify(["sur-g-1", "sur-g-999", "day-v-1", "sur-g-1"]))
+  map.set(storage.STORAGE_KEYS.SRS_VOCAB, JSON.stringify({
+    "sur-g-1": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+    "sur-g-999": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+  }))
+
+  const backup = store.tryCreateLearningBackup(123)
+
+  assert.ok(backup)
+  assert.deepEqual(JSON.parse(backup.entries[storage.STORAGE_KEYS.VOCAB_LEARNED]), ["sur-g-1", "day-v-1"])
+  assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_VOCAB])), ["sur-g-1"])
+})
+
+test("safe learning backup creation fails when a managed key cannot be normalized", () => {
+  const { map } = installWindow()
+  map.set(storage.STORAGE_KEYS.USER_PROFILE, "{bad-json")
+
+  assert.equal(store.tryCreateLearningBackup(123), null)
 })
 
 test("resetLearningData removes all managed keys but leaves unrelated localStorage alone", () => {
@@ -297,25 +325,35 @@ test("parseLearningBackup normalizes managed entries before restore", () => {
     exportedAt: 456,
     entries: {
       [storage.STORAGE_KEYS.KANA_MASTERED]: JSON.stringify([" a ", "a", "", "ka"]),
+      [storage.STORAGE_KEYS.VOCAB_LEARNED]: JSON.stringify([" sur-g-1 ", "sur-g-999", "day-v-1", "sur-g-1"]),
       [storage.STORAGE_KEYS.LESSON_PROGRESS]: JSON.stringify({
         "day-1": { lessonId: "day-2", status: "completed", startedAt: 1 },
         "day-3": { lessonId: "day-3", status: "started", startedAt: 2, currentStepIndex: 2.8 },
       }),
       [storage.STORAGE_KEYS.PRACTICE_RESULTS]: JSON.stringify([
         { itemId: "ok", itemType: "kana", mode: "recognition", correct: true, createdAt: 1 },
+        { itemId: "sur-g-999", itemType: "vocab", mode: "meaning", correct: true, createdAt: 2 },
         { itemId: "bad", itemType: "kana", mode: "custom", correct: true, createdAt: 2 },
       ]),
       [storage.STORAGE_KEYS.SRS_KANA]: JSON.stringify({
         a: { box: 99, dueAt: 1, createdAt: 2, right: 1.2, wrong: -1 },
+      }),
+      [storage.STORAGE_KEYS.SRS_VOCAB]: JSON.stringify({
+        " sur-g-1 ": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+        "sur-g-999": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+        "day-v-1": { box: 99, dueAt: 3, createdAt: 4, right: 1, wrong: 0 },
       }),
     },
   }))
 
   assert.ok(parsed)
   assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.KANA_MASTERED]), ["a", "ka"])
+  assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.VOCAB_LEARNED]), ["sur-g-1", "day-v-1"])
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.LESSON_PROGRESS])), ["day-3"])
-  assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.PRACTICE_RESULTS]).map((item) => item.itemId), ["ok"])
+  assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.PRACTICE_RESULTS]).map((item) => item.itemId), ["ok", "sur-g-999"])
   assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA]).a.box, 6)
+  assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_VOCAB])).sort(), ["day-v-1", "sur-g-1"])
+  assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_VOCAB])["day-v-1"].box, 6)
 })
 
 test("learning store restore and reset snapshot managed keys before mutating", () => {

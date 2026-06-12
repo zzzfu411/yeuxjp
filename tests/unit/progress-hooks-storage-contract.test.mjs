@@ -17,7 +17,12 @@ for (const relPath of ["src/lib/kana-progress.ts", "src/lib/vocab-progress.ts"])
     assert.match(source, /runLearningStorageTransaction/)
     assert.match(source, /readProgressList\(storageKey, STORAGE_LABEL\)/)
     assert.match(source, /writeProgressList\(storageKey,/)
-    assert.match(source, /const base = new Set\(readProgressList\(storageKey, STORAGE_LABEL\)\)/)
+    if (relPath.includes("vocab-progress")) {
+      assert.match(source, /filterKnownVocabularyIds\(readProgressList\(storageKey, STORAGE_LABEL\)\)/)
+      assert.match(source, /const base = new Set\(readLearned\(\)\)/)
+    } else {
+      assert.match(source, /const base = new Set\(readProgressList\(storageKey, STORAGE_LABEL\)\)/)
+    }
     assert.match(source, /const srsSuccess =/)
     assert.match(source, /return srsSuccess && writeProgressList/)
     assert.match(source, /clearSrs\(/)

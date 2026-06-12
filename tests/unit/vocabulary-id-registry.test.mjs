@@ -24,3 +24,10 @@ test("vocabulary id registry rejects stale or malformed vocabulary ids", () => {
   assert.equal(registry.isKnownVocabularyId("unknown-1"), false)
   assert.equal(registry.isKnownVocabularyId("sur-g-01"), false)
 })
+
+test("vocabulary id registry filters stale and duplicate ids while preserving order", () => {
+  assert.deepEqual(
+    registry.filterKnownVocabularyIds([" sur-g-1 ", "sur-g-999", "day-v-1", "sur-g-1", "flu-tech-15", "bad"]),
+    ["sur-g-1", "day-v-1", "flu-tech-15"]
+  )
+})
