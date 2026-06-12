@@ -62,13 +62,21 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+async function tryCachePut(cache, request, response) {
+  try {
+    await cache.put(request, response);
+  } catch {
+    // Cache writes are best effort and must not block a valid network response.
+  }
+}
+
 async function networkFirstNavigation(request) {
   const cache = await caches.open(NAVIGATION_CACHE_NAME);
 
   try {
     const response = await fetch(request);
     if (response.ok && response.type === "basic") {
-      await cache.put(request, response.clone());
+      await tryCachePut(cache, request, response.clone());
     }
     return response;
   } catch {
@@ -95,7 +103,7 @@ async function cacheFirstStaticAsset(request, requestUrl) {
 
   if (response.ok && isStaticAsset) {
     const cache = await caches.open(STATIC_CACHE_NAME);
-    await cache.put(request, copy);
+    await tryCachePut(cache, request, copy);
   }
 
   return response;
