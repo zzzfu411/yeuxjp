@@ -4,6 +4,7 @@ import { RefreshCw, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import { warnInDevelopment } from "@/lib/dev-log"
 
 export const PWA_UPDATE_READY_EVENT = "yasashi:pwa-update-ready"
 
@@ -110,9 +111,7 @@ export function PwaRegister() {
         })
       })
     }).catch((error) => {
-      if (process.env.NODE_ENV === "development") {
-        console.warn("[pwa] Failed to register service worker:", error)
-      }
+      warnInDevelopment("[pwa] Failed to register service worker:", error)
     })
 
     return () => {

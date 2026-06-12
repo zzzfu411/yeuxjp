@@ -1,6 +1,7 @@
 "use client"
 
 import { queueLearningNotification } from "@/lib/learning-events"
+import { warnInDevelopment } from "@/lib/dev-log"
 
 export const PROGRESS_UPDATE_EVENT = "yasashi:progress:update"
 
@@ -27,9 +28,7 @@ export function readProgressList(storageKey: string, label: string = "progress-l
     if (!raw) return []
     return normalizeProgressList(JSON.parse(raw))
   } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[${label}] Failed to read from localStorage:`, e)
-    }
+    warnInDevelopment(`[${label}] Failed to read from localStorage:`, e)
     return []
   }
 }
@@ -40,9 +39,7 @@ export function writeProgressList(storageKey: string, list: string[], label: str
     window.localStorage.setItem(storageKey, JSON.stringify(normalizeProgressList(list)))
     return true
   } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[${label}] Failed to write to localStorage:`, e)
-    }
+    warnInDevelopment(`[${label}] Failed to write to localStorage:`, e)
     return false
   }
 }

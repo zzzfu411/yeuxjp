@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { warnInDevelopment } from "@/lib/dev-log"
 import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
 import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressList, writeProgressList } from "@/lib/progress-list-storage"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
@@ -74,9 +75,7 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
       })
 
       if (!saved) {
-        if (process.env.NODE_ENV === "development") {
-          console.warn("[vocab-progress] Save failed, rolling back state change")
-        }
+        warnInDevelopment("[vocab-progress] Save failed, rolling back state change")
         return false
       }
 
@@ -95,9 +94,7 @@ export function useVocabProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
       return true
     }
 
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[vocab-progress] Clear failed, keeping current state")
-    }
+    warnInDevelopment("[vocab-progress] Clear failed, keeping current state")
     return false
   }, [storageKey])
 

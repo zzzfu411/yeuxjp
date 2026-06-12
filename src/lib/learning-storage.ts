@@ -1,6 +1,7 @@
 "use client"
 
 import { queueLearningNotification } from "@/lib/learning-events"
+import { warnInDevelopment } from "@/lib/dev-log"
 
 export const LEARNING_EVENT = "yasashi:learning:update"
 
@@ -11,9 +12,7 @@ export function readLearningJson<T>(key: string, fallback: T): T {
     if (!raw) return fallback
     return JSON.parse(raw) as T
   } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[learning-storage] Failed to read ${key}:`, e)
-    }
+    warnInDevelopment(`[learning-storage] Failed to read ${key}:`, e)
     return fallback
   }
 }
@@ -27,9 +26,7 @@ export function writeLearningJson<T>(key: string, value: T) {
     })
     return true
   } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[learning-storage] Failed to write ${key}:`, e)
-    }
+    warnInDevelopment(`[learning-storage] Failed to write ${key}:`, e)
     return false
   }
 }

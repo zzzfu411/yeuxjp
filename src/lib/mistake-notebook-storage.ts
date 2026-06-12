@@ -1,6 +1,7 @@
 "use client"
 
 import { queueLearningNotification } from "@/lib/learning-events"
+import { warnInDevelopment } from "@/lib/dev-log"
 import { normalizeMistakeList, type MistakeItem } from "@/lib/mistake-notebook-model"
 
 export const MISTAKE_NOTEBOOK_EVENT = "yasashi:mistake-notebook:update"
@@ -13,9 +14,7 @@ export function readMistakeList(storageKey: string, label: string = "mistake-not
     if (!raw) return []
     return normalizeMistakeList(JSON.parse(raw))
   } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[${label}] Failed to read from localStorage:`, e)
-    }
+    warnInDevelopment(`[${label}] Failed to read from localStorage:`, e)
     return []
   }
 }
@@ -27,9 +26,7 @@ export function writeMistakeList(storageKey: string, list: readonly MistakeItem[
     window.localStorage.setItem(storageKey, JSON.stringify(list))
     return true
   } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[${label}] Failed to write to localStorage:`, e)
-    }
+    warnInDevelopment(`[${label}] Failed to write to localStorage:`, e)
     return false
   }
 }

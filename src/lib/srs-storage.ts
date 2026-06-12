@@ -1,6 +1,7 @@
 "use client"
 
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
+import { warnInDevelopment } from "@/lib/dev-log"
 import { queueLearningNotification } from "@/lib/learning-events"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 import {
@@ -57,9 +58,7 @@ export function readSrsMap(storageKey: string): SrsMap {
     }
     return out
   } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[srs-storage] Failed to read from localStorage:", e)
-    }
+    warnInDevelopment("[srs-storage] Failed to read from localStorage:", e)
     return {}
   }
 }
@@ -70,9 +69,7 @@ export function writeSrsMap(storageKey: string, map: SrsMap): boolean {
     window.localStorage.setItem(storageKey, JSON.stringify(filterSrsMapForStorage(storageKey, map)))
     return true
   } catch (e) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[srs-storage] Failed to write to localStorage:", e)
-    }
+    warnInDevelopment("[srs-storage] Failed to write to localStorage:", e)
     return false
   }
 }
