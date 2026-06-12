@@ -6,6 +6,7 @@ import {
   skipOptionalPlaywrightRuntimeError,
   startProductionServer,
 } from "./harness.mjs"
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 const port = Number(process.env.E2E_PWA_PORT ?? 3220)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
@@ -98,9 +99,9 @@ try {
   assert.match(offlineAnimCjkSvg.body, /<svg/i, "offline AnimCJK response should remain an SVG")
 
   const sentinel = JSON.stringify({ goal: "balanced", dailyMinutes: 15, startedAt: 123, updatedAt: 123 })
-  await page.evaluate((value) => {
-    localStorage.setItem("yasashi.learning.profile.v1", value)
-  }, sentinel)
+  await page.evaluate(({ key, value }) => {
+    localStorage.setItem(key, value)
+  }, { key: E2E_STORAGE_KEYS.USER_PROFILE, value: sentinel })
 
   await context.setOffline(false)
   const fallbackUrl = `${baseUrl}/offline-smoke-${Date.now()}`
@@ -108,7 +109,7 @@ try {
   await page.goto(fallbackUrl, { waitUntil: "domcontentloaded" })
   assert.match(await page.locator("body").innerText(), /当前离线/, "navigation failures should render the offline fallback")
 
-  const persisted = await page.evaluate(() => localStorage.getItem("yasashi.learning.profile.v1"))
+  const persisted = await page.evaluate((key) => localStorage.getItem(key), E2E_STORAGE_KEYS.USER_PROFILE)
   assert.equal(persisted, sentinel, "offline fallback must not overwrite local learning state")
 
   console.log(`PWA offline E2E checks passed at ${baseUrl}`)

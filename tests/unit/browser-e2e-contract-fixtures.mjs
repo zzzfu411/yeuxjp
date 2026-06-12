@@ -5,6 +5,7 @@ export const root = path.resolve(import.meta.dirname, "..", "..")
 export const browserE2EPath = path.join(root, "tests/e2e/browser.mjs")
 export const browserFlowsPath = path.join(root, "tests/e2e/browser-flows.mjs")
 export const browserFixturesPath = path.join(root, "tests/e2e/browser-fixtures.mjs")
+export const e2eStorageKeysPath = path.join(root, "tests/e2e/storage-keys.mjs")
 export const browserFixtureModulePaths = [
   "tests/e2e/browser-fixture-kana.mjs",
   "tests/e2e/browser-fixture-review.mjs",
@@ -60,6 +61,10 @@ export function readSource(source) {
 
 export function readWebPackage() {
   return fs.readFileSync(path.join(root, "package.json"), "utf8")
+}
+
+export function readE2EStorageKeys() {
+  return fs.readFileSync(e2eStorageKeysPath, "utf8")
 }
 
 export const requiredSelectors = [

@@ -8,6 +8,7 @@ import {
   seionHiraganaToRomaji,
   seionRomaji,
 } from "./browser-fixtures.mjs"
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   await openQuizMode(page, baseUrl, "hiragana-romaji")
@@ -23,11 +24,11 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   }, expectedAnswer)
   assert.ok(wrongOption, "hiragana quiz should expose at least one wrong answer option")
   await page.getByTestId(wrongOption).click()
-  await page.waitForFunction(() => {
-    const mistakes = JSON.parse(localStorage.getItem("yasashi.mistakes.v1") ?? "[]")
+  await page.waitForFunction((key) => {
+    const mistakes = JSON.parse(localStorage.getItem(key) ?? "[]")
     return Array.isArray(mistakes) && mistakes.length > 0
-  })
-  const mistakes = await readJsonStorage(page, "yasashi.mistakes.v1")
+  }, E2E_STORAGE_KEYS.MISTAKES)
+  const mistakes = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
   assert.ok(Array.isArray(mistakes), "wrong quiz answer should write mistake notebook")
   const recordedQuizMistake = mistakes.find((item) =>
     item.type === "hiragana-romaji" &&
@@ -47,18 +48,18 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   await page.getByTestId("review-start-mistakes").click()
   await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
   await page.getByTestId("review-answer-a").click()
-  await page.waitForFunction(() => {
-    const mistakes = JSON.parse(localStorage.getItem("yasashi.mistakes.v1") ?? "[]")
-    const srs = JSON.parse(localStorage.getItem("yasashi.srs.mistakes.v1") ?? "{}")
+  await page.waitForFunction((storageKeys) => {
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")
     const item = Array.isArray(mistakes) ? mistakes.find((mistake) => mistake.id === "e2e-mistake:kana-a") : null
     return item?.wrongCount === 2 && srs?.["e2e-mistake:kana-a"]?.box > 1
-  })
-  const retainedMistakes = await readJsonStorage(page, "yasashi.mistakes.v1")
+  }, E2E_STORAGE_KEYS)
+  const retainedMistakes = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
   const retainedMistake = Array.isArray(retainedMistakes)
     ? retainedMistakes.find((item) => item.id === "e2e-mistake:kana-a")
     : null
   assert.equal(retainedMistake?.wrongCount, 2, "correct mistake review should retain the historical mistake count")
-  const reviewedMistakeSrs = await readJsonStorage(page, "yasashi.srs.mistakes.v1")
+  const reviewedMistakeSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_MISTAKES)
   assert.ok(
     reviewedMistakeSrs?.["e2e-mistake:kana-a"]?.box > 1,
     "correct mistake review should advance mistake SRS without deleting notebook history"
@@ -96,10 +97,10 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   })
 
   await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
-  await page.evaluate((masteredIds) => {
+  await page.evaluate(({ masteredIds, key }) => {
     localStorage.clear()
-    localStorage.setItem("yasashi.kana.mastered.v1", JSON.stringify(masteredIds))
-  }, seionRomaji)
+    localStorage.setItem(key, JSON.stringify(masteredIds))
+  }, { masteredIds: seionRomaji, key: E2E_STORAGE_KEYS.KANA_MASTERED })
   await page.getByTestId("quiz-mode-hiragana-romaji").click()
   await page.getByTestId("quiz-only-unmastered-kana").click()
   await page.getByTestId("quiz-empty-state").waitFor({ state: "visible" })

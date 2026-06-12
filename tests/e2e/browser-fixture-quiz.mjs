@@ -1,17 +1,18 @@
 import assert from "node:assert/strict"
 
 import { readJsonStorage } from "./harness.mjs"
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 export async function resetQuizLearningState(page) {
-  await page.evaluate(() => {
+  await page.evaluate((storageKeys) => {
     localStorage.clear()
-    localStorage.setItem("yasashi.speech.prefs.v1", JSON.stringify({
+    localStorage.setItem(storageKeys.SPEECH_PREFS, JSON.stringify({
       rate: 1,
       repeat: 1,
       autoPlay: false,
       gapMs: 250,
     }))
-  })
+  }, E2E_STORAGE_KEYS)
 }
 
 export async function openQuizMode(page, baseUrl, mode) {
@@ -34,12 +35,12 @@ export async function openQuizMode(page, baseUrl, mode) {
 
 export async function clickFirstQuizOptionAndReadPractice(page) {
   await page.locator('[data-testid^="quiz-answer-option-"]').first().click()
-  await page.waitForFunction(() => {
-    const practice = JSON.parse(localStorage.getItem("yasashi.learning.practice.v1") ?? "[]")
+  await page.waitForFunction((key) => {
+    const practice = JSON.parse(localStorage.getItem(key) ?? "[]")
     return Array.isArray(practice) && practice.length > 0
-  })
+  }, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
   assert.match(await page.getByTestId("quiz-score").innerText(), /\/1\b/)
-  return readJsonStorage(page, "yasashi.learning.practice.v1")
+  return readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
 }
 
 export async function assertQuizModeRecordsPractice(page, baseUrl, { mode, itemType, practiceMode }) {
@@ -51,7 +52,7 @@ export async function assertQuizModeRecordsPractice(page, baseUrl, { mode, itemT
     `${mode} quiz should record ${itemType}/${practiceMode} practice`
   )
 
-  const itemProgress = await readJsonStorage(page, "yasashi.learning.items.v1")
+  const itemProgress = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
   assert.ok(
     Object.values(itemProgress ?? {}).some((item) => item.itemType === itemType && item.attempts >= 1),
     `${mode} quiz should update item progress`

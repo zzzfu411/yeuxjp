@@ -1,21 +1,23 @@
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
+
 export async function seedReviewState(page, baseUrl) {
   await page.goto(baseUrl, { waitUntil: "networkidle" })
-  await page.evaluate(() => {
+  await page.evaluate((storageKeys) => {
     const now = Date.now()
     localStorage.setItem(
-      "yasashi.srs.kana.v1",
+      storageKeys.SRS_KANA,
       JSON.stringify({ a: { box: 1, dueAt: now - 1, createdAt: now - 1000, right: 0, wrong: 0 } })
     )
-  })
+  }, E2E_STORAGE_KEYS)
 }
 
 export async function seedDueMistakeReviewState(page, baseUrl) {
   await page.goto(baseUrl, { waitUntil: "networkidle" })
-  await page.evaluate(() => {
+  await page.evaluate((storageKeys) => {
     const now = Date.now()
     localStorage.clear()
     localStorage.setItem(
-      "yasashi.mistakes.v1",
+      storageKeys.MISTAKES,
       JSON.stringify([
         {
           id: "e2e-mistake:kana-a",
@@ -35,10 +37,10 @@ export async function seedDueMistakeReviewState(page, baseUrl) {
       ])
     )
     localStorage.setItem(
-      "yasashi.srs.mistakes.v1",
+      storageKeys.SRS_MISTAKES,
       JSON.stringify({
         "e2e-mistake:kana-a": { box: 1, dueAt: now - 1, createdAt: now - 60_000, right: 0, wrong: 2 },
       })
     )
-  })
+  }, E2E_STORAGE_KEYS)
 }

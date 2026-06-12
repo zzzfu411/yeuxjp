@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 
 import { readJsonStorage } from "./harness.mjs"
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 const modalFocusableSelector = [
   "a[href]",
@@ -79,28 +80,28 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.getByTestId("kana-stroke-toggle").click()
   await page.getByTestId("kana-stroke-board").waitFor({ state: "visible" })
   await page.getByTestId("kana-mastery-toggle").click()
-  await page.waitForFunction(() => {
-    const mastered = JSON.parse(localStorage.getItem("yasashi.kana.mastered.v1") ?? "[]")
-    const srs = JSON.parse(localStorage.getItem("yasashi.srs.kana.v1") ?? "{}")
+  await page.waitForFunction((storageKeys) => {
+    const mastered = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERED) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
     return Array.isArray(mastered) && mastered.includes("a") && !!srs?.a?.dueAt
-  })
-  const masteredKana = await readJsonStorage(page, "yasashi.kana.mastered.v1")
+  }, E2E_STORAGE_KEYS)
+  const masteredKana = await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)
   assert.ok(Array.isArray(masteredKana) && masteredKana.includes("a"), "kana mastery toggle should persist kana a")
-  const masteredKanaSrs = await readJsonStorage(page, "yasashi.srs.kana.v1")
+  const masteredKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
   assert.ok(masteredKanaSrs?.a?.dueAt, "kana mastery toggle should enroll kana a for SRS review")
   await page.keyboard.press("Escape")
   await page.getByTestId("kana-clear-progress").click()
   await page.getByRole("button", { name: "取消" }).click()
   assert.ok(
-    (await readJsonStorage(page, "yasashi.kana.mastered.v1")).includes("a"),
+    (await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)).includes("a"),
     "canceling kana progress reset should keep mastered kana"
   )
   await page.getByTestId("kana-clear-progress").click()
   await page.getByTestId("kana-clear-progress-dialog-confirm").click()
-  await page.waitForFunction(() => {
-    const mastered = JSON.parse(localStorage.getItem("yasashi.kana.mastered.v1") ?? "[]")
+  await page.waitForFunction((key) => {
+    const mastered = JSON.parse(localStorage.getItem(key) ?? "[]")
     return Array.isArray(mastered) && mastered.length === 0
-  })
+  }, E2E_STORAGE_KEYS.KANA_MASTERED)
 
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").fill("みせ")
@@ -122,32 +123,32 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.getByTestId("vocabulary-learned-toggle").focus()
   await page.keyboard.press("Space")
   await page.getByTestId("vocabulary-learned-toggle").waitFor({ state: "visible" })
-  await page.waitForFunction(() => {
-    const learned = JSON.parse(localStorage.getItem("yasashi.vocab.learned.v1") ?? "[]")
+  await page.waitForFunction((key) => {
+    const learned = JSON.parse(localStorage.getItem(key) ?? "[]")
     return Array.isArray(learned) && learned.includes("sur-n-35")
-  })
-  await page.waitForFunction(() => {
-    const learned = JSON.parse(localStorage.getItem("yasashi.vocab.learned.v1") ?? "[]")
-    const srs = JSON.parse(localStorage.getItem("yasashi.srs.vocab.v1") ?? "{}")
+  }, E2E_STORAGE_KEYS.VOCAB_LEARNED)
+  await page.waitForFunction((storageKeys) => {
+    const learned = JSON.parse(localStorage.getItem(storageKeys.VOCAB_LEARNED) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_VOCAB) ?? "{}")
     return Array.isArray(learned) && learned.includes("sur-n-35") && !!srs?.["sur-n-35"]?.dueAt
-  })
-  const learnedVocab = await readJsonStorage(page, "yasashi.vocab.learned.v1")
+  }, E2E_STORAGE_KEYS)
+  const learnedVocab = await readJsonStorage(page, E2E_STORAGE_KEYS.VOCAB_LEARNED)
   assert.ok(Array.isArray(learnedVocab) && learnedVocab.includes("sur-n-35"), "vocabulary learned toggle should support keyboard activation without flipping the modal")
-  const vocabSrs = await readJsonStorage(page, "yasashi.srs.vocab.v1")
+  const vocabSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_VOCAB)
   assert.ok(vocabSrs?.["sur-n-35"]?.dueAt, "vocabulary learned toggle should enroll the selected vocabulary for SRS review")
   await page.keyboard.press("Escape")
   await page.getByTestId("vocabulary-clear-progress").click()
   await page.getByRole("button", { name: "取消" }).click()
   assert.ok(
-    (await readJsonStorage(page, "yasashi.vocab.learned.v1")).includes("sur-n-35"),
+    (await readJsonStorage(page, E2E_STORAGE_KEYS.VOCAB_LEARNED)).includes("sur-n-35"),
     "canceling vocabulary progress reset should keep learned vocabulary"
   )
   await page.getByTestId("vocabulary-clear-progress").click()
   await page.getByTestId("vocabulary-clear-progress-dialog-confirm").click()
-  await page.waitForFunction(() => {
-    const learned = JSON.parse(localStorage.getItem("yasashi.vocab.learned.v1") ?? "[]")
+  await page.waitForFunction((key) => {
+    const learned = JSON.parse(localStorage.getItem(key) ?? "[]")
     return Array.isArray(learned) && learned.length === 0
-  })
+  }, E2E_STORAGE_KEYS.VOCAB_LEARNED)
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-level-daily").click()
   await page.getByTestId("vocabulary-search").fill("Yakusoku")

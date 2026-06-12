@@ -205,6 +205,6 @@ test("PWA offline E2E verifies visited-page cache, fallback, and local state pre
   assert.match(pwaE2e, /context\.route\(fallbackUrl, \(route\) => route\.abort\("failed"\)\)/)
   assert.match(pwaE2e, /page\.goto\(fallbackUrl/)
   assert.match(pwaE2e, /navigation failures should render the offline fallback/)
-  assert.match(pwaE2e, /yasashi\.learning\.profile\.v1/)
+  assert.match(pwaE2e, /E2E_STORAGE_KEYS\.USER_PROFILE/)
   assert.match(pwaE2e, /offline fallback must not overwrite local learning state/)
 })

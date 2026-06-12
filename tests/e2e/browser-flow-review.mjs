@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 
 import { readJsonStorage } from "./harness.mjs"
 import { seedReviewState } from "./browser-fixtures.mjs"
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 export async function verifyInitialReviewEmptyState(page, baseUrl) {
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
@@ -17,9 +18,9 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   await page.getByTestId("review-start-today").click()
   assert.ok(await page.getByTestId("review-remaining").isVisible())
   await page.getByTestId("review-answer-a").click()
-  await page.waitForFunction(() => {
-    const srs = JSON.parse(localStorage.getItem("yasashi.srs.kana.v1") ?? "{}")
-    const practice = JSON.parse(localStorage.getItem("yasashi.learning.practice.v1") ?? "[]")
+  await page.waitForFunction((storageKeys) => {
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
     return srs?.a?.box > 1 &&
       srs?.a?.right >= 1 &&
       srs?.a?.dueAt > Date.now() &&
@@ -30,11 +31,11 @@ export async function verifyDueReviewFlow(page, baseUrl) {
         item.mode === "recognition" &&
         item.correct === true
       )
-  })
-  const reviewedKanaSrs = await readJsonStorage(page, "yasashi.srs.kana.v1")
+  }, E2E_STORAGE_KEYS)
+  const reviewedKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
   assert.ok(reviewedKanaSrs?.a?.box > 1, "correct review answer should advance kana SRS box")
   assert.ok(reviewedKanaSrs?.a?.right >= 1, "correct review answer should increment SRS right count")
-  const reviewPractice = await readJsonStorage(page, "yasashi.learning.practice.v1")
+  const reviewPractice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
   assert.ok(
     Array.isArray(reviewPractice) &&
       reviewPractice.some((item) =>

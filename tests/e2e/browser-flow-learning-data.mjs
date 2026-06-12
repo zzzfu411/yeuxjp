@@ -7,6 +7,7 @@ import {
   readManagedLearningBackupSnapshot,
   seedLearningDataBackupState,
 } from "./browser-fixtures.mjs"
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 export async function verifyLearningDataFlow(page, baseUrl) {
   await seedLearningDataBackupState(page, baseUrl)
@@ -56,8 +57,8 @@ export async function verifyLearningDataFlow(page, baseUrl) {
       version: 1,
       exportedAt: Date.now(),
       entries: {
-        "yasashi.kana.mastered.v1": "{}",
-        "yasashi.srs.kana.v1": JSON.stringify({ a: "bad" }),
+        [E2E_STORAGE_KEYS.KANA_MASTERED]: "{}",
+        [E2E_STORAGE_KEYS.SRS_KANA]: JSON.stringify({ a: "bad" }),
       },
     })),
   })
@@ -75,13 +76,13 @@ export async function verifyLearningDataFlow(page, baseUrl) {
     exportedAt: Date.now(),
     entries: {
       ...exportedBackup.entries,
-      "yasashi.kana.mastered.v1": JSON.stringify(["a", "sokuon:kitte", "ka", "a"]),
-      "yasashi.vocab.learned.v1": JSON.stringify(["sur-n-35", "sur-g-999", "day-v-1", "sur-n-35"]),
-      "yasashi.srs.kana.v1": JSON.stringify({
+      [E2E_STORAGE_KEYS.KANA_MASTERED]: JSON.stringify(["a", "sokuon:kitte", "ka", "a"]),
+      [E2E_STORAGE_KEYS.VOCAB_LEARNED]: JSON.stringify(["sur-n-35", "sur-g-999", "day-v-1", "sur-n-35"]),
+      [E2E_STORAGE_KEYS.SRS_KANA]: JSON.stringify({
         a: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
         "sokuon:kitte": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
       }),
-      "yasashi.srs.vocab.v1": JSON.stringify({
+      [E2E_STORAGE_KEYS.SRS_VOCAB]: JSON.stringify({
         "sur-n-35": { box: 1, dueAt: 1, createdAt: 2, right: 0, wrong: 0 },
         "sur-g-999": { box: 1, dueAt: 1, createdAt: 2, right: 0, wrong: 0 },
       }),
@@ -100,22 +101,22 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   )
   const normalizedStaleSnapshot = await readManagedLearningBackupSnapshot(page)
   assert.deepEqual(
-    JSON.parse(normalizedStaleSnapshot["yasashi.kana.mastered.v1"]),
+    JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.KANA_MASTERED]),
     ["a", "ka"],
     "valid backup import should remove non-reviewable kana from mastered progress"
   )
   assert.deepEqual(
-    JSON.parse(normalizedStaleSnapshot["yasashi.vocab.learned.v1"]),
+    JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.VOCAB_LEARNED]),
     ["sur-n-35", "day-v-1"],
     "valid backup import should remove stale vocabulary ids from learned progress"
   )
   assert.deepEqual(
-    Object.keys(JSON.parse(normalizedStaleSnapshot["yasashi.srs.kana.v1"])),
+    Object.keys(JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.SRS_KANA])),
     ["a"],
     "valid backup import should remove non-reviewable kana from SRS"
   )
   assert.deepEqual(
-    Object.keys(JSON.parse(normalizedStaleSnapshot["yasashi.srs.vocab.v1"])),
+    Object.keys(JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.SRS_VOCAB])),
     ["sur-n-35"],
     "valid backup import should remove stale vocabulary ids from SRS"
   )
@@ -145,14 +146,14 @@ export async function verifyLearningDataFlow(page, baseUrl) {
     seededLearningBackupSnapshot,
     "learning data import should restore every managed learning key"
   )
-  const restoredProfile = JSON.parse(restoredSnapshot["yasashi.learning.profile.v1"])
+  const restoredProfile = JSON.parse(restoredSnapshot[E2E_STORAGE_KEYS.USER_PROFILE])
   assert.equal(restoredProfile?.goal, "balanced", "learning data import should restore the profile backup")
-  const restoredMistakes = JSON.parse(restoredSnapshot["yasashi.mistakes.v1"])
+  const restoredMistakes = JSON.parse(restoredSnapshot[E2E_STORAGE_KEYS.MISTAKES])
   assert.ok(
     Array.isArray(restoredMistakes) && restoredMistakes.some((item) => item.id === "kana:a:hiragana-romaji"),
     "learning data import should restore the mistake notebook backup"
   )
-  const restoredMistakeSrs = JSON.parse(restoredSnapshot["yasashi.srs.mistakes.v1"])
+  const restoredMistakeSrs = JSON.parse(restoredSnapshot[E2E_STORAGE_KEYS.SRS_MISTAKES])
   assert.ok(
     restoredMistakeSrs?.["kana:a:hiragana-romaji"]?.dueAt,
     "learning data import should restore mistake SRS state"

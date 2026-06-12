@@ -12,11 +12,15 @@ import {
   readBrowserE2ESources,
   readBrowserFlows,
   readBrowserFixtures,
+  readE2EStorageKeys,
   readE2EHarness,
   readSource,
   readWebPackage,
   requiredSelectors,
 } from "./browser-e2e-contract-fixtures.mjs"
+import { loadTsModule } from "./load-ts-module.mjs"
+
+const storage = await loadTsModule("src/lib/storage-keys.ts")
 
 test("browser E2E uses only declared stable test ids", () => {
   const sources = readBrowserE2ESources()
@@ -92,6 +96,30 @@ test("browser E2E fixtures stay split by concern behind a stable export surface"
   assert.ok(browserFixtureModulePaths.length > 1, "browser fixture implementations should stay split by concern")
 })
 
+test("browser E2E centralizes learning storage keys", () => {
+  const storageKeys = readE2EStorageKeys()
+  const e2eSources = readBrowserE2ESources()
+  const expectedKeys = Object.values(storage.STORAGE_KEYS)
+  const allowedKeySource = /tests\/e2e\/storage-keys\.mjs$/
+  const hardCodedStorageKey = /["'`]yasashi\.[a-z0-9.]+\.v1["'`]/g
+
+  assert.match(storageKeys, /export const E2E_STORAGE_KEYS/)
+  assert.deepEqual(
+    Array.from(storageKeys.matchAll(/:\s*"([^"]+)"/g), (match) => match[1]).sort(),
+    expectedKeys.sort()
+  )
+  assert.match(e2eSources, /E2E_STORAGE_KEYS/)
+  for (const modulePath of [...browserFlowModulePaths, ...browserFixtureModulePaths, "tests/e2e/pwa-offline.mjs"]) {
+    if (allowedKeySource.test(modulePath)) continue
+    const source = readSource(modulePath)
+    assert.deepEqual(
+      source.match(hardCodedStorageKey) ?? [],
+      [],
+      `${modulePath} should import E2E_STORAGE_KEYS instead of hard-coding learning storage keys`
+    )
+  }
+})
+
 test("browser E2E test ids remain present in source files", () => {
   for (const item of requiredSelectors) {
     const source = readSource(item.source)
@@ -113,12 +141,12 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   assert.match(e2e, /getByTestId\("onboarding-minutes"\)\.focus\(\)/)
   assert.match(e2e, /keyboard\.press\("ArrowRight"\)/)
   assert.match(e2e, /getByTestId\("onboarding-save"\)\.click\(\)/)
-  assert.match(e2e, /yasashi\.learning\.profile\.v1/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.USER_PROFILE/)
   assert.match(e2e, /savedProfile\?\.goal,\s*"travel"/)
   assert.match(e2e, /savedProfile\?\.kanaLevel,\s*"some"/)
   assert.match(e2e, /savedProfile\?\.romajiMode,\s*"always"/)
   assert.match(e2e, /savedProfile\?\.minutesPerDay,\s*15/)
-  assert.match(e2e, /yasashi\.learning\.lessons\.v1/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.LESSON_PROGRESS/)
   assert.match(e2e, /currentStepIndex/)
   assert.match(e2e, /lastStepId/)
   assert.match(e2e, /hello-example/)
@@ -126,9 +154,9 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   assert.match(e2e, /waitForFunction/)
   assert.match(e2e, /page\.reload\(\{ waitUntil: "networkidle" \}\)/)
   assert.match(e2e, /lesson-answer-a"\)\.waitFor\(\{ state: "visible" \}\)/)
-  assert.match(e2e, /yasashi\.learning\.practice\.v1/)
-  assert.match(e2e, /yasashi\.learning\.items\.v1/)
-  assert.match(e2e, /yasashi\.srs\.kana\.v1/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.PRACTICE_RESULTS/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.ITEM_PROGRESS/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_KANA/)
   assert.match(e2e, /lessonId === "day-1-a-row-hello"/)
   assert.match(e2e, /itemId === "a"/)
   assert.match(e2e, /item\.correct === true/)
@@ -176,7 +204,7 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /getByTestId\("quiz-question-text"\)/)
   assert.match(e2e, /querySelectorAll\('\[data-testid\^="quiz-answer-option-"\]'\)/)
   assert.match(e2e, /page\.getByTestId\(wrongOption\)\.click\(\)/)
-  assert.match(e2e, /yasashi\.mistakes\.v1/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.MISTAKES/)
   assert.match(e2e, /item\.type === "hiragana-romaji"/)
   assert.match(e2e, /item\.questionText === quizPrompt/)
   assert.match(e2e, /item\.correctAnswer === expectedAnswer/)
@@ -194,7 +222,7 @@ test("browser E2E verifies correct mistake reviews retain notebook history", () 
   assert.match(e2e, /seedDueMistakeReviewState\(page, baseUrl\)/)
   assert.match(fixtures, /export async function seedDueMistakeReviewState\(page, baseUrl\)/)
   assert.match(fixtures, /"e2e-mistake:kana-a"/)
-  assert.match(fixtures, /"yasashi\.srs\.mistakes\.v1"/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.SRS_MISTAKES/)
   assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("review-answer-a"\)\.click\(\)/)
   assert.match(e2e, /item\?\.wrongCount === 2/)
@@ -212,7 +240,7 @@ test("browser E2E verifies every public quiz mode records practice", () => {
   assert.match(fixtures, /export async function openQuizMode\(page, baseUrl, mode\)/)
   assert.match(fixtures, /export async function clickFirstQuizOptionAndReadPractice/)
   assert.match(fixtures, /export async function assertQuizModeRecordsPractice/)
-  assert.match(fixtures, /localStorage\.setItem\("yasashi\.speech\.prefs\.v1"/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.SPEECH_PREFS/)
   assert.match(fixtures, /getByTestId\("quiz-mode-audio-kana"\)/)
   assert.match(fixtures, /getByTestId\("quiz-mode-particle"\)/)
   assert.match(fixtures, /getByTestId\("quiz-mode-verb-conjugation"\)/)
@@ -233,7 +261,7 @@ test("browser E2E verifies mastered kana filters show the quiz empty state", () 
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /getByTestId\("kana-mastery-toggle"\)\.click\(\)/)
-  assert.match(e2e, /yasashi\.kana\.mastered\.v1/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.KANA_MASTERED/)
   assert.match(e2e, /masteredKana\.includes\("a"\)/)
   assert.match(e2e, /masteredKanaSrs\?\.a\?\.dueAt/)
   assert.match(fixtures, /export const seionRomaji = \[/)
@@ -336,7 +364,7 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
   assert.match(e2e, /getByTestId\("vocabulary-learned-toggle"\)\.waitFor\(\{ state: "visible" \}\)/)
   assert.match(e2e, /getByTestId\("vocabulary-learned-toggle"\)\.focus\(\)/)
   assert.match(e2e, /vocabulary learned toggle should support keyboard activation without flipping the modal/)
-  assert.match(e2e, /yasashi\.vocab\.learned\.v1/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.VOCAB_LEARNED/)
   assert.match(e2e, /learnedVocab\.includes\("sur-n-35"\)/)
   assert.match(e2e, /vocabSrs\?\.\["sur-n-35"\]\?\.dueAt/)
   assert.match(e2e, /getByTestId\("vocabulary-level-daily"\)\.click\(\)/)
@@ -355,18 +383,18 @@ test("browser E2E verifies learning data export reset and import through the UI"
   assert.match(e2e, /import fs from "node:fs\/promises"/)
   assert.match(e2e, /seedLearningDataBackupState/)
   assert.match(fixtures, /export async function seedLearningDataBackupState\(page, baseUrl\)/)
-  assert.match(fixtures, /export const managedLearningBackupKeys = \[/)
-  assert.match(fixtures, /yasashi\.learning\.profile\.v1/)
-  assert.match(fixtures, /yasashi\.learning\.lessons\.v1/)
-  assert.match(fixtures, /yasashi\.learning\.items\.v1/)
-  assert.match(fixtures, /yasashi\.learning\.practice\.v1/)
-  assert.match(fixtures, /yasashi\.srs\.kana\.v1/)
-  assert.match(fixtures, /yasashi\.srs\.vocab\.v1/)
-  assert.match(fixtures, /yasashi\.mistakes\.v1/)
-  assert.match(fixtures, /yasashi\.srs\.mistakes\.v1/)
-  assert.match(fixtures, /yasashi\.kana\.mastered\.v1/)
-  assert.match(fixtures, /yasashi\.vocab\.learned\.v1/)
-  assert.match(fixtures, /yasashi\.speech\.prefs\.v1/)
+  assert.match(fixtures, /managedLearningBackupKeys/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.USER_PROFILE/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.LESSON_PROGRESS/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.ITEM_PROGRESS/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.PRACTICE_RESULTS/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.SRS_KANA/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.SRS_VOCAB/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.MISTAKES/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.SRS_MISTAKES/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.KANA_MASTERED/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.VOCAB_LEARNED/)
+  assert.match(fixtures, /(?:E2E_STORAGE_KEYS|storageKeys)\.SPEECH_PREFS/)
   assert.match(e2e, /readManagedLearningBackupSnapshot/)
   assert.match(e2e, /assertManagedLearningSnapshot/)
   assert.match(fixtures, /yasashi\.e2e\.unmanaged/)
@@ -387,8 +415,8 @@ test("browser E2E verifies learning data export reset and import through the UI"
   assert.match(e2e, /getByTestId\("learning-data-notice"\)/)
   assert.match(e2e, /invalid learning data import should not overwrite managed learning keys/)
   assert.match(e2e, /malformed-yasashi-backup\.json/)
-  assert.match(e2e, /yasashi\.kana\.mastered\.v1/)
-  assert.match(e2e, /yasashi\.srs\.kana\.v1/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.KANA_MASTERED/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_KANA/)
   assert.match(e2e, /malformed but valid JSON backup import should not overwrite managed learning keys/)
   assert.match(e2e, /stale-yasashi-backup\.json/)
   assert.match(e2e, /sokuon:kitte/)
