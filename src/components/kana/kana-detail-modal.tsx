@@ -145,13 +145,13 @@ export function KanaDetailModal({
           </div>
 
           <div className="p-4 border-t bg-muted/30 flex justify-between items-center shrink-0">
-            <Button variant="ghost" size="icon" onClick={onPrev}>
+            <Button variant="ghost" size="icon" aria-label="上一个假名" onClick={onPrev}>
               <ChevronLeft className="w-6 h-6" />
             </Button>
             <div className="text-xs font-mono text-muted-foreground">
               {(selectedIndex ?? 0) + 1} / {total}
             </div>
-            <Button variant="ghost" size="icon" onClick={onNext}>
+            <Button variant="ghost" size="icon" aria-label="下一个假名" onClick={onNext}>
               <ChevronRight className="w-6 h-6" />
             </Button>
           </div>
