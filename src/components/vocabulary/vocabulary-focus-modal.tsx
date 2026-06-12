@@ -48,7 +48,7 @@ export function VocabularyFocusModal({
                   </div>
                   <div className="absolute bottom-8 left-0 right-0 flex justify-center opacity-50 group-hover:opacity-100 transition-opacity">
                     <div className="bg-background/80 backdrop-blur px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm flex items-center gap-2 border">
-                      <RotateCw className="w-3 h-3" /> Tap or Space to Flip
+                      <RotateCw className="w-3 h-3" /> 点击或按空格翻面
                     </div>
                   </div>
                 </div>
@@ -67,7 +67,7 @@ export function VocabularyFocusModal({
                         onPlay()
                       }}
                     >
-                      <Volume2 className="w-5 h-5" /> Listen
+                      <Volume2 className="w-5 h-5" /> 朗读
                     </Button>
                   </div>
                   <div className="pt-2">
@@ -92,13 +92,13 @@ export function VocabularyFocusModal({
 
           <div className="p-4 bg-background border-t flex justify-between items-center shrink-0 select-none">
             <Button variant="ghost" size="sm" onClick={onPrev} className="gap-1 pl-2 text-muted-foreground hover:text-foreground">
-              <ChevronLeft className="w-4 h-4" /> Prev
+              <ChevronLeft className="w-4 h-4" /> 上一条
             </Button>
             <div className="text-xs font-mono text-muted-foreground bg-secondary px-3 py-1 rounded-full">
               {(selectedIndex ?? 0) + 1} / {total}
             </div>
             <Button variant="ghost" size="sm" onClick={onNext} className="gap-1 pr-2 text-muted-foreground hover:text-foreground">
-              Next <ChevronRight className="w-4 h-4" />
+              下一条 <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </>

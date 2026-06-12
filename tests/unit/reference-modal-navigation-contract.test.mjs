@@ -139,6 +139,17 @@ test("semantics and pragmatics reference pages keep static lists in server compo
   assert.match(semanticsModal, /提示/)
   assert.doesNotMatch(semanticsModal, /Contextual Examples/)
   assert.doesNotMatch(semanticsModal, /Tip/)
+
+  const pragmaticsPage = read("src/components/reference/pragmatics-reference-page.tsx")
+  const pragmaticsModal = read("src/components/reference/pragmatics-focus-modal.tsx")
+  assert.match(pragmaticsPage, /场景：\{scenario\.situation\}/)
+  assert.match(pragmaticsModal, /场景：\{scenario\.situation\}/)
+  assert.match(pragmaticsModal, /文化背景/)
+  assert.match(pragmaticsModal, /回答分析/)
+  assert.doesNotMatch(pragmaticsPage, /Scenario:/)
+  assert.doesNotMatch(pragmaticsModal, /Scenario:/)
+  assert.doesNotMatch(pragmaticsModal, /Cultural Context/)
+  assert.doesNotMatch(pragmaticsModal, /Response Analysis/)
 })
 
 test("semantics and pragmatics reference detail routes are statically generated", () => {

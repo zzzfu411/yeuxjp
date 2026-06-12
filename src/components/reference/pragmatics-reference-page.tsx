@@ -61,7 +61,7 @@ export function PragmaticsReferencePage({
             <div>
               <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-sm mb-1">
                 <MessageCircle className="w-4 h-4" />
-                Scenario: {scenario.situation}
+                场景：{scenario.situation}
               </div>
               <h2 className="text-2xl font-bold mb-2">{scenario.title}</h2>
               <p className="text-lg text-foreground/80 font-medium">{scenario.context}</p>

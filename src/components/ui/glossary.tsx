@@ -155,7 +155,7 @@ export function GlossaryProvider({ children }: { children: React.ReactNode }) {
                           {!!entry.examples?.length && (
                             <div className="mt-4 space-y-2">
                               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                Examples
+                                例子
                               </div>
                               <div className="grid gap-2">
                                 {entry.examples.map((ex, idx) => (
@@ -238,4 +238,3 @@ export function GlossaryTerm({
     </button>
   )
 }
-

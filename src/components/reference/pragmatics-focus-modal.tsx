@@ -34,7 +34,7 @@ export function PragmaticsFocusModal({
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-sm">
             <MessageCircle className="w-4 h-4" />
-            Scenario: {scenario.situation}
+            场景：{scenario.situation}
           </div>
           <h2 className="text-4xl font-bold tracking-tight">{scenario.title}</h2>
           <div className="text-xl font-medium text-foreground bg-muted/30 p-6 rounded-xl border-l-4 border-primary">
@@ -44,14 +44,14 @@ export function PragmaticsFocusModal({
 
         <div className="bg-secondary/40 p-6 rounded-xl text-base text-muted-foreground italic border border-border/50 shadow-sm">
           <span className="font-bold not-italic text-foreground/80 block mb-2 text-sm uppercase tracking-wide">
-            Cultural Context
+            文化背景
           </span>
           {scenario.culturalNote}
         </div>
 
         <div className="space-y-5">
           <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground border-b pb-2">
-            Response Analysis
+            回答分析
           </h3>
           <div className="grid gap-5">
             {scenario.responses.map((response, index) => {
