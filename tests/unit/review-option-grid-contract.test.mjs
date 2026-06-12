@@ -36,6 +36,8 @@ test("ReviewOptionGrid owns review option feedback visuals", () => {
   assert.match(source, /getAnswerOptionClassName/)
   assert.match(source, /shouldShowCorrectAnswerIcon/)
   assert.match(source, /shouldShowWrongAnswerIcon/)
+  assert.match(source, /isQuestionAnswerCorrect/)
+  assert.match(source, /isCorrectOption: isQuestionAnswerCorrect\(\{ correctAnswer \}, option\.value\)/)
   assert.match(source, /selectedAnswer != null/)
   assert.match(source, /const ariaLabelBase = typeof option\.display === "string" \? option\.display : option\.value/)
   assert.match(source, /aria-label=\{getAnswerOptionAriaLabel\(ariaLabelBase, feedback\)\}/)

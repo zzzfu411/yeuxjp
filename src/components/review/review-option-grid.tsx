@@ -11,6 +11,7 @@ import {
   shouldShowCorrectAnswerIcon,
   shouldShowWrongAnswerIcon,
 } from "@/lib/answer-option-feedback"
+import { isQuestionAnswerCorrect } from "@/lib/questions"
 
 export type ReviewOption = {
   value: string
@@ -37,7 +38,7 @@ export function ReviewOptionGrid({
         const feedback = getAnswerOptionFeedback({
           selectedAnswer,
           optionValue: option.value,
-          isCorrectOption: option.value === correctAnswer,
+          isCorrectOption: isQuestionAnswerCorrect({ correctAnswer }, option.value),
         })
 
         return (
