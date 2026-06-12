@@ -34,8 +34,9 @@ export interface QuestionResult {
 
 export function normalizeAnswer(value: string) {
   return value
+    .normalize("NFKC")
     .trim()
-    .replace(/[。．.]/g, "")
+    .replace(/[\p{P}\p{S}]/gu, "")
     .replace(/\s+/g, "")
     .toLowerCase()
 }

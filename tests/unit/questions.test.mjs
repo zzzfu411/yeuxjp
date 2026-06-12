@@ -12,6 +12,9 @@ test("answer checking normalizes punctuation, whitespace, and accepted answers",
 
   assert.equal(questions.isQuestionAnswerCorrect(question, " こんにちは。"), true)
   assert.equal(questions.isQuestionAnswerCorrect(question, "今 日 は"), true)
+  assert.equal(questions.isQuestionAnswerCorrect(question, "今日は！"), true)
+  assert.equal(questions.isQuestionAnswerCorrect({ correctAnswer: "Ａ" }, "a"), true)
+  assert.equal(questions.isQuestionAnswerCorrect({ correctAnswer: "これをください" }, "これ を ください？"), true)
   assert.equal(questions.isQuestionAnswerCorrect(question, "こんばんは"), false)
 })
 
