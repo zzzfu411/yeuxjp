@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { getAnimCjkKanaUrl, parseAnimCJK, type ParsedAnimCjkSvg } from "@/lib/animcjk"
 
+const ANIMCJK_STROKE_LOAD_ERROR = "笔顺动画暂时无法加载，请稍后重试。"
+
 interface AnimCjkSvgState {
   key: string
   svgs?: ParsedAnimCjkSvg[]
@@ -33,9 +35,9 @@ export function useAnimCjkSvgs(char: string) {
 
         if (cancelled) return
         setParsed({ key: cacheKey, svgs: results })
-      } catch (err) {
+      } catch {
         if (cancelled) return
-        setParsed({ key: cacheKey, error: err instanceof Error ? err.message : String(err) })
+        setParsed({ key: cacheKey, error: ANIMCJK_STROKE_LOAD_ERROR })
       }
     })()
 

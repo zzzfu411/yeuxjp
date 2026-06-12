@@ -64,8 +64,8 @@ export function KanaStrokeAnimCJK({
   // ---- Render ----
   if (error) {
     return (
-      <div className={cn("flex items-center justify-center text-sm text-muted-foreground", className)}>
-        笔顺 SVG 加载失败：{error}
+      <div className={cn("flex items-center justify-center text-center text-sm text-muted-foreground", className)}>
+        {error}
       </div>
     )
   }
