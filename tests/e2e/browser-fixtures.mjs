@@ -50,6 +50,59 @@ export const seionRomaji = [
   "n",
 ]
 
+const seionHiraganaCodePoints = [
+  0x3042,
+  0x3044,
+  0x3046,
+  0x3048,
+  0x304a,
+  0x304b,
+  0x304d,
+  0x304f,
+  0x3051,
+  0x3053,
+  0x3055,
+  0x3057,
+  0x3059,
+  0x305b,
+  0x305d,
+  0x305f,
+  0x3061,
+  0x3064,
+  0x3066,
+  0x3068,
+  0x306a,
+  0x306b,
+  0x306c,
+  0x306d,
+  0x306e,
+  0x306f,
+  0x3072,
+  0x3075,
+  0x3078,
+  0x307b,
+  0x307e,
+  0x307f,
+  0x3080,
+  0x3081,
+  0x3082,
+  0x3084,
+  0x3086,
+  0x3088,
+  0x3089,
+  0x308a,
+  0x308b,
+  0x308c,
+  0x308d,
+  0x308f,
+  0x3092,
+  0x3093,
+]
+
+export const seionHiraganaToRomaji = Object.fromEntries(
+  seionHiraganaCodePoints.map((codePoint, index) => [String.fromCodePoint(codePoint), seionRomaji[index]])
+)
+
 export const managedLearningBackupKeys = [
   "yasashi.learning.profile.v1",
   "yasashi.learning.lessons.v1",
@@ -83,6 +136,40 @@ export async function seedReviewState(page, baseUrl) {
     localStorage.setItem(
       "yasashi.srs.kana.v1",
       JSON.stringify({ a: { box: 1, dueAt: now - 1, createdAt: now - 1000, right: 0, wrong: 0 } })
+    )
+  })
+}
+
+export async function seedDueMistakeReviewState(page, baseUrl) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await page.evaluate(() => {
+    const now = Date.now()
+    localStorage.clear()
+    localStorage.setItem(
+      "yasashi.mistakes.v1",
+      JSON.stringify([
+        {
+          id: "e2e-mistake:kana-a",
+          type: "hiragana-romaji",
+          questionText: String.fromCodePoint(0x3042),
+          correctAnswer: "a",
+          correctDisplay: "a",
+          lastWrongAnswer: "i",
+          options: [
+            { value: "a", display: "a" },
+            { value: "i", display: "i" },
+          ],
+          wrongCount: 2,
+          createdAt: now - 60_000,
+          lastWrongAt: now - 30_000,
+        },
+      ])
+    )
+    localStorage.setItem(
+      "yasashi.srs.mistakes.v1",
+      JSON.stringify({
+        "e2e-mistake:kana-a": { box: 1, dueAt: now - 1, createdAt: now - 60_000, right: 0, wrong: 2 },
+      })
     )
   })
 }

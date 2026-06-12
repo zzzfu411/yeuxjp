@@ -102,6 +102,7 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /seionHiraganaToRomaji/)
+  assert.match(fixtures, /export const seionHiraganaToRomaji = Object\.fromEntries/)
   assert.match(e2e, /from "\.\/browser-fixtures\.mjs"/)
   assert.match(e2e, /openQuizMode\(page, baseUrl, "hiragana-romaji"\)/)
   assert.match(fixtures, /export async function openQuizMode\(page, baseUrl, mode\)/)
@@ -122,10 +123,12 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
 
 test("browser E2E verifies correct mistake reviews retain notebook history", () => {
   const e2e = readBrowserE2E()
+  const fixtures = readBrowserFixtures()
 
-  assert.match(e2e, /async function seedDueMistakeReviewState/)
-  assert.match(e2e, /"e2e-mistake:kana-a"/)
-  assert.match(e2e, /"yasashi\.srs\.mistakes\.v1"/)
+  assert.match(e2e, /seedDueMistakeReviewState\(page, baseUrl\)/)
+  assert.match(fixtures, /export async function seedDueMistakeReviewState\(page, baseUrl\)/)
+  assert.match(fixtures, /"e2e-mistake:kana-a"/)
+  assert.match(fixtures, /"yasashi\.srs\.mistakes\.v1"/)
   assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("review-answer-a"\)\.click\(\)/)
   assert.match(e2e, /item\?\.wrongCount === 2/)

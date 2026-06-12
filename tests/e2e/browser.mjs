@@ -14,8 +14,10 @@ import {
   managedLearningBackupKeys,
   openQuizMode,
   readManagedLearningBackupSnapshot,
+  seedDueMistakeReviewState,
   seedLearningDataBackupState,
   seedReviewState,
+  seionHiraganaToRomaji,
   seionRomaji,
 } from "./browser-fixtures.mjs"
 
@@ -23,94 +25,12 @@ const port = Number(process.env.E2E_PORT ?? 3210)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
 const browserE2ERequired = isE2ERequired("E2E_BROWSER_REQUIRED")
 const serverController = createServerController()
-const seionHiraganaToRomaji = {
-  あ: "a",
-  い: "i",
-  う: "u",
-  え: "e",
-  お: "o",
-  か: "ka",
-  き: "ki",
-  く: "ku",
-  け: "ke",
-  こ: "ko",
-  さ: "sa",
-  し: "shi",
-  す: "su",
-  せ: "se",
-  そ: "so",
-  た: "ta",
-  ち: "chi",
-  つ: "tsu",
-  て: "te",
-  と: "to",
-  な: "na",
-  に: "ni",
-  ぬ: "nu",
-  ね: "ne",
-  の: "no",
-  は: "ha",
-  ひ: "hi",
-  ふ: "fu",
-  へ: "he",
-  ほ: "ho",
-  ま: "ma",
-  み: "mi",
-  む: "mu",
-  め: "me",
-  も: "mo",
-  や: "ya",
-  ゆ: "yu",
-  よ: "yo",
-  ら: "ra",
-  り: "ri",
-  る: "ru",
-  れ: "re",
-  ろ: "ro",
-  わ: "wa",
-  を: "wo",
-  ん: "n",
-}
 
 async function ensureServer() {
   baseUrl = await reuseOrStartDevServer({
     baseUrl,
     port,
     controller: serverController,
-  })
-}
-
-async function seedDueMistakeReviewState(page) {
-  await page.goto(baseUrl, { waitUntil: "networkidle" })
-  await page.evaluate(() => {
-    const now = Date.now()
-    localStorage.clear()
-    localStorage.setItem(
-      "yasashi.mistakes.v1",
-      JSON.stringify([
-        {
-          id: "e2e-mistake:kana-a",
-          type: "hiragana-romaji",
-          questionText: "あ",
-          correctAnswer: "a",
-          correctDisplay: "a",
-          lastWrongAnswer: "i",
-          options: [
-            { value: "a", display: "a" },
-            { value: "i", display: "i" },
-          ],
-          wrongCount: 2,
-          createdAt: now - 60_000,
-          lastWrongAt: now - 30_000,
-        },
-      ])
-    )
-    localStorage.setItem(
-      "yasashi.srs.mistakes.v1",
-      JSON.stringify({
-        "e2e-mistake:kana-a": { box: 1, dueAt: now - 1, createdAt: now - 60_000, right: 0, wrong: 2 },
-      })
-    )
   })
 }
 
@@ -309,7 +229,7 @@ try {
   await page.getByTestId("review-start-mistakes").click()
   await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
 
-  await seedDueMistakeReviewState(page)
+  await seedDueMistakeReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("review-start-mistakes").click()
   await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
