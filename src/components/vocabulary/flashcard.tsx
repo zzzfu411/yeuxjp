@@ -78,7 +78,13 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
           <div className="text-lg text-muted-foreground font-medium mb-6">{vocab.romaji}</div>
           
           <div className="flex gap-4">
-            <Button size="icon" variant="ghost" onClick={handlePlay} className="rounded-full">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handlePlay}
+              className="rounded-full"
+              aria-label={`朗读 ${vocab.kana}`}
+            >
               <Volume2 className="w-6 h-6 text-primary" />
             </Button>
           </div>

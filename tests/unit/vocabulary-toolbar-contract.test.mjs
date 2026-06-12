@@ -45,6 +45,8 @@ test("VocabularyToolbar owns vocabulary search, level tabs, filters, and categor
   assert.match(toolbar, /onLevelChange\(level\.id\)/)
   assert.match(toolbar, /onToggleOnlyUnlearned/)
   assert.match(toolbar, /onClearLearned/)
+  assert.match(toolbar, /进度：\{progress\.learned\}\/\{progress\.total\}/)
+  assert.doesNotMatch(toolbar, /Progress:/)
   assert.match(toolbar, /hasCategoryIcon\(category\)/)
   assert.match(toolbar, /onSelectCategory\(category\)/)
 })

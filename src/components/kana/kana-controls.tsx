@@ -129,7 +129,7 @@ export function KanaControls({
         </div>
 
         <div className="font-mono text-xs text-muted-foreground">
-          Progress: {progress.learned}/{progress.total}
+          进度：{progress.learned}/{progress.total}
         </div>
 
         {showRomaji && (

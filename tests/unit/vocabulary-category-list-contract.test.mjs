@@ -60,4 +60,5 @@ test("Flashcard exposes stable browser hooks for expanding vocabulary cards", ()
 
   assert.match(source, /data-testid=\{`vocabulary-expand-\$\{vocab\.id\}`\}/)
   assert.match(source, /data-testid=\{`vocabulary-expand-back-\$\{vocab\.id\}`\}/)
+  assert.match(source, /aria-label=\{`朗读 \$\{vocab\.kana\}`\}/)
 })

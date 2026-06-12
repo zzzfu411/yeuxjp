@@ -82,7 +82,7 @@ export function VocabularyToolbar({
 
         <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
           <div className="rounded-full border bg-secondary/50 px-3 py-1 font-mono text-xs text-muted-foreground">
-            Progress: {progress.learned}/{progress.total}
+            进度：{progress.learned}/{progress.total}
           </div>
 
           <button

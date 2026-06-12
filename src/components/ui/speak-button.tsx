@@ -36,11 +36,10 @@ export function SpeakButton({
       className={cn("rounded-full", className)}
       onClick={() => speakJapanese(text, { rate })}
       disabled={disabled}
-      aria-label={label ?? "Pronounce"}
-      title={label ?? "Pronounce"}
+      aria-label={label ?? "朗读"}
+      title={label ?? "朗读"}
     >
       <Volume2 className="w-5 h-5" />
     </Button>
   )
 }
-
