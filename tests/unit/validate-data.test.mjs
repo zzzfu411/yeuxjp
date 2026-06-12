@@ -74,6 +74,28 @@ test("data validation verifies the offline fallback copy and learning-state boun
   assert.match(source, /validateOfflineFallback\(\)/)
 })
 
+test("data validation verifies PWA manifest install metadata and PNG dimensions", () => {
+  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+
+  assert.match(source, /function validatePwaManifest/)
+  assert.match(source, /function readPngDimensions/)
+  assert.match(source, /readUInt32BE\(16\)/)
+  assert.match(source, /readUInt32BE\(20\)/)
+  assert.match(source, /\["start_url", "\/"\]/)
+  assert.match(source, /\["scope", "\/"\]/)
+  assert.match(source, /\["display", "standalone"\]/)
+  assert.match(source, /\["background_color", "#fdfbf7"\]/)
+  assert.match(source, /\["theme_color", "#ffb7b2"\]/)
+  assert.match(source, /PWA manifest icon src must be root-relative/)
+  assert.match(source, /for \(const field of \["sizes", "type", "purpose"\]\)/)
+  assert.match(source, /PWA manifest icon \$\{icon\.src\} \$\{field\} must be/)
+  assert.match(source, /PWA manifest icon .* must be a valid PNG/)
+  assert.match(source, /expected \$\{sizeToken\}/)
+  assert.match(source, /"\/icons\/icon-192\.png"/)
+  assert.match(source, /"\/icons\/icon-512\.png"/)
+  assert.match(source, /"\/apple-touch-icon\.png"/)
+})
+
 test("data validation requires explicit vocabulary fields and matching levels", () => {
   const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
 

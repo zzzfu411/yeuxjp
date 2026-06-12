@@ -13,6 +13,10 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
+function readBuffer(relPath) {
+  return fs.readFileSync(path.join(root, relPath))
+}
+
 function fail(message) {
   failed = true
   console.error(`✗ ${message}`)
@@ -24,6 +28,21 @@ function pass(message) {
 
 function exists(relPath) {
   return fs.existsSync(path.join(root, relPath))
+}
+
+function isObject(value) {
+  return !!value && typeof value === "object" && !Array.isArray(value)
+}
+
+function readPngDimensions(relPath) {
+  const buffer = readBuffer(relPath)
+  const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+  if (buffer.length < 24 || !pngSignature.every((byte, index) => buffer[index] === byte)) return null
+  if (buffer.toString("ascii", 12, 16) !== "IHDR") return null
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+  }
 }
 
 function unique(name, values) {
@@ -132,19 +151,80 @@ function validatePwaManifest() {
     return
   }
 
+  if (!isObject(manifest)) {
+    fail("PWA manifest root must be an object")
+    return
+  }
+
+  const requiredFields = new Map([
+    ["start_url", "/"],
+    ["scope", "/"],
+    ["display", "standalone"],
+    ["background_color", "#fdfbf7"],
+    ["theme_color", "#ffb7b2"],
+  ])
+
+  for (const [field, expected] of requiredFields) {
+    if (manifest[field] !== expected) fail(`PWA manifest ${field} must be ${expected}`)
+    else pass(`PWA manifest ${field} is ${expected}`)
+  }
+
   const icons = Array.isArray(manifest.icons) ? manifest.icons : []
+  if (!icons.length) fail("PWA manifest icons must be a non-empty array")
+
   const iconSizes = new Set(icons.map((icon) => icon?.sizes).filter(Boolean))
   for (const size of ["192x192", "512x512"]) {
     if (!iconSizes.has(size)) fail(`PWA manifest is missing ${size} icon`)
   }
 
+  const requiredIcons = new Map([
+    ["/icons/icon-192.png", { sizes: "192x192", type: "image/png", purpose: "any maskable" }],
+    ["/icons/icon-512.png", { sizes: "512x512", type: "image/png", purpose: "any maskable" }],
+    ["/apple-touch-icon.png", { sizes: "180x180", type: "image/png", purpose: "any" }],
+  ])
+
   for (const icon of icons) {
-    if (!icon?.src || typeof icon.src !== "string") {
+    if (!isObject(icon) || typeof icon.src !== "string" || !icon.src) {
       fail("PWA manifest contains an icon without src")
       continue
     }
+
+    if (!icon.src.startsWith("/")) fail(`PWA manifest icon src must be root-relative: ${icon.src}`)
+
     const relPath = `public/${icon.src.replace(/^\//, "")}`
     requireFile(relPath, `PWA icon ${icon.src}`)
+
+    const required = requiredIcons.get(icon.src)
+    if (required) {
+      for (const field of ["sizes", "type", "purpose"]) {
+        if (icon[field] !== required[field]) {
+          fail(`PWA manifest icon ${icon.src} ${field} must be ${required[field]}`)
+        }
+      }
+    }
+
+    if (icon.type === "image/png" && exists(relPath)) {
+      const dimensions = readPngDimensions(relPath)
+      if (!dimensions) {
+        fail(`PWA manifest icon ${icon.src} must be a valid PNG`)
+        continue
+      }
+
+      const sizeTokens = typeof icon.sizes === "string" ? icon.sizes.split(/\s+/).filter(Boolean) : []
+      for (const sizeToken of sizeTokens) {
+        const match = sizeToken.match(/^(\d+)x(\d+)$/)
+        if (!match) {
+          fail(`PWA manifest icon ${icon.src} has invalid size token: ${sizeToken}`)
+          continue
+        }
+
+        const expectedWidth = Number(match[1])
+        const expectedHeight = Number(match[2])
+        if (dimensions.width !== expectedWidth || dimensions.height !== expectedHeight) {
+          fail(`PWA manifest icon ${icon.src} is ${dimensions.width}x${dimensions.height}, expected ${sizeToken}`)
+        }
+      }
+    }
   }
 }
 
