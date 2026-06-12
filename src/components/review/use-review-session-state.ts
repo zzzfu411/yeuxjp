@@ -1,11 +1,13 @@
 "use client"
 
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import {
   advanceReviewQueue,
   createReviewStats,
   getReviewCompletionStats,
   recordReviewAnswer,
+  shouldInvalidateReviewSession,
 } from "@/lib/review-session"
 
 export function useReviewSessionState<T>(initialQueue: T[]) {
@@ -15,6 +17,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null)
   const [initialCount] = useState(initialQueue.length)
   const [stats, setStats] = useState(createReviewStats)
+  const [isInvalidated, setIsInvalidated] = useState(false)
 
   const currentItem = queue[0] ?? null
   const isComplete = queue.length === 0
@@ -23,6 +26,21 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
   const completionStats = useMemo(() => {
     return getReviewCompletionStats(initialCount, stats)
   }, [initialCount, stats])
+
+  useEffect(() => {
+    const onLearningStore = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { action?: unknown } | undefined
+      if (!shouldInvalidateReviewSession(detail?.action)) return
+      answerPendingRef.current = false
+      setIsInvalidated(true)
+      setQueue([])
+      setSelectedAnswer(null)
+      setLastAnswerCorrect(null)
+    }
+
+    window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
+    return () => window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
+  }, [])
 
   const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean) => {
     if (selectedAnswer != null || answerPendingRef.current) return false
@@ -54,6 +72,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     selectedAnswer,
     lastAnswerCorrect,
     isAnswered,
+    isInvalidated,
     completionStats,
     recordAnswer,
     advance,

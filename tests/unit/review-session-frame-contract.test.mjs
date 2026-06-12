@@ -52,6 +52,7 @@ test("review sessions delegate repeated queue state to useReviewSessionState", (
   const source = reviewSessionSources()
 
   assert.equal(source.match(/useReviewSessionState\(/g)?.length, 4)
+  assert.equal(source.match(/review\.isInvalidated/g)?.length, 8)
   assert.doesNotMatch(source, /review\.queue/)
   assert.doesNotMatch(source, /setQueue/)
   assert.doesNotMatch(source, /advanceReviewQueue/)

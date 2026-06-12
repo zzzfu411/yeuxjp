@@ -57,9 +57,9 @@ export function MistakeReviewSession({
   if (review.isComplete) {
     return (
       <ReviewDone
-        title="错题复习完成"
+        title={review.isInvalidated ? "学习数据已更新，请重新开始复习" : "错题复习完成"}
         onExit={onExit}
-        stats={review.completionStats}
+        stats={review.isInvalidated ? undefined : review.completionStats}
       />
     )
   }

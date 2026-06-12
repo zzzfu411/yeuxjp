@@ -38,3 +38,7 @@ export function getReviewCompletionStats(initial: number, stats: ReviewStats): R
     repeated: stats.repeated,
   }
 }
+
+export function shouldInvalidateReviewSession(action: unknown): boolean {
+  return action === "restore" || action === "reset"
+}

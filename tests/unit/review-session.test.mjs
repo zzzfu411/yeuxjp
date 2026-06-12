@@ -29,3 +29,11 @@ test("review stats accumulate answers and completion display data", () => {
     repeated: 2,
   })
 })
+
+test("review sessions are invalidated only by learning data replacement actions", () => {
+  assert.equal(session.shouldInvalidateReviewSession("restore"), true)
+  assert.equal(session.shouldInvalidateReviewSession("reset"), true)
+  assert.equal(session.shouldInvalidateReviewSession("backup"), false)
+  assert.equal(session.shouldInvalidateReviewSession("rollback"), false)
+  assert.equal(session.shouldInvalidateReviewSession(undefined), false)
+})
