@@ -40,6 +40,12 @@ export interface LearningBackup {
   entries: Partial<Record<LearningBackupKey, string>>
 }
 
+type LearningStoreAction = "backup" | "restore" | "reset" | "rollback"
+type QueuedLearningNotification = () => void
+
+let transactionDepth = 0
+let queuedLearningNotifications: QueuedLearningNotification[] = []
+
 function parseStoredJson(value: string) {
   try {
     return { ok: true as const, value: JSON.parse(value) as unknown }
@@ -137,9 +143,30 @@ function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = 
   }
 }
 
-function notifyLearningStore(detail: { action: "backup" | "restore" | "reset" | "rollback"; keys: readonly string[] }) {
+function notifyLearningStore(detail: { action: LearningStoreAction; keys: readonly string[] }) {
   if (typeof window === "undefined") return
   window.dispatchEvent(new CustomEvent(LEARNING_STORE_EVENT, { detail }))
+}
+
+export function queueLearningNotification(emit: QueuedLearningNotification) {
+  if (typeof window === "undefined") return
+  if (transactionDepth > 0) {
+    queuedLearningNotifications.push(emit)
+    return
+  }
+  emit()
+}
+
+function flushQueuedLearningNotifications() {
+  const notifications = queuedLearningNotifications
+  queuedLearningNotifications = []
+  for (const emit of notifications) {
+    try {
+      emit()
+    } catch {
+      // A UI sync listener should not prevent later successful transaction notifications.
+    }
+  }
 }
 
 function snapshotLearningKeys() {
@@ -175,9 +202,9 @@ function applyLearningSnapshot(snapshot: Partial<Record<LearningBackupKey, strin
   }
 }
 
-function rollbackLearningKeys(snapshot: Partial<Record<LearningBackupKey, string | null>>) {
+function rollbackLearningKeys(snapshot: Partial<Record<LearningBackupKey, string | null>>, notify = true) {
   if (!applyLearningSnapshot(snapshot)) return false
-  notifyLearningStore({ action: "rollback", keys: BACKUP_KEYS })
+  if (notify) notifyLearningStore({ action: "rollback", keys: BACKUP_KEYS })
   return true
 }
 
@@ -188,14 +215,27 @@ export function getLearningBackupKeys() {
 export function runLearningStorageTransaction(commit: () => boolean) {
   const previous = snapshotLearningKeys()
   if (!previous) return false
+  const isOuterTransaction = transactionDepth === 0
+  const notificationStart = queuedLearningNotifications.length
 
+  transactionDepth += 1
+  let saved = false
   try {
-    if (commit()) return true
+    saved = commit()
   } catch {
     // Treat thrown storage/persistence failures like false commits so callers get rollback semantics.
+    saved = false
+  } finally {
+    transactionDepth -= 1
   }
 
-  rollbackLearningKeys(previous)
+  if (saved) {
+    if (isOuterTransaction) flushQueuedLearningNotifications()
+    return true
+  }
+
+  queuedLearningNotifications.length = notificationStart
+  rollbackLearningKeys(previous, isOuterTransaction)
   return false
 }
 

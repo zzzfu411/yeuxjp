@@ -1,6 +1,7 @@
 "use client"
 
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
+import { queueLearningNotification } from "@/lib/learning-store"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 import {
   applySrsResult,
@@ -78,7 +79,9 @@ export function writeSrsMap(storageKey: string, map: SrsMap): boolean {
 
 export function notifySrs(storageKey: string) {
   if (typeof window === "undefined") return
-  window.dispatchEvent(new CustomEvent(SRS_EVENT, { detail: { storageKey } }))
+  queueLearningNotification(() => {
+    window.dispatchEvent(new CustomEvent(SRS_EVENT, { detail: { storageKey } }))
+  })
 }
 
 export function enrollSrs(storageKey: string, id: string, now: number = Date.now()) {

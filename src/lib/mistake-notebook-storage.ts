@@ -1,5 +1,6 @@
 "use client"
 
+import { queueLearningNotification } from "@/lib/learning-store"
 import { normalizeMistakeList, type MistakeItem } from "@/lib/mistake-notebook-model"
 
 export const MISTAKE_NOTEBOOK_EVENT = "yasashi:mistake-notebook:update"
@@ -35,5 +36,7 @@ export function writeMistakeList(storageKey: string, list: readonly MistakeItem[
 
 export function notifyMistakeNotebook(storageKey: string) {
   if (typeof window === "undefined") return
-  window.dispatchEvent(new CustomEvent(MISTAKE_NOTEBOOK_EVENT, { detail: { storageKey } }))
+  queueLearningNotification(() => {
+    window.dispatchEvent(new CustomEvent(MISTAKE_NOTEBOOK_EVENT, { detail: { storageKey } }))
+  })
 }

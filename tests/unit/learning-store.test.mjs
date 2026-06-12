@@ -251,6 +251,55 @@ test("learning storage transactions roll back managed keys when commits throw", 
   assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
 })
 
+test("learning storage transactions delay queued notifications until the outer commit succeeds", () => {
+  const { events } = installWindow()
+
+  assert.equal(store.runLearningStorageTransaction(() => {
+    store.queueLearningNotification(() => {
+      window.dispatchEvent(new CustomEvent("queued:first", { detail: { ok: true } }))
+    })
+    assert.equal(events.length, 0)
+
+    assert.equal(store.runLearningStorageTransaction(() => {
+      store.queueLearningNotification(() => {
+        window.dispatchEvent(new CustomEvent("queued:nested", { detail: { ok: true } }))
+      })
+      assert.equal(events.length, 0)
+      return true
+    }), true)
+    assert.equal(events.length, 0)
+
+    return true
+  }), true)
+
+  assert.deepEqual(events.map((event) => event.type), ["queued:first", "queued:nested"])
+  assert.deepEqual(events.map((event) => event.detail), [{ ok: true }, { ok: true }])
+})
+
+test("learning storage transactions suppress queued notifications when a commit fails", () => {
+  const { events } = installWindow()
+
+  assert.equal(store.runLearningStorageTransaction(() => {
+    store.queueLearningNotification(() => {
+      window.dispatchEvent(new CustomEvent("queued:outer"))
+    })
+
+    assert.equal(store.runLearningStorageTransaction(() => {
+      store.queueLearningNotification(() => {
+        window.dispatchEvent(new CustomEvent("queued:nested"))
+      })
+      return false
+    }), false)
+
+    assert.equal(events.length, 0)
+    return false
+  }), false)
+
+  assert.deepEqual(events.map((event) => event.type), [store.LEARNING_STORE_EVENT])
+  assert.equal(events.at(-1).detail.action, "rollback")
+  assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
+})
+
 test("learning store events include changed keys for UI sync", () => {
   const { map, events } = installWindow()
   map.set(storage.STORAGE_KEYS.USER_PROFILE, '{"goal":"balanced"}')
