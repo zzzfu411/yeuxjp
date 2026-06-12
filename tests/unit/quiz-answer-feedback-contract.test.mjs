@@ -28,6 +28,8 @@ test("QuizAnswerFeedback owns particle, conjugation, explanation, and mistake pr
   assert.match(source, /ParticleFillFeedback/)
   assert.match(source, /ConjugationComparison/)
   assert.match(source, /isQuestionAnswerCorrect\(question, selectedOption\)/)
+  assert.match(source, /role="status"/)
+  assert.match(source, /aria-live="polite"/)
   assert.match(source, /question\.explanation/)
   assert.match(source, /href="\/review"/)
   assert.match(source, /isVerbKind/)

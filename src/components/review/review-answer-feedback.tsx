@@ -52,7 +52,7 @@ export function ReviewAnswerFeedback({
     isVerbForm(question.meta.askedForm.id)
 
   return (
-    <>
+    <div role="status" aria-live="polite" className="contents">
       {canShowParticle ? (
         <ParticleFillFeedback sentence={question.questionText!} selected={selectedDisplay} correct={question.correctAnswer} />
       ) : null}
@@ -85,6 +85,6 @@ export function ReviewAnswerFeedback({
           </>
         )}
       </div>
-    </>
+    </div>
   )
 }

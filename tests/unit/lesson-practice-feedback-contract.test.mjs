@@ -27,6 +27,8 @@ test("LessonPracticeFeedback owns correct/wrong lesson feedback copy", () => {
   assert.match(source, /export function LessonPracticeFeedback/)
   assert.match(source, /CheckCircle2/)
   assert.match(source, /XCircle/)
+  assert.match(source, /role="status"/)
+  assert.match(source, /aria-live="polite"/)
   assert.match(source, /正确答案：/)
   assert.match(source, /这道题已加入错题本/)
   assert.match(source, /已加入 SRS 复习队列/)

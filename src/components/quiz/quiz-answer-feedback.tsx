@@ -34,7 +34,7 @@ export function QuizAnswerFeedback({
   const isCorrect = isQuestionAnswerCorrect(question, selectedOption)
 
   return (
-    <>
+    <div role="status" aria-live="polite" className="contents">
       {mode === "particle" && question.questionText && (
         <ParticleFillFeedback
           sentence={question.questionText}
@@ -68,6 +68,6 @@ export function QuizAnswerFeedback({
           里集中复盘。
         </div>
       )}
-    </>
+    </div>
   )
 }

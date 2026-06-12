@@ -13,6 +13,8 @@ export function LessonPracticeFeedback({
 }) {
   return (
     <div
+      role="status"
+      aria-live="polite"
       className={cn(
         "mt-5 rounded-2xl border p-4 text-sm leading-relaxed",
         result === "correct"
