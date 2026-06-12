@@ -63,6 +63,41 @@ test("review visible ids include explicit marks and practiced progress items", (
   assert.deepEqual([...visible].sort(), ["a", "ka"])
 })
 
+test("review visible vocabulary ids include only ids that still exist in vocabulary data", () => {
+  const visible = visibility.buildReviewVisibleIdSet({
+    explicitIds: ["sur-g-1", "sur-g-999"],
+    itemType: "vocab",
+    items: {
+      practicedKnown: {
+        itemId: "day-v-1",
+        itemType: "vocab",
+        recognition: 0,
+        listening: 0,
+        meaning: 18,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: 1,
+      },
+      practicedStale: {
+        itemId: "flu-tech-999",
+        itemType: "vocab",
+        recognition: 0,
+        listening: 0,
+        meaning: 18,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: 1,
+      },
+    },
+  })
+
+  assert.deepEqual([...visible].sort(), ["day-v-1", "sur-g-1"])
+})
+
 test("review visibility filters kana ids and SRS maps through canonical kana ids", () => {
   const visible = new Set(["a", "ka", "sokuon:kitte"])
   assert.equal(visibility.isReviewableKanaId("a"), true)

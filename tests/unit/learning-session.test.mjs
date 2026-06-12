@@ -49,18 +49,26 @@ test("correct practice only enrolls reviewable kana and vocabulary SRS items", (
     answer: "きって",
   }), true)
   assert.equal(session.recordPracticeResult(progress, {
-    itemId: "vocab-1",
+    itemId: "sur-g-1",
     itemType: "vocab",
     mode: "meaning",
     correct: true,
-    answer: "vocab-1",
+    answer: "sur-g-1",
+  }), true)
+  assert.equal(session.recordPracticeResult(progress, {
+    itemId: "sur-g-999",
+    itemType: "vocab",
+    mode: "meaning",
+    correct: true,
+    answer: "sur-g-999",
   }), true)
 
   const kanaSrs = JSON.parse(store.get("yasashi.srs.kana.v1"))
   const vocabSrs = JSON.parse(store.get("yasashi.srs.vocab.v1"))
   assert.ok(kanaSrs.a)
   assert.equal(kanaSrs["sokuon:きって"], undefined)
-  assert.ok(vocabSrs["vocab-1"])
+  assert.ok(vocabSrs["sur-g-1"])
+  assert.equal(vocabSrs["sur-g-999"], undefined)
 })
 
 test("wrong practice records progress but does not enroll SRS", () => {

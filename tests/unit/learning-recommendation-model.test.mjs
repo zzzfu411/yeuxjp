@@ -11,6 +11,12 @@ const kana = [
   { romaji: "sokuon", hiragana: "sokuon", katakana: "SOKUON", type: "special" },
 ]
 
+const learnedSurvivalIds = [
+  ...Array.from({ length: 30 }, (_, index) => `sur-g-${index + 1}`),
+  ...Array.from({ length: 81 }, (_, index) => `sur-v-${index + 1}`),
+  ...Array.from({ length: 19 }, (_, index) => `sur-adj-${index + 1}`),
+]
+
 test("learning recommendation model prefers the next starter lesson over the skill fallback", () => {
   const model = recommendation.buildLearningRecommendationModel({
     kana,
@@ -27,8 +33,6 @@ test("learning recommendation model prefers the next starter lesson over the ski
 })
 
 test("learning recommendation model falls back to the recommended skill after lessons", () => {
-  const learnedSurvivalIds = Array.from({ length: 130 }, (_, index) => `sur-test-${index}`)
-
   const model = recommendation.buildLearningRecommendationModel({
     kana,
     isKanaMastered: () => true,
@@ -47,7 +51,7 @@ test("learning recommendation model uses review when the recommended skill is un
   const model = recommendation.buildLearningRecommendationModel({
     kana,
     isKanaMastered: () => true,
-    learnedVocabIds: Array.from({ length: 130 }, (_, index) => `sur-test-${index}`),
+    learnedVocabIds: learnedSurvivalIds,
     nextLesson: null,
     skillTree: [],
   })

@@ -80,14 +80,14 @@ test("successful correct practice records progress and enrolls review", () => {
   const { map } = installLocalStorage()
 
   assert.equal(session.recordPracticeResult(createProgressApi(), {
-    itemId: "vocab-1",
+    itemId: "sur-g-1",
     itemType: "vocab",
     mode: "meaning",
     correct: true,
-    answer: "vocab-1",
+    answer: "sur-g-1",
   }), true)
 
   assert.equal(JSON.parse(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS)).length, 1)
-  assert.ok(JSON.parse(map.get(storage.STORAGE_KEYS.ITEM_PROGRESS))["vocab-1"])
-  assert.ok(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_VOCAB))["vocab-1"])
+  assert.ok(JSON.parse(map.get(storage.STORAGE_KEYS.ITEM_PROGRESS))["sur-g-1"])
+  assert.ok(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_VOCAB))["sur-g-1"])
 })

@@ -31,7 +31,7 @@ test("vocabulary ids keep level prefixes aligned with dynamic chunk loading", as
 })
 
 test("learned vocabulary ids are summarized by stable level prefixes", () => {
-  const summary = stats.summarizeLearnedVocabIds(["sur-g-1", "sur-v-1", "day-v-1", "flu-abs-1", "unknown-1"])
+  const summary = stats.summarizeLearnedVocabIds(["sur-g-1", "sur-v-1", "day-v-1", "flu-abs-1", "sur-g-999", "unknown-1"])
 
   assert.equal(summary.survival.done, 2)
   assert.equal(summary.daily.done, 1)

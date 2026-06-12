@@ -1,16 +1,11 @@
 import type { VocabLevel } from "./types"
+import { getKnownVocabularyLevelForId } from "./id-registry"
 
 export const vocabLevelCounts = {
   survival: 505,
   daily: 240,
   fluent: 195,
 } satisfies Record<VocabLevel, number>
-
-const vocabLevelPrefixes = {
-  survival: "sur-",
-  daily: "day-",
-  fluent: "flu-",
-} satisfies Record<VocabLevel, string>
 
 export type VocabLevelStat = {
   total: number
@@ -19,10 +14,7 @@ export type VocabLevelStat = {
 }
 
 export function getVocabLevelForId(id: string): VocabLevel | null {
-  for (const [level, prefix] of Object.entries(vocabLevelPrefixes) as [VocabLevel, string][]) {
-    if (id.startsWith(prefix)) return level
-  }
-  return null
+  return getKnownVocabularyLevelForId(id)
 }
 
 export function summarizeLearnedVocabIds(learnedIds: Iterable<string>): Record<VocabLevel, VocabLevelStat> {

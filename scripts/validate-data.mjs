@@ -433,8 +433,76 @@ for (const { file, defaultLevel } of vocabFiles) {
   }
 }
 unique("vocabulary id", vocabIds)
-
 const vocabIdSet = new Set(vocabIds)
+
+const vocabRegistryText = read("src/data/vocabulary/id-registry.ts")
+if (!vocabRegistryText.includes("VOCAB_ID_RANGES")) {
+  fail("vocabulary id registry is missing range definitions")
+}
+if (!vocabRegistryText.includes("EXACT_VOCAB_IDS")) {
+  fail("vocabulary id registry is missing exact id definitions")
+}
+
+const rangeMatches = Array.from(
+  vocabRegistryText.matchAll(/\{\s*level:\s*["']([^"']+)["'],\s*prefix:\s*["']([^"']+)["'],\s*from:\s*(\d+),\s*to:\s*(\d+)\s*\}/g),
+  (match) => ({
+    level: match[1],
+    prefix: match[2],
+    from: Number(match[3]),
+    to: Number(match[4]),
+  })
+)
+const exactMatches = Array.from(
+  vocabRegistryText.matchAll(/\[\s*["']([^"']+)["'],\s*["']([^"']+)["']\s*\]/g),
+  (match) => ({ id: match[1], level: match[2] })
+)
+
+function registryLevelForVocabId(id) {
+  const exact = exactMatches.find((entry) => entry.id === id)
+  if (exact) return exact.level
+  for (const range of rangeMatches) {
+    if (!id.startsWith(range.prefix)) continue
+    const suffix = id.slice(range.prefix.length)
+    if (!/^[1-9]\d*$/.test(suffix)) continue
+    const n = Number(suffix)
+    if (n >= range.from && n <= range.to) return range.level
+  }
+  return null
+}
+
+const registryCoveredIds = new Set()
+for (const { id, level } of exactMatches) {
+  if (!vocabIdSet.has(id)) fail(`vocabulary id registry exact id is not in vocabulary data: ${id}`)
+  if (!vocabLevels.has(level)) fail(`vocabulary id registry exact id ${id} has unknown level: ${level}`)
+  registryCoveredIds.add(id)
+}
+
+for (const range of rangeMatches) {
+  if (!vocabLevels.has(range.level)) fail(`vocabulary id registry range ${range.prefix} has unknown level: ${range.level}`)
+  if (!Number.isInteger(range.from) || !Number.isInteger(range.to) || range.from > range.to) {
+    fail(`vocabulary id registry range ${range.prefix} has invalid bounds`)
+    continue
+  }
+  for (let n = range.from; n <= range.to; n += 1) {
+    const id = `${range.prefix}${n}`
+    if (!vocabIdSet.has(id)) fail(`vocabulary id registry range includes missing vocabulary id: ${id}`)
+    registryCoveredIds.add(id)
+  }
+}
+
+for (const id of vocabIds) {
+  const level = registryLevelForVocabId(id)
+  if (!level) fail(`vocabulary id registry does not cover vocabulary id: ${id}`)
+  const expectedPrefix = vocabLevelPrefixes.get(level)
+  if (expectedPrefix && !id.startsWith(expectedPrefix)) {
+    fail(`vocabulary id registry maps ${id} to ${level}, but its id prefix is not ${expectedPrefix}`)
+  }
+}
+
+if (registryCoveredIds.size === vocabIdSet.size) {
+  pass(`vocabulary id registry covers current ids (${registryCoveredIds.size})`)
+}
+
 const kanaIdSet = new Set(kanaRomaji)
 
 let grammarIds = []

@@ -24,10 +24,10 @@ test("home page model filters due mistakes to existing notebook entries and tota
     completedLessonIds: new Set(),
     items: {
       a: item({ itemId: "a", itemType: "kana", recognition: 18, attempts: 1, correct: 1 }),
-      v1: item({ itemId: "v1", itemType: "vocab", meaning: 18, attempts: 1, correct: 1 }),
+      "sur-g-1": item({ itemId: "sur-g-1", itemType: "vocab", meaning: 18, attempts: 1, correct: 1 }),
     },
     kanaDueIds: ["a", "ka", "sokuon:kitte"],
-    vocabDueIds: ["v1", "stale-vocab"],
+    vocabDueIds: ["sur-g-1", "sur-g-999"],
     mistakeDueIds: ["m1", "ghost"],
     mistakeIds: ["m1"],
   })
@@ -45,14 +45,30 @@ test("home page model includes explicit mastered and learned ids in visible due 
     completedLessonIds: new Set(),
     items: {},
     masteredKanaIds: ["ka"],
-    learnedVocabIds: ["v2"],
+    learnedVocabIds: ["sur-g-2"],
     kanaDueIds: ["ka", "ta"],
-    vocabDueIds: ["v2", "ghost-vocab"],
+    vocabDueIds: ["sur-g-2", "sur-g-999"],
     mistakeDueIds: [],
     mistakeIds: [],
   })
 
   assert.equal(home.totalDue, 2)
+})
+
+test("home page model ignores stale vocabulary ids when counting due work", () => {
+  const home = model.buildHomePageModel({
+    completedLessonIds: new Set(),
+    items: {
+      "sur-g-999": item({ itemId: "sur-g-999", itemType: "vocab", meaning: 18, attempts: 1, correct: 1 }),
+    },
+    learnedVocabIds: ["sur-g-999"],
+    kanaDueIds: [],
+    vocabDueIds: ["sur-g-999"],
+    mistakeDueIds: [],
+    mistakeIds: [],
+  })
+
+  assert.equal(home.totalDue, 0)
 })
 
 test("home page model resolves completed starter courses to review and finds the weakest item", () => {

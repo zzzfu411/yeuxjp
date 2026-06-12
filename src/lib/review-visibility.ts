@@ -1,4 +1,5 @@
 import { kanaData } from "@/data/kana-data"
+import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import type { ItemProgressMap, PracticeItemType } from "@/lib/learning-progress-model"
 import type { SrsMap } from "@/lib/srs-model"
 
@@ -22,6 +23,7 @@ export function buildReviewVisibleIdSet({
 
   for (const id of explicitIds) {
     if (itemType === "kana" && !isReviewableKanaId(id)) continue
+    if (itemType === "vocab" && !isKnownVocabularyId(id)) continue
     visible.add(id)
   }
 
@@ -30,6 +32,7 @@ export function buildReviewVisibleIdSet({
   for (const item of Object.values(items)) {
     if (item.itemType !== itemType || item.attempts <= 0) continue
     if (itemType === "kana" && !isReviewableKanaId(item.itemId)) continue
+    if (itemType === "vocab" && !isKnownVocabularyId(item.itemId)) continue
     visible.add(item.itemId)
   }
 

@@ -3,6 +3,7 @@
 import { enrollSrs } from "@/lib/srs"
 import { runLearningStorageTransaction } from "@/lib/learning-store"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 import type { PracticeResult } from "@/lib/learning-progress"
 import type { useLearningProgress } from "@/lib/learning-progress"
@@ -23,6 +24,7 @@ export function enrollReviewItem(itemType: PracticeResult["itemType"], itemId: s
   const storageKey = getReviewStorageKey(itemType)
   if (!storageKey) return true
   if (itemType === "kana" && !isReviewableKanaId(itemId)) return true
+  if (itemType === "vocab" && !isKnownVocabularyId(itemId)) return true
   return enrollSrs(storageKey, itemId)
 }
 
