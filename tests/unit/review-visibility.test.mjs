@@ -6,11 +6,23 @@ const visibility = await loadTsModule("src/lib/review-visibility.ts")
 
 test("review visible ids include explicit marks and practiced progress items", () => {
   const visible = visibility.buildReviewVisibleIdSet({
-    explicitIds: ["a"],
+    explicitIds: ["a", "sokuon:kitte"],
     itemType: "kana",
     items: {
       ka: {
         itemId: "ka",
+        itemType: "kana",
+        recognition: 18,
+        listening: 0,
+        meaning: 0,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: 1,
+      },
+      practicedSokuon: {
+        itemId: "sokuon:kitte",
         itemType: "kana",
         recognition: 18,
         listening: 0,

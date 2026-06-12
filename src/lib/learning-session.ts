@@ -3,7 +3,7 @@
 import { enrollSrs } from "@/lib/srs"
 import { runLearningStorageTransaction } from "@/lib/learning-store"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
-import { isReviewableKanaId } from "@/lib/review-questions"
+import { isReviewableKanaId } from "@/lib/review-visibility"
 import type { PracticeResult } from "@/lib/learning-progress"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"

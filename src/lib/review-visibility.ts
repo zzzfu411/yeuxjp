@@ -18,12 +18,18 @@ export function buildReviewVisibleIdSet({
   items?: ItemProgressMap
   itemType: ReviewItemType
 }) {
-  const visible = new Set(explicitIds)
+  const visible = new Set<string>()
+
+  for (const id of explicitIds) {
+    if (itemType === "kana" && !isReviewableKanaId(id)) continue
+    visible.add(id)
+  }
 
   if (!items) return visible
 
   for (const item of Object.values(items)) {
     if (item.itemType !== itemType || item.attempts <= 0) continue
+    if (itemType === "kana" && !isReviewableKanaId(item.itemId)) continue
     visible.add(item.itemId)
   }
 
