@@ -66,7 +66,7 @@ export function SemanticsFocusModal({
           <div className="space-y-5">
             <div className="flex items-center gap-2">
               <div className="h-px bg-border flex-1" />
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Contextual Examples</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">语境例句</span>
               <div className="h-px bg-border flex-1" />
             </div>
 
@@ -79,7 +79,7 @@ export function SemanticsFocusModal({
                   </div>
                   <div className="text-base text-muted-foreground">{example.translation}</div>
                   <div className="mt-3 pt-3 border-t border-border/50 text-sm font-medium text-primary flex items-start gap-2">
-                    <span className="shrink-0">Tip</span>
+                    <span className="shrink-0">提示</span>
                     <span>{example.nuance}</span>
                   </div>
                 </div>
@@ -91,13 +91,13 @@ export function SemanticsFocusModal({
 
       <div className="p-4 border-t bg-muted/20 flex justify-between items-center shrink-0">
         <Link href={prevHref} className={buttonVariants({ variant: "ghost", className: "gap-2 pl-2" })}>
-          <ChevronLeft className="w-5 h-5" /> Prev
+          <ChevronLeft className="w-5 h-5" /> 上一条
         </Link>
         <div className="text-sm text-muted-foreground font-mono">
           {selectedPosition} / {total}
         </div>
         <Link href={nextHref} className={buttonVariants({ variant: "ghost", className: "gap-2 pr-2" })}>
-          Next <ChevronRight className="w-5 h-5" />
+          下一条 <ChevronRight className="w-5 h-5" />
         </Link>
       </div>
     </UrlControlledReferenceModal>

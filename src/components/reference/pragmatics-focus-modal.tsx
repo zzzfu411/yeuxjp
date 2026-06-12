@@ -106,13 +106,13 @@ export function PragmaticsFocusModal({
 
       <div className="p-4 border-t bg-muted/20 flex justify-between items-center shrink-0">
         <Link href={prevHref} className={buttonVariants({ variant: "ghost", className: "gap-2 pl-2" })}>
-          <ChevronLeft className="w-5 h-5" /> Prev
+          <ChevronLeft className="w-5 h-5" /> 上一条
         </Link>
         <div className="text-sm text-muted-foreground font-mono">
           {selectedPosition} / {total}
         </div>
         <Link href={nextHref} className={buttonVariants({ variant: "ghost", className: "gap-2 pr-2" })}>
-          Next <ChevronRight className="w-5 h-5" />
+          下一条 <ChevronRight className="w-5 h-5" />
         </Link>
       </div>
     </UrlControlledReferenceModal>

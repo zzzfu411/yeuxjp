@@ -6,13 +6,13 @@ import { grammarData, type Level } from "@/data/grammar-data"
 import { filterGrammarPoints, GRAMMAR_LEVELS, parseGrammarLevel } from "@/lib/grammar-page-model"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Modal } from "@/components/ui/modal"
-import { BookOpen, ChevronLeft, ChevronRight, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { SpeakButton } from "@/components/ui/speak-button"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
+import { GrammarFocusModal } from "@/components/reference/grammar-focus-modal"
+import { GrammarPointList } from "@/components/reference/grammar-point-list"
 import { useIndexedModalNavigation } from "@/lib/use-indexed-modal-navigation"
 
 export function GrammarReferencePage() {
@@ -104,119 +104,19 @@ export function GrammarReferencePage() {
         ))}
       </div>
 
-      {/* Grammar List (Restored Detailed View) */}
-      <div className="grid gap-8">
-        {currentPoints.map((point, index) => (
-          <div 
-            key={point.id} 
-            onClick={() => openAt(index)}
-            className="group cursor-pointer flex flex-col bg-card border rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-primary/50 relative"
-          >
-            {/* Decoration */}
-            <div className="absolute top-0 right-0 p-4 opacity-5 text-6xl font-black select-none pointer-events-none group-hover:opacity-10 transition-opacity">
-               {activeLevel}
-            </div>
-
-            <div className="p-6 border-b bg-secondary/30">
-              <div className="flex items-center gap-3 mb-2 relative z-10">
-                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shadow-sm group-hover:scale-110 transition-transform">
-                   {index + 1}
-                 </span>
-                 <h2 className="text-xl font-bold group-hover:text-primary transition-colors">{point.title}</h2>
-              </div>
-              <p className="text-muted-foreground leading-relaxed relative z-10">{point.explanation}</p>
-            </div>
-            
-            <div className="p-6 space-y-6">
-               <div className="bg-muted/50 p-4 rounded-lg border border-border/50">
-                 <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider flex items-center gap-2">
-                   Structure
-                   <div className="h-px bg-border flex-1"></div>
-                 </div>
-                 <code className="text-lg font-mono font-bold text-primary block">{point.structure}</code>
-               </div>
-
-               <div className="space-y-4">
-                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                   Examples
-                   <div className="h-px bg-border flex-1"></div>
-                 </div>
-                 <div className="grid gap-4">
-                   {point.examples.map((ex, i) => (
-                     <div key={i} className="pl-4 border-l-2 border-primary/30 space-y-1 hover:border-primary transition-colors">
-                       <div className="text-lg font-medium tracking-wide">{ex.japanese}</div>
-                       <div className="text-sm text-muted-foreground italic font-serif">{ex.romaji}</div>
-                       <div className="text-sm text-foreground/80">{ex.meaning}</div>
-                     </div>
-                   ))}
-                 </div>
-               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <GrammarPointList points={currentPoints} activeLevel={activeLevel} onOpen={openAt} />
 
       <NextStepCard />
 
-      {/* Focus Modal */}
-      <Modal isOpen={isOpen} onClose={close} className="max-w-3xl h-[85vh] flex flex-col p-0 overflow-hidden">
-        {selectedPoint && (
-          <>
-            {/* Modal Content - Scrollable */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-8">
-              <div className="space-y-4 text-center pb-6 border-b">
-                <div className="flex items-center justify-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
-                  <BookOpen className="w-4 h-4" />
-                  {selectedPoint.level} Grammar No.{selectedPosition}
-                </div>
-                <h2 className="text-4xl font-bold tracking-tight">{selectedPoint.title}</h2>
-                <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">{selectedPoint.explanation}</p>
-              </div>
-
-              <div className="space-y-8">
-                 <div className="bg-primary/5 p-6 rounded-xl border border-primary/20 text-center">
-                   <div className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Structure</div>
-                   <code className="text-3xl font-mono font-bold text-primary block">{selectedPoint.structure}</code>
-                 </div>
-
-                 <div className="space-y-6">
-                   <div className="flex items-center gap-4">
-                     <div className="h-px bg-border flex-1"></div>
-                     <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Examples</div>
-                     <div className="h-px bg-border flex-1"></div>
-                   </div>
-                   
-                   <div className="grid gap-6">
-                     {selectedPoint.examples.map((ex, i) => (
-                       <div key={i} className="bg-card p-6 rounded-xl border shadow-sm space-y-2">
-                         <div className="flex items-start justify-between gap-3">
-                           <div className="text-2xl font-medium tracking-wide text-foreground">{ex.japanese}</div>
-                           <SpeakButton text={ex.japanese} label="朗读例句" className="shrink-0" />
-                         </div>
-                         <div className="text-base text-primary/80 font-serif italic">{ex.romaji}</div>
-                         <div className="text-lg text-muted-foreground">{ex.meaning}</div>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-              </div>
-            </div>
-
-            {/* Navigation Footer - Fixed */}
-            <div className="p-4 border-t bg-muted/20 flex justify-between items-center shrink-0">
-              <Button variant="ghost" onClick={goPrev} className="gap-2 pl-2">
-                <ChevronLeft className="w-5 h-5" /> Previous
-              </Button>
-              <div className="text-sm text-muted-foreground font-mono">
-                {selectedPosition} / {currentPoints.length}
-              </div>
-              <Button variant="ghost" onClick={goNext} className="gap-2 pr-2">
-                Next <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          </>
-        )}
-      </Modal>
+      <GrammarFocusModal
+        point={selectedPoint}
+        isOpen={isOpen}
+        selectedPosition={selectedPosition}
+        total={currentPoints.length}
+        onClose={close}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
     </div>
   )
 }
