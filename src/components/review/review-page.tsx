@@ -59,6 +59,7 @@ export function ReviewPage() {
   }
   const enrollKanaMissing = () => setReviewSaveError(!enrollMissingReviewItems(dashboard.kanaEnrollMissing, kanaSrs.enroll))
   const enrollVocabMissing = () => setReviewSaveError(!enrollMissingReviewItems(dashboard.vocabEnrollMissing, vocabSrs.enroll))
+  const enrollMistakeMissing = () => setReviewSaveError(!enrollMissingReviewItems(dashboard.mistakeEnrollMissing, (id) => mistakeSrs.grade(id, "again")))
   const removeMistake = (id: string) => setReviewSaveError(!mistakes.remove(id))
   const clearMistakes = () => setReviewSaveError(!mistakes.clear())
 
@@ -89,9 +90,11 @@ export function ReviewPage() {
       mistakes={{
         due: dashboard.counts.mistakesDue,
         total: dashboard.totals.mistakes,
+        enrollMissing: dashboard.mistakeEnrollMissing.length,
         recent: mistakes.list,
         saveError: reviewSaveError,
         onStart: () => startSession({ deck: "mistakes", ids: dashboard.dueMistakeIds }),
+        onEnrollMissing: enrollMistakeMissing,
         onClear: clearMistakes,
         onRemove: removeMistake,
       }}

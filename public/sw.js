@@ -92,6 +92,14 @@ async function tryCachePut(cache, request, response) {
   }
 }
 
+function isCacheableStaticAsset(request, requestUrl) {
+  const isAnimCjkSvg = requestUrl.pathname.startsWith("/animcjk/") && requestUrl.pathname.endsWith(".svg");
+  return request.destination === "image" ||
+    request.destination === "style" ||
+    request.destination === "script" ||
+    isAnimCjkSvg;
+}
+
 async function networkFirstNavigation(request) {
   const cache = await caches.open(NAVIGATION_CACHE_NAME);
 
@@ -110,22 +118,30 @@ async function networkFirstNavigation(request) {
   }
 }
 
-async function cacheFirstStaticAsset(request, requestUrl) {
+async function refreshStaticAssetCache(request, requestUrl) {
+  if (!isCacheableStaticAsset(request, requestUrl)) return;
+
+  try {
+    const response = await fetch(request, { cache: "no-cache" });
+    if (!response.ok) return;
+    const cache = await caches.open(STATIC_CACHE_NAME);
+    await tryCachePut(cache, request, response.clone());
+  } catch {
+    // Static asset refresh is best effort so cached assets remain usable offline.
+  }
+}
+
+async function cacheFirstStaticAsset(request, requestUrl, event) {
   const cached = await caches.match(request);
-  if (cached) return cached;
+  if (cached) {
+    event.waitUntil(refreshStaticAssetCache(request, requestUrl));
+    return cached;
+  }
 
   const response = await fetch(request);
-  const copy = response.clone();
-  const isAnimCjkSvg = requestUrl.pathname.startsWith("/animcjk/") && requestUrl.pathname.endsWith(".svg");
-  const isStaticAsset =
-    request.destination === "image" ||
-    request.destination === "style" ||
-    request.destination === "script" ||
-    isAnimCjkSvg;
-
-  if (response.ok && isStaticAsset) {
+  if (response.ok && isCacheableStaticAsset(request, requestUrl)) {
     const cache = await caches.open(STATIC_CACHE_NAME);
-    await tryCachePut(cache, request, copy);
+    await tryCachePut(cache, request, response.clone());
   }
 
   return response;
@@ -143,5 +159,5 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(cacheFirstStaticAsset(request, requestUrl).catch(() => Response.error()));
+  event.respondWith(cacheFirstStaticAsset(request, requestUrl, event).catch(() => Response.error()));
 });

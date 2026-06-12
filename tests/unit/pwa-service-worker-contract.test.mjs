@@ -108,13 +108,17 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /const staticCached = await caches\.match\(request\)/)
   assert.match(sw, /if \(staticCached\) return staticCached/)
   assert.match(sw, /caches\.match\(OFFLINE_FALLBACK_URL\)/)
-  assert.match(sw, /cacheFirstStaticAsset\(request, requestUrl\)/)
+  assert.match(sw, /function isCacheableStaticAsset\(request, requestUrl\)/)
+  assert.match(sw, /async function refreshStaticAssetCache\(request, requestUrl\)/)
+  assert.match(sw, /fetch\(request, \{ cache: "no-cache" \}\)/)
+  assert.match(sw, /cacheFirstStaticAsset\(request, requestUrl, event\)/)
+  assert.match(sw, /event\.waitUntil\(refreshStaticAssetCache\(request, requestUrl\)\)/)
   assert.match(sw, /request\.destination === "image"/)
   assert.match(sw, /request\.destination === "style"/)
   assert.match(sw, /request\.destination === "script"/)
   assert.match(sw, /requestUrl\.pathname\.startsWith\("\/animcjk\/"\)/)
   assert.match(sw, /requestUrl\.pathname\.endsWith\("\.svg"\)/)
-  assert.match(sw, /await tryCachePut\(cache, request, copy\)/)
+  assert.match(sw, /await tryCachePut\(cache, request, response\.clone\(\)\)/)
   assert.doesNotMatch(sw, /localStorage/)
   assert.doesNotMatch(sw, /yasashi\.learning/)
   assert.doesNotMatch(sw, /yasashi\.srs/)
@@ -229,6 +233,72 @@ test("service worker activation removes only outdated app-owned caches", async (
   await activatePromise
   assert.deepEqual(deleted.sort(), ["yasashi-navigation-v4", "yasashi-static-v4"])
   assert.equal(clientsClaimed, true)
+})
+
+test("service worker serves cached static assets while refreshing them in the background", async () => {
+  let fetchHandler = null
+  const cacheEntries = new Map([
+    ["https://example.test/icons/icon-192.png", new Response("old icon", { status: 200 })],
+  ])
+  const putCalls = []
+  const fetchCalls = []
+  const sandbox = {
+    caches: {
+      async match(request) {
+        return cacheEntries.get(request.url) ?? null
+      },
+      async open() {
+        return {
+          async put(request, response) {
+            putCalls.push(request.url)
+            cacheEntries.set(request.url, response)
+          },
+        }
+      },
+    },
+    async fetch(request, init) {
+      fetchCalls.push({ url: request.url, cache: init?.cache })
+      return new Response("new icon", { status: 200 })
+    },
+    self: {
+      location: { origin: "https://example.test" },
+      addEventListener(type, handler) {
+        if (type === "fetch") fetchHandler = handler
+      },
+      skipWaiting() {},
+      clients: { claim() {} },
+    },
+    URL,
+    Response,
+    Promise,
+  }
+  sandbox.globalThis = sandbox
+
+  vm.runInNewContext(sw, sandbox)
+  assert.equal(typeof fetchHandler, "function")
+
+  let responded = null
+  const waitUntilPromises = []
+  fetchHandler({
+    request: {
+      method: "GET",
+      mode: "no-cors",
+      destination: "image",
+      url: "https://example.test/icons/icon-192.png",
+    },
+    respondWith(promise) {
+      responded = promise
+    },
+    waitUntil(promise) {
+      waitUntilPromises.push(promise)
+    },
+  })
+
+  assert.equal(await (await responded).text(), "old icon")
+  await Promise.all(waitUntilPromises)
+  assert.deepEqual(fetchCalls, [{ url: "https://example.test/icons/icon-192.png", cache: "no-cache" }])
+  assert.deepEqual(putCalls, ["https://example.test/icons/icon-192.png"])
+  assert.equal(await cacheEntries.get("https://example.test/icons/icon-192.png").text(), "new icon")
 })
 
 test("PWA offline E2E verifies visited-page cache, fallback, and local state preservation", () => {

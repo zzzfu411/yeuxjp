@@ -162,6 +162,22 @@ test("gradeSrs creates missing items before applying a result", () => {
   assert.equal(events.length, 1)
 })
 
+test("gradeSrs creates missing again items as immediately due", () => {
+  const { map, events } = installWindow()
+  const now = 1_700_000_000_000
+
+  assert.equal(storage.gradeSrs("deck", "mistake:kana-a", "again", now), true)
+
+  const deck = JSON.parse(map.get("deck"))
+  assert.equal(deck["mistake:kana-a"].box, 0)
+  assert.equal(deck["mistake:kana-a"].dueAt, now)
+  assert.equal(deck["mistake:kana-a"].createdAt, now)
+  assert.equal(deck["mistake:kana-a"].lastReviewedAt, now)
+  assert.equal(deck["mistake:kana-a"].right, 0)
+  assert.equal(deck["mistake:kana-a"].wrong, 1)
+  assert.equal(events.length, 1)
+})
+
 test("setSrsState, removeSrs, and clearSrs persist changes and notify listeners", () => {
   const { map, events } = installWindow()
   const now = 1_700_000_000_000

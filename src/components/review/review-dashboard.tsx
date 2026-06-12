@@ -40,9 +40,11 @@ export interface ReviewDashboardProps {
   mistakes: {
     due: number
     total: number
+    enrollMissing: number
     recent: MistakeItem[]
     saveError: boolean
     onStart: () => void
+    onEnrollMissing: () => void
     onClear: () => void
     onRemove: (id: string) => void
   }
@@ -133,7 +135,11 @@ export function ReviewDashboard({
           startDisabled={!mistakes.due}
           startTestId="review-start-mistakes"
           extra={
-            mistakes.total ? (
+            mistakes.enrollMissing > 0 ? (
+              <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={mistakes.onEnrollMissing}>
+                初始化复习（{mistakes.enrollMissing}）
+              </Button>
+            ) : mistakes.total ? (
               <Button type="button" variant="ghost" size="sm" className="rounded-full" onClick={mistakes.onClear}>
                 清空错题本
               </Button>

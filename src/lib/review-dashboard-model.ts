@@ -44,6 +44,7 @@ export type ReviewDashboardModel = {
   vocabDueIds: string[]
   kanaEnrollMissing: string[]
   vocabEnrollMissing: string[]
+  mistakeEnrollMissing: string[]
   todayQueue: TodayReviewItem[]
   totalEnrolled: number
   totalDue: number
@@ -100,6 +101,7 @@ export function buildReviewDashboardModel({
   const visibleMistakeSrsMap = filterSrsMapByIds(mistakeSrsMap, mistakeIdSet)
   const kanaEnrollMissing = findMissingSrsEnrollments(visibleKanaIds, kanaSrsMap)
   const vocabEnrollMissing = findMissingSrsEnrollments(visibleVocabIds, vocabSrsMap)
+  const mistakeEnrollMissing = findMissingSrsEnrollments(mistakeIdSet, mistakeSrsMap)
   const todayQueue = buildTodayReviewQueue({
     dueMistakeIds,
     kanaDueIds: reviewableKanaDueIds,
@@ -126,6 +128,7 @@ export function buildReviewDashboardModel({
     vocabDueIds: visibleVocabDueIds,
     kanaEnrollMissing,
     vocabEnrollMissing,
+    mistakeEnrollMissing,
     todayQueue,
     totalEnrolled: totals.kana + totals.vocab + totals.mistakes,
     totalDue: counts.kanaDue + counts.vocabDue + counts.mistakesDue,
