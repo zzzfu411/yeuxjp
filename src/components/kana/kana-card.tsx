@@ -23,8 +23,6 @@ export function KanaCard({
 }: KanaCardProps) {
   const mainChar = mode === "hiragana" ? kana.hiragana : kana.katakana
   const subChar = mode === "hiragana" ? kana.katakana : kana.hiragana
-  
-  const hasStrokes = propHasStrokes ?? (!!kana.strokes && mode === "hiragana");
 
   return (
     <button
@@ -44,14 +42,14 @@ export function KanaCard({
         <Volume2 className="w-3 h-3 sm:w-4 sm:h-4 text-primary/60" />
       </div>
       
-      {hasStrokes && (
-        <div className="absolute bottom-1.5 right-2 opacity-30 group-hover:opacity-100 transition-opacity" title="Writing Practice Available">
+      {propHasStrokes && (
+        <div className="absolute bottom-1.5 right-2 opacity-30 group-hover:opacity-100 transition-opacity" title="笔顺可用">
           <PenTool className="w-3 h-3 text-primary" />
         </div>
       )}
 
       {mastered && (
-        <div className="absolute bottom-1.5 left-2 opacity-70" title="Mastered">
+        <div className="absolute bottom-1.5 left-2 opacity-70" title="已掌握">
           <CheckCircle2 className="w-3 h-3 text-primary" />
         </div>
       )}
