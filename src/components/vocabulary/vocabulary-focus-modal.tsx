@@ -30,10 +30,25 @@ export function VocabularyFocusModal({
   onPlay: () => void
   onToggleLearned: () => void
 }) {
+  const titleId = "vocabulary-focus-modal-title"
+  const descriptionId = "vocabulary-focus-modal-description"
+
   return (
-    <Modal isOpen={vocab !== null} onClose={onClose} className="max-w-xl h-[70vh] flex flex-col p-0 overflow-hidden rounded-2xl">
+    <Modal
+      isOpen={vocab !== null}
+      onClose={onClose}
+      className="max-w-xl h-[70vh] flex flex-col p-0 overflow-hidden rounded-2xl"
+      ariaLabelledBy={titleId}
+      ariaDescribedBy={descriptionId}
+    >
       {vocab && (
         <>
+          <h2 id={titleId} className="sr-only">
+            {vocab.kanji || vocab.kana}
+          </h2>
+          <p id={descriptionId} className="sr-only">
+            {vocab.meaning}
+          </p>
           <button
             type="button"
             className="group relative flex-1 cursor-pointer bg-gradient-to-b from-card to-secondary/10 text-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

@@ -11,6 +11,8 @@ interface UrlControlledReferenceModalProps {
   closeHref: string
   nextHref: string
   prevHref: string
+  ariaLabelledBy?: string
+  ariaDescribedBy?: string
 }
 
 export function UrlControlledReferenceModal({
@@ -19,6 +21,8 @@ export function UrlControlledReferenceModal({
   closeHref,
   nextHref,
   prevHref,
+  ariaLabelledBy,
+  ariaDescribedBy,
 }: UrlControlledReferenceModalProps) {
   const router = useRouter()
 
@@ -37,7 +41,13 @@ export function UrlControlledReferenceModal({
   }, [nextHref, prevHref, router])
 
   return (
-    <Modal isOpen onClose={close} className={className}>
+    <Modal
+      isOpen
+      onClose={close}
+      className={className}
+      ariaLabelledBy={ariaLabelledBy}
+      ariaDescribedBy={ariaDescribedBy}
+    >
       {children}
     </Modal>
   )

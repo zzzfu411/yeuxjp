@@ -33,6 +33,12 @@ test("GlossaryModal owns localized glossary presentation", () => {
 
   assert.match(source, /export function GlossaryModal/)
   assert.match(source, /hasGlossaryMatches/)
+  assert.match(source, /const titleId = "glossary-modal-title"/)
+  assert.match(source, /const descriptionId = "glossary-modal-description"/)
+  assert.match(source, /ariaLabelledBy=\{titleId\}/)
+  assert.match(source, /ariaDescribedBy=\{descriptionId\}/)
+  assert.match(source, /<h2 id=\{titleId\}/)
+  assert.match(source, /<p id=\{descriptionId\}/)
   assert.match(source, /type GlossaryCategoryMap/)
   assert.match(source, /Object\.keys\(byCategory\)/)
   assert.match(source, /GLOSSARY_CATEGORY_LABEL\[category\]/)

@@ -8,6 +8,8 @@ import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 
 export function SpeechControlsButton() {
   const [open, setOpen] = React.useState(false)
+  const titleId = "speech-controls-modal-title"
+  const descriptionId = "speech-controls-modal-description"
 
   return (
     <>
@@ -23,11 +25,17 @@ export function SpeechControlsButton() {
         <span className="hidden sm:inline">听力</span>
       </Button>
 
-      <Modal isOpen={open} onClose={() => setOpen(false)} className="max-w-lg">
+      <Modal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        className="max-w-lg"
+        ariaLabelledBy={titleId}
+        ariaDescribedBy={descriptionId}
+      >
         <div className="p-6 space-y-4">
           <div className="space-y-1">
-            <div className="text-lg font-bold">听力控制面板</div>
-            <div className="text-sm text-muted-foreground">统一控制语速、重复与自动播放（测验 / 复习）。</div>
+            <h2 id={titleId} className="text-lg font-bold">听力控制面板</h2>
+            <p id={descriptionId} className="text-sm text-muted-foreground">统一控制语速、重复与自动播放（测验 / 复习）。</p>
           </div>
 
           <SpeechSettingsBar showQuizOptions />

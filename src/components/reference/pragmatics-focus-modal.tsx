@@ -23,12 +23,17 @@ export function PragmaticsFocusModal({
   nextHref,
   prevHref,
 }: PragmaticsFocusModalProps) {
+  const titleId = "pragmatics-focus-modal-title"
+  const descriptionId = "pragmatics-focus-modal-description"
+
   return (
     <UrlControlledReferenceModal
       closeHref={closeHref}
       nextHref={nextHref}
       prevHref={prevHref}
       className="max-w-2xl h-[85vh] flex flex-col p-0"
+      ariaLabelledBy={titleId}
+      ariaDescribedBy={descriptionId}
     >
       <div className="flex-1 overflow-y-auto p-8 space-y-8">
         <div className="space-y-4">
@@ -36,8 +41,8 @@ export function PragmaticsFocusModal({
             <MessageCircle className="w-4 h-4" />
             场景：{scenario.situation}
           </div>
-          <h2 className="text-4xl font-bold tracking-tight">{scenario.title}</h2>
-          <div className="text-xl font-medium text-foreground bg-muted/30 p-6 rounded-xl border-l-4 border-primary">
+          <h2 id={titleId} className="text-4xl font-bold tracking-tight">{scenario.title}</h2>
+          <div id={descriptionId} className="text-xl font-medium text-foreground bg-muted/30 p-6 rounded-xl border-l-4 border-primary">
             {scenario.context}
           </div>
         </div>

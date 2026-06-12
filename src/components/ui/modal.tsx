@@ -5,6 +5,15 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "textarea:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(", ")
+
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
@@ -26,6 +35,14 @@ export function Modal({
   const previousOverflow = React.useRef<string | null>(null)
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
+
+  const getFocusableElements = React.useCallback(() => {
+    if (!dialogRef.current) return []
+
+    return Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+      (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true"
+    )
+  }, [])
 
   React.useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined
@@ -59,7 +76,7 @@ export function Modal({
     }
   }, [isOpen])
 
-  // Esc to close + focus dialog on open
+  // Esc to close, trap tab focus, and focus dialog on open.
   React.useEffect(() => {
     if (!isOpen) return
     // Defer focus until after animation kicks in.
@@ -71,6 +88,38 @@ export function Modal({
       if (e.key === "Escape") {
         e.stopPropagation()
         onClose()
+        return
+      }
+
+      if (e.key !== "Tab") {
+        return
+      }
+
+      const dialog = dialogRef.current
+      if (!dialog) return
+
+      const focusableElements = getFocusableElements()
+      if (focusableElements.length === 0) {
+        e.preventDefault()
+        dialog.focus()
+        return
+      }
+
+      const firstElement = focusableElements[0]
+      const lastElement = focusableElements[focusableElements.length - 1]
+      const activeElement = document.activeElement as HTMLElement | null
+
+      if (e.shiftKey) {
+        if (activeElement === dialog || activeElement === firstElement || !dialog.contains(activeElement)) {
+          e.preventDefault()
+          lastElement.focus()
+        }
+        return
+      }
+
+      if (activeElement === dialog || activeElement === lastElement || !dialog.contains(activeElement)) {
+        e.preventDefault()
+        firstElement.focus()
       }
     }
     window.addEventListener("keydown", onKey)
@@ -78,7 +127,7 @@ export function Modal({
       clearTimeout(focusTimer)
       window.removeEventListener("keydown", onKey)
     }
-  }, [isOpen, onClose])
+  }, [getFocusableElements, isOpen, onClose])
 
   if (!show) return null
 

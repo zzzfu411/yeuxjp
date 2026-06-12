@@ -49,11 +49,15 @@ export function KanaDetailModal({
 }) {
   const isCheckingStrokeResource = !isWriting && !!currentChar && currentStrokeAvailability === "unknown"
   const isMissingStrokeResource = !isWriting && !!currentChar && currentStrokeAvailability === "missing"
+  const titleId = "kana-detail-modal-title"
 
   return (
-    <Modal isOpen={selectedIndex !== null} onClose={onClose} className="max-w-md">
+    <Modal isOpen={selectedIndex !== null} onClose={onClose} className="max-w-md" ariaLabelledBy={titleId}>
       {kana && (
         <div className="flex flex-col h-full">
+          <h2 id={titleId} className="sr-only">
+            {currentChar ? `${currentChar} ${kana.romaji}` : kana.romaji}
+          </h2>
           <div className="flex-1 p-8 flex flex-col items-center justify-center space-y-8">
             <div className="text-sm font-mono text-muted-foreground uppercase tracking-[0.2em]">
               {kana.romaji}

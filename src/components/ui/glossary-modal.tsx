@@ -28,15 +28,23 @@ export function GlossaryModal({
   onShowAll: () => void
 }) {
   const hasMatches = hasGlossaryMatches(byCategory)
+  const titleId = "glossary-modal-title"
+  const descriptionId = "glossary-modal-description"
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-3xl h-[85vh] overflow-hidden">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="max-w-3xl h-[85vh] overflow-hidden"
+      ariaLabelledBy={titleId}
+      ariaDescribedBy={descriptionId}
+    >
       <div className="flex flex-col h-full">
         <div className="p-6 border-b bg-muted/10 space-y-3">
           <div className="flex items-baseline justify-between gap-3">
             <div className="space-y-1">
-              <h2 className="text-2xl font-bold tracking-tight">术语解释</h2>
-              <p className="text-sm text-muted-foreground">
+              <h2 id={titleId} className="text-2xl font-bold tracking-tight">术语解释</h2>
+              <p id={descriptionId} className="text-sm text-muted-foreground">
                 点击术语可查看解释；不确定的时候，先看例句与对比。
               </p>
             </div>

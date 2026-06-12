@@ -22,16 +22,21 @@ export function SemanticsFocusModal({
   nextHref,
   prevHref,
 }: SemanticsFocusModalProps) {
+  const titleId = "semantics-focus-modal-title"
+  const descriptionId = "semantics-focus-modal-description"
+
   return (
     <UrlControlledReferenceModal
       closeHref={closeHref}
       nextHref={nextHref}
       prevHref={prevHref}
       className="max-w-3xl h-[85vh] flex flex-col p-0"
+      ariaLabelledBy={titleId}
+      ariaDescribedBy={descriptionId}
     >
       <div className="flex-1 overflow-y-auto p-8 space-y-8">
         <div className="text-center border-b pb-6">
-          <h2 className="text-4xl font-bold flex items-center justify-center gap-4 mb-3">
+          <h2 id={titleId} className="text-4xl font-bold flex items-center justify-center gap-4 mb-3">
             <span className="text-primary">{point.pair[0]}</span>
             <ArrowRightLeft className="w-8 h-8 text-muted-foreground/50" />
             <span className="text-primary">{point.pair[1]}</span>
@@ -47,7 +52,7 @@ export function SemanticsFocusModal({
               <Lightbulb className="w-8 h-8 text-yellow-500 shrink-0" />
               <div>
                 <h3 className="font-bold text-xl mb-3">核心差异</h3>
-                <p className="text-foreground/90 leading-relaxed text-lg">{point.explanation}</p>
+                <p id={descriptionId} className="text-foreground/90 leading-relaxed text-lg">{point.explanation}</p>
               </div>
             </div>
 

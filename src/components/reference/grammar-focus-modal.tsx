@@ -23,8 +23,17 @@ export function GrammarFocusModal({
   onPrev: () => void
   onNext: () => void
 }) {
+  const titleId = "grammar-focus-modal-title"
+  const descriptionId = "grammar-focus-modal-description"
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="max-w-3xl h-[85vh] flex flex-col p-0 overflow-hidden">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="max-w-3xl h-[85vh] flex flex-col p-0 overflow-hidden"
+      ariaLabelledBy={titleId}
+      ariaDescribedBy={descriptionId}
+    >
       {point && (
         <>
           <div className="flex-1 overflow-y-auto p-8 space-y-8">
@@ -33,8 +42,8 @@ export function GrammarFocusModal({
                 <BookOpen className="w-4 h-4" />
                 {point.level} 语法 No.{selectedPosition}
               </div>
-              <h2 className="text-4xl font-bold tracking-tight">{point.title}</h2>
-              <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">{point.explanation}</p>
+              <h2 id={titleId} className="text-4xl font-bold tracking-tight">{point.title}</h2>
+              <p id={descriptionId} className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">{point.explanation}</p>
             </div>
 
             <div className="space-y-8">
