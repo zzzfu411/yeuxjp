@@ -58,6 +58,19 @@ test("data validation requires AnimCJK license files for distribution", () => {
   assert.match(source, /public\/animcjk\/licenses\/LGPL\.txt/)
 })
 
+test("data validation verifies the offline fallback copy and learning-state boundary", () => {
+  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+
+  assert.match(source, /function validateOfflineFallback/)
+  assert.match(source, /public\/offline\.html/)
+  assert.match(source, /当前离线/)
+  assert.match(source, /已缓存的页面和笔顺资源仍可使用/)
+  assert.match(source, /学习进度不会被 service worker 缓存或覆盖/)
+  assert.match(source, /PWA offline fallback must not run scripts/)
+  assert.match(source, /localStorage\|sessionStorage\|indexedDB\|caches\\\./)
+  assert.match(source, /validateOfflineFallback\(\)/)
+})
+
 test("data validation requires explicit vocabulary fields and matching levels", () => {
   const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
 

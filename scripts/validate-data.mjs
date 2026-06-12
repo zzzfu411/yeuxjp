@@ -173,6 +173,30 @@ function validateServiceWorkerAssets() {
   }
 }
 
+function validateOfflineFallback() {
+  const offlinePath = "public/offline.html"
+  requireFile(offlinePath, "PWA offline fallback")
+  if (!exists(offlinePath)) return
+
+  const offlineText = read(offlinePath)
+  const requiredSnippets = [
+    "lang=\"zh-CN\"",
+    "当前离线",
+    "已缓存的页面和笔顺资源仍可使用",
+    "学习进度不会被 service worker 缓存或覆盖",
+    "回到首页",
+  ]
+
+  for (const snippet of requiredSnippets) {
+    if (!offlineText.includes(snippet)) fail(`PWA offline fallback is missing required copy: ${snippet}`)
+  }
+
+  if (/<script\b/i.test(offlineText)) fail("PWA offline fallback must not run scripts")
+  if (/localStorage|sessionStorage|indexedDB|caches\./.test(offlineText)) {
+    fail("PWA offline fallback must not read or mutate browser learning state")
+  }
+}
+
 function walkFiles(dir, predicate, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const fullPath = path.join(dir, entry.name)
@@ -396,7 +420,7 @@ for (const relPath of [
 
 validatePwaManifest()
 validateServiceWorkerAssets()
-requireFile("public/offline.html", "PWA offline fallback")
+validateOfflineFallback()
 requireFile("public/favicon.ico", "favicon")
 requireFile("public/apple-touch-icon.png", "apple touch icon")
 requireFile("public/animcjk/licenses/COPYING.txt", "AnimCJK COPYING license")
