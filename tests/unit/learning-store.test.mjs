@@ -132,6 +132,51 @@ test("learning backup export normalizes active kana indexes", () => {
   assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA])), ["a"])
 })
 
+test("restoreLearningBackup normalizes managed entries before writing", () => {
+  const { map } = installWindow()
+  const backup = {
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 123,
+    entries: {
+      [storage.STORAGE_KEYS.KANA_MASTERED]: JSON.stringify(["a", "sokuon:kitte", "ka", "a"]),
+      [storage.STORAGE_KEYS.VOCAB_LEARNED]: JSON.stringify(["sur-g-1", "sur-g-999", "day-v-1", "sur-g-1"]),
+      [storage.STORAGE_KEYS.SRS_KANA]: JSON.stringify({
+        a: { box: 99, dueAt: 1, createdAt: 2, right: 1.2, wrong: -1 },
+        "sokuon:kitte": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+      }),
+      [storage.STORAGE_KEYS.SRS_VOCAB]: JSON.stringify({
+        "sur-g-1": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+        "sur-g-999": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+      }),
+    },
+  }
+
+  assert.equal(store.restoreLearningBackup(backup), true)
+  assert.deepEqual(JSON.parse(map.get(storage.STORAGE_KEYS.KANA_MASTERED)), ["a", "ka"])
+  assert.deepEqual(JSON.parse(map.get(storage.STORAGE_KEYS.VOCAB_LEARNED)), ["sur-g-1", "day-v-1"])
+  assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA))), ["a"])
+  assert.equal(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA)).a.box, 6)
+  assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_VOCAB))), ["sur-g-1"])
+})
+
+test("restoreLearningBackup rejects malformed managed entries before mutating", () => {
+  const { map, events } = installWindow()
+  map.set(storage.STORAGE_KEYS.USER_PROFILE, "{\"goal\":\"balanced\"}")
+  const backup = {
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 123,
+    entries: {
+      [storage.STORAGE_KEYS.USER_PROFILE]: "{\"goal\":\"travel\"}",
+      [storage.STORAGE_KEYS.SRS_KANA]: "[]",
+    },
+  }
+
+  assert.equal(store.restoreLearningBackup(backup), false)
+  assert.equal(map.get(storage.STORAGE_KEYS.USER_PROFILE), "{\"goal\":\"balanced\"}")
+  assert.equal(map.has(storage.STORAGE_KEYS.SRS_KANA), false)
+  assert.equal(events.length, 0)
+})
+
 test("safe learning backup creation fails when a managed key cannot be normalized", () => {
   const { map } = installWindow()
   map.set(storage.STORAGE_KEYS.USER_PROFILE, "{bad-json")
@@ -236,8 +281,8 @@ test("restoreLearningBackup rolls back partial writes when a managed key fails",
     version: store.LEARNING_BACKUP_VERSION,
     exportedAt: 123,
     entries: {
-      [storage.STORAGE_KEYS.USER_PROFILE]: "after-profile",
-      [storage.STORAGE_KEYS.SRS_KANA]: "after-kana",
+      [storage.STORAGE_KEYS.USER_PROFILE]: "{\"goal\":\"travel\"}",
+      [storage.STORAGE_KEYS.SRS_KANA]: "{\"a\":{\"box\":1}}",
     },
   }
 

@@ -116,6 +116,27 @@ function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, now: num
   }
 }
 
+function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = Date.now()): LearningBackup | null {
+  if (backup.version !== LEARNING_BACKUP_VERSION) return null
+  if (typeof backup.exportedAt !== "number" || !Number.isFinite(backup.exportedAt)) return null
+  if (!backup.entries || typeof backup.entries !== "object") return null
+
+  const entries: LearningBackup["entries"] = {}
+  for (const [key, value] of Object.entries(backup.entries)) {
+    if (!BACKUP_KEY_SET.has(key)) continue
+    if (typeof value !== "string") continue
+    const normalized = normalizeBackupEntry(key as LearningBackupKey, value, now)
+    if (normalized === null) return null
+    entries[key as LearningBackupKey] = normalized
+  }
+
+  return {
+    version: LEARNING_BACKUP_VERSION,
+    exportedAt: backup.exportedAt,
+    entries,
+  }
+}
+
 function notifyLearningStore(detail: { action: "backup" | "restore" | "reset" | "rollback"; keys: readonly string[] }) {
   if (typeof window === "undefined") return
   window.dispatchEvent(new CustomEvent(LEARNING_STORE_EVENT, { detail }))
@@ -205,14 +226,15 @@ export function tryCreateLearningBackup(now: number = Date.now()): LearningBacku
 
 export function restoreLearningBackup(backup: LearningBackup) {
   if (typeof window === "undefined") return false
-  if (backup.version !== LEARNING_BACKUP_VERSION) return false
+  const normalizedBackup = normalizeLearningBackup(backup)
+  if (!normalizedBackup) return false
 
   const previous = snapshotLearningKeys()
   if (!previous) return false
 
   try {
     for (const key of BACKUP_KEYS) {
-      const value = backup.entries[key]
+      const value = normalizedBackup.entries[key]
       if (typeof value === "string") {
         window.localStorage.setItem(key, value)
       } else {
@@ -251,23 +273,7 @@ export function parseLearningBackup(input: string): LearningBackup | null {
   try {
     const parsed = JSON.parse(input) as unknown
     if (!parsed || typeof parsed !== "object") return null
-    const backup = parsed as Partial<LearningBackup>
-    if (backup.version !== LEARNING_BACKUP_VERSION) return null
-    if (typeof backup.exportedAt !== "number" || !Number.isFinite(backup.exportedAt)) return null
-    if (!backup.entries || typeof backup.entries !== "object") return null
-    const entries: LearningBackup["entries"] = {}
-    for (const [key, value] of Object.entries(backup.entries)) {
-      if (!BACKUP_KEY_SET.has(key)) continue
-      if (typeof value !== "string") continue
-      const normalized = normalizeBackupEntry(key as LearningBackupKey, value)
-      if (normalized === null) return null
-      entries[key as LearningBackupKey] = normalized
-    }
-    return {
-      version: LEARNING_BACKUP_VERSION,
-      exportedAt: backup.exportedAt,
-      entries,
-    }
+    return normalizeLearningBackup(parsed as Partial<LearningBackup>)
   } catch {
     return null
   }
