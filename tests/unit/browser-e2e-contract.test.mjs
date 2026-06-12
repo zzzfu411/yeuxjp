@@ -294,9 +294,11 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
 test("browser E2E verifies non-default vocabulary levels load dynamically", () => {
   const e2e = readBrowserE2ESources()
 
-  assert.match(e2e, /getByTestId\("vocabulary-expand-sur-n-35"\)\.click\(\)/)
-  assert.match(e2e, /getByRole\("button", \{ name: \/みせ\/ \}\)\.focus\(\)/)
+  assert.match(e2e, /locator\("xpath=ancestor::\*\[@role='button'\]\[1\]"\)\.focus\(\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-expand-back-sur-n-35"\)\.waitFor\(\{ state: "visible" \}\)/)
   assert.match(e2e, /getByTestId\("vocabulary-expand-back-sur-n-35"\)\.focus\(\)/)
+  assert.match(e2e, /getByRole\("dialog"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /evaluate\(\(element\) => element\.tabIndex\)/)
   assert.match(e2e, /keyboard\.press\("Space"\)/)
   assert.match(e2e, /getByTestId\("vocabulary-focus-card"\)\.focus\(\)/)
   assert.match(e2e, /keyboard\.press\("Space"\)/)

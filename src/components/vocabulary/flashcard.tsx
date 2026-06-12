@@ -59,7 +59,10 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
         isFlipped ? "rotate-y-180" : ""
       )}>
         {/* Front */}
-        <div className="absolute w-full h-full backface-hidden bg-card border rounded-xl shadow-sm flex flex-col items-center justify-center p-6 text-center hover:shadow-md transition-all">
+        <div
+          className="absolute w-full h-full backface-hidden bg-card border rounded-xl shadow-sm flex flex-col items-center justify-center p-6 text-center hover:shadow-md transition-all"
+          aria-hidden={isFlipped}
+        >
           <div className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">{vocab.kanji || vocab.kana}</div>
           {vocab.kanji && <div className="text-lg text-muted-foreground">{vocab.kana}</div>}
           
@@ -72,6 +75,7 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
             aria-label={`放大查看 ${vocab.kanji || vocab.kana}`}
             onClick={handleExpand}
             onKeyDown={stopCardKeyDown}
+            tabIndex={isFlipped ? -1 : 0}
             data-testid={`vocabulary-expand-${vocab.id}`}
             className="absolute top-3 right-3 p-2 text-muted-foreground/30 hover:text-primary transition-colors hover:bg-muted rounded-full"
           >
@@ -80,7 +84,10 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
         </div>
 
         {/* Back */}
-        <div className="absolute w-full h-full backface-hidden bg-card border-2 border-primary/20 rounded-xl shadow-sm rotate-y-180 flex flex-col items-center justify-center p-6 text-center">
+        <div
+          className="absolute w-full h-full backface-hidden bg-card border-2 border-primary/20 rounded-xl shadow-sm rotate-y-180 flex flex-col items-center justify-center p-6 text-center"
+          aria-hidden={!isFlipped}
+        >
           <div className="text-2xl font-bold text-primary mb-2">{vocab.meaning}</div>
           <div className="text-lg text-muted-foreground font-medium mb-6">{vocab.romaji}</div>
           
@@ -90,6 +97,7 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
               variant="ghost"
               onClick={handlePlay}
               onKeyDown={stopCardKeyDown}
+              tabIndex={isFlipped ? 0 : -1}
               className="rounded-full"
               aria-label={`朗读 ${vocab.kana}`}
             >
@@ -102,6 +110,7 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
             aria-label={`放大查看 ${vocab.kanji || vocab.kana}`}
             onClick={handleExpand}
             onKeyDown={stopCardKeyDown}
+            tabIndex={isFlipped ? 0 : -1}
             data-testid={`vocabulary-expand-back-${vocab.id}`}
             className="absolute top-3 right-3 p-2 text-muted-foreground/30 hover:text-primary transition-colors hover:bg-muted rounded-full"
           >
