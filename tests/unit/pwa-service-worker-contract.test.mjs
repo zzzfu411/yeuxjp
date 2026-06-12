@@ -63,8 +63,9 @@ test("PWA registration lets offline links fall back to document navigation", () 
 })
 
 test("service worker caches static assets and visited navigation pages without learning state", () => {
-  assert.match(sw, /const STATIC_CACHE_NAME = "yasashi-static-v\d+"/)
-  assert.match(sw, /const NAVIGATION_CACHE_NAME = "yasashi-navigation-v\d+"/)
+  assert.match(sw, /const CACHE_VERSION = "v\d+"/)
+  assert.match(sw, /const STATIC_CACHE_NAME = `yasashi-static-\$\{CACHE_VERSION\}`/)
+  assert.match(sw, /const NAVIGATION_CACHE_NAME = `yasashi-navigation-\$\{CACHE_VERSION\}`/)
   assert.match(sw, /const OFFLINE_FALLBACK_URL = "\/offline\.html"/)
   assert.match(sw, /const CORE_STATIC_ASSETS = \[/)
   assert.match(sw, /cache\.addAll\(CORE_STATIC_ASSETS\)/)

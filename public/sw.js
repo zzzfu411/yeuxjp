@@ -1,5 +1,6 @@
-const STATIC_CACHE_NAME = "yasashi-static-v4";
-const NAVIGATION_CACHE_NAME = "yasashi-navigation-v1";
+const CACHE_VERSION = "v4";
+const STATIC_CACHE_NAME = `yasashi-static-${CACHE_VERSION}`;
+const NAVIGATION_CACHE_NAME = `yasashi-navigation-${CACHE_VERSION}`;
 const OFFLINE_FALLBACK_URL = "/offline.html";
 
 const CORE_STATIC_ASSETS = [
