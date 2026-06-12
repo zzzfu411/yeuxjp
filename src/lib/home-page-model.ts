@@ -1,6 +1,10 @@
 import { getNextLesson } from "@/data/lessons"
 import { resolveLearningEntry, type LearningEntry, type LearningEntrySkill } from "@/lib/learning-entry"
 import { averageMastery, type ItemProgressMap, type PracticeItemType } from "@/lib/learning-progress-model"
+import {
+  buildReviewVisibleIdSet,
+  filterReviewableKanaIds,
+} from "@/lib/review-visibility"
 
 export type HomeWeakestItem = {
   id: string
@@ -45,6 +49,8 @@ export function getHomeWeakestItem(items: ItemProgressMap): HomeWeakestItem | nu
 export function buildHomePageModel({
   completedLessonIds,
   items,
+  masteredKanaIds,
+  learnedVocabIds,
   skill,
   kanaDueIds,
   vocabDueIds,
@@ -53,6 +59,8 @@ export function buildHomePageModel({
 }: {
   completedLessonIds: ReadonlySet<string>
   items: ItemProgressMap
+  masteredKanaIds?: Iterable<string>
+  learnedVocabIds?: Iterable<string>
   skill?: LearningEntrySkill | null
   kanaDueIds: readonly string[]
   vocabDueIds: readonly string[]
@@ -60,11 +68,15 @@ export function buildHomePageModel({
   mistakeIds: Iterable<string>
 }): HomePageModel {
   const dueMistakeIds = getHomeDueMistakeIds(mistakeDueIds, mistakeIds)
+  const visibleKanaIds = buildReviewVisibleIdSet({ explicitIds: masteredKanaIds ?? [], items, itemType: "kana" })
+  const visibleVocabIds = buildReviewVisibleIdSet({ explicitIds: learnedVocabIds ?? [], items, itemType: "vocab" })
+  const visibleKanaDueIds = filterReviewableKanaIds(kanaDueIds, visibleKanaIds)
+  const visibleVocabDueIds = vocabDueIds.filter((id) => visibleVocabIds.has(id))
   const nextLesson = getNextLesson(new Set(completedLessonIds))
 
   return {
     dueMistakeIds,
-    totalDue: kanaDueIds.length + vocabDueIds.length + dueMistakeIds.length,
+    totalDue: visibleKanaDueIds.length + visibleVocabDueIds.length + dueMistakeIds.length,
     nextLesson,
     learningEntry: resolveLearningEntry({ nextLesson, skill }),
     completedCount: completedLessonIds.size,

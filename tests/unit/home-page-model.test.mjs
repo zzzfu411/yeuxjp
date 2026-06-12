@@ -22,19 +22,37 @@ const item = (overrides) => ({
 test("home page model filters due mistakes to existing notebook entries and totals visible due work", () => {
   const home = model.buildHomePageModel({
     completedLessonIds: new Set(),
-    items: {},
-    kanaDueIds: ["a", "ka"],
-    vocabDueIds: ["v1"],
+    items: {
+      a: item({ itemId: "a", itemType: "kana", recognition: 18, attempts: 1, correct: 1 }),
+      v1: item({ itemId: "v1", itemType: "vocab", meaning: 18, attempts: 1, correct: 1 }),
+    },
+    kanaDueIds: ["a", "ka", "sokuon:kitte"],
+    vocabDueIds: ["v1", "stale-vocab"],
     mistakeDueIds: ["m1", "ghost"],
     mistakeIds: ["m1"],
   })
 
   assert.deepEqual(home.dueMistakeIds, ["m1"])
-  assert.equal(home.totalDue, 4)
+  assert.equal(home.totalDue, 3)
   assert.equal(home.nextLesson.id, lessons.STARTER_LESSONS[0].id)
   assert.equal(home.learningEntry.href, `/learn/${lessons.STARTER_LESSONS[0].id}`)
   assert.equal(home.completedCount, 0)
-  assert.equal(home.weakest, null)
+  assert.deepEqual(home.weakest, { id: "a", label: "\u5047\u540d", score: 4 })
+})
+
+test("home page model includes explicit mastered and learned ids in visible due work", () => {
+  const home = model.buildHomePageModel({
+    completedLessonIds: new Set(),
+    items: {},
+    masteredKanaIds: ["ka"],
+    learnedVocabIds: ["v2"],
+    kanaDueIds: ["ka", "ta"],
+    vocabDueIds: ["v2", "ghost-vocab"],
+    mistakeDueIds: [],
+    mistakeIds: [],
+  })
+
+  assert.equal(home.totalDue, 2)
 })
 
 test("home page model resolves completed starter courses to review and finds the weakest item", () => {

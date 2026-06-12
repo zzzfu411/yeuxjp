@@ -4,16 +4,12 @@ import type { MistakeItem } from "@/lib/mistake-notebook-model"
 import { pickUniqueQuestionOptions } from "@/lib/question-options"
 import type { Question } from "@/lib/questions"
 import { sortSrsIdsByDue, type SrsMap } from "@/lib/srs-model"
+import { isReviewableKanaId } from "@/lib/review-visibility"
 
 export type ReviewDeck = "kana" | "vocab" | "mistakes"
 export type TodayReviewItem = { deck: ReviewDeck; id: string }
 
-const REVIEWABLE_KANA_IDS = new Set(kanaData.map((item) => item.romaji))
-
-export function isReviewableKanaId(id: string) {
-  return REVIEWABLE_KANA_IDS.has(id)
-}
-
+export { isReviewableKanaId }
 export { shuffleList } from "@/lib/question-options"
 
 export function buildTodayReviewQueue({

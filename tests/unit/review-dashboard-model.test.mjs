@@ -152,6 +152,60 @@ test("review dashboard ignores stale vocabulary SRS that is no longer learned", 
   assert.equal(dashboard.nextDueAt, now + 60_000)
 })
 
+test("review dashboard keeps SRS items that have practice progress before mastery thresholds", () => {
+  const now = 1_700_000_000_000
+  const state = (dueAt) => ({ dueAt, box: 1, createdAt: now - 1, right: 0, wrong: 0 })
+
+  const dashboard = model.buildReviewDashboardModel({
+    masteredIds: [],
+    learnedIds: [],
+    items: {
+      a: {
+        itemId: "a",
+        itemType: "kana",
+        recognition: 18,
+        listening: 0,
+        meaning: 0,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: now,
+      },
+      v1: {
+        itemId: "v1",
+        itemType: "vocab",
+        recognition: 0,
+        listening: 0,
+        meaning: 18,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: now,
+      },
+    },
+    mistakeIds: [],
+    kanaSrsMap: { a: state(now - 20) },
+    kanaDueIds: ["a"],
+    vocabSrsMap: { v1: state(now - 10) },
+    vocabDueIds: ["v1"],
+    mistakeSrsMap: {},
+    mistakeDueIds: [],
+    now,
+  })
+
+  assert.deepEqual(dashboard.reviewableKanaDueIds, ["a"])
+  assert.deepEqual(dashboard.vocabDueIds, ["v1"])
+  assert.deepEqual(dashboard.todayQueue, [
+    { deck: "kana", id: "a" },
+    { deck: "vocab", id: "v1" },
+  ])
+  assert.equal(dashboard.counts.kanaDue, 1)
+  assert.equal(dashboard.counts.vocabDue, 1)
+  assert.equal(dashboard.totalDue, 2)
+})
+
 test("review enrollment helper attempts every missing item and reports any failure", () => {
   const attempted = []
   const ok = model.enrollMissingReviewItems(["a", "ka", "sa"], (id) => {

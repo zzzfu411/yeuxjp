@@ -28,13 +28,25 @@ export function HomePage() {
     return buildHomePageModel({
       completedLessonIds: learning.completedLessonIds,
       items: learning.items,
+      masteredKanaIds: learning.masteredKanaIds,
+      learnedVocabIds: learning.learnedVocabIds,
       skill: recommendedSkill,
       kanaDueIds: kanaSrs.dueIds,
       vocabDueIds: vocabSrs.dueIds,
       mistakeDueIds: mistakeSrs.dueIds,
       mistakeIds: mistakes.byId.keys(),
     })
-  }, [kanaSrs.dueIds, learning.completedLessonIds, learning.items, mistakeSrs.dueIds, mistakes.byId, recommendedSkill, vocabSrs.dueIds])
+  }, [
+    kanaSrs.dueIds,
+    learning.completedLessonIds,
+    learning.items,
+    learning.learnedVocabIds,
+    learning.masteredKanaIds,
+    mistakeSrs.dueIds,
+    mistakes.byId,
+    recommendedSkill,
+    vocabSrs.dueIds,
+  ])
   const { totalDue, nextLesson, learningEntry, completedCount, weakest } = homeModel
 
   return (

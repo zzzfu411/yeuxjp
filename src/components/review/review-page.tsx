@@ -27,6 +27,7 @@ export function ReviewPage() {
     return buildReviewDashboardModel({
       masteredIds: learning.masteredKanaIds,
       learnedIds: learning.learnedVocabIds,
+      items: learning.items,
       mistakeIds: mistakes.byId.keys(),
       kanaSrsMap: kanaSrs.map,
       kanaDueIds: kanaSrs.dueIds,
@@ -38,6 +39,7 @@ export function ReviewPage() {
   }, [
     learning.masteredKanaIds,
     learning.learnedVocabIds,
+    learning.items,
     mistakes.byId,
     kanaSrs.map,
     kanaSrs.dueIds,
