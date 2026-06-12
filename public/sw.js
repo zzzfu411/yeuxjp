@@ -2,10 +2,14 @@ const STATIC_CACHE_NAME = "yasashi-static-v4";
 const NAVIGATION_CACHE_NAME = "yasashi-navigation-v1";
 const OFFLINE_FALLBACK_URL = "/offline.html";
 
-const STATIC_ASSETS = [
+const CORE_STATIC_ASSETS = [
   "/",
   OFFLINE_FALLBACK_URL,
-  "/manifest.webmanifest",
+  "/manifest.webmanifest"
+];
+
+const STATIC_ASSETS = [
+  ...CORE_STATIC_ASSETS,
   "/favicon.ico",
   "/apple-touch-icon.png",
   "/icons/icon-192.png",
@@ -44,7 +48,12 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(STATIC_CACHE_NAME)
-      .then((cache) => cache.addAll(STATIC_ASSETS))
+      .then((cache) => cache.addAll(CORE_STATIC_ASSETS).then(() => cache))
+      .then((cache) => Promise.allSettled(
+        STATIC_ASSETS
+          .filter((asset) => !CORE_STATIC_ASSETS.includes(asset))
+          .map((asset) => cache.add(asset))
+      ))
       .then(() => self.skipWaiting())
   );
 });

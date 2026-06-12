@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import fs from "node:fs"
 import path from "node:path"
 import test from "node:test"
+import vm from "node:vm"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
 const sw = fs.readFileSync(path.join(root, "public/sw.js"), "utf8")
@@ -59,6 +60,12 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /const STATIC_CACHE_NAME = "yasashi-static-v\d+"/)
   assert.match(sw, /const NAVIGATION_CACHE_NAME = "yasashi-navigation-v\d+"/)
   assert.match(sw, /const OFFLINE_FALLBACK_URL = "\/offline\.html"/)
+  assert.match(sw, /const CORE_STATIC_ASSETS = \[/)
+  assert.match(sw, /cache\.addAll\(CORE_STATIC_ASSETS\)/)
+  assert.match(sw, /Promise\.allSettled/)
+  assert.match(sw, /filter\(\(asset\) => !CORE_STATIC_ASSETS\.includes\(asset\)\)/)
+  assert.match(sw, /map\(\(asset\) => cache\.add\(asset\)\)/)
+  assert.doesNotMatch(sw, /cache\.addAll\(STATIC_ASSETS\)/)
   assert.match(sw, /\/brand\/logo-mark\.svg/)
   assert.match(sw, /\/brand\/logo-wordmark\.svg/)
   assert.match(sw, /\/assets\/kana\/kana-seion\.webp/)
@@ -89,6 +96,57 @@ test("service worker caches static assets and visited navigation pages without l
   assert.doesNotMatch(sw, /yasashi\.learning/)
   assert.doesNotMatch(sw, /yasashi\.srs/)
   assert.doesNotMatch(sw, /yasashi\.mistakes/)
+})
+
+test("service worker install tolerates non-critical static asset failures", async () => {
+  const addCalls = []
+  let installHandler = null
+  let skipWaitingCalled = false
+  const cache = {
+    async addAll(assets) {
+      addCalls.push({ type: "addAll", assets })
+    },
+    async add(asset) {
+      addCalls.push({ type: "add", assets: [asset] })
+      if (asset === "/favicon.ico") throw new Error("simulated optional asset failure")
+    },
+  }
+  const sandbox = {
+    caches: {
+      async open() {
+        return cache
+      },
+    },
+    self: {
+      location: { origin: "https://example.test" },
+      addEventListener(type, handler) {
+        if (type === "install") installHandler = handler
+      },
+      skipWaiting() {
+        skipWaitingCalled = true
+      },
+    },
+    URL,
+    Response,
+    Promise,
+  }
+  sandbox.globalThis = sandbox
+
+  vm.runInNewContext(sw, sandbox)
+  assert.equal(typeof installHandler, "function")
+
+  let installPromise = null
+  installHandler({
+    waitUntil(promise) {
+      installPromise = promise
+    },
+  })
+
+  await installPromise
+  const coreAdd = addCalls.find((call) => call.type === "addAll")
+  assert.deepEqual(Array.from(coreAdd?.assets ?? []), ["/", "/offline.html", "/manifest.webmanifest"])
+  assert.ok(addCalls.some((call) => call.type === "add" && call.assets.includes("/favicon.ico")))
+  assert.equal(skipWaitingCalled, true)
 })
 
 test("PWA offline E2E verifies visited-page cache, fallback, and local state preservation", () => {
