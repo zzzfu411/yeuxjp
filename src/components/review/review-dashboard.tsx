@@ -96,7 +96,7 @@ export function ReviewDashboard({
           onStart={kana.onStart}
           startDisabled={!kana.due}
           extra={
-            kana.mastered > 0 && kana.enrollMissing > 0 ? (
+            kana.enrollMissing > 0 ? (
               <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={kana.onEnrollMissing}>
                 初始化复习（{kana.enrollMissing}）
               </Button>
@@ -114,7 +114,7 @@ export function ReviewDashboard({
           onStart={vocab.onStart}
           startDisabled={!vocab.due}
           extra={
-            vocab.learned > 0 && vocab.enrollMissing > 0 ? (
+            vocab.enrollMissing > 0 ? (
               <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={vocab.onEnrollMissing}>
                 初始化复习（{vocab.enrollMissing}）
               </Button>

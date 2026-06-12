@@ -98,8 +98,8 @@ export function buildReviewDashboardModel({
   const visibleKanaSrsMap = filterReviewableKanaSrsMap(kanaSrsMap, visibleKanaIds)
   const visibleVocabSrsMap = filterSrsMapByIds(vocabSrsMap, visibleVocabIds)
   const visibleMistakeSrsMap = filterSrsMapByIds(mistakeSrsMap, mistakeIdSet)
-  const kanaEnrollMissing = findMissingSrsEnrollments(mastered, kanaSrsMap)
-  const vocabEnrollMissing = findMissingSrsEnrollments(learned, vocabSrsMap)
+  const kanaEnrollMissing = findMissingSrsEnrollments(visibleKanaIds, kanaSrsMap)
+  const vocabEnrollMissing = findMissingSrsEnrollments(visibleVocabIds, vocabSrsMap)
   const todayQueue = buildTodayReviewQueue({
     dueMistakeIds,
     kanaDueIds: reviewableKanaDueIds,
@@ -129,7 +129,7 @@ export function buildReviewDashboardModel({
     todayQueue,
     totalEnrolled: totals.kana + totals.vocab + totals.mistakes,
     totalDue: counts.kanaDue + counts.vocabDue + counts.mistakesDue,
-    isFirstTime: totals.kana + totals.vocab + totals.mistakes === 0 && totals.mastered === 0 && totals.learned === 0,
+    isFirstTime: totals.kana + totals.vocab + totals.mistakes === 0 && visibleKanaIds.size === 0 && visibleVocabIds.size === 0,
     nextDueAt: getNextSrsDueAt([visibleKanaSrsMap, visibleVocabSrsMap, visibleMistakeSrsMap], now),
     counts,
     totals,

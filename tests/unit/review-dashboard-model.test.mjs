@@ -206,6 +206,55 @@ test("review dashboard keeps SRS items that have practice progress before master
   assert.equal(dashboard.totalDue, 2)
 })
 
+test("review dashboard offers enrollment for practiced items missing SRS records", () => {
+  const now = 1_700_000_000_000
+
+  const dashboard = model.buildReviewDashboardModel({
+    masteredIds: [],
+    learnedIds: [],
+    items: {
+      a: {
+        itemId: "a",
+        itemType: "kana",
+        recognition: 18,
+        listening: 0,
+        meaning: 0,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: now,
+      },
+      v1: {
+        itemId: "v1",
+        itemType: "vocab",
+        recognition: 0,
+        listening: 0,
+        meaning: 18,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: now,
+      },
+    },
+    mistakeIds: [],
+    kanaSrsMap: {},
+    kanaDueIds: [],
+    vocabSrsMap: {},
+    vocabDueIds: [],
+    mistakeSrsMap: {},
+    mistakeDueIds: [],
+    now,
+  })
+
+  assert.deepEqual(dashboard.kanaEnrollMissing, ["a"])
+  assert.deepEqual(dashboard.vocabEnrollMissing, ["v1"])
+  assert.equal(dashboard.isFirstTime, false)
+  assert.equal(dashboard.totalEnrolled, 0)
+  assert.equal(dashboard.totalDue, 0)
+})
+
 test("review enrollment helper attempts every missing item and reports any failure", () => {
   const attempted = []
   const ok = model.enrollMissingReviewItems(["a", "ka", "sa"], (id) => {
