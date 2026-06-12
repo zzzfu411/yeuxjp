@@ -52,7 +52,7 @@ export function useQuizVocabularyPools({
       setState({
         scope: vocabScope,
         base: [],
-        error: "Failed to load vocabulary",
+        error: "词汇题库加载失败",
       })
     })
 

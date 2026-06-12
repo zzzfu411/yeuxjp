@@ -45,6 +45,8 @@ test("useQuizVocabularyPools owns scoped vocabulary loading without all-vocabula
   assert.match(source, /const retry = useCallback/)
   assert.match(source, /loadVocabularyScope\(vocabScope\)/)
   assert.match(source, /mode !== "meaning-vocab"/)
+  assert.match(source, /error: "词汇题库加载失败"/)
+  assert.doesNotMatch(source, /Failed to load vocabulary/)
   assert.match(source, /setRetryToken\(\(value\) => value \+ 1\)/)
   assert.match(source, /\[mode, retryToken, vocabScope\]/)
   assert.match(source, /loading = mode === "meaning-vocab" && state\.scope !== vocabScope/)
