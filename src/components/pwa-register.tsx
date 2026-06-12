@@ -5,6 +5,8 @@ import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 
+export const PWA_UPDATE_READY_EVENT = "yasashi:pwa-update-ready"
+
 function getOfflineNavigationAnchor(event: MouseEvent) {
   if (event.defaultPrevented) return null
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null
@@ -30,10 +32,7 @@ export function PwaRegister() {
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") return
-    if (!("serviceWorker" in navigator)) return
-
-    let hasExistingController = Boolean(navigator.serviceWorker.controller)
+    let hasExistingController = "serviceWorker" in navigator && Boolean(navigator.serviceWorker.controller)
 
     const markUpdateReady = () => {
       if (hasExistingController && navigator.serviceWorker.controller) {
@@ -50,6 +49,11 @@ export function PwaRegister() {
       markUpdateReady()
     }
 
+    const onUpdateReadyEvent = () => {
+      setUpdateReady(true)
+      setDismissed(false)
+    }
+
     const onOfflineLinkClick = (event: MouseEvent) => {
       if (navigator.onLine) return
 
@@ -59,6 +63,19 @@ export function PwaRegister() {
       event.preventDefault()
       event.stopPropagation()
       window.location.assign(anchor.href)
+    }
+
+    const enableTestUpdateEvent = process.env.NODE_ENV !== "production"
+    if (enableTestUpdateEvent) {
+      window.addEventListener(PWA_UPDATE_READY_EVENT, onUpdateReadyEvent)
+    }
+
+    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) {
+      return () => {
+        if (enableTestUpdateEvent) {
+          window.removeEventListener(PWA_UPDATE_READY_EVENT, onUpdateReadyEvent)
+        }
+      }
     }
 
     document.addEventListener("click", onOfflineLinkClick, true)
@@ -86,6 +103,9 @@ export function PwaRegister() {
     })
 
     return () => {
+      if (enableTestUpdateEvent) {
+        window.removeEventListener(PWA_UPDATE_READY_EVENT, onUpdateReadyEvent)
+      }
       document.removeEventListener("click", onOfflineLinkClick, true)
       navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange)
     }
@@ -95,7 +115,9 @@ export function PwaRegister() {
 
   return (
     <div
+      aria-label="应用更新"
       aria-live="polite"
+      role="region"
       className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-center gap-3 rounded-md border bg-card p-3 text-card-foreground shadow-lg sm:inset-x-auto sm:right-4 sm:left-auto"
       data-testid="pwa-update-banner"
     >

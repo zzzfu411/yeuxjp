@@ -12,6 +12,7 @@ import {
   verifyLearningDataFlow,
   verifyLessonFlow,
   verifyMobileSmoke,
+  verifyPwaUpdateBannerFlow,
   verifyQuizAndMistakeFlow,
 } from "./browser-flows.mjs"
 
@@ -50,6 +51,7 @@ try {
   await verifyQuizAndMistakeFlow(page, baseUrl)
   await verifyDueReviewFlow(page, baseUrl)
   await verifyLearningDataFlow(page, baseUrl)
+  await verifyPwaUpdateBannerFlow(page, baseUrl)
   await verifyMobileSmoke(browser, baseUrl)
 
   console.log(`Browser E2E checks passed at ${baseUrl}`)

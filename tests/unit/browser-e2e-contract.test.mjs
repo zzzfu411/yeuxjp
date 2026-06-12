@@ -54,6 +54,7 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
     "verifyQuizAndMistakeFlow",
     "verifyDueReviewFlow",
     "verifyLearningDataFlow",
+    "verifyPwaUpdateBannerFlow",
     "verifyMobileSmoke",
   ]
 
@@ -367,6 +368,22 @@ test("browser E2E verifies learning data export reset and import through the UI"
   assert.match(e2e, /learning data import should restore mistake SRS state/)
   assert.match(e2e, /learning data reset should leave unmanaged browser state alone/)
   assert.match(e2e, /learning data import should leave unmanaged browser state alone/)
+})
+
+test("browser E2E verifies the PWA update banner interaction", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /verifyPwaUpdateBannerFlow/)
+  assert.match(e2e, /yasashi:pwa-update-ready/)
+  assert.match(e2e, /getByTestId\("pwa-update-banner"\)/)
+  assert.match(e2e, /getByRole\("region", \{ name: "应用更新" \}\)/)
+  assert.match(e2e, /getByText\("新版本已准备好"\)/)
+  assert.match(e2e, /getByText\("刷新后可同步最新离线文件。"\)/)
+  assert.match(e2e, /getByTestId\("pwa-update-dismiss"\)\.click\(\)/)
+  assert.match(e2e, /waitFor\(\{ state: "hidden" \}\)/)
+  assert.match(e2e, /getByTestId\("pwa-update-refresh"\)\.click\(\)/)
+  assert.match(e2e, /waitForEvent\("framenavigated"\)/)
+  assert.match(e2e, /PWA update refresh should reload the current document/)
 })
 
 test("browser E2E text assertions reject mojibake fallbacks", () => {

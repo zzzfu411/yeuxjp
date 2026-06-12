@@ -17,6 +17,7 @@ export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-quiz.mjs",
   "tests/e2e/browser-flow-review.mjs",
   "tests/e2e/browser-flow-learning-data.mjs",
+  "tests/e2e/browser-flow-pwa.mjs",
   "tests/e2e/browser-flow-mobile.mjs",
 ]
 
@@ -325,6 +326,21 @@ export const requiredSelectors = [
     testId: "learning-data-reset",
     source: "src/components/review/learning-data-panel.tsx",
     pattern: /data-testid="learning-data-reset"/,
+  },
+  {
+    testId: "pwa-update-banner",
+    source: "src/components/pwa-register.tsx",
+    pattern: /data-testid="pwa-update-banner"/,
+  },
+  {
+    testId: "pwa-update-refresh",
+    source: "src/components/pwa-register.tsx",
+    pattern: /data-testid="pwa-update-refresh"/,
+  },
+  {
+    testId: "pwa-update-dismiss",
+    source: "src/components/pwa-register.tsx",
+    pattern: /data-testid="pwa-update-dismiss"/,
   },
 ]
 
