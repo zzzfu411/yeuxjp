@@ -26,7 +26,13 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
     onExpand?.()
   }
 
+  const stopCardKeyDown = (e: React.KeyboardEvent) => {
+    e.stopPropagation()
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return
+
     if (e.key === " " || e.key === "Enter") {
       e.preventDefault()
       setIsFlipped((prev) => !prev)
@@ -65,6 +71,7 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
             type="button"
             aria-label={`放大查看 ${vocab.kanji || vocab.kana}`}
             onClick={handleExpand}
+            onKeyDown={stopCardKeyDown}
             data-testid={`vocabulary-expand-${vocab.id}`}
             className="absolute top-3 right-3 p-2 text-muted-foreground/30 hover:text-primary transition-colors hover:bg-muted rounded-full"
           >
@@ -82,6 +89,7 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
               size="icon"
               variant="ghost"
               onClick={handlePlay}
+              onKeyDown={stopCardKeyDown}
               className="rounded-full"
               aria-label={`朗读 ${vocab.kana}`}
             >
@@ -93,6 +101,7 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
             type="button"
             aria-label={`放大查看 ${vocab.kanji || vocab.kana}`}
             onClick={handleExpand}
+            onKeyDown={stopCardKeyDown}
             data-testid={`vocabulary-expand-back-${vocab.id}`}
             className="absolute top-3 right-3 p-2 text-muted-foreground/30 hover:text-primary transition-colors hover:bg-muted rounded-full"
           >

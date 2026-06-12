@@ -162,6 +162,11 @@ export const requiredSelectors = [
     pattern: /data-testid=\{`vocabulary-expand-\$\{vocab\.id\}`\}/,
   },
   {
+    testId: "vocabulary-expand-back-sur-n-35",
+    source: "src/components/vocabulary/flashcard.tsx",
+    pattern: /data-testid=\{`vocabulary-expand-back-\$\{vocab\.id\}`\}/,
+  },
+  {
     testId: "vocabulary-focus-card",
     source: "src/components/vocabulary/vocabulary-focus-modal.tsx",
     pattern: /data-testid="vocabulary-focus-card"/,

@@ -295,6 +295,9 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
   const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /getByTestId\("vocabulary-expand-sur-n-35"\)\.click\(\)/)
+  assert.match(e2e, /getByRole\("button", \{ name: \/みせ\/ \}\)\.focus\(\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-expand-back-sur-n-35"\)\.focus\(\)/)
+  assert.match(e2e, /keyboard\.press\("Space"\)/)
   assert.match(e2e, /getByTestId\("vocabulary-focus-card"\)\.focus\(\)/)
   assert.match(e2e, /keyboard\.press\("Space"\)/)
   assert.match(e2e, /getByTestId\("vocabulary-learned-toggle"\)\.waitFor\(\{ state: "visible" \}\)/)
