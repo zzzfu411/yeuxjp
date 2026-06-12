@@ -1,6 +1,14 @@
 "use client"
 
+import type { KeyboardEvent } from "react"
 import type { GrammarPoint, Level } from "@/data/grammar-data"
+
+function handleCardKeyDown(event: KeyboardEvent<HTMLDivElement>, onOpen: () => void) {
+  if (event.key !== "Enter" && event.key !== " ") return
+
+  event.preventDefault()
+  onOpen()
+}
 
 export function GrammarPointList({
   points,
@@ -17,6 +25,10 @@ export function GrammarPointList({
         <div
           key={point.id}
           onClick={() => onOpen(index)}
+          onKeyDown={(event) => handleCardKeyDown(event, () => onOpen(index))}
+          role="button"
+          tabIndex={0}
+          data-testid={`grammar-point-${point.id}`}
           className="group cursor-pointer flex flex-col bg-card border rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-primary/50 relative"
         >
           <div className="absolute top-0 right-0 p-4 opacity-5 text-6xl font-black select-none pointer-events-none group-hover:opacity-10 transition-opacity">

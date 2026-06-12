@@ -14,6 +14,7 @@ import {
   verifyMobileSmoke,
   verifyPwaUpdateBannerFlow,
   verifyQuizAndMistakeFlow,
+  verifyReferenceKeyboardFlow,
 } from "./browser-flows.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
@@ -48,6 +49,7 @@ try {
   await verifyLessonFlow(page, baseUrl)
   await verifyInitialReviewEmptyState(page, baseUrl)
   await verifyKanaAndVocabularyFlow(page, baseUrl)
+  await verifyReferenceKeyboardFlow(page, baseUrl)
   await verifyQuizAndMistakeFlow(page, baseUrl)
   await verifyDueReviewFlow(page, baseUrl)
   await verifyLearningDataFlow(page, baseUrl)

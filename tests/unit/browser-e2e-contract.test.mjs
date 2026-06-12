@@ -51,6 +51,7 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
     "verifyLessonFlow",
     "verifyInitialReviewEmptyState",
     "verifyKanaAndVocabularyFlow",
+    "verifyReferenceKeyboardFlow",
     "verifyQuizAndMistakeFlow",
     "verifyDueReviewFlow",
     "verifyLearningDataFlow",
@@ -258,6 +259,24 @@ test("browser E2E verifies modal accessible names and tab focus trapping", () =>
   assert.match(e2e, /activeIndex,\s*0/)
   assert.match(e2e, /kana detail modal/)
   assert.match(e2e, /vocabulary focus modal/)
+})
+
+test("browser E2E verifies reference modal keyboard navigation respects focused controls", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /verifyReferenceKeyboardFlow/)
+  assert.match(e2e, /\/grammar/)
+  assert.match(e2e, /getByTestId\("grammar-point-n5-wa"\)\.focus\(\)/)
+  assert.match(e2e, /keyboard\.press\("Enter"\)/)
+  assert.match(e2e, /document\.activeElement\?\.getAttribute\("role"\) === "dialog"/)
+  assert.ok(e2e.includes("getByText(/1 \\/ 25/)"))
+  assert.match(e2e, /keyboard\.press\("ArrowRight"\)/)
+  assert.ok(e2e.includes("getByText(/2 \\/ 25/)"))
+  assert.match(e2e, /getByTestId\("grammar-modal-next"\)\.focus\(\)/)
+  assert.match(e2e, /focused grammar modal controls should ignore global ArrowRight navigation/)
+  assert.match(e2e, /getByTestId\("grammar-modal-prev"\)\.click\(\)/)
+  assert.match(e2e, /document\.activeElement\?\.getAttribute\("data-testid"\)/)
+  assert.match(e2e, /closing a grammar modal should restore focus to the opened card/)
 })
 
 test("browser E2E verifies review empty and due states", () => {

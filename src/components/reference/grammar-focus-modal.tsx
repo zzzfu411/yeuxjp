@@ -76,13 +76,13 @@ export function GrammarFocusModal({
           </div>
 
           <div className="p-4 border-t bg-muted/20 flex justify-between items-center shrink-0">
-            <Button variant="ghost" onClick={onPrev} className="gap-2 pl-2">
+            <Button variant="ghost" onClick={onPrev} className="gap-2 pl-2" data-testid="grammar-modal-prev">
               <ChevronLeft className="w-5 h-5" /> 上一条
             </Button>
             <div className="text-sm text-muted-foreground font-mono">
               {selectedPosition} / {total}
             </div>
-            <Button variant="ghost" onClick={onNext} className="gap-2 pr-2">
+            <Button variant="ghost" onClick={onNext} className="gap-2 pr-2" data-testid="grammar-modal-next">
               下一条 <ChevronRight className="w-5 h-5" />
             </Button>
           </div>

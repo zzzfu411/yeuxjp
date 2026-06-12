@@ -15,6 +15,7 @@ export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-lesson.mjs",
   "tests/e2e/browser-flow-content.mjs",
   "tests/e2e/browser-flow-quiz.mjs",
+  "tests/e2e/browser-flow-reference.mjs",
   "tests/e2e/browser-flow-review.mjs",
   "tests/e2e/browser-flow-learning-data.mjs",
   "tests/e2e/browser-flow-pwa.mjs",
@@ -251,6 +252,21 @@ export const requiredSelectors = [
     testId: "quiz-empty-state",
     source: "src/components/quiz/quiz-empty-state.tsx",
     pattern: /data-testid="quiz-empty-state"/,
+  },
+  {
+    testId: "grammar-point-n5-wa",
+    source: "src/components/reference/grammar-point-list.tsx",
+    pattern: /data-testid=\{`grammar-point-\$\{point\.id\}`\}/,
+  },
+  {
+    testId: "grammar-modal-prev",
+    source: "src/components/reference/grammar-focus-modal.tsx",
+    pattern: /data-testid="grammar-modal-prev"/,
+  },
+  {
+    testId: "grammar-modal-next",
+    source: "src/components/reference/grammar-focus-modal.tsx",
+    pattern: /data-testid="grammar-modal-next"/,
   },
   {
     testId: "review-start-today",
