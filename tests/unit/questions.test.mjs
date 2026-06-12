@@ -47,6 +47,28 @@ test("wrong question results become mistake notebook input with stable options",
   ])
 })
 
+test("mistake notebook options are de-duplicated with answer normalization", () => {
+  const result = questions.makeQuestionResult(
+    {
+      type: "lesson:typing",
+      correctAnswer: "a",
+      correctDisplay: "あ",
+      options: [
+        { value: "Ａ", display: "Ａ" },
+        { value: "a", display: "a" },
+      ],
+    },
+    "ka",
+    1_700_000_000_000
+  )
+  const input = questions.questionToMistakeInput(result)
+
+  assert.deepEqual(input.options, [
+    { value: "Ａ", display: "Ａ" },
+    { value: "ka", display: "ka" },
+  ])
+})
+
 test("correct question results are not recorded as mistakes", () => {
   const result = questions.makeQuestionResult(
     {

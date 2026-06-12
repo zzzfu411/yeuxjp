@@ -82,19 +82,23 @@ function normalizeMistakeOptions(question: Question, selectedAnswer: string): Qu
   const options: QuestionOption[] = []
 
   for (const option of question.options) {
-    if (seen.has(option.value)) continue
-    seen.add(option.value)
+    const key = normalizeAnswer(option.value)
+    if (seen.has(key)) continue
+    seen.add(key)
     options.push(option)
   }
 
-  if (!seen.has(question.correctAnswer)) {
+  const correctKey = normalizeAnswer(question.correctAnswer)
+  if (!seen.has(correctKey)) {
+    seen.add(correctKey)
     options.unshift({
       value: question.correctAnswer,
       display: question.correctDisplay ?? question.correctAnswer,
     })
   }
 
-  if (!seen.has(selectedAnswer)) {
+  const selectedKey = normalizeAnswer(selectedAnswer)
+  if (!seen.has(selectedKey)) {
     options.push({
       value: selectedAnswer,
       display: selectedAnswer,
