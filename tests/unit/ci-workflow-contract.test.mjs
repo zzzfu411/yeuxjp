@@ -29,3 +29,25 @@ test("GitHub Actions workflow runs merge and release quality gates", () => {
   assert.match(workflow, /github\.event_name != 'workflow_dispatch' \|\| !inputs\.release/)
   assert.match(workflow, /github\.event_name == 'workflow_dispatch' && inputs\.release/)
 })
+
+test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impacting changes", () => {
+  assert.equal(fs.existsSync(workflowPath), true)
+
+  const workflow = fs.readFileSync(workflowPath, "utf8")
+
+  assert.match(workflow, /detect-pwa-changes:/)
+  assert.match(workflow, /pwa-check:/)
+  assert.match(workflow, /needs: detect-pwa-changes/)
+  assert.match(workflow, /needs\.detect-pwa-changes\.outputs\.pwa == 'true'/)
+  assert.match(workflow, /public\/sw\\\.js/)
+  assert.match(workflow, /public\/manifest\\\.webmanifest/)
+  assert.match(workflow, /src\/components\/pwa-register\\\.tsx/)
+  assert.match(workflow, /src\/lib\/pwa-navigation\\\.ts/)
+  assert.match(workflow, /tests\/e2e\/pwa-offline\\\.mjs/)
+  assert.match(workflow, /tests\/e2e\/harness\\\.mjs/)
+  assert.match(workflow, /package\\\.json/)
+  assert.match(workflow, /package-lock\\\.json/)
+  assert.match(workflow, /run: npm run e2e:install:ci/)
+  assert.match(workflow, /run: npm run e2e:pwa:required/)
+  assert.doesNotMatch(workflow, /run: npm run e2e:pwa\s*$/m)
+})

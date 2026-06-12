@@ -27,6 +27,7 @@ for (const [name, source] of [
     assert.match(source, /Chromium/)
     assert.match(source, /required/)
     assert.match(source, /release|CI/)
+    assert.match(source, /PWA-impacting|strict PWA|e2e:pwa:required/)
   })
 }
 

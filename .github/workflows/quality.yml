@@ -39,6 +39,68 @@ jobs:
       - name: Run merge gate
         run: npm run check
 
+  detect-pwa-changes:
+    name: Detect PWA Changes
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    outputs:
+      pwa: ${{ steps.filter.outputs.pwa }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect PWA-impacting changes
+        id: filter
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          else
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+            if [[ -z "$base" || "$base" =~ ^0+$ ]]; then
+              base="$(git rev-list --max-parents=0 "$head")"
+            fi
+          fi
+
+          git diff --name-only "$base" "$head" > changed-files.txt
+
+          if grep -E '^(public/sw\.js|public/manifest\.webmanifest|src/components/pwa-register\.tsx|src/lib/pwa-navigation\.ts|tests/e2e/pwa-offline\.mjs|tests/e2e/harness\.mjs|package\.json|package-lock\.json)$' changed-files.txt > /dev/null; then
+            echo "pwa=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pwa=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  pwa-check:
+    name: PWA Browser Gate
+    needs: detect-pwa-changes
+    if: ${{ needs.detect-pwa-changes.outputs.pwa == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium and system dependencies
+        run: npm run e2e:install:ci
+
+      - name: Run strict PWA gate
+        run: npm run e2e:pwa:required
+
   release-check:
     name: Release Gate
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.release }}
