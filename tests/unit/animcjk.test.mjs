@@ -33,6 +33,30 @@ test("parseAnimCJK groups subpaths with the same delay into one logical stroke",
   assert.doesNotMatch(parsed.html, /<script|<style/)
 })
 
+test("AnimCJK sanitizer removes executable SVG surfaces while preserving local defs", () => {
+  const raw = `
+    <svg class="acjk" viewBox="0 0 1024 1024" onload="alert(1)">
+      <script>alert("x")</script>
+      <style>path{stroke:red}</style>
+      <foreignObject><div onclick="alert(2)">x</div></foreignObject>
+      <image href="https://example.com/pixel.png" />
+      <path id="d1" onclick="alert(3)" d="M 10,20 L 30,40" />
+      <defs><clipPath id="c1"><use href="#d1"/></clipPath></defs>
+      <path style="--d:1s;" pathLength="100" clip-path="url(#c1)" d="M 10,20 L 30,40" href="javascript:alert(4)" />
+    </svg>
+  `
+
+  const sanitized = animcjk.sanitizeAnimCjkSvg(raw)
+  assert.doesNotMatch(sanitized, /<script|<style|foreignObject|<image/i)
+  assert.doesNotMatch(sanitized, /onload|onclick|javascript:|https:\/\//i)
+  assert.match(sanitized, /<use href="#d1"/)
+
+  const parsed = animcjk.parseAnimCJK(raw)
+  assert.equal(parsed.strokeCount, 1)
+  assert.match(parsed.html, /data-stroke-index="1"/)
+  assert.doesNotMatch(parsed.html, /onload|onclick|javascript:|https:\/\//i)
+})
+
 test("generateActiveStrokeCss exposes current and finished stroke states", () => {
   const css = animcjk.generateActiveStrokeCss(2, "scope")
 

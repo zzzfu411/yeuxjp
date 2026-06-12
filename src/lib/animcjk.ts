@@ -68,8 +68,7 @@ export function getAnimCjkKanaUrls(text: string) {
 }
 
 export function parseAnimCJK(rawSvg: string): ParsedAnimCjkSvg {
-  let svg = rawSvg.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-  svg = svg.replace(/<style[\s\S]*?<\/style>/gi, "")
+  let svg = sanitizeAnimCjkSvg(rawSvg)
 
   const viewBoxMatch = svg.match(/viewBox="([^"]+)"/)
   const viewBox = viewBoxMatch?.[1] ?? "0 0 1024 1024"
@@ -128,6 +127,16 @@ export function parseAnimCJK(rawSvg: string): ParsedAnimCjkSvg {
   }
 
   return { html: svg, strokeCount: totalStrokes, starts, viewBox }
+}
+
+export function sanitizeAnimCjkSvg(rawSvg: string) {
+  return rawSvg
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<(?:foreignObject|iframe|object|embed|image|audio|video)\b[\s\S]*?<\/(?:foreignObject|iframe|object|embed|image|audio|video)>/gi, "")
+    .replace(/<(?:foreignObject|iframe|object|embed|image|audio|video)\b[^>]*\/?>/gi, "")
+    .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s+(?:href|xlink:href)\s*=\s*(["']?)\s*(?:javascript:|data:|https?:|\/\/)[^"'\s>]*\1/gi, "")
 }
 
 export function generateActiveStrokeCss(strokeCount: number, scopeId: string): string {
