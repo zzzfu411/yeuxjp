@@ -1,281 +1,27 @@
 import assert from "node:assert/strict"
-import fs from "node:fs"
-import path from "node:path"
 import test from "node:test"
 
-const root = path.resolve(import.meta.dirname, "..", "..")
-const browserE2EPath = path.join(root, "tests/e2e/browser.mjs")
-const browserFixturesPath = path.join(root, "tests/e2e/browser-fixtures.mjs")
-
-const requiredSelectors = [
-  {
-    testId: "home-start-learning",
-    source: "src/components/home/home-page.tsx",
-    pattern: /data-testid="home-start-learning"/,
-  },
-  {
-    testId: "path-next-learning",
-    source: "src/components/path/skill-tree-page.tsx",
-    pattern: /data-testid="path-next-learning"/,
-  },
-  {
-    testId: "lesson-next",
-    source: "src/components/lesson/lesson-navigation-bar.tsx",
-    pattern: /data-testid="lesson-next"/,
-  },
-  {
-    testId: "lesson-locked-preview",
-    source: "src/components/lesson/lesson-locked-preview.tsx",
-    pattern: /data-testid="lesson-locked-preview"/,
-  },
-  {
-    testId: "lesson-answer-a",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
-  },
-  {
-    testId: "lesson-answer-ka",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
-  },
-  {
-    testId: "lesson-answer-お",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
-  },
-  {
-    testId: "lesson-typing-input",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid="lesson-typing-input"/,
-  },
-  {
-    testId: "lesson-submit-typing",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid="lesson-submit-typing"/,
-  },
-  {
-    testId: "lesson-completed-summary",
-    source: "src/components/lesson/lesson-runner.tsx",
-    pattern: /data-testid="lesson-completed-summary"/,
-  },
-  {
-    testId: "lesson-review-link",
-    source: "src/components/lesson/lesson-navigation-bar.tsx",
-    pattern: /data-testid="lesson-review-link"/,
-  },
-  {
-    testId: "lesson-next-lesson-link",
-    source: "src/components/lesson/lesson-navigation-bar.tsx",
-    pattern: /data-testid="lesson-next-lesson-link"/,
-  },
-  {
-    testId: "kana-card-a",
-    source: "src/components/kana/kana-card.tsx",
-    pattern: /data-testid=\{`kana-card-\$\{kana\.romaji\}`\}/,
-  },
-  {
-    testId: "kana-stroke-toggle",
-    source: "src/components/kana/kana-detail-modal.tsx",
-    pattern: /data-testid="kana-stroke-toggle"/,
-  },
-  {
-    testId: "kana-stroke-board",
-    source: "src/components/kana/kana-glyph-board.tsx",
-    pattern: /data-testid=\{label \? "kana-stroke-board" : undefined\}/,
-  },
-  {
-    testId: "kana-mastery-toggle",
-    source: "src/components/kana/kana-detail-modal.tsx",
-    pattern: /data-testid="kana-mastery-toggle"/,
-  },
-  {
-    testId: "vocabulary-search",
-    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
-    pattern: /data-testid="vocabulary-search"/,
-  },
-  {
-    testId: "vocabulary-expand-sur-n-35",
-    source: "src/components/vocabulary/flashcard.tsx",
-    pattern: /data-testid=\{`vocabulary-expand-\$\{vocab\.id\}`\}/,
-  },
-  {
-    testId: "vocabulary-focus-card",
-    source: "src/components/vocabulary/vocabulary-focus-modal.tsx",
-    pattern: /data-testid="vocabulary-focus-card"/,
-  },
-  {
-    testId: "vocabulary-learned-toggle",
-    source: "src/components/vocabulary/vocabulary-focus-modal.tsx",
-    pattern: /data-testid="vocabulary-learned-toggle"/,
-  },
-  {
-    testId: "vocabulary-level-daily",
-    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
-    pattern: /data-testid=\{`vocabulary-level-\$\{level\.id\}`\}/,
-  },
-  {
-    testId: "vocabulary-level-fluent",
-    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
-    pattern: /data-testid=\{`vocabulary-level-\$\{level\.id\}`\}/,
-  },
-  {
-    testId: "quiz-mode-hiragana-romaji",
-    source: "src/lib/quiz-mode-options.ts",
-    pattern: /testId: "quiz-mode-hiragana-romaji"/,
-  },
-  {
-    testId: "quiz-mode-audio-kana",
-    source: "src/lib/quiz-mode-options.ts",
-    pattern: /testId: "quiz-mode-audio-kana"/,
-  },
-  {
-    testId: "quiz-mode-particle",
-    source: "src/lib/quiz-mode-options.ts",
-    pattern: /testId: "quiz-mode-particle"/,
-  },
-  {
-    testId: "quiz-mode-verb-conjugation",
-    source: "src/lib/quiz-mode-options.ts",
-    pattern: /testId: "quiz-mode-verb-conjugation"/,
-  },
-  {
-    testId: "quiz-mode-audio-sokuon",
-    source: "src/lib/quiz-mode-options.ts",
-    pattern: /testId: "quiz-mode-audio-sokuon"/,
-  },
-  {
-    testId: "quiz-mode-audio-longvowel",
-    source: "src/lib/quiz-mode-options.ts",
-    pattern: /testId: "quiz-mode-audio-longvowel"/,
-  },
-  {
-    testId: "quiz-mode-meaning-vocab",
-    source: "src/lib/quiz-mode-options.ts",
-    pattern: /testId: "quiz-mode-meaning-vocab"/,
-  },
-  {
-    testId: "quiz-score",
-    source: "src/components/quiz/quiz-runner.tsx",
-    pattern: /data-testid="quiz-score"/,
-  },
-  {
-    testId: "quiz-question-text",
-    source: "src/components/quiz/quiz-question-prompt.tsx",
-    pattern: /data-testid="quiz-question-text"/,
-  },
-  {
-    testId: "quiz-only-unmastered-kana",
-    source: "src/components/quiz/quiz-scope-controls.tsx",
-    pattern: /data-testid="quiz-only-unmastered-kana"/,
-  },
-  {
-    testId: "quiz-empty-state",
-    source: "src/components/quiz/quiz-empty-state.tsx",
-    pattern: /data-testid="quiz-empty-state"/,
-  },
-  {
-    testId: "review-start-today",
-    source: "src/components/review/review-banners.tsx",
-    pattern: /data-testid="review-start-today"/,
-  },
-  {
-    testId: "review-empty-state",
-    source: "src/components/review/review-banners.tsx",
-    pattern: /data-testid="review-empty-state"/,
-  },
-  {
-    testId: "review-today-empty",
-    source: "src/components/review/review-banners.tsx",
-    pattern: /data-testid=\{todayQueueLength \? "review-today-due" : "review-today-empty"\}/,
-  },
-  {
-    testId: "review-due-state",
-    source: "src/components/review/review-banners.tsx",
-    pattern: /"review-due-state"/,
-  },
-  {
-    testId: "review-today-due",
-    source: "src/components/review/review-banners.tsx",
-    pattern: /data-testid=\{todayQueueLength \? "review-today-due" : "review-today-empty"\}/,
-  },
-  {
-    testId: "recent-mistakes",
-    source: "src/components/review/recent-mistakes.tsx",
-    pattern: /data-testid="recent-mistakes"/,
-  },
-  {
-    testId: "review-start-mistakes",
-    source: "src/components/review/review-dashboard.tsx",
-    pattern: /startTestId="review-start-mistakes"/,
-  },
-  {
-    testId: "mistake-review-session",
-    source: "src/components/review/mistake-review-session.tsx",
-    pattern: /testId="mistake-review-session"/,
-  },
-  {
-    testId: "review-remaining",
-    source: "src/components/review/today-review-session.tsx",
-    pattern: /data-testid="review-remaining"/,
-  },
-  {
-    testId: "review-answer-a",
-    source: "src/components/review/review-option-grid.tsx",
-    pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
-  },
-  {
-    testId: "learning-data-panel",
-    source: "src/components/review/learning-data-panel.tsx",
-    pattern: /data-testid="learning-data-panel"/,
-  },
-  {
-    testId: "learning-data-export",
-    source: "src/components/review/learning-data-panel.tsx",
-    pattern: /data-testid="learning-data-export"/,
-  },
-  {
-    testId: "learning-data-import",
-    source: "src/components/review/learning-data-panel.tsx",
-    pattern: /data-testid="learning-data-import"/,
-  },
-  {
-    testId: "learning-data-notice",
-    source: "src/components/review/learning-data-panel.tsx",
-    pattern: /data-testid="learning-data-notice"/,
-  },
-  {
-    testId: "learning-data-reset",
-    source: "src/components/review/learning-data-panel.tsx",
-    pattern: /data-testid="learning-data-reset"/,
-  },
-]
-
-const dynamicSelectorContracts = [
-  {
-    label: "quiz answer options",
-    source: "src/components/quiz/quiz-option-grid.tsx",
-    pattern: /data-testid=\{`quiz-answer-option-\$\{index\}`\}/,
-  },
-  {
-    label: "recent mistake rows",
-    source: "src/components/review/recent-mistakes.tsx",
-    pattern: /data-testid=\{`recent-mistake-\$\{mistake\.id\}`\}/,
-  },
-]
+import {
+  dynamicSelectorContracts,
+  readBrowserE2E,
+  readBrowserE2ESources,
+  readBrowserFixtures,
+  readE2EHarness,
+  readSource,
+  readWebPackage,
+  requiredSelectors,
+} from "./browser-e2e-contract-fixtures.mjs"
 
 test("browser E2E uses only declared stable test ids", () => {
-  const sources = [
-    fs.readFileSync(browserE2EPath, "utf8"),
-    fs.readFileSync(browserFixturesPath, "utf8"),
-  ].join("\n")
+  const sources = readBrowserE2ESources()
   const used = Array.from(sources.matchAll(/getByTestId\("([^"]+)"\)/g), (match) => match[1])
   assert.deepEqual(new Set(used), new Set(requiredSelectors.map((item) => item.testId)))
 })
 
 test("browser E2E can skip missing optional Playwright but has a required mode", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
-  const harness = fs.readFileSync(path.join(root, "tests/e2e/harness.mjs"), "utf8")
-  const webPackage = fs.readFileSync(path.join(root, "package.json"), "utf8")
+  const e2e = readBrowserE2E()
+  const harness = readE2EHarness()
+  const webPackage = readWebPackage()
 
   assert.match(e2e, /isE2ERequired\("E2E_BROWSER_REQUIRED"\)/)
   assert.match(e2e, /importPlaywrightOrSkip/)
@@ -293,17 +39,17 @@ test("browser E2E can skip missing optional Playwright but has a required mode",
 
 test("browser E2E test ids remain present in source files", () => {
   for (const item of requiredSelectors) {
-    const source = fs.readFileSync(path.join(root, item.source), "utf8")
+    const source = readSource(item.source)
     assert.match(source, item.pattern, `${item.testId} should be declared in ${item.source}`)
   }
   for (const item of dynamicSelectorContracts) {
-    const source = fs.readFileSync(path.join(root, item.source), "utf8")
+    const source = readSource(item.source)
     assert.match(source, item.pattern, `${item.label} should be declared in ${item.source}`)
   }
 })
 
 test("browser E2E verifies lesson progress writes after a real answer", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = readBrowserE2E()
 
   assert.match(e2e, /readJsonStorage/)
   assert.match(e2e, /yasashi\.learning\.lessons\.v1/)
@@ -338,7 +84,7 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
 })
 
 test("browser E2E verifies locked lesson previews stay read-only", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = readBrowserE2E()
 
   assert.match(e2e, /localStorage\.clear\(\)/)
   assert.match(e2e, /\/learn\/day-2-ka-row-thanks/)
@@ -352,8 +98,8 @@ test("browser E2E verifies locked lesson previews stay read-only", () => {
 })
 
 test("browser E2E verifies wrong quiz answers enter the mistake notebook", () => {
-  const e2e = fs.readFileSync(browserE2EPath, "utf8")
-  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
+  const e2e = readBrowserE2E()
+  const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /seionHiraganaToRomaji/)
   assert.match(e2e, /from "\.\/browser-fixtures\.mjs"/)
@@ -375,7 +121,7 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
 })
 
 test("browser E2E verifies correct mistake reviews retain notebook history", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = readBrowserE2E()
 
   assert.match(e2e, /async function seedDueMistakeReviewState/)
   assert.match(e2e, /"e2e-mistake:kana-a"/)
@@ -389,8 +135,8 @@ test("browser E2E verifies correct mistake reviews retain notebook history", () 
 })
 
 test("browser E2E verifies every public quiz mode records practice", () => {
-  const e2e = fs.readFileSync(browserE2EPath, "utf8")
-  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
+  const e2e = readBrowserE2E()
+  const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /assertQuizModeRecordsPractice\(page, baseUrl/)
   assert.match(fixtures, /export async function resetQuizLearningState/)
@@ -414,8 +160,8 @@ test("browser E2E verifies every public quiz mode records practice", () => {
 })
 
 test("browser E2E verifies mastered kana filters show the quiz empty state", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
-  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
+  const e2e = readBrowserE2E()
+  const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /getByTestId\("kana-mastery-toggle"\)\.click\(\)/)
   assert.match(e2e, /yasashi\.kana\.mastered\.v1/)
@@ -428,8 +174,8 @@ test("browser E2E verifies mastered kana filters show the quiz empty state", () 
 })
 
 test("browser E2E verifies review empty and due states", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
-  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
+  const e2e = readBrowserE2E()
+  const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /getByTestId\("review-empty-state"\)/)
   assert.match(e2e, /getByTestId\("review-today-empty"\)/)
@@ -445,7 +191,7 @@ test("browser E2E verifies review empty and due states", () => {
 })
 
 test("browser E2E includes a mobile viewport smoke pass for core routes", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = readBrowserE2E()
 
   assert.match(e2e, /mobileContext = await browser\.newContext/)
   assert.match(e2e, /viewport: \{ width: 390, height: 844 \}/)
@@ -460,7 +206,7 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
 })
 
 test("browser E2E verifies non-default vocabulary levels load dynamically", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = readBrowserE2E()
 
   assert.match(e2e, /getByTestId\("vocabulary-expand-sur-n-35"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("vocabulary-focus-card"\)\.click\(\)/)
@@ -477,8 +223,8 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
 })
 
 test("browser E2E verifies learning data export reset and import through the UI", () => {
-  const e2e = fs.readFileSync(browserE2EPath, "utf8")
-  const fixtures = fs.readFileSync(browserFixturesPath, "utf8")
+  const e2e = readBrowserE2E()
+  const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /acceptDownloads: true/)
   assert.match(e2e, /import fs from "node:fs\/promises"/)
@@ -526,7 +272,7 @@ test("browser E2E verifies learning data export reset and import through the UI"
 })
 
 test("browser E2E text assertions reject mojibake fallbacks", () => {
-  const e2e = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const e2e = readBrowserE2E()
 
   assert.match(e2e, /getByTestId\("kana-stroke-board"\)/)
   assert.match(e2e, /getByTestId\("quiz-score"\)/)
