@@ -5,6 +5,12 @@ export const root = path.resolve(import.meta.dirname, "..", "..")
 export const browserE2EPath = path.join(root, "tests/e2e/browser.mjs")
 export const browserFlowsPath = path.join(root, "tests/e2e/browser-flows.mjs")
 export const browserFixturesPath = path.join(root, "tests/e2e/browser-fixtures.mjs")
+export const browserFixtureModulePaths = [
+  "tests/e2e/browser-fixture-kana.mjs",
+  "tests/e2e/browser-fixture-review.mjs",
+  "tests/e2e/browser-fixture-learning-data.mjs",
+  "tests/e2e/browser-fixture-quiz.mjs",
+]
 export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-lesson.mjs",
   "tests/e2e/browser-flow-content.mjs",
@@ -19,7 +25,15 @@ export function readBrowserE2E() {
 }
 
 export function readBrowserFixtures() {
+  return [fs.readFileSync(browserFixturesPath, "utf8"), ...readBrowserFixtureModules()].join("\n")
+}
+
+export function readBrowserFixtureEntry() {
   return fs.readFileSync(browserFixturesPath, "utf8")
+}
+
+export function readBrowserFixtureModules() {
+  return browserFixtureModulePaths.map((modulePath) => fs.readFileSync(path.join(root, modulePath), "utf8"))
 }
 
 export function readBrowserFlows() {

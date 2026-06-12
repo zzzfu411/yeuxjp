@@ -2,9 +2,12 @@ import assert from "node:assert/strict"
 import test from "node:test"
 
 import {
+  browserFixtureModulePaths,
   browserFlowModulePaths,
   dynamicSelectorContracts,
   readBrowserE2E,
+  readBrowserFixtureEntry,
+  readBrowserFixtureModules,
   readBrowserFlowModules,
   readBrowserE2ESources,
   readBrowserFlows,
@@ -69,6 +72,22 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
   assert.doesNotMatch(e2e, /getByTestId\("lesson-answer-a"\)/)
   assert.match(flowModules, /getByTestId\("lesson-answer-a"\)/)
   assert.ok(browserFlowModulePaths.length > 1, "browser flow implementations should stay split by concern")
+})
+
+test("browser E2E fixtures stay split by concern behind a stable export surface", () => {
+  const fixtureEntry = readBrowserFixtureEntry()
+  const fixtureModules = readBrowserFixtureModules().join("\n")
+
+  assert.match(fixtureEntry, /browser-fixture-kana\.mjs/)
+  assert.match(fixtureEntry, /browser-fixture-review\.mjs/)
+  assert.match(fixtureEntry, /browser-fixture-learning-data\.mjs/)
+  assert.match(fixtureEntry, /browser-fixture-quiz\.mjs/)
+  assert.doesNotMatch(fixtureEntry, /page\.goto\(/)
+  assert.doesNotMatch(fixtureEntry, /localStorage\.setItem/)
+  assert.match(fixtureModules, /export const seionHiraganaToRomaji = Object\.fromEntries/)
+  assert.match(fixtureModules, /export async function seedLearningDataBackupState\(page, baseUrl\)/)
+  assert.match(fixtureModules, /export async function openQuizMode\(page, baseUrl, mode\)/)
+  assert.ok(browserFixtureModulePaths.length > 1, "browser fixture implementations should stay split by concern")
 })
 
 test("browser E2E test ids remain present in source files", () => {
