@@ -22,6 +22,9 @@ test("data validation scans source, scripts, tests, public text assets, and docs
   assert.match(source, /function validateNoMojibakeMarkers/)
   assert.match(source, /walkFiles\(srcDir/)
   assert.match(source, /path\.join\(root, "scripts"\)/)
+  assert.match(source, /rootScriptDir/)
+  assert.match(source, /path\.join\(workspaceRoot, "scripts"\)/)
+  assert.match(source, /rootScriptFiles/)
   assert.match(source, /path\.join\(root, "tests"\)/)
   assert.match(source, /path\.join\(root, "public"\)/)
   assert.match(source, /html\|webmanifest\|json\|txt\|svg\|js\|css/)
@@ -34,7 +37,7 @@ test("data validation scans source, scripts, tests, public text assets, and docs
   for (const marker of ["绗旈", "寰楀", "褰撳", "瀛︿", "澶囦", "鏃犳", "娓呯", "閿欓", "瀵煎", "銇裤"]) { // mojibake-ok detector fixture
     assert.ok(source.includes(marker), `validator should detect ${marker}`)
   }
-  assert.match(source, /source\/scripts\/tests\/public\/docs text contains likely mojibake markers/)
+  assert.match(source, /source\/scripts\/root-scripts\/tests\/public\/docs text contains likely mojibake markers/)
 })
 
 test("data validation checks lesson practice metadata and references", () => {

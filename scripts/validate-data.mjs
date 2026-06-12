@@ -212,6 +212,10 @@ function walkFiles(dir, predicate, out = []) {
 function validateNoMojibakeMarkers() {
   const sourceFiles = walkFiles(srcDir, (file) => /\.(ts|tsx|js|jsx|mjs)$/.test(file))
   const scriptFiles = walkFiles(path.join(root, "scripts"), (file) => /\.(js|mjs|ts)$/.test(file))
+  const rootScriptDir = path.join(workspaceRoot, "scripts")
+  const rootScriptFiles = fs.existsSync(rootScriptDir)
+    ? walkFiles(rootScriptDir, (file) => /\.(js|mjs|ts)$/.test(file))
+    : []
   const testFiles = walkFiles(path.join(root, "tests"), (file) => /\.(js|mjs|ts|tsx)$/.test(file))
   const publicTextFiles = walkFiles(path.join(root, "public"), (file) => /\.(html|webmanifest|json|txt|svg|js|css)$/.test(file))
   const markdownFiles = [
@@ -221,7 +225,7 @@ function validateNoMojibakeMarkers() {
     path.join(workspaceRoot, "PLAN.md"),
   ]
     .filter((file) => fs.existsSync(file))
-  const files = [...sourceFiles, ...scriptFiles, ...testFiles, ...publicTextFiles, ...markdownFiles]
+  const files = [...sourceFiles, ...scriptFiles, ...rootScriptFiles, ...testFiles, ...publicTextFiles, ...markdownFiles]
   const markerPattern = /[\u9287\u9288\u9289\u934b\u9354\u95ab\u9435\u704f]/
   const markerFragments = [
     "绗旈", // mojibake-ok detector fixture
@@ -251,8 +255,8 @@ function validateNoMojibakeMarkers() {
     })
   }
 
-  if (failures.length) fail(`source/scripts/tests/public/docs text contains likely mojibake markers: ${failures.join(", ")}`)
-  else pass("source/scripts/tests/public/docs text has no known mojibake markers")
+  if (failures.length) fail(`source/scripts/root-scripts/tests/public/docs text contains likely mojibake markers: ${failures.join(", ")}`)
+  else pass("source/scripts/root-scripts/tests/public/docs text has no known mojibake markers")
 }
 
 const kanaText = read("src/data/kana-data.ts")
