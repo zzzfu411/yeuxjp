@@ -23,3 +23,10 @@ export function shouldHandleGlobalShortcut(target: EventTarget | null) {
 
   return interactiveElement.getAttribute("data-global-shortcuts") === "allow"
 }
+
+export function shouldHandleGlobalShortcutEvent(
+  event: Pick<KeyboardEvent, "altKey" | "ctrlKey" | "metaKey" | "shiftKey" | "target">
+) {
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return false
+  return shouldHandleGlobalShortcut(event.target)
+}

@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Modal } from "@/components/ui/modal"
-import { shouldHandleGlobalShortcut } from "@/lib/keyboard-shortcuts"
+import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
 
 interface UrlControlledReferenceModalProps {
   children: ReactNode
@@ -33,10 +33,16 @@ export function UrlControlledReferenceModal({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!shouldHandleGlobalShortcut(event.target)) return
+      if (!shouldHandleGlobalShortcutEvent(event)) return
 
-      if (event.key === "ArrowRight") router.push(nextHref)
-      if (event.key === "ArrowLeft") router.push(prevHref)
+      if (event.key === "ArrowRight") {
+        event.preventDefault()
+        router.push(nextHref)
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault()
+        router.push(prevHref)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)

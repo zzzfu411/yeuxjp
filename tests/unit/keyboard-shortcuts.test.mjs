@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
-const { shouldHandleGlobalShortcut } = await loadTsModule("src/lib/keyboard-shortcuts.ts")
+const { shouldHandleGlobalShortcut, shouldHandleGlobalShortcutEvent } = await loadTsModule("src/lib/keyboard-shortcuts.ts")
 
 function element(tagName, attributes = {}) {
   const node = {
@@ -46,4 +46,14 @@ test("global shortcut guard ignores editable and interactive targets", () => {
 
 test("global shortcut guard lets explicit shortcut zones opt back in", () => {
   assert.equal(shouldHandleGlobalShortcut(element("button", { "data-global-shortcuts": "allow" })), true)
+})
+
+test("global shortcut event guard ignores modified key combinations", () => {
+  const target = element("div")
+
+  assert.equal(shouldHandleGlobalShortcutEvent({ target, altKey: false, ctrlKey: false, metaKey: false, shiftKey: false }), true)
+  assert.equal(shouldHandleGlobalShortcutEvent({ target, altKey: true, ctrlKey: false, metaKey: false, shiftKey: false }), false)
+  assert.equal(shouldHandleGlobalShortcutEvent({ target, altKey: false, ctrlKey: true, metaKey: false, shiftKey: false }), false)
+  assert.equal(shouldHandleGlobalShortcutEvent({ target, altKey: false, ctrlKey: false, metaKey: true, shiftKey: false }), false)
+  assert.equal(shouldHandleGlobalShortcutEvent({ target, altKey: false, ctrlKey: false, metaKey: false, shiftKey: true }), false)
 })

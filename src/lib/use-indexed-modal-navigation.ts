@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { shouldHandleGlobalShortcut } from "@/lib/keyboard-shortcuts"
+import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
 
 export function useIndexedModalNavigation(itemCount: number) {
   const [rawSelectedIndex, setRawSelectedIndex] = useState<number | null>(null)
@@ -34,10 +34,16 @@ export function useIndexedModalNavigation(itemCount: number) {
     if (selectedIndex === null) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!shouldHandleGlobalShortcut(event.target)) return
+      if (!shouldHandleGlobalShortcutEvent(event)) return
 
-      if (event.key === "ArrowRight") goNext()
-      if (event.key === "ArrowLeft") goPrev()
+      if (event.key === "ArrowRight") {
+        event.preventDefault()
+        goNext()
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault()
+        goPrev()
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
