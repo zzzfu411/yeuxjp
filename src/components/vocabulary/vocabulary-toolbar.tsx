@@ -65,6 +65,8 @@ export function VocabularyToolbar({
             {levels.map((level) => (
               <button
                 key={level.id}
+                type="button"
+                aria-pressed={currentLevel === level.id}
                 data-testid={`vocabulary-level-${level.id}`}
                 onClick={() => onLevelChange(level.id)}
                 className={cn(
@@ -86,6 +88,8 @@ export function VocabularyToolbar({
           </div>
 
           <button
+            type="button"
+            aria-pressed={onlyUnlearned}
             onClick={onToggleOnlyUnlearned}
             className={cn(
               "rounded-full border bg-background px-4 py-2 transition-colors hover:bg-secondary/60",
@@ -96,6 +100,7 @@ export function VocabularyToolbar({
           </button>
 
           <button
+            type="button"
             onClick={onClearLearned}
             data-testid="vocabulary-clear-progress"
             className="rounded-full border bg-background px-4 py-2 text-muted-foreground transition-colors hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
@@ -110,6 +115,8 @@ export function VocabularyToolbar({
             return (
               <button
                 key={category}
+                type="button"
+                aria-pressed={activeCategory === category}
                 onClick={() => onSelectCategory(category)}
                 className={cn(
                   "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border text-xs font-medium transition-all hover:shadow-sm",

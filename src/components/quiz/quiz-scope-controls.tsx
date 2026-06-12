@@ -45,6 +45,8 @@ export function QuizScopeControls({
       <div className="w-full flex flex-wrap items-center justify-center gap-2">
         <div className="flex p-1 bg-secondary rounded-lg">
           <button
+            type="button"
+            aria-pressed={kanaScope === "seion"}
             onClick={() => onKanaScopeChange("seion")}
             data-testid="quiz-kana-scope-seion"
             className={cn(scopeButtonClassName(kanaScope === "seion"), "px-5")}
@@ -52,6 +54,8 @@ export function QuizScopeControls({
             清音
           </button>
           <button
+            type="button"
+            aria-pressed={kanaScope === "all"}
             onClick={() => onKanaScopeChange("all")}
             data-testid="quiz-kana-scope-all"
             className={cn(scopeButtonClassName(kanaScope === "all"), "px-5")}
@@ -61,6 +65,8 @@ export function QuizScopeControls({
         </div>
 
         <button
+          type="button"
+          aria-pressed={onlyUnmasteredKana}
           onClick={() => onOnlyUnmasteredKanaChange(!onlyUnmasteredKana)}
           data-testid="quiz-only-unmastered-kana"
           className={filterButtonClassName(onlyUnmasteredKana)}
@@ -83,6 +89,8 @@ export function QuizScopeControls({
           ].map(([scope, label]) => (
             <button
               key={scope}
+              type="button"
+              aria-pressed={vocabScope === scope}
               onClick={() => onVocabScopeChange(scope as VocabQuizScope)}
               data-testid={`quiz-vocab-scope-${scope}`}
               className={scopeButtonClassName(vocabScope === scope)}
@@ -93,6 +101,8 @@ export function QuizScopeControls({
         </div>
 
         <button
+          type="button"
+          aria-pressed={onlyUnlearnedVocab}
           onClick={() => onOnlyUnlearnedVocabChange(!onlyUnlearnedVocab)}
           data-testid="quiz-only-unlearned-vocab"
           className={filterButtonClassName(onlyUnlearnedVocab)}

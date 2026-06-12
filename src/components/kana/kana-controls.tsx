@@ -50,6 +50,8 @@ export function KanaControls({
     <>
       <div className="flex rounded-lg bg-secondary p-1">
         <button
+          type="button"
+          aria-pressed={mode === "hiragana"}
           onClick={() => onModeChange("hiragana")}
           className={cn(
             "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-8",
@@ -61,6 +63,8 @@ export function KanaControls({
           平假名 (Hiragana)
         </button>
         <button
+          type="button"
+          aria-pressed={mode === "katakana"}
           onClick={() => onModeChange("katakana")}
           className={cn(
             "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-8",
@@ -78,6 +82,8 @@ export function KanaControls({
           {kanaSets.map((set) => (
             <button
               key={set.id}
+              type="button"
+              aria-pressed={kanaSet === set.id}
               onClick={() => onKanaSetChange(set.id)}
               className={cn(
                 "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-6",
@@ -97,6 +103,8 @@ export function KanaControls({
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
+            type="button"
+            aria-pressed={showRomaji}
             onClick={onToggleRomaji}
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
@@ -108,6 +116,8 @@ export function KanaControls({
           </button>
 
           <button
+            type="button"
+            aria-pressed={onlyUnmastered}
             onClick={onToggleOnlyUnmastered}
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
@@ -118,6 +128,7 @@ export function KanaControls({
           </button>
 
           <button
+            type="button"
             onClick={onClearMastered}
             data-testid="kana-clear-progress"
             className={cn(
