@@ -2,6 +2,14 @@
 
 import { STORAGE_KEYS, type StorageKey } from "@/lib/storage-keys"
 import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
+import {
+  beginLearningNotificationTransaction,
+  discardLearningNotificationsFrom,
+  endLearningNotificationTransaction,
+  flushQueuedLearningNotifications,
+  isOuterLearningNotificationTransaction,
+  notifyLearningStoreEvent,
+} from "@/lib/learning-events"
 import { normalizeMistakeList } from "@/lib/mistake-notebook-model"
 import {
   normalizeItemProgressMap,
@@ -15,7 +23,7 @@ import { normalizeSpeechPreferences } from "@/lib/speech-preferences-model"
 import { normalizeSrsState } from "@/lib/srs-model"
 
 export const LEARNING_BACKUP_VERSION = 1
-export const LEARNING_STORE_EVENT = "yasashi:learning-store:update"
+export { LEARNING_STORE_EVENT, queueLearningNotification } from "@/lib/learning-events"
 
 const BACKUP_KEYS = [
   STORAGE_KEYS.USER_PROFILE,
@@ -41,10 +49,6 @@ export interface LearningBackup {
 }
 
 type LearningStoreAction = "backup" | "restore" | "reset" | "rollback"
-type QueuedLearningNotification = () => void
-
-let transactionDepth = 0
-let queuedLearningNotifications: QueuedLearningNotification[] = []
 
 function parseStoredJson(value: string) {
   try {
@@ -122,6 +126,21 @@ function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, now: num
   }
 }
 
+function filterOrphanMistakeSrsEntries(entries: LearningBackup["entries"], now: number = Date.now()) {
+  const mistakesEntry = entries[STORAGE_KEYS.MISTAKES]
+  const mistakeSrsEntry = entries[STORAGE_KEYS.SRS_MISTAKES]
+  if (typeof mistakesEntry !== "string" || typeof mistakeSrsEntry !== "string") {
+    return true
+  }
+
+  const mistakes = normalizeMistakeList(JSON.parse(mistakesEntry), now)
+  const mistakeIds = new Set(mistakes.map((item) => item.id))
+  const mistakeSrs = normalizeSrsMapForBackup(JSON.parse(mistakeSrsEntry), (id) => mistakeIds.has(id), now)
+  if (mistakeSrs === null) return false
+  entries[STORAGE_KEYS.SRS_MISTAKES] = JSON.stringify(mistakeSrs)
+  return true
+}
+
 function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = Date.now()): LearningBackup | null {
   if (backup.version !== LEARNING_BACKUP_VERSION) return null
   if (typeof backup.exportedAt !== "number" || !Number.isFinite(backup.exportedAt)) return null
@@ -136,6 +155,8 @@ function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = 
     entries[key as LearningBackupKey] = normalized
   }
 
+  if (!filterOrphanMistakeSrsEntries(entries, now)) return null
+
   return {
     version: LEARNING_BACKUP_VERSION,
     exportedAt: backup.exportedAt,
@@ -144,29 +165,7 @@ function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = 
 }
 
 function notifyLearningStore(detail: { action: LearningStoreAction; keys: readonly string[] }) {
-  if (typeof window === "undefined") return
-  window.dispatchEvent(new CustomEvent(LEARNING_STORE_EVENT, { detail }))
-}
-
-export function queueLearningNotification(emit: QueuedLearningNotification) {
-  if (typeof window === "undefined") return
-  if (transactionDepth > 0) {
-    queuedLearningNotifications.push(emit)
-    return
-  }
-  emit()
-}
-
-function flushQueuedLearningNotifications() {
-  const notifications = queuedLearningNotifications
-  queuedLearningNotifications = []
-  for (const emit of notifications) {
-    try {
-      emit()
-    } catch {
-      // A UI sync listener should not prevent later successful transaction notifications.
-    }
-  }
+  notifyLearningStoreEvent(detail)
 }
 
 function snapshotLearningKeys() {
@@ -215,10 +214,9 @@ export function getLearningBackupKeys() {
 export function runLearningStorageTransaction(commit: () => boolean) {
   const previous = snapshotLearningKeys()
   if (!previous) return false
-  const isOuterTransaction = transactionDepth === 0
-  const notificationStart = queuedLearningNotifications.length
+  const isOuterTransaction = isOuterLearningNotificationTransaction()
+  const notificationStart = beginLearningNotificationTransaction()
 
-  transactionDepth += 1
   let saved = false
   try {
     saved = commit()
@@ -226,7 +224,7 @@ export function runLearningStorageTransaction(commit: () => boolean) {
     // Treat thrown storage/persistence failures like false commits so callers get rollback semantics.
     saved = false
   } finally {
-    transactionDepth -= 1
+    endLearningNotificationTransaction()
   }
 
   if (saved) {
@@ -234,7 +232,7 @@ export function runLearningStorageTransaction(commit: () => boolean) {
     return true
   }
 
-  queuedLearningNotifications.length = notificationStart
+  discardLearningNotificationsFrom(notificationStart)
   rollbackLearningKeys(previous, isOuterTransaction)
   return false
 }
@@ -255,6 +253,7 @@ export function tryCreateLearningBackup(now: number = Date.now()): LearningBacku
         if (normalized === null) return null
         entries[key] = normalized
       }
+      if (!filterOrphanMistakeSrsEntries(entries, now)) return null
     } catch {
       return null
     }

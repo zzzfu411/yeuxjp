@@ -1,5 +1,7 @@
 "use client"
 
+import { queueLearningNotification } from "@/lib/learning-events"
+
 export const PROGRESS_UPDATE_EVENT = "yasashi:progress:update"
 
 export function normalizeProgressList(input: unknown) {
@@ -47,5 +49,7 @@ export function writeProgressList(storageKey: string, list: string[], label: str
 
 export function notifyProgressList(storageKey: string) {
   if (typeof window === "undefined") return
-  window.dispatchEvent(new CustomEvent(PROGRESS_UPDATE_EVENT, { detail: { storageKey } }))
+  queueLearningNotification(() => {
+    window.dispatchEvent(new CustomEvent(PROGRESS_UPDATE_EVENT, { detail: { storageKey } }))
+  })
 }

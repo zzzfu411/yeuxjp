@@ -132,6 +132,22 @@ test("learning backup export normalizes active kana indexes", () => {
   assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA])), ["a"])
 })
 
+test("learning backup export removes mistake SRS entries without notebook records", () => {
+  const { map } = installWindow()
+  map.set(storage.STORAGE_KEYS.MISTAKES, JSON.stringify([
+    { id: "m1", type: "quiz:kana", correctAnswer: "a", wrongCount: 1, createdAt: 1, lastWrongAt: 2 },
+  ]))
+  map.set(storage.STORAGE_KEYS.SRS_MISTAKES, JSON.stringify({
+    m1: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+    orphan: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+  }))
+
+  const backup = store.tryCreateLearningBackup(123)
+
+  assert.ok(backup)
+  assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_MISTAKES])), ["m1"])
+})
+
 test("restoreLearningBackup normalizes managed entries before writing", () => {
   const { map } = installWindow()
   const backup = {
@@ -157,6 +173,26 @@ test("restoreLearningBackup normalizes managed entries before writing", () => {
   assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA))), ["a"])
   assert.equal(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA)).a.box, 6)
   assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_VOCAB))), ["sur-g-1"])
+})
+
+test("restoreLearningBackup removes mistake SRS entries without notebook records", () => {
+  const { map } = installWindow()
+  const backup = {
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 123,
+    entries: {
+      [storage.STORAGE_KEYS.MISTAKES]: JSON.stringify([
+        { id: "m1", type: "quiz:kana", correctAnswer: "a", wrongCount: 1, createdAt: 1, lastWrongAt: 2 },
+      ]),
+      [storage.STORAGE_KEYS.SRS_MISTAKES]: JSON.stringify({
+        m1: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+        orphan: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+      }),
+    },
+  }
+
+  assert.equal(store.restoreLearningBackup(backup), true)
+  assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_MISTAKES))), ["m1"])
 })
 
 test("restoreLearningBackup rejects malformed managed entries before mutating", () => {
@@ -453,6 +489,13 @@ test("parseLearningBackup normalizes managed entries before restore", () => {
         "sur-g-999": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
         "day-v-1": { box: 99, dueAt: 3, createdAt: 4, right: 1, wrong: 0 },
       }),
+      [storage.STORAGE_KEYS.MISTAKES]: JSON.stringify([
+        { id: "m1", type: "quiz:kana", correctAnswer: "a", wrongCount: 1, createdAt: 1, lastWrongAt: 2 },
+      ]),
+      [storage.STORAGE_KEYS.SRS_MISTAKES]: JSON.stringify({
+        m1: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+        orphan: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+      }),
     },
   }))
 
@@ -465,6 +508,7 @@ test("parseLearningBackup normalizes managed entries before restore", () => {
   assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA]).a.box, 6)
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_VOCAB])).sort(), ["day-v-1", "sur-g-1"])
   assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_VOCAB])["day-v-1"].box, 6)
+  assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_MISTAKES])), ["m1"])
 })
 
 test("learning store restore and reset snapshot managed keys before mutating", () => {
@@ -477,4 +521,35 @@ test("learning store restore and reset snapshot managed keys before mutating", (
   assert.match(source, /rollbackLearningKeys\(previous\)/)
   assert.match(source, /notifyLearningStore\(\{ action: "restore", keys: BACKUP_KEYS \}\)/)
   assert.match(source, /notifyLearningStore\(\{ action: "reset", keys: BACKUP_KEYS \}\)/)
+})
+
+test("learning store keeps notification queue state in a cycle-free event module", () => {
+  const storeSource = read("src/lib/learning-store.ts")
+  const eventsSource = read("src/lib/learning-events.ts")
+  const progressSource = read("src/lib/progress-list-storage.ts")
+
+  assert.match(storeSource, /from "@\/lib\/learning-events"/)
+  assert.match(storeSource, /export \{ LEARNING_STORE_EVENT, queueLearningNotification \} from "@\/lib\/learning-events"/)
+  assert.doesNotMatch(storeSource, /let transactionDepth/)
+  assert.doesNotMatch(storeSource, /let queuedLearningNotifications/)
+  assert.match(eventsSource, /let transactionDepth = 0/)
+  assert.match(eventsSource, /export function queueLearningNotification/)
+  assert.match(progressSource, /from "@\/lib\/learning-events"/)
+  assert.doesNotMatch(progressSource, /from "@\/lib\/learning-store"/)
+})
+
+test("learning store events are broadcast across tabs through the shared event module", () => {
+  const storeSource = read("src/lib/learning-store.ts")
+  const eventsSource = read("src/lib/learning-events.ts")
+  const reviewSessionState = read("src/components/review/use-review-session-state.ts")
+
+  assert.match(storeSource, /notifyLearningStoreEvent\(detail\)/)
+  assert.match(eventsSource, /export const LEARNING_STORE_CHANNEL = "yasashi:learning-store"/)
+  assert.match(eventsSource, /new window\.BroadcastChannel\(LEARNING_STORE_CHANNEL\)/)
+  assert.match(eventsSource, /channel\.postMessage\(detail\)/)
+  assert.match(eventsSource, /export function addLearningStoreListener/)
+  assert.match(eventsSource, /channel\?\.addEventListener\("message", onChannelMessage\)/)
+  assert.match(eventsSource, /channel\?\.removeEventListener\("message", onChannelMessage\)/)
+  assert.match(reviewSessionState, /addLearningStoreListener/)
+  assert.doesNotMatch(reviewSessionState, /shouldInvalidateReviewSessionForStorageKey/)
 })

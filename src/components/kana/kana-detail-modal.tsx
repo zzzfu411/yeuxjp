@@ -1,12 +1,24 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { CheckCircle2, ChevronLeft, ChevronRight, PenTool, Volume2 } from "lucide-react"
 import type { Kana } from "@/data/kana-data"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
 import { cn } from "@/lib/utils"
 import type { StrokeAvailability } from "@/lib/kana-grid-model"
-import { KanaStrokeAnimCJK } from "./kana-stroke-animcjk"
+
+const KanaStrokeAnimCJK = dynamic(
+  () => import("./kana-stroke-animcjk").then((mod) => mod.KanaStrokeAnimCJK),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center rounded-2xl border bg-muted/30 text-sm text-muted-foreground">
+        加载笔顺动画...
+      </div>
+    ),
+  }
+)
 
 export function KanaDetailModal({
   kana,

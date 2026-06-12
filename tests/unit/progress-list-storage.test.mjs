@@ -1,8 +1,11 @@
 import assert from "node:assert/strict"
+import fs from "node:fs"
+import path from "node:path"
 import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const progressStorage = await loadTsModule("src/lib/progress-list-storage.ts")
+const root = path.resolve(import.meta.dirname, "..", "..")
 
 function installWindow() {
   const map = new Map()
@@ -61,4 +64,12 @@ test("progress list storage writes JSON and dispatches shared update events", ()
   assert.equal(map.get("progress"), "[\"a\",\"ka\"]")
   assert.equal(events.at(-1).type, progressStorage.PROGRESS_UPDATE_EVENT)
   assert.deepEqual(events.at(-1).detail, { storageKey: "progress" })
+})
+
+test("progress list update events use the shared learning transaction notification queue", () => {
+  const source = fs.readFileSync(path.join(root, "src/lib/progress-list-storage.ts"), "utf8")
+
+  assert.match(source, /import \{ queueLearningNotification \} from "@\/lib\/learning-events"/)
+  assert.match(source, /queueLearningNotification\(\(\) => \{/)
+  assert.match(source, /window\.dispatchEvent\(new CustomEvent\(PROGRESS_UPDATE_EVENT/)
 })

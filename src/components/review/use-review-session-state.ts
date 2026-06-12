@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { addLearningStoreListener } from "@/lib/learning-events"
 import {
   advanceReviewQueue,
   createReviewStats,
@@ -28,9 +28,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
   }, [initialCount, stats])
 
   useEffect(() => {
-    const onLearningStore = (event: Event) => {
-      const detail = (event as CustomEvent).detail as { action?: unknown } | undefined
-      if (!shouldInvalidateReviewSession(detail?.action)) return
+    const invalidate = () => {
       answerPendingRef.current = false
       setIsInvalidated(true)
       setQueue([])
@@ -38,8 +36,12 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
       setLastAnswerCorrect(null)
     }
 
-    window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
-    return () => window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
+    const removeLearningStoreListener = addLearningStoreListener((detail) => {
+      if (!shouldInvalidateReviewSession(detail.action)) return
+      invalidate()
+    })
+
+    return () => removeLearningStoreListener()
   }, [])
 
   const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean) => {

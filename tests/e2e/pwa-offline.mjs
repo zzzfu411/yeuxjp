@@ -59,10 +59,11 @@ try {
   await waitForServiceWorker(page)
 
   const visitedLessonUrl = `${baseUrl}/learn/day-1-a-row-hello`
-  await page.goto(visitedLessonUrl, { waitUntil: "networkidle" })
+  await page.getByTestId("home-start-learning").click()
+  await page.waitForURL(/\/learn\/day-1-a-row-hello/)
   await assert.doesNotReject(
     page.getByTestId("lesson-next").waitFor({ state: "visible", timeout: 10_000 }),
-    "lesson page should load before offline cache verification"
+    "lesson page reached through the app link should load before offline cache verification"
   )
   const animCjkPath = "/animcjk/kana/12354.svg"
   const onlineAnimCjkSvg = await page.evaluate(async (path) => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { queueLearningNotification } from "@/lib/learning-store"
+import { queueLearningNotification } from "@/lib/learning-events"
 
 export const LEARNING_EVENT = "yasashi:learning:update"
 

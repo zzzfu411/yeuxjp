@@ -1,6 +1,6 @@
 "use client"
 
-import { queueLearningNotification } from "@/lib/learning-store"
+import { queueLearningNotification } from "@/lib/learning-events"
 import { normalizeMistakeList, type MistakeItem } from "@/lib/mistake-notebook-model"
 
 export const MISTAKE_NOTEBOOK_EVENT = "yasashi:mistake-notebook:update"

@@ -1,7 +1,7 @@
 "use client"
 
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
-import { queueLearningNotification } from "@/lib/learning-store"
+import { queueLearningNotification } from "@/lib/learning-events"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 import {
   applySrsResult,
