@@ -100,8 +100,8 @@ export function PwaRegister() {
       data-testid="pwa-update-banner"
     >
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold leading-5">New version ready</p>
-        <p className="text-xs leading-5 text-muted-foreground">Refresh to keep offline files in sync.</p>
+        <p className="text-sm font-semibold leading-5">新版本已准备好</p>
+        <p className="text-xs leading-5 text-muted-foreground">刷新后可同步最新离线文件。</p>
       </div>
       <Button
         className="shrink-0 gap-2"
@@ -111,10 +111,10 @@ export function PwaRegister() {
         type="button"
       >
         <RefreshCw className="h-4 w-4" aria-hidden="true" />
-        Refresh
+        刷新
       </Button>
       <Button
-        aria-label="Dismiss update notice"
+        aria-label="关闭更新提示"
         className="h-8 w-8 shrink-0"
         data-testid="pwa-update-dismiss"
         onClick={() => setDismissed(true)}
