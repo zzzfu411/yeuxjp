@@ -22,6 +22,9 @@ test("PWA registers a production service worker and exposes install metadata", (
 
 test("PWA registration surfaces service worker updates without forcing a reload", () => {
   assert.match(register, /useState/)
+  assert.match(register, /useRef/)
+  assert.match(register, /waitingRegistrationRef/)
+  assert.match(register, /refreshAfterControllerChangeRef/)
   assert.match(register, /registration\.waiting/)
   assert.match(register, /updatefound/)
   assert.match(register, /worker\.state === "installed"/)
@@ -42,6 +45,8 @@ test("PWA registration surfaces service worker updates without forcing a reload"
   assert.doesNotMatch(register, /New version ready/)
   assert.doesNotMatch(register, /Refresh to keep offline files in sync/)
   assert.match(register, /window\.location\.reload\(\)/)
+  assert.match(register, /waitingWorker\.postMessage\(\{ type: "SKIP_WAITING" \}\)/)
+  assert.match(register, /refreshAfterControllerChangeRef\.current = true/)
   assert.match(register, /data-testid="pwa-update-dismiss"/)
   assert.doesNotMatch(register, /skipWaiting\(\)/)
 })
@@ -73,6 +78,8 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /filter\(\(asset\) => !CORE_STATIC_ASSETS\.includes\(asset\)\)/)
   assert.match(sw, /map\(\(asset\) => cache\.add\(asset\)\)/)
   assert.doesNotMatch(sw, /cache\.addAll\(STATIC_ASSETS\)/)
+  assert.match(sw, /self\.addEventListener\("message"/)
+  assert.match(sw, /event\.data\?\.type === "SKIP_WAITING"/)
   assert.match(sw, /\/brand\/logo-mark\.svg/)
   assert.match(sw, /\/brand\/logo-wordmark\.svg/)
   assert.match(sw, /\/assets\/kana\/kana-seion\.webp/)
@@ -108,6 +115,7 @@ test("service worker caches static assets and visited navigation pages without l
 test("service worker install tolerates non-critical static asset failures", async () => {
   const addCalls = []
   let installHandler = null
+  let messageHandler = null
   let skipWaitingCalled = false
   const cache = {
     async addAll(assets) {
@@ -128,6 +136,7 @@ test("service worker install tolerates non-critical static asset failures", asyn
       location: { origin: "https://example.test" },
       addEventListener(type, handler) {
         if (type === "install") installHandler = handler
+        if (type === "message") messageHandler = handler
       },
       skipWaiting() {
         skipWaitingCalled = true
@@ -153,6 +162,9 @@ test("service worker install tolerates non-critical static asset failures", asyn
   const coreAdd = addCalls.find((call) => call.type === "addAll")
   assert.deepEqual(Array.from(coreAdd?.assets ?? []), ["/", "/offline.html", "/manifest.webmanifest"])
   assert.ok(addCalls.some((call) => call.type === "add" && call.assets.includes("/favicon.ico")))
+  assert.equal(skipWaitingCalled, false)
+  assert.equal(typeof messageHandler, "function")
+  messageHandler({ data: { type: "SKIP_WAITING" } })
   assert.equal(skipWaitingCalled, true)
 })
 

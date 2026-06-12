@@ -34,7 +34,7 @@ try {
   console.error(serverController.output)
   failure = error
 } finally {
-  serverController.stop()
+  await serverController.stop()
 }
 
 if (failure) {

@@ -1,7 +1,7 @@
 "use client"
 
 import { RefreshCw, X } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 
@@ -30,14 +30,21 @@ function getOfflineNavigationAnchor(event: MouseEvent) {
 export function PwaRegister() {
   const [updateReady, setUpdateReady] = useState(false)
   const [dismissed, setDismissed] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const waitingRegistrationRef = useRef<ServiceWorkerRegistration | null>(null)
+  const refreshAfterControllerChangeRef = useRef(false)
 
   useEffect(() => {
     let hasExistingController = "serviceWorker" in navigator && Boolean(navigator.serviceWorker.controller)
 
-    const markUpdateReady = () => {
+    const markUpdateReady = (registration?: ServiceWorkerRegistration | null) => {
+      if (registration?.waiting) {
+        waitingRegistrationRef.current = registration
+      }
       if (hasExistingController && navigator.serviceWorker.controller) {
         setUpdateReady(true)
         setDismissed(false)
+        setRefreshing(false)
       }
     }
 
@@ -46,6 +53,12 @@ export function PwaRegister() {
         hasExistingController = true
         return
       }
+
+      if (refreshAfterControllerChangeRef.current) {
+        window.location.reload()
+        return
+      }
+
       markUpdateReady()
     }
 
@@ -83,7 +96,7 @@ export function PwaRegister() {
 
     navigator.serviceWorker.register("/sw.js").then((registration) => {
       if (registration.waiting) {
-        markUpdateReady()
+        markUpdateReady(registration)
       }
 
       registration.addEventListener("updatefound", () => {
@@ -92,7 +105,7 @@ export function PwaRegister() {
 
         worker.addEventListener("statechange", () => {
           if (worker.state === "installed") {
-            markUpdateReady()
+            markUpdateReady(registration)
           }
         })
       })
@@ -111,6 +124,25 @@ export function PwaRegister() {
     }
   }, [])
 
+  const activateWaitingUpdate = () => {
+    const waitingWorker = waitingRegistrationRef.current?.waiting
+
+    if (!waitingWorker) {
+      window.location.reload()
+      return
+    }
+
+    refreshAfterControllerChangeRef.current = true
+    setRefreshing(true)
+    waitingWorker.postMessage({ type: "SKIP_WAITING" })
+
+    window.setTimeout(() => {
+      if (refreshAfterControllerChangeRef.current) {
+        window.location.reload()
+      }
+    }, 5_000)
+  }
+
   if (!updateReady || dismissed) return null
 
   return (
@@ -128,12 +160,13 @@ export function PwaRegister() {
       <Button
         className="shrink-0 gap-2"
         data-testid="pwa-update-refresh"
-        onClick={() => window.location.reload()}
+        disabled={refreshing}
+        onClick={activateWaitingUpdate}
         size="sm"
         type="button"
       >
         <RefreshCw className="h-4 w-4" aria-hidden="true" />
-        刷新
+        {refreshing ? "更新中" : "刷新"}
       </Button>
       <Button
         aria-label="关闭更新提示"

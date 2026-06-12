@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v5";
 const STATIC_CACHE_NAME = `yasashi-static-${CACHE_VERSION}`;
 const NAVIGATION_CACHE_NAME = `yasashi-navigation-${CACHE_VERSION}`;
 const OFFLINE_FALLBACK_URL = "/offline.html";
@@ -55,8 +55,13 @@ self.addEventListener("install", (event) => {
           .filter((asset) => !CORE_STATIC_ASSETS.includes(asset))
           .map((asset) => cache.add(asset))
       ))
-      .then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {

@@ -74,7 +74,7 @@ try {
 } finally {
   await context?.close()
   await browser?.close()
-  serverController.stop()
+  await serverController.stop()
 }
 
 if (failure) {

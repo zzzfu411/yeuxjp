@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from "node:child_process"
+import fs from "node:fs"
 import net from "node:net"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -8,6 +9,7 @@ import { canServeRoutes, waitForServer } from "./app-health.mjs"
 export const appDir = fileURLToPath(new URL("../..", import.meta.url))
 
 export const nextCli = path.join(appDir, "node_modules", "next", "dist", "bin", "next")
+const nextDevLockPath = path.join(appDir, ".next", "dev", "lock")
 
 function runNextBuildSync() {
   const env = { ...process.env, NEXT_TELEMETRY_DISABLED: "1" }
@@ -27,6 +29,37 @@ function canBindPort(port) {
     })
     server.listen(port, "127.0.0.1")
   })
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function waitForProcessExit(child, timeoutMs = 5_000) {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return Promise.resolve()
+
+  return new Promise((resolve) => {
+    const finish = () => {
+      clearTimeout(timeout)
+      child.off("exit", finish)
+      child.off("close", finish)
+      resolve()
+    }
+    const timeout = setTimeout(finish, timeoutMs)
+    child.once("exit", finish)
+    child.once("close", finish)
+  })
+}
+
+async function waitForNextDevLockRelease({ timeoutMs = 15_000, pollMs = 250 } = {}) {
+  const deadline = Date.now() + timeoutMs
+
+  while (fs.existsSync(nextDevLockPath)) {
+    if (Date.now() > deadline) {
+      throw new Error(`Timed out waiting for stale Next.js dev lock at ${nextDevLockPath}`)
+    }
+    await sleep(pollMs)
+  }
 }
 
 export async function findAvailablePort(preferredPort, { maxAttempts = 20 } = {}) {
@@ -110,16 +143,19 @@ export function createServerController() {
     holdRelease(callback) {
       release = callback
     },
-    stop() {
+    async stop() {
+      const runningServer = server
       if (server?.pid) {
         if (process.platform === "win32") {
           spawnSync("taskkill", ["/pid", String(server.pid), "/t", "/f"], { stdio: "ignore" })
         } else {
           server.kill("SIGTERM")
         }
+        await waitForProcessExit(runningServer)
       }
       server?.stdout.destroy()
       server?.stderr.destroy()
+      server = null
       release?.()
       release = null
     },
@@ -139,12 +175,10 @@ export async function reuseOrStartDevServer({ baseUrl, port, controller }) {
 
   const selectedPort = await findAvailablePort(port)
   const selectedBaseUrl = `http://127.0.0.1:${selectedPort}`
-  const command = process.platform === "win32" ? `npm.cmd run dev -- --hostname 127.0.0.1 --port ${selectedPort}` : "npm"
-  const args = process.platform === "win32" ? [] : ["run", "dev", "--", "--hostname", "127.0.0.1", "--port", String(selectedPort)]
-  controller.spawn(command, args, {
+  await waitForNextDevLockRelease()
+  controller.spawn(process.execPath, [nextCli, "dev", "--hostname", "127.0.0.1", "--port", String(selectedPort)], {
     cwd: appDir,
     stdio: "pipe",
-    shell: process.platform === "win32",
     env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
   })
   await waitForServer(selectedBaseUrl)
