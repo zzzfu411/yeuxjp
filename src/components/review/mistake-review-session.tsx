@@ -84,6 +84,7 @@ export function MistakeReviewSession({
   const handleRemove = () => {
     const removed = notebook.remove(item.id)
     setSaveErrorId(removed ? null : item.id)
+    if (removed) review.dropCurrent()
   }
 
   return (

@@ -29,6 +29,7 @@ test("MistakeReviewSession owns mistake question conversion, removal, feedback, 
   assert.match(source, /const handleRemove = \(\) => \{/)
   assert.match(source, /const removed = notebook\.remove\(item\.id\)/)
   assert.match(source, /setSaveErrorId\(removed \? null : item\.id\)/)
+  assert.match(source, /if \(removed\) review\.dropCurrent\(\)/)
   assert.match(source, /onClick=\{handleRemove\}/)
   assert.match(source, /<MistakeReviewPrompt\b/)
   assert.match(source, /<ReviewAnswerFeedback/)

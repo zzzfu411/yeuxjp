@@ -30,6 +30,11 @@ export function advanceReviewQueue<T>(queue: T[], lastOk: boolean | null): T[] {
   return lastOk ? rest : [...rest, head]
 }
 
+export function dropCurrentReviewItem<T>(queue: T[]): T[] {
+  const [, ...rest] = queue
+  return rest
+}
+
 export function getReviewCompletionStats(initial: number, stats: ReviewStats): ReviewCompletionStats {
   return {
     initial,

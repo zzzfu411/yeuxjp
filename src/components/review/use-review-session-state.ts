@@ -5,6 +5,7 @@ import { addLearningStoreListener } from "@/lib/learning-events"
 import {
   advanceReviewQueue,
   createReviewStats,
+  dropCurrentReviewItem,
   getReviewCompletionStats,
   recordReviewAnswer,
   shouldInvalidateReviewSession,
@@ -66,6 +67,13 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     answerPendingRef.current = false
   }, [lastAnswerCorrect])
 
+  const dropCurrent = useCallback(() => {
+    setQueue((prev) => dropCurrentReviewItem(prev))
+    setSelectedAnswer(null)
+    setLastAnswerCorrect(null)
+    answerPendingRef.current = false
+  }, [])
+
   return {
     queue,
     currentItem,
@@ -78,5 +86,6 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     completionStats,
     recordAnswer,
     advance,
+    dropCurrent,
   }
 }

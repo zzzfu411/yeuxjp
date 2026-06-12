@@ -15,6 +15,14 @@ test("review queues do not advance before an answer is graded", () => {
   assert.deepEqual(session.advanceReviewQueue([], true), [])
 })
 
+test("review queues can drop the current item after external removal", () => {
+  const queue = ["a", "b", "c"]
+
+  assert.deepEqual(session.dropCurrentReviewItem(queue), ["b", "c"])
+  assert.deepEqual(session.dropCurrentReviewItem([]), [])
+  assert.deepEqual(queue, ["a", "b", "c"])
+})
+
 test("review stats accumulate answers and completion display data", () => {
   let stats = session.createReviewStats()
   stats = session.recordReviewAnswer(stats, true)
