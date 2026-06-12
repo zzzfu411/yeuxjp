@@ -2,8 +2,10 @@ import assert from "node:assert/strict"
 import test from "node:test"
 
 import {
+  browserFlowModulePaths,
   dynamicSelectorContracts,
   readBrowserE2E,
+  readBrowserFlowModules,
   readBrowserE2ESources,
   readBrowserFlows,
   readBrowserFixtures,
@@ -41,6 +43,7 @@ test("browser E2E can skip missing optional Playwright but has a required mode",
 test("browser E2E entry delegates click flows to flow helpers", () => {
   const e2e = readBrowserE2E()
   const flows = readBrowserFlows()
+  const flowModules = readBrowserFlowModules().join("\n")
   const helperNames = [
     "verifyLessonFlow",
     "verifyInitialReviewEmptyState",
@@ -52,17 +55,20 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
   ]
 
   assert.match(e2e, /from "\.\/browser-flows\.mjs"/)
+  assert.doesNotMatch(flows, /page\.goto\(/)
+  assert.doesNotMatch(flows, /getByTestId\(/)
   for (const helperName of helperNames) {
     assert.match(e2e, new RegExp(`\\b${helperName}\\b`), `${helperName} should be imported by the E2E entry`)
     assert.match(e2e, new RegExp(`await ${helperName}\\(`), `${helperName} should be called by the E2E entry`)
     assert.match(
-      flows,
+      flowModules,
       new RegExp(`export async function ${helperName}\\(`),
-      `${helperName} should be implemented in browser-flows.mjs`
+      `${helperName} should be implemented in a browser flow module`
     )
   }
   assert.doesNotMatch(e2e, /getByTestId\("lesson-answer-a"\)/)
-  assert.match(flows, /getByTestId\("lesson-answer-a"\)/)
+  assert.match(flowModules, /getByTestId\("lesson-answer-a"\)/)
+  assert.ok(browserFlowModulePaths.length > 1, "browser flow implementations should stay split by concern")
 })
 
 test("browser E2E test ids remain present in source files", () => {
