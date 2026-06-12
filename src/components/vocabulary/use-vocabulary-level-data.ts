@@ -5,6 +5,7 @@ import { loadVocabularyLevel } from "@/data/vocabulary/loader"
 import type { VocabLevel, Vocabulary } from "@/data/vocabulary/types"
 
 const EMPTY_VOCAB: Vocabulary[] = []
+const VOCABULARY_LEVEL_LOAD_ERROR = "词汇加载失败"
 
 interface VocabularyLevelDataState {
   level: VocabLevel | null
@@ -28,12 +29,12 @@ export function useVocabularyLevelData(level: VocabLevel) {
         if (cancelled) return
         setState({ level, data, error: null })
       })
-      .catch((err) => {
+      .catch(() => {
         if (cancelled) return
         setState({
           level,
           data: [],
-          error: err instanceof Error ? err.message : String(err),
+          error: VOCABULARY_LEVEL_LOAD_ERROR,
         })
       })
 

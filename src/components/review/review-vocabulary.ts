@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react"
 import { loadVocabularyReviewPool } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
 
+const REVIEW_VOCABULARY_LOAD_ERROR = "复习题库加载失败"
+
 export function useVocabularyReviewPool(ids: readonly string[], enabled: boolean) {
   const [state, setState] = useState<{ data: Vocabulary[]; loadedKey: string | null; error: string | null }>({
     data: [],
@@ -30,9 +32,9 @@ export function useVocabularyReviewPool(ids: readonly string[], enabled: boolean
         if (cancelled) return
         setState({ data, loadedKey: key, error: null })
       })
-      .catch((err) => {
+      .catch(() => {
         if (cancelled) return
-        setState({ data: [], loadedKey: key, error: err instanceof Error ? err.message : String(err) })
+        setState({ data: [], loadedKey: key, error: REVIEW_VOCABULARY_LOAD_ERROR })
       })
 
     return () => {

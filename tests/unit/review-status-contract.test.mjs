@@ -39,11 +39,14 @@ test("review vocabulary hook owns scoped vocabulary loading", () => {
   assert.doesNotMatch(source, /export function useAllVocabulary/)
   assert.doesNotMatch(source, /loadVocabularyScope/)
   assert.match(source, /export function useVocabularyReviewPool/)
+  assert.match(source, /const REVIEW_VOCABULARY_LOAD_ERROR = "\u590d\u4e60\u9898\u5e93\u52a0\u8f7d\u5931\u8d25"/)
   assert.match(source, /loadVocabularyReviewPool\(reviewIds\)/)
   assert.match(source, /const \[retryToken, setRetryToken\] = useState\(0\)/)
   assert.match(source, /const retry = useCallback/)
   assert.match(source, /setRetryToken\(\(value\) => value \+ 1\)/)
   assert.match(source, /\[enabled, key, retryToken\]/)
+  assert.match(source, /error: REVIEW_VOCABULARY_LOAD_ERROR/)
+  assert.doesNotMatch(source, /err instanceof Error \? err\.message : String\(err\)/)
   assert.match(source, /retry,/)
 
   for (const relPath of [
