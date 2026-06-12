@@ -25,6 +25,8 @@ export function LearningDataPanel({ className }: { className?: string }) {
   const fileRef = React.useRef<HTMLInputElement | null>(null)
   const [notice, setNotice] = React.useState<Notice | null>(null)
   const [confirmReset, setConfirmReset] = React.useState(false)
+  const resetLabel = confirmReset ? "确认清空" : "清空"
+  const resetAriaLabel = confirmReset ? "确认清空本地学习数据" : "清空本地学习数据"
 
   const exportData = React.useCallback(() => {
     setConfirmReset(false)
@@ -125,10 +127,11 @@ export function LearningDataPanel({ className }: { className?: string }) {
             size="sm"
             className="gap-1.5 rounded-full"
             onClick={resetData}
+            aria-label={resetAriaLabel}
             data-testid="learning-data-reset"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            清空
+            {resetLabel}
           </Button>
         </div>
       </div>
