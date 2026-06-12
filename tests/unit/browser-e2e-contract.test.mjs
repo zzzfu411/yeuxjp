@@ -242,6 +242,23 @@ test("browser E2E verifies kana and vocabulary reset confirmations", () => {
   assert.match(e2e, /learned\.length === 0/)
 })
 
+test("browser E2E verifies modal accessible names and tab focus trapping", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /readDialogFocusState/)
+  assert.match(e2e, /verifyDialogHasAccessibleName/)
+  assert.match(e2e, /verifyDialogTabTrap/)
+  assert.match(e2e, /role="dialog"\]\[aria-modal="true"/)
+  assert.match(e2e, /aria-labelledby/)
+  assert.match(e2e, /titleText\.length > 0/)
+  assert.match(e2e, /keyboard\.press\("Shift\+Tab"\)/)
+  assert.match(e2e, /keyboard\.press\("Tab"\)/)
+  assert.match(e2e, /activeIndex,\s*initial\.focusableCount - 1/)
+  assert.match(e2e, /activeIndex,\s*0/)
+  assert.match(e2e, /kana detail modal/)
+  assert.match(e2e, /vocabulary focus modal/)
+})
+
 test("browser E2E verifies review empty and due states", () => {
   const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
