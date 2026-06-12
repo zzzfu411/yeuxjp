@@ -72,7 +72,23 @@ test("practice recording failure prevents review enrollment", () => {
     answer: "a",
   }), false)
 
-  assert.equal(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS), "[]")
+  assert.equal(map.has(storage.STORAGE_KEYS.PRACTICE_RESULTS), false)
+  assert.equal(map.has(storage.STORAGE_KEYS.SRS_KANA), false)
+})
+
+test("review enrollment failure rolls back direct practice recording", () => {
+  const { map } = installLocalStorage({ failKeys: new Set([storage.STORAGE_KEYS.SRS_KANA]) })
+
+  assert.equal(session.recordPracticeResult(createProgressApi(), {
+    itemId: "a",
+    itemType: "kana",
+    mode: "recognition",
+    correct: true,
+    answer: "a",
+  }), false)
+
+  assert.equal(map.has(storage.STORAGE_KEYS.PRACTICE_RESULTS), false)
+  assert.equal(map.has(storage.STORAGE_KEYS.ITEM_PROGRESS), false)
   assert.equal(map.has(storage.STORAGE_KEYS.SRS_KANA), false)
 })
 

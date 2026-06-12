@@ -28,13 +28,17 @@ export function enrollReviewItem(itemType: PracticeResult["itemType"], itemId: s
   return enrollSrs(storageKey, itemId)
 }
 
-export function recordPracticeResult(progress: LearningProgressApi, result: Omit<PracticeResult, "createdAt">) {
+function recordPracticeResultWithoutTransaction(progress: LearningProgressApi, result: Omit<PracticeResult, "createdAt">) {
   const recorded = progress.recordPractice(result)
   if (!recorded) return false
   if (result.correct) {
     return enrollReviewItem(result.itemType, result.itemId)
   }
   return true
+}
+
+export function recordPracticeResult(progress: LearningProgressApi, result: Omit<PracticeResult, "createdAt">) {
+  return runLearningStorageTransaction(() => recordPracticeResultWithoutTransaction(progress, result))
 }
 
 export function recordMistakeIfWrong(notebook: MistakeNotebookApi, result: QuestionResult) {
@@ -81,7 +85,7 @@ export function recordQuestionPracticeWithoutTransaction({
   const { question } = result
 
   if (progress && question.itemId && question.itemType && question.mode) {
-    if (!recordPracticeResult(progress, {
+    if (!recordPracticeResultWithoutTransaction(progress, {
       lessonId,
       lessonStepId,
       itemId: question.itemId,

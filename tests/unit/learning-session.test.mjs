@@ -178,7 +178,11 @@ test("recordQuestionPractice public entrypoint is wrapped in a managed storage t
   const source = read("src/lib/learning-session.ts")
 
   assert.match(source, /runLearningStorageTransaction/)
+  assert.match(source, /function recordPracticeResultWithoutTransaction\(/)
+  assert.match(source, /export function recordPracticeResult\(/)
+  assert.match(source, /return runLearningStorageTransaction\(\(\) => recordPracticeResultWithoutTransaction\(progress, result\)\)/)
   assert.match(source, /export function recordQuestionPractice\(/)
   assert.match(source, /return runLearningStorageTransaction\(\(\) => recordQuestionPracticeWithoutTransaction\(\{/)
   assert.match(source, /export function recordQuestionPracticeWithoutTransaction\(/)
+  assert.match(source, /recordPracticeResultWithoutTransaction\(progress, \{/)
 })
