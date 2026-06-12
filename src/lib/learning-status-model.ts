@@ -4,6 +4,7 @@ import {
   type ItemProgressMap,
 } from "@/lib/learning-progress-model"
 import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
+import { isReviewableKanaId } from "@/lib/review-visibility"
 
 export const LEARNING_STATUS_MASTERY_THRESHOLD = 40
 
@@ -31,12 +32,12 @@ export function buildLearningStatusModel({
   items: ItemProgressMap
   threshold?: number
 }): LearningStatusModel {
-  const masteredKana = new Set(masteredKanaIds)
+  const masteredKana = new Set([...masteredKanaIds].filter(isReviewableKanaId))
   const learnedVocab = new Set(filterKnownVocabularyIds(learnedVocabIds))
 
   for (const item of Object.values(items)) {
     if (!isItemLearnedFromProgress(item, threshold)) continue
-    if (item.itemType === "kana") masteredKana.add(item.itemId)
+    if (item.itemType === "kana" && isReviewableKanaId(item.itemId)) masteredKana.add(item.itemId)
     if (item.itemType === "vocab" && isKnownVocabularyId(item.itemId)) learnedVocab.add(item.itemId)
   }
 

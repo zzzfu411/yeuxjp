@@ -90,3 +90,32 @@ test("learning status ignores stale vocabulary ids from legacy marks and practic
 
   assert.deepEqual([...status.learnedVocabIds].sort(), ["sur-g-1", "sur-v-1"])
 })
+
+test("learning status ignores non-reviewable kana ids from legacy marks and practiced progress", () => {
+  const status = model.buildLearningStatusModel({
+    masteredKanaIds: ["a", "sokuon:kitte"],
+    learnedVocabIds: [],
+    items: {
+      ka: item({
+        itemId: "ka",
+        itemType: "kana",
+        recognition: 80,
+        listening: 40,
+        recall: 40,
+        production: 40,
+        attempts: 4,
+      }),
+      "longvowel:obaasan": item({
+        itemId: "longvowel:obaasan",
+        itemType: "kana",
+        recognition: 100,
+        listening: 100,
+        recall: 100,
+        production: 100,
+        attempts: 4,
+      }),
+    },
+  })
+
+  assert.deepEqual([...status.masteredKanaIds].sort(), ["a", "ka"])
+})
