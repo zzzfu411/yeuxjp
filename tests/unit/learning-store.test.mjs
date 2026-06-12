@@ -423,6 +423,35 @@ test("restoreLearningBackup rolls back partial writes when a managed key fails",
   assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
 })
 
+test("restoreLearningBackup rollback does not overwrite newer cross-tab managed writes", () => {
+  const { map, events } = installWindow({ failSetKeys: new Set([storage.STORAGE_KEYS.SRS_KANA]), failOnce: true })
+  map.set(storage.STORAGE_KEYS.USER_PROFILE, "before-profile")
+  map.set(storage.STORAGE_KEYS.SRS_KANA, "before-kana")
+
+  const originalSetItem = window.localStorage.setItem
+  window.localStorage.setItem = (key, value) => {
+    originalSetItem(key, value)
+    if (key === storage.STORAGE_KEYS.USER_PROFILE) {
+      map.set(storage.STORAGE_KEYS.USER_PROFILE, "other-tab-profile")
+    }
+  }
+
+  const backup = {
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 123,
+    entries: {
+      [storage.STORAGE_KEYS.USER_PROFILE]: "{\"goal\":\"travel\"}",
+      [storage.STORAGE_KEYS.SRS_KANA]: "{\"a\":{\"box\":1}}",
+    },
+  }
+
+  assert.equal(store.restoreLearningBackup(backup), false)
+  assert.equal(map.get(storage.STORAGE_KEYS.USER_PROFILE), "other-tab-profile")
+  assert.equal(map.get(storage.STORAGE_KEYS.SRS_KANA), "before-kana")
+  assert.equal(events.at(-1).type, store.LEARNING_STORE_EVENT)
+  assert.equal(events.at(-1).detail.action, "rollback")
+})
+
 test("resetLearningData rolls back partial removals when a managed key fails", () => {
   const { map, events } = installWindow({ failRemoveKeys: new Set([storage.STORAGE_KEYS.SRS_KANA]), failOnce: true })
   map.set(storage.STORAGE_KEYS.USER_PROFILE, "profile")
@@ -436,6 +465,26 @@ test("resetLearningData rolls back partial removals when a managed key fails", (
   assert.equal(events.at(-1).type, store.LEARNING_STORE_EVENT)
   assert.equal(events.at(-1).detail.action, "rollback")
   assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
+})
+
+test("resetLearningData rollback does not overwrite newer cross-tab managed writes", () => {
+  const { map, events } = installWindow({ failRemoveKeys: new Set([storage.STORAGE_KEYS.SRS_KANA]), failOnce: true })
+  map.set(storage.STORAGE_KEYS.USER_PROFILE, "profile")
+  map.set(storage.STORAGE_KEYS.SRS_KANA, "kana")
+
+  const originalRemoveItem = window.localStorage.removeItem
+  window.localStorage.removeItem = (key) => {
+    originalRemoveItem(key)
+    if (key === storage.STORAGE_KEYS.USER_PROFILE) {
+      map.set(storage.STORAGE_KEYS.USER_PROFILE, "other-tab-profile")
+    }
+  }
+
+  assert.equal(store.resetLearningData(), false)
+  assert.equal(map.get(storage.STORAGE_KEYS.USER_PROFILE), "other-tab-profile")
+  assert.equal(map.get(storage.STORAGE_KEYS.SRS_KANA), "kana")
+  assert.equal(events.at(-1).type, store.LEARNING_STORE_EVENT)
+  assert.equal(events.at(-1).detail.action, "rollback")
 })
 
 test("parseLearningBackup rejects invalid JSON and wrong versions", () => {
@@ -562,9 +611,26 @@ test("learning store restore and reset snapshot managed keys before mutating", (
   assert.match(source, /function applyLearningSnapshot/)
   assert.match(source, /function rollbackLearningKeys/)
   assert.match(source, /const previous = snapshotLearningKeys\(\)/)
-  assert.match(source, /rollbackLearningKeys\(previous\)/)
+  assert.match(source, /rollbackLearningKeys\(previous/)
   assert.match(source, /notifyLearningStore\(\{ action: "restore", keys: BACKUP_KEYS \}\)/)
   assert.match(source, /notifyLearningStore\(\{ action: "reset", keys: BACKUP_KEYS \}\)/)
+})
+
+test("learning store restore and reset use managed transactions for rollback safety", () => {
+  const source = read("src/lib/learning-store.ts")
+  const restoreBody = source.match(/export function restoreLearningBackup[\s\S]*?\n}\n\nexport function resetLearningData/)?.[0] ?? ""
+  const resetBody = source.match(/export function resetLearningData[\s\S]*?\n}\n\nexport function parseLearningBackup/)?.[0] ?? ""
+
+  assert.match(restoreBody, /runLearningStorageTransaction\(\(\) => \{/)
+  assert.match(restoreBody, /writeManagedLearningStorage\(key, value\)/)
+  assert.match(restoreBody, /removeManagedLearningStorage\(key\)/)
+  assert.doesNotMatch(restoreBody, /window\.localStorage\.setItem/)
+  assert.doesNotMatch(restoreBody, /window\.localStorage\.removeItem/)
+
+  assert.match(resetBody, /runLearningStorageTransaction\(\(\) => \{/)
+  assert.match(resetBody, /removeManagedLearningStorage\(key\)/)
+  assert.doesNotMatch(resetBody, /window\.localStorage\.setItem/)
+  assert.doesNotMatch(resetBody, /window\.localStorage\.removeItem/)
 })
 
 test("learning store keeps notification queue state in a cycle-free event module", () => {

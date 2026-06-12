@@ -292,22 +292,19 @@ export function restoreLearningBackup(backup: LearningBackup) {
   const normalizedBackup = normalizeLearningBackup(backup)
   if (!normalizedBackup) return false
 
-  const previous = snapshotLearningKeys()
-  if (!previous) return false
-
-  try {
+  const saved = runLearningStorageTransaction(() => {
     for (const key of BACKUP_KEYS) {
       const value = normalizedBackup.entries[key]
       if (typeof value === "string") {
-        window.localStorage.setItem(key, value)
+        writeManagedLearningStorage(key, value)
       } else {
-        window.localStorage.removeItem(key)
+        removeManagedLearningStorage(key)
       }
     }
-  } catch {
-    rollbackLearningKeys(previous)
-    return false
-  }
+    return true
+  })
+
+  if (!saved) return false
 
   notifyLearningStore({ action: "restore", keys: BACKUP_KEYS })
   return true
@@ -316,17 +313,14 @@ export function restoreLearningBackup(backup: LearningBackup) {
 export function resetLearningData() {
   if (typeof window === "undefined") return false
 
-  const previous = snapshotLearningKeys()
-  if (!previous) return false
-
-  try {
+  const saved = runLearningStorageTransaction(() => {
     for (const key of BACKUP_KEYS) {
-      window.localStorage.removeItem(key)
+      removeManagedLearningStorage(key)
     }
-  } catch {
-    rollbackLearningKeys(previous)
-    return false
-  }
+    return true
+  })
+
+  if (!saved) return false
 
   notifyLearningStore({ action: "reset", keys: BACKUP_KEYS })
   return true
