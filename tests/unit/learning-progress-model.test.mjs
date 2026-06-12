@@ -43,6 +43,12 @@ test("lesson progress normalization keeps resume fields compatible", () => {
         updatedAt: 3,
       },
       stale: { lessonId: 123 },
+      mismatch: {
+        lessonId: "day-other",
+        status: "completed",
+        startedAt: 4,
+        currentStepIndex: 8,
+      },
     },
     99
   )
@@ -59,6 +65,33 @@ test("lesson progress normalization keeps resume fields compatible", () => {
       updatedAt: 3,
     },
   })
+})
+
+test("lesson progress normalization rejects mismatched map keys", () => {
+  const normalized = model.normalizeLessonProgressMap(
+    {
+      "day-1": {
+        lessonId: "day-2",
+        status: "completed",
+        startedAt: 1,
+        currentStepIndex: 3,
+        lastStepId: "resume-here",
+      },
+      "day-3": {
+        lessonId: "day-3",
+        status: "started",
+        startedAt: 2,
+        currentStepIndex: 1,
+        lastStepId: "keep-this",
+      },
+    },
+    99
+  )
+
+  assert.equal(normalized["day-1"], undefined)
+  assert.equal(normalized["day-3"].lessonId, "day-3")
+  assert.equal(normalized["day-3"].currentStepIndex, 1)
+  assert.equal(normalized["day-3"].lastStepId, "keep-this")
 })
 
 test("item progress normalization clamps mastery and counters", () => {
@@ -104,6 +137,8 @@ test("practice result normalization filters bad rows and keeps only recent histo
     createdAt: index,
   }))
   raw.push({ itemId: "bad", mode: "meaning" })
+  raw.push({ itemId: "bad-mode", itemType: "vocab", mode: "custom", correct: true })
+  raw.push({ itemId: "bad-type", itemType: "custom", mode: "meaning", correct: true })
 
   const normalized = model.normalizePracticeResults(raw, 999)
   assert.equal(normalized.length, 300)
@@ -111,6 +146,37 @@ test("practice result normalization filters bad rows and keeps only recent histo
   assert.equal(normalized.at(-1).itemId, "item-304")
   assert.equal(normalized.at(-1).lessonStepId, "step-304")
   assert.equal(normalized.at(-1).createdAt, 304)
+  assert.equal(normalized.some((item) => item.itemId === "bad-mode"), false)
+  assert.equal(normalized.some((item) => item.itemId === "bad-type"), false)
+})
+
+test("practice result normalization rejects unknown modes and item types", () => {
+  const normalized = model.normalizePracticeResults(
+    [
+      { itemId: "ok", itemType: "kana", mode: "recognition", correct: true, createdAt: 1 },
+      { itemId: "legacy-default-type", mode: "meaning", correct: false, createdAt: 2 },
+      { itemId: "bad-mode", itemType: "kana", mode: "shadow", correct: true, createdAt: 3 },
+      { itemId: "bad-type", itemType: "shadow", mode: "recognition", correct: true, createdAt: 4 },
+    ],
+    99
+  )
+
+  assert.deepEqual(normalized.map((item) => item.itemId), ["ok", "legacy-default-type"])
+  assert.equal(normalized[1].itemType, "lesson")
+
+  const updated = model.updateItemProgressForPractice({}, normalized[0])
+  assert.deepEqual(Object.keys(updated.ok).sort(), [
+    "attempts",
+    "correct",
+    "itemId",
+    "itemType",
+    "listening",
+    "meaning",
+    "production",
+    "recall",
+    "recognition",
+    "updatedAt",
+  ])
 })
 
 test("practice recording helpers append history and update item mastery from stored snapshots", () => {

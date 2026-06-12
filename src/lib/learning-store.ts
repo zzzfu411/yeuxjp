@@ -1,6 +1,16 @@
 "use client"
 
 import { STORAGE_KEYS, type StorageKey } from "@/lib/storage-keys"
+import { normalizeMistakeList } from "@/lib/mistake-notebook-model"
+import {
+  normalizeItemProgressMap,
+  normalizeLessonProgressMap,
+  normalizePracticeResults,
+  normalizeProfile,
+} from "@/lib/learning-progress-model"
+import { normalizeProgressList } from "@/lib/progress-list-storage"
+import { normalizeSpeechPreferences } from "@/lib/speech-preferences-model"
+import { normalizeSrsState } from "@/lib/srs-model"
 
 export const LEARNING_BACKUP_VERSION = 1
 export const LEARNING_STORE_EVENT = "yasashi:learning-store:update"
@@ -28,12 +38,68 @@ export interface LearningBackup {
   entries: Partial<Record<LearningBackupKey, string>>
 }
 
-function isStoredJson(value: string) {
+function parseStoredJson(value: string) {
   try {
-    JSON.parse(value)
-    return true
+    return { ok: true as const, value: JSON.parse(value) as unknown }
   } catch {
-    return false
+    return { ok: false as const }
+  }
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value)
+}
+
+function normalizeSrsMapForBackup(input: unknown) {
+  if (!isPlainObject(input)) return null
+  const out: Record<string, ReturnType<typeof normalizeSrsState>> = {}
+  for (const [id, value] of Object.entries(input)) {
+    if (!id.trim() || !isPlainObject(value)) return null
+    out[id] = normalizeSrsState(value)
+  }
+  return out
+}
+
+function normalizeBackupEntry(key: LearningBackupKey, rawValue: string): string | null {
+  const parsed = parseStoredJson(rawValue)
+  if (!parsed.ok) return null
+
+  switch (key) {
+    case STORAGE_KEYS.USER_PROFILE: {
+      if (!isPlainObject(parsed.value)) return null
+      const profile = normalizeProfile(parsed.value)
+      return profile ? JSON.stringify(profile) : null
+    }
+    case STORAGE_KEYS.LESSON_PROGRESS: {
+      if (!isPlainObject(parsed.value)) return null
+      return JSON.stringify(normalizeLessonProgressMap(parsed.value))
+    }
+    case STORAGE_KEYS.ITEM_PROGRESS: {
+      if (!isPlainObject(parsed.value)) return null
+      return JSON.stringify(normalizeItemProgressMap(parsed.value))
+    }
+    case STORAGE_KEYS.PRACTICE_RESULTS: {
+      if (!Array.isArray(parsed.value)) return null
+      return JSON.stringify(normalizePracticeResults(parsed.value))
+    }
+    case STORAGE_KEYS.SRS_KANA:
+    case STORAGE_KEYS.SRS_VOCAB:
+    case STORAGE_KEYS.SRS_MISTAKES: {
+      const map = normalizeSrsMapForBackup(parsed.value)
+      return map ? JSON.stringify(map) : null
+    }
+    case STORAGE_KEYS.MISTAKES: {
+      if (!Array.isArray(parsed.value)) return null
+      return JSON.stringify(normalizeMistakeList(parsed.value))
+    }
+    case STORAGE_KEYS.KANA_MASTERED:
+    case STORAGE_KEYS.VOCAB_LEARNED: {
+      if (!Array.isArray(parsed.value)) return null
+      return JSON.stringify(normalizeProgressList(parsed.value))
+    }
+    case STORAGE_KEYS.SPEECH_PREFS:
+      if (!isPlainObject(parsed.value)) return null
+      return JSON.stringify(normalizeSpeechPreferences(parsed.value))
   }
 }
 
@@ -177,8 +243,9 @@ export function parseLearningBackup(input: string): LearningBackup | null {
     for (const [key, value] of Object.entries(backup.entries)) {
       if (!BACKUP_KEY_SET.has(key)) continue
       if (typeof value !== "string") continue
-      if (!isStoredJson(value)) return null
-      entries[key as LearningBackupKey] = value
+      const normalized = normalizeBackupEntry(key as LearningBackupKey, value)
+      if (normalized === null) return null
+      entries[key as LearningBackupKey] = normalized
     }
     return {
       version: LEARNING_BACKUP_VERSION,

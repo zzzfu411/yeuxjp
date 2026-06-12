@@ -46,6 +46,30 @@ export async function verifyLearningDataFlow(page, baseUrl) {
     "invalid learning data import should not overwrite managed learning keys"
   )
 
+  const malformedShapeFileChooserPromise = page.waitForEvent("filechooser")
+  await page.getByTestId("learning-data-import").click()
+  const malformedShapeFileChooser = await malformedShapeFileChooserPromise
+  await malformedShapeFileChooser.setFiles({
+    name: "malformed-yasashi-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify({
+      version: 1,
+      exportedAt: Date.now(),
+      entries: {
+        "yasashi.kana.mastered.v1": "{}",
+        "yasashi.srs.kana.v1": JSON.stringify({ a: "bad" }),
+      },
+    })),
+  })
+  await page.waitForFunction(() =>
+    document.querySelector('[data-testid="learning-data-notice"]')?.getAttribute("data-tone") === "error"
+  )
+  assertManagedLearningSnapshot(
+    await readManagedLearningBackupSnapshot(page),
+    seededLearningBackupSnapshot,
+    "malformed but valid JSON backup import should not overwrite managed learning keys"
+  )
+
   await page.getByTestId("learning-data-reset").click()
   await page.getByTestId("learning-data-reset").getByText("确认清空").waitFor({ state: "visible" })
   await page.getByTestId("learning-data-reset").click()

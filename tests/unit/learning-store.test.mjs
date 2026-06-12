@@ -242,13 +242,14 @@ test("parseLearningBackup keeps only managed string entries", () => {
     },
   }))
 
-  assert.deepEqual(parsed, {
-    version: store.LEARNING_BACKUP_VERSION,
-    exportedAt: 123,
-    entries: {
-      [storage.STORAGE_KEYS.USER_PROFILE]: "{\"goal\":\"balanced\"}",
-    },
-  })
+  assert.equal(parsed.version, store.LEARNING_BACKUP_VERSION)
+  assert.equal(parsed.exportedAt, 123)
+  assert.equal(Object.keys(parsed.entries).length, 1)
+  const profile = JSON.parse(parsed.entries[storage.STORAGE_KEYS.USER_PROFILE])
+  assert.equal(profile.goal, "balanced")
+  assert.equal(profile.minutesPerDay, 10)
+  assert.equal(profile.kanaLevel, "none")
+  assert.equal(profile.romajiMode, "practice")
 })
 
 test("parseLearningBackup rejects managed entries that are not valid stored JSON", () => {
@@ -262,6 +263,59 @@ test("parseLearningBackup rejects managed entries that are not valid stored JSON
     })),
     null
   )
+})
+
+test("parseLearningBackup rejects valid JSON with invalid managed entry shapes", () => {
+  for (const [key, value] of [
+    [storage.STORAGE_KEYS.KANA_MASTERED, "{}"],
+    [storage.STORAGE_KEYS.VOCAB_LEARNED, "{}"],
+    [storage.STORAGE_KEYS.PRACTICE_RESULTS, "{}"],
+    [storage.STORAGE_KEYS.MISTAKES, "{}"],
+    [storage.STORAGE_KEYS.SRS_KANA, "[]"],
+    [storage.STORAGE_KEYS.SRS_VOCAB, "{\"a\":\"bad\"}"],
+    [storage.STORAGE_KEYS.SRS_MISTAKES, "{\"m1\":\"bad\"}"],
+    [storage.STORAGE_KEYS.SPEECH_PREFS, "[]"],
+    [storage.STORAGE_KEYS.USER_PROFILE, "[]"],
+    [storage.STORAGE_KEYS.LESSON_PROGRESS, "[]"],
+    [storage.STORAGE_KEYS.ITEM_PROGRESS, "[]"],
+  ]) {
+    assert.equal(
+      store.parseLearningBackup(JSON.stringify({
+        version: store.LEARNING_BACKUP_VERSION,
+        exportedAt: 123,
+        entries: { [key]: value },
+      })),
+      null,
+      `${key} should reject malformed stored JSON`
+    )
+  }
+})
+
+test("parseLearningBackup normalizes managed entries before restore", () => {
+  const parsed = store.parseLearningBackup(JSON.stringify({
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 456,
+    entries: {
+      [storage.STORAGE_KEYS.KANA_MASTERED]: JSON.stringify([" a ", "a", "", "ka"]),
+      [storage.STORAGE_KEYS.LESSON_PROGRESS]: JSON.stringify({
+        "day-1": { lessonId: "day-2", status: "completed", startedAt: 1 },
+        "day-3": { lessonId: "day-3", status: "started", startedAt: 2, currentStepIndex: 2.8 },
+      }),
+      [storage.STORAGE_KEYS.PRACTICE_RESULTS]: JSON.stringify([
+        { itemId: "ok", itemType: "kana", mode: "recognition", correct: true, createdAt: 1 },
+        { itemId: "bad", itemType: "kana", mode: "custom", correct: true, createdAt: 2 },
+      ]),
+      [storage.STORAGE_KEYS.SRS_KANA]: JSON.stringify({
+        a: { box: 99, dueAt: 1, createdAt: 2, right: 1.2, wrong: -1 },
+      }),
+    },
+  }))
+
+  assert.ok(parsed)
+  assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.KANA_MASTERED]), ["a", "ka"])
+  assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.LESSON_PROGRESS])), ["day-3"])
+  assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.PRACTICE_RESULTS]).map((item) => item.itemId), ["ok"])
+  assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA]).a.box, 6)
 })
 
 test("learning store restore and reset snapshot managed keys before mutating", () => {

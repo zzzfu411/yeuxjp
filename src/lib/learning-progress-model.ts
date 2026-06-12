@@ -54,6 +54,16 @@ export type LessonProgressMap = Record<string, LessonProgress>
 export type ItemProgressMap = Record<string, ItemProgress>
 
 const PRACTICE_RESULT_LIMIT = 300
+const PRACTICE_ITEM_TYPES = new Set<PracticeItemType>(["kana", "vocab", "grammar", "sentence", "lesson"])
+const PRACTICE_MODES = new Set<PracticeMode>(["recognition", "listening", "meaning", "recall", "production"])
+
+function isPracticeItemType(value: unknown): value is PracticeItemType {
+  return typeof value === "string" && PRACTICE_ITEM_TYPES.has(value as PracticeItemType)
+}
+
+function isPracticeMode(value: unknown): value is PracticeMode {
+  return typeof value === "string" && PRACTICE_MODES.has(value as PracticeMode)
+}
 
 export function clampScore(value: number) {
   if (!Number.isFinite(value)) return 0
@@ -109,6 +119,7 @@ export function normalizeLessonProgressMap(input: unknown, now = Date.now()): Le
     if (!value || typeof value !== "object") continue
     const obj = value as Partial<LessonProgress>
     if (typeof obj.lessonId !== "string") continue
+    if (obj.lessonId !== lessonId) continue
     const normalized: LessonProgress = {
       lessonId: obj.lessonId,
       status: obj.status === "completed" ? "completed" : "started",
@@ -137,7 +148,7 @@ export function normalizeItemProgressMap(input: unknown, now = Date.now()): Item
     if (!value || typeof value !== "object") continue
     const obj = value as Partial<ItemProgress>
     const itemType = obj.itemType ?? "lesson"
-    if (!["kana", "vocab", "grammar", "sentence", "lesson"].includes(itemType)) continue
+    if (!isPracticeItemType(itemType)) continue
     out[itemId] = {
       itemId,
       itemType,
@@ -156,22 +167,30 @@ export function normalizeItemProgressMap(input: unknown, now = Date.now()): Item
 
 export function normalizePracticeResults(input: unknown, now = Date.now()): PracticeResult[] {
   if (!Array.isArray(input)) return []
-  return input
-    .filter((item) => item && typeof item === "object")
-    .map((item) => item as Partial<PracticeResult>)
-    .filter((item) => typeof item.itemId === "string" && typeof item.mode === "string" && typeof item.correct === "boolean")
-    .map((item) => ({
+  const out: PracticeResult[] = []
+
+  for (const value of input) {
+    if (!value || typeof value !== "object") continue
+    const item = value as Partial<PracticeResult>
+    if (typeof item.itemId !== "string") continue
+    if (!isPracticeMode(item.mode)) continue
+    if (item.itemType !== undefined && !isPracticeItemType(item.itemType)) continue
+    if (typeof item.correct !== "boolean") continue
+
+    out.push({
       lessonId: typeof item.lessonId === "string" ? item.lessonId : undefined,
       lessonStepId: typeof item.lessonStepId === "string" ? item.lessonStepId : undefined,
-      itemId: item.itemId!,
+      itemId: item.itemId,
       itemType: item.itemType ?? "lesson",
-      mode: item.mode as PracticeMode,
-      correct: item.correct!,
+      mode: item.mode,
+      correct: item.correct,
       answer: typeof item.answer === "string" ? item.answer : undefined,
       durationMs: typeof item.durationMs === "number" ? item.durationMs : undefined,
       createdAt: typeof item.createdAt === "number" ? item.createdAt : now,
-    }))
-    .slice(-PRACTICE_RESULT_LIMIT)
+    })
+  }
+
+  return out.slice(-PRACTICE_RESULT_LIMIT)
 }
 
 export function appendPracticeResult(previous: unknown, result: Omit<PracticeResult, "createdAt">, createdAt = Date.now()) {
