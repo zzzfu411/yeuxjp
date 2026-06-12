@@ -106,6 +106,7 @@ test("root package remains a dependency-free forwarding entrypoint", () => {
   assert.equal(rootPackageJson.scripts["e2e:browser:required"], "npm run e2e:browser:required --prefix web")
   assert.equal(rootPackageJson.scripts["e2e:pwa"], "npm run e2e:pwa --prefix web")
   assert.equal(rootPackageJson.scripts["e2e:pwa:required"], "npm run e2e:pwa:required --prefix web")
+  assert.equal(rootPackageJson.scripts["download:kana:animcjk"], "node scripts/download-animcjk-kana.mjs")
   assert.notEqual(rootPackageJson.scripts["validate:data"], webPackageJson.scripts["validate:data"])
 })
 
