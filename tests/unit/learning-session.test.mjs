@@ -5,6 +5,7 @@ import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const session = await loadTsModule("src/lib/learning-session.ts")
+const storeFacade = await loadTsModule("src/lib/learning-store.ts")
 const storage = await loadTsModule("src/lib/storage-keys.ts")
 const root = path.resolve(import.meta.dirname, "..", "..")
 
@@ -147,7 +148,7 @@ test("recordQuestionPractice rolls back managed storage when a later notebook wr
   store.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "[]")
   const progress = {
     recordPractice: () => {
-      store.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "[{\"itemId\":\"a\"}]")
+      storeFacade.writeManagedLearningStorage(storage.STORAGE_KEYS.PRACTICE_RESULTS, "[{\"itemId\":\"a\"}]")
       return true
     },
   }

@@ -1,6 +1,6 @@
 "use client"
 
-import { STORAGE_KEYS, type StorageKey } from "@/lib/storage-keys"
+import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import {
   beginLearningNotificationTransaction,
@@ -10,6 +10,14 @@ import {
   isOuterLearningNotificationTransaction,
   notifyLearningStoreEvent,
 } from "@/lib/learning-events"
+import {
+  beginManagedLearningStorageTransaction,
+  endManagedLearningStorageTransaction,
+  MANAGED_LEARNING_STORAGE_KEYS,
+  removeManagedLearningStorage,
+  writeManagedLearningStorage,
+  type ManagedLearningStorageMutation,
+} from "@/lib/managed-learning-storage"
 import { normalizeMistakeList } from "@/lib/mistake-notebook-model"
 import {
   normalizeItemProgressMap,
@@ -24,20 +32,9 @@ import { normalizeSrsState } from "@/lib/srs-model"
 
 export const LEARNING_BACKUP_VERSION = 1
 export { LEARNING_STORE_EVENT, queueLearningNotification } from "@/lib/learning-events"
+export { removeManagedLearningStorage, writeManagedLearningStorage } from "@/lib/managed-learning-storage"
 
-const BACKUP_KEYS = [
-  STORAGE_KEYS.USER_PROFILE,
-  STORAGE_KEYS.LESSON_PROGRESS,
-  STORAGE_KEYS.ITEM_PROGRESS,
-  STORAGE_KEYS.PRACTICE_RESULTS,
-  STORAGE_KEYS.SRS_KANA,
-  STORAGE_KEYS.SRS_VOCAB,
-  STORAGE_KEYS.SRS_MISTAKES,
-  STORAGE_KEYS.MISTAKES,
-  STORAGE_KEYS.KANA_MASTERED,
-  STORAGE_KEYS.VOCAB_LEARNED,
-  STORAGE_KEYS.SPEECH_PREFS,
-] as const satisfies readonly StorageKey[]
+const BACKUP_KEYS = MANAGED_LEARNING_STORAGE_KEYS
 
 export type LearningBackupKey = (typeof BACKUP_KEYS)[number]
 const BACKUP_KEY_SET = new Set<string>(BACKUP_KEYS)
@@ -190,9 +187,9 @@ function applyLearningSnapshot(snapshot: Partial<Record<LearningBackupKey, strin
     for (const key of BACKUP_KEYS) {
       const value = snapshot[key]
       if (typeof value === "string") {
-        window.localStorage.setItem(key, value)
+        writeManagedLearningStorage(key, value)
       } else {
-        window.localStorage.removeItem(key)
+        removeManagedLearningStorage(key)
       }
     }
     return true
@@ -201,8 +198,32 @@ function applyLearningSnapshot(snapshot: Partial<Record<LearningBackupKey, strin
   }
 }
 
-function rollbackLearningKeys(snapshot: Partial<Record<LearningBackupKey, string | null>>, notify = true) {
-  if (!applyLearningSnapshot(snapshot)) return false
+function rollbackLearningMutations(mutations: readonly ManagedLearningStorageMutation[]) {
+  if (typeof window === "undefined") return false
+
+  try {
+    for (const mutation of mutations) {
+      const current = window.localStorage.getItem(mutation.key)
+      if (current !== mutation.after) continue
+      if (typeof mutation.before === "string") {
+        writeManagedLearningStorage(mutation.key, mutation.before)
+      } else {
+        removeManagedLearningStorage(mutation.key)
+      }
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
+function rollbackLearningKeys(
+  snapshot: Partial<Record<LearningBackupKey, string | null>>,
+  notify = true,
+  mutations?: readonly ManagedLearningStorageMutation[]
+) {
+  const rolledBack = mutations ? rollbackLearningMutations(mutations) : applyLearningSnapshot(snapshot)
+  if (!rolledBack) return false
   if (notify) notifyLearningStore({ action: "rollback", keys: BACKUP_KEYS })
   return true
 }
@@ -214,6 +235,7 @@ export function getLearningBackupKeys() {
 export function runLearningStorageTransaction(commit: () => boolean) {
   const previous = snapshotLearningKeys()
   if (!previous) return false
+  const storageTransaction = beginManagedLearningStorageTransaction()
   const isOuterTransaction = isOuterLearningNotificationTransaction()
   const notificationStart = beginLearningNotificationTransaction()
 
@@ -228,12 +250,14 @@ export function runLearningStorageTransaction(commit: () => boolean) {
   }
 
   if (saved) {
+    endManagedLearningStorageTransaction(storageTransaction)
     if (isOuterTransaction) flushQueuedLearningNotifications()
     return true
   }
 
   discardLearningNotificationsFrom(notificationStart)
-  rollbackLearningKeys(previous, isOuterTransaction)
+  const mutations = endManagedLearningStorageTransaction(storageTransaction)
+  rollbackLearningKeys(previous, isOuterTransaction, mutations)
   return false
 }
 

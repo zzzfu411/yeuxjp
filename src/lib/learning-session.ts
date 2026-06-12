@@ -13,6 +13,7 @@ import { questionToMistakeInput } from "@/lib/questions"
 
 type LearningProgressApi = ReturnType<typeof useLearningProgress>
 type MistakeNotebookApi = ReturnType<typeof useMistakeNotebook>
+type PracticeRecordOptions = { enrollReviewOnCorrect?: boolean }
 
 export function getReviewStorageKey(itemType: PracticeResult["itemType"]) {
   if (itemType === "kana") return STORAGE_KEYS.SRS_KANA
@@ -28,10 +29,14 @@ export function enrollReviewItem(itemType: PracticeResult["itemType"], itemId: s
   return enrollSrs(storageKey, itemId)
 }
 
-function recordPracticeResultWithoutTransaction(progress: LearningProgressApi, result: Omit<PracticeResult, "createdAt">) {
+function recordPracticeResultWithoutTransaction(
+  progress: LearningProgressApi,
+  result: Omit<PracticeResult, "createdAt">,
+  options: PracticeRecordOptions = {}
+) {
   const recorded = progress.recordPractice(result)
   if (!recorded) return false
-  if (result.correct) {
+  if (result.correct && options.enrollReviewOnCorrect !== false) {
     return enrollReviewItem(result.itemType, result.itemId)
   }
   return true
@@ -53,12 +58,14 @@ export function recordQuestionPractice({
   result,
   lessonId,
   lessonStepId,
+  enrollReviewOnCorrect,
 }: {
   progress?: LearningProgressApi
   notebook?: MistakeNotebookApi
   result: QuestionResult
   lessonId?: string
   lessonStepId?: string
+  enrollReviewOnCorrect?: boolean
 }) {
   return runLearningStorageTransaction(() => recordQuestionPracticeWithoutTransaction({
     progress,
@@ -66,6 +73,7 @@ export function recordQuestionPractice({
     result,
     lessonId,
     lessonStepId,
+    enrollReviewOnCorrect,
   }))
 }
 
@@ -75,12 +83,14 @@ export function recordQuestionPracticeWithoutTransaction({
   result,
   lessonId,
   lessonStepId,
+  enrollReviewOnCorrect,
 }: {
   progress?: LearningProgressApi
   notebook?: MistakeNotebookApi
   result: QuestionResult
   lessonId?: string
   lessonStepId?: string
+  enrollReviewOnCorrect?: boolean
 }) {
   const { question } = result
 
@@ -93,7 +103,7 @@ export function recordQuestionPracticeWithoutTransaction({
       mode: question.mode,
       correct: result.correct,
       answer: result.selectedAnswer,
-    })) {
+    }, { enrollReviewOnCorrect })) {
       return false
     }
   }

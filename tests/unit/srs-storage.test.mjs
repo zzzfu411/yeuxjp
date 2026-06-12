@@ -178,6 +178,26 @@ test("gradeSrs creates missing again items as immediately due", () => {
   assert.equal(events.length, 1)
 })
 
+test("gradeExistingSrs refuses to recreate externally removed review items", () => {
+  const { map, events } = installWindow()
+  const createdAt = 1_700_000_000_000
+  const now = createdAt + 30 * 60 * 1000
+  const state = model.createSrsState(createdAt)
+  map.set("deck", JSON.stringify({ "kana:a": state }))
+
+  assert.equal(storage.hasSrs("deck", "kana:a"), true)
+  assert.equal(storage.hasSrs("deck", "kana:ka"), false)
+  assert.equal(storage.gradeExistingSrs("deck", "kana:ka", "again", now), false)
+  assert.deepEqual(Object.keys(JSON.parse(map.get("deck"))), ["kana:a"])
+  assert.equal(events.length, 0)
+
+  assert.equal(storage.gradeExistingSrs("deck", "kana:a", "good", now), true)
+  const deck = JSON.parse(map.get("deck"))
+  assert.equal(deck["kana:a"].right, 1)
+  assert.equal(deck["kana:a"].wrong, 0)
+  assert.equal(events.length, 1)
+})
+
 test("setSrsState, removeSrs, and clearSrs persist changes and notify listeners", () => {
   const { map, events } = installWindow()
   const now = 1_700_000_000_000

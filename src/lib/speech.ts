@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import { writeManagedLearningStorage } from "@/lib/managed-learning-storage"
 import {
   DEFAULT_SPEECH_PREFERENCES,
   mergeSpeechPreferencesPatch,
@@ -183,7 +184,7 @@ export function writeSpeechPreferences(
 ) {
   if (typeof window === "undefined") return false
   try {
-    window.localStorage.setItem(storageKey, JSON.stringify(prefs))
+    writeManagedLearningStorage(storageKey, JSON.stringify(prefs))
     return true
   } catch {
     return false

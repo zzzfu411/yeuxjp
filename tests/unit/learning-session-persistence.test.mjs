@@ -4,6 +4,7 @@ import { loadTsModule } from "./load-ts-module.mjs"
 
 const session = await loadTsModule("src/lib/learning-session.ts")
 const progressModel = await loadTsModule("src/lib/learning-progress-model.ts")
+const learningStorage = await loadTsModule("src/lib/learning-storage.ts")
 const storage = await loadTsModule("src/lib/storage-keys.ts")
 
 function installLocalStorage({ failKeys = new Set() } = {}) {
@@ -48,15 +49,10 @@ function createProgressApi() {
       const nextResult = nextResults.at(-1)
       if (!nextResult) return false
       const nextItems = progressModel.updateItemProgressForPractice(previousItems, nextResult)
-
-      try {
-        window.localStorage.setItem(storage.STORAGE_KEYS.PRACTICE_RESULTS, JSON.stringify(nextResults))
-        window.localStorage.setItem(storage.STORAGE_KEYS.ITEM_PROGRESS, JSON.stringify(nextItems))
-        return true
-      } catch {
-        window.localStorage.setItem(storage.STORAGE_KEYS.PRACTICE_RESULTS, JSON.stringify(previousResults))
-        return false
-      }
+      return (
+        learningStorage.writeLearningJson(storage.STORAGE_KEYS.PRACTICE_RESULTS, nextResults) &&
+        learningStorage.writeLearningJson(storage.STORAGE_KEYS.ITEM_PROGRESS, nextItems)
+      )
     },
   }
 }

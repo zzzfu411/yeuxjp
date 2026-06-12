@@ -1,8 +1,21 @@
+import { STORAGE_KEYS } from "@/lib/storage-keys"
+
 export type ReviewStats = {
   correct: number
   wrong: number
   repeated: number
 }
+
+const REVIEW_SESSION_SOURCE_KEYS = new Set<string>([
+  STORAGE_KEYS.KANA_MASTERED,
+  STORAGE_KEYS.VOCAB_LEARNED,
+  STORAGE_KEYS.SRS_KANA,
+  STORAGE_KEYS.SRS_VOCAB,
+  STORAGE_KEYS.SRS_MISTAKES,
+  STORAGE_KEYS.MISTAKES,
+  STORAGE_KEYS.ITEM_PROGRESS,
+  STORAGE_KEYS.PRACTICE_RESULTS,
+])
 
 export type ReviewCompletionStats = {
   initial: number
@@ -44,6 +57,10 @@ export function getReviewCompletionStats(initial: number, stats: ReviewStats): R
   }
 }
 
-export function shouldInvalidateReviewSession(action: unknown): boolean {
-  return action === "restore" || action === "reset"
+export function shouldInvalidateReviewSession(action: unknown, keys?: readonly unknown[]): boolean {
+  if (action === "restore" || action === "reset") return true
+  if (action === "backup" || action === "rollback") return false
+  if (action !== "storage") return false
+  if (!keys?.length) return false
+  return keys.some((key) => typeof key === "string" && REVIEW_SESSION_SOURCE_KEYS.has(key))
 }

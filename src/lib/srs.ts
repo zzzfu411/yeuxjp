@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { createSrsState, isDue, type SrsMap, type SrsResult } from "@/lib/srs-model"
-import { canStoreSrsId, filterSrsMapForStorage, gradeSrs, notifySrs, readSrsMap, SRS_EVENT, writeSrsMap } from "@/lib/srs-storage"
+import {
+  canStoreSrsId,
+  filterSrsMapForStorage,
+  gradeExistingSrs,
+  gradeSrs,
+  hasSrs,
+  notifySrs,
+  readSrsMap,
+  SRS_EVENT,
+  writeSrsMap,
+} from "@/lib/srs-storage"
 
 export {
   applySrsResult,
@@ -14,7 +24,7 @@ export {
   type SrsResult,
   type SrsState,
 } from "@/lib/srs-model"
-export { clearSrs, enrollSrs, gradeSrs, removeSrs, setSrsState, SRS_EVENT } from "@/lib/srs-storage"
+export { clearSrs, enrollSrs, gradeExistingSrs, gradeSrs, hasSrs, removeSrs, setSrsState, SRS_EVENT } from "@/lib/srs-storage"
 
 export function useSrsDeck(storageKey: string) {
   const [map, setMap] = useState<SrsMap>(() => ({}))
@@ -120,6 +130,17 @@ export function useSrsDeck(storageKey: string) {
     [refreshDeck, storageKey]
   )
 
+  const gradeExisting = useCallback(
+    (id: string, result: SrsResult) => {
+      if (!gradeExistingSrs(storageKey, id, result)) return false
+      refreshDeck()
+      return true
+    },
+    [refreshDeck, storageKey]
+  )
+
+  const has = useCallback((id: string) => hasSrs(storageKey, id), [storageKey])
+
   const clear = useCallback(() => {
     if (!writeSrsMap(storageKey, {})) return false
     notifySrs(storageKey)
@@ -128,5 +149,5 @@ export function useSrsDeck(storageKey: string) {
     return true
   }, [storageKey])
 
-  return { map, dueIds, enroll, remove, grade, clear }
+  return { map, dueIds, enroll, remove, grade, gradeExisting, has, clear }
 }

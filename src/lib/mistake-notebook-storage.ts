@@ -1,6 +1,7 @@
 "use client"
 
 import { queueLearningNotification } from "@/lib/learning-events"
+import { writeManagedLearningStorage } from "@/lib/managed-learning-storage"
 import { warnInDevelopment } from "@/lib/dev-log"
 import { normalizeMistakeList, type MistakeItem } from "@/lib/mistake-notebook-model"
 
@@ -23,7 +24,7 @@ export function writeMistakeList(storageKey: string, list: readonly MistakeItem[
   if (typeof window === "undefined") return false
 
   try {
-    window.localStorage.setItem(storageKey, JSON.stringify(list))
+    writeManagedLearningStorage(storageKey, JSON.stringify(list))
     return true
   } catch (e) {
     warnInDevelopment(`[${label}] Failed to write to localStorage:`, e)

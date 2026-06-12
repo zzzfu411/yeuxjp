@@ -48,9 +48,13 @@ export function MistakeReviewSession({
     progress: learning,
     notebook,
     recordAnswer: review.recordAnswer,
+    canRecord: useCallback(() => {
+      if (!item) return false
+      return srs.has(item.id)
+    }, [item, srs]),
     grade: useCallback((result: QuestionResult) => {
       if (!item) return false
-      return srs.grade(item.id, result.correct ? "good" : "again")
+      return srs.gradeExisting(item.id, result.correct ? "good" : "again")
     }, [item, srs]),
   })
 

@@ -3,6 +3,7 @@
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { warnInDevelopment } from "@/lib/dev-log"
 import { queueLearningNotification } from "@/lib/learning-events"
+import { writeManagedLearningStorage } from "@/lib/managed-learning-storage"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 import {
   applySrsResult,
@@ -66,7 +67,7 @@ export function readSrsMap(storageKey: string): SrsMap {
 export function writeSrsMap(storageKey: string, map: SrsMap): boolean {
   if (typeof window === "undefined") return false
   try {
-    window.localStorage.setItem(storageKey, JSON.stringify(filterSrsMapForStorage(storageKey, map)))
+    writeManagedLearningStorage(storageKey, JSON.stringify(filterSrsMapForStorage(storageKey, map)))
     return true
   } catch (e) {
     warnInDevelopment("[srs-storage] Failed to write to localStorage:", e)
@@ -92,12 +93,30 @@ export function enrollSrs(storageKey: string, id: string, now: number = Date.now
   return true
 }
 
+export function hasSrs(storageKey: string, id: string) {
+  if (typeof window === "undefined") return false
+  if (!canStoreSrsId(storageKey, id)) return false
+  return !!readSrsMap(storageKey)[id]
+}
+
 export function gradeSrs(storageKey: string, id: string, result: SrsResult, now: number = Date.now()) {
   if (typeof window === "undefined") return false
   if (!canStoreSrsId(storageKey, id)) return true
   const map = readSrsMap(storageKey)
   const state = map[id] ? normalizeSrsState(map[id], now) : createSrsState(now)
   map[id] = applySrsResult(state, result, now)
+  if (!writeSrsMap(storageKey, map)) return false
+  notifySrs(storageKey)
+  return true
+}
+
+export function gradeExistingSrs(storageKey: string, id: string, result: SrsResult, now: number = Date.now()) {
+  if (typeof window === "undefined") return false
+  if (!canStoreSrsId(storageKey, id)) return false
+  const map = readSrsMap(storageKey)
+  const current = map[id]
+  if (!current) return false
+  map[id] = applySrsResult(normalizeSrsState(current, now), result, now)
   if (!writeSrsMap(storageKey, map)) return false
   notifySrs(storageKey)
   return true

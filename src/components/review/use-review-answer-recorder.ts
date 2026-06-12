@@ -14,20 +14,33 @@ export function useReviewAnswerRecorder({
   progress,
   notebook,
   recordAnswer,
+  canRecord,
   grade,
 }: {
   progress: LearningProgressApi
   notebook: MistakeNotebookApi
   recordAnswer: (answer: string, correct: boolean, beforeCommit?: () => boolean) => boolean
+  canRecord?: (result: QuestionResult) => boolean
   grade: (result: QuestionResult) => boolean
 }) {
   return useCallback((question: Question, selectedAnswer: string) => {
     const result = makeQuestionResult(question, selectedAnswer)
     if (!recordAnswer(selectedAnswer, result.correct, () => {
-      return runLearningStorageTransaction(() => recordQuestionPracticeWithoutTransaction({ progress, notebook, result }) && grade(result))
+      return runLearningStorageTransaction(() => {
+        if (canRecord && !canRecord(result)) return false
+        const recorded = recordQuestionPracticeWithoutTransaction({
+          progress,
+          notebook,
+          result,
+          enrollReviewOnCorrect: false,
+        })
+        if (!recorded) return false
+        if (result.question.mistakeId && !result.correct) return true
+        return grade(result)
+      })
     })) {
       return false
     }
     return true
-  }, [grade, notebook, progress, recordAnswer])
+  }, [canRecord, grade, notebook, progress, recordAnswer])
 }

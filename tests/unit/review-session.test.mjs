@@ -45,3 +45,15 @@ test("review sessions are invalidated only by learning data replacement actions"
   assert.equal(session.shouldInvalidateReviewSession("rollback"), false)
   assert.equal(session.shouldInvalidateReviewSession(undefined), false)
 })
+
+test("review sessions are invalidated by cross-tab review source storage changes", async () => {
+  const { STORAGE_KEYS } = await loadTsModule("src/lib/storage-keys.ts")
+
+  assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.SRS_KANA]), true)
+  assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.SRS_VOCAB]), true)
+  assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.SRS_MISTAKES]), true)
+  assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.MISTAKES]), true)
+  assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.USER_PROFILE]), false)
+  assert.equal(session.shouldInvalidateReviewSession("backup", [STORAGE_KEYS.SRS_KANA]), false)
+  assert.equal(session.shouldInvalidateReviewSession("rollback", [STORAGE_KEYS.SRS_KANA]), false)
+})

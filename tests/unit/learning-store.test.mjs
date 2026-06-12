@@ -6,6 +6,7 @@ import { loadTsModule } from "./load-ts-module.mjs"
 
 const store = await loadTsModule("src/lib/learning-store.ts")
 const storage = await loadTsModule("src/lib/storage-keys.ts")
+const learningStorage = await loadTsModule("src/lib/learning-storage.ts")
 const root = path.resolve(import.meta.dirname, "..", "..")
 
 function read(relPath) {
@@ -269,8 +270,8 @@ test("learning storage transactions restore managed keys after failed commits", 
   map.set("unrelated", "keep")
 
   assert.equal(store.runLearningStorageTransaction(() => {
-    map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "after-results")
-    map.set(storage.STORAGE_KEYS.SRS_KANA, "after-kana")
+    learningStorage.writeLearningJson(storage.STORAGE_KEYS.PRACTICE_RESULTS, "after-results")
+    learningStorage.writeLearningJson(storage.STORAGE_KEYS.SRS_KANA, "after-kana")
     map.set("unrelated", "changed")
     return false
   }), false)
@@ -302,8 +303,8 @@ test("learning storage transactions roll back managed keys when commits throw", 
   map.set("unrelated", "keep")
 
   assert.equal(store.runLearningStorageTransaction(() => {
-    map.set(storage.STORAGE_KEYS.USER_PROFILE, "after-profile")
-    map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "after-results")
+    learningStorage.writeLearningJson(storage.STORAGE_KEYS.USER_PROFILE, "after-profile")
+    learningStorage.writeLearningJson(storage.STORAGE_KEYS.PRACTICE_RESULTS, "after-results")
     map.set("unrelated", "changed")
     throw new Error("commit failed")
   }), false)
@@ -311,6 +312,21 @@ test("learning storage transactions roll back managed keys when commits throw", 
   assert.equal(map.get(storage.STORAGE_KEYS.USER_PROFILE), "before-profile")
   assert.equal(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS), "before-results")
   assert.equal(map.get("unrelated"), "changed")
+  assert.equal(events.at(-1).detail.action, "rollback")
+  assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
+})
+
+test("learning storage transactions do not overwrite newer cross-tab managed writes during rollback", () => {
+  const { map, events } = installWindow()
+  map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "before-results")
+
+  assert.equal(store.runLearningStorageTransaction(() => {
+    learningStorage.writeLearningJson(storage.STORAGE_KEYS.PRACTICE_RESULTS, "failed-results")
+    map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "other-tab-results")
+    return false
+  }), false)
+
+  assert.equal(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS), "other-tab-results")
   assert.equal(events.at(-1).detail.action, "rollback")
   assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
 })

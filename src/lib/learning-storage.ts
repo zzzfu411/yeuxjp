@@ -1,6 +1,7 @@
 "use client"
 
 import { queueLearningNotification } from "@/lib/learning-events"
+import { writeManagedLearningStorage } from "@/lib/managed-learning-storage"
 import { warnInDevelopment } from "@/lib/dev-log"
 
 export const LEARNING_EVENT = "yasashi:learning:update"
@@ -20,7 +21,7 @@ export function readLearningJson<T>(key: string, fallback: T): T {
 export function writeLearningJson<T>(key: string, value: T) {
   if (typeof window === "undefined") return false
   try {
-    window.localStorage.setItem(key, JSON.stringify(value))
+    writeManagedLearningStorage(key, JSON.stringify(value))
     queueLearningNotification(() => {
       window.dispatchEvent(new CustomEvent(LEARNING_EVENT, { detail: { key } }))
     })

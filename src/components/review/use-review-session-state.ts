@@ -38,11 +38,21 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     }
 
     const removeLearningStoreListener = addLearningStoreListener((detail) => {
-      if (!shouldInvalidateReviewSession(detail.action)) return
+      if (!shouldInvalidateReviewSession(detail.action, detail.keys)) return
       invalidate()
     })
 
-    return () => removeLearningStoreListener()
+    const onStorage = (event: StorageEvent) => {
+      if (!shouldInvalidateReviewSession("storage", event.key ? [event.key] : [])) return
+      invalidate()
+    }
+
+    window.addEventListener("storage", onStorage)
+
+    return () => {
+      removeLearningStoreListener()
+      window.removeEventListener("storage", onStorage)
+    }
   }, [])
 
   const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean) => {
