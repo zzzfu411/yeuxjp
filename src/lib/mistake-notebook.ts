@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
-import { removeSrs, setSrsState, clearSrs } from "@/lib/srs"
-import { applySrsResult, createSrsState } from "@/lib/srs-model"
+import { clearSrs, gradeSrs, removeSrs } from "@/lib/srs"
 import { buildMistakeId, removeMistakeById, upsertWrongMistake, type MistakeItem, type RecordMistakeInput } from "@/lib/mistake-notebook-model"
 import { MISTAKE_NOTEBOOK_EVENT, notifyMistakeNotebook, readMistakeList, writeMistakeList } from "@/lib/mistake-notebook-storage"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
@@ -64,10 +63,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       const previous = readMistakeList(storageKey)
       const next = upsertWrongMistake(previous, input, now)
       const saved = runLearningStorageTransaction(() => {
-        return (
-          setSrsState(MISTAKE_SRS_STORAGE_KEY, id, applySrsResult(createSrsState(now), "again", now)) &&
-          writeMistakeList(storageKey, next)
-        )
+        return gradeSrs(MISTAKE_SRS_STORAGE_KEY, id, "again", now) && writeMistakeList(storageKey, next)
       })
 
       if (!saved) return false

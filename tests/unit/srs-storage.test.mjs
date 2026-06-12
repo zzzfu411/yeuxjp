@@ -75,6 +75,52 @@ test("enrollSrs creates a review item and dispatches an update", () => {
   assert.deepEqual(events[0].detail, { storageKey: "deck" })
 })
 
+test("gradeSrs applies results to existing review history", () => {
+  const { map, events } = installWindow()
+  const createdAt = 1_700_000_000_000
+  const now = createdAt + 30 * 60 * 1000
+  map.set(
+    "deck",
+    JSON.stringify({
+      "mistake:a": {
+        box: 3,
+        dueAt: now - 1,
+        createdAt,
+        lastReviewedAt: createdAt + 10,
+        right: 2,
+        wrong: 1,
+      },
+    })
+  )
+
+  assert.equal(storage.gradeSrs("deck", "mistake:a", "again", now), true)
+
+  const deck = JSON.parse(map.get("deck"))
+  assert.equal(deck["mistake:a"].box, 0)
+  assert.equal(deck["mistake:a"].dueAt, now)
+  assert.equal(deck["mistake:a"].createdAt, createdAt)
+  assert.equal(deck["mistake:a"].lastReviewedAt, now)
+  assert.equal(deck["mistake:a"].right, 2)
+  assert.equal(deck["mistake:a"].wrong, 2)
+  assert.equal(events.length, 1)
+  assert.deepEqual(events[0].detail, { storageKey: "deck" })
+})
+
+test("gradeSrs creates missing items before applying a result", () => {
+  const { map, events } = installWindow()
+  const now = 1_700_000_000_000
+
+  assert.equal(storage.gradeSrs("deck", "vocab:neko", "good", now), true)
+
+  const deck = JSON.parse(map.get("deck"))
+  assert.equal(deck["vocab:neko"].box, 2)
+  assert.equal(deck["vocab:neko"].createdAt, now)
+  assert.equal(deck["vocab:neko"].lastReviewedAt, now)
+  assert.equal(deck["vocab:neko"].right, 1)
+  assert.equal(deck["vocab:neko"].wrong, 0)
+  assert.equal(events.length, 1)
+})
+
 test("setSrsState, removeSrs, and clearSrs persist changes and notify listeners", () => {
   const { map, events } = installWindow()
   const now = 1_700_000_000_000
@@ -104,6 +150,7 @@ test("srs storage does not notify when writes fail", () => {
   const state = model.createSrsState(1_700_000_000_000)
 
   assert.equal(storage.enrollSrs("deck", "kana:a"), false)
+  assert.equal(storage.gradeSrs("deck", "kana:a", "again"), false)
   assert.equal(storage.setSrsState("deck", "kana:a", state), false)
   assert.equal(storage.clearSrs("deck"), false)
   assert.equal(events.length, 0)

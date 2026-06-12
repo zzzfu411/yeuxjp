@@ -1,6 +1,13 @@
 "use client"
 
-import { createSrsState, normalizeSrsState, type SrsMap, type SrsState } from "@/lib/srs-model"
+import {
+  applySrsResult,
+  createSrsState,
+  normalizeSrsState,
+  type SrsMap,
+  type SrsResult,
+  type SrsState,
+} from "@/lib/srs-model"
 
 export const SRS_EVENT = "yasashi:srs:update"
 
@@ -50,6 +57,16 @@ export function enrollSrs(storageKey: string, id: string, now: number = Date.now
   const map = readSrsMap(storageKey)
   if (map[id]) return true
   map[id] = createSrsState(now)
+  if (!writeSrsMap(storageKey, map)) return false
+  notifySrs(storageKey)
+  return true
+}
+
+export function gradeSrs(storageKey: string, id: string, result: SrsResult, now: number = Date.now()) {
+  if (typeof window === "undefined") return false
+  const map = readSrsMap(storageKey)
+  const state = map[id] ? normalizeSrsState(map[id], now) : createSrsState(now)
+  map[id] = applySrsResult(state, result, now)
   if (!writeSrsMap(storageKey, map)) return false
   notifySrs(storageKey)
   return true

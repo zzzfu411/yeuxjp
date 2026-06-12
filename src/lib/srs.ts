@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
-import { applySrsResult, createSrsState, isDue, normalizeSrsState, type SrsMap, type SrsResult } from "@/lib/srs-model"
-import { notifySrs, readSrsMap, SRS_EVENT, writeSrsMap } from "@/lib/srs-storage"
+import { createSrsState, isDue, type SrsMap, type SrsResult } from "@/lib/srs-model"
+import { gradeSrs, notifySrs, readSrsMap, SRS_EVENT, writeSrsMap } from "@/lib/srs-storage"
 
 export {
   applySrsResult,
@@ -14,7 +14,7 @@ export {
   type SrsResult,
   type SrsState,
 } from "@/lib/srs-model"
-export { clearSrs, enrollSrs, removeSrs, setSrsState, SRS_EVENT } from "@/lib/srs-storage"
+export { clearSrs, enrollSrs, gradeSrs, removeSrs, setSrsState, SRS_EVENT } from "@/lib/srs-storage"
 
 export function useSrsDeck(storageKey: string) {
   const [map, setMap] = useState<SrsMap>(() => ({}))
@@ -104,14 +104,8 @@ export function useSrsDeck(storageKey: string) {
 
   const grade = useCallback(
     (id: string, result: SrsResult) => {
-      const now = Date.now()
-      const previous = readSrsMap(storageKey)
-      const state = previous[id] ? normalizeSrsState(previous[id], now) : createSrsState(now)
-      const nextState = applySrsResult(state, result, now)
-      const next = { ...previous, [id]: nextState }
-      if (!writeSrsMap(storageKey, next)) return false
-      notifySrs(storageKey)
-      setMap(next)
+      if (!gradeSrs(storageKey, id, result)) return false
+      setMap(readSrsMap(storageKey))
       return true
     },
     [storageKey]
