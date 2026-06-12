@@ -41,6 +41,18 @@ test("app README documents the current E2E coverage layers", () => {
   assert.match(webReadme, /offline/)
 })
 
+test("product docs distinguish dependency freshness warnings from actionable build warnings", () => {
+  for (const [name, source] of [
+    ["web/README.md", webReadme],
+    ...optionalDocs,
+  ]) {
+    assert.match(source, /baseline-browser-mapping/, name)
+    assert.match(source, /caniuse-lite/, name)
+    assert.match(source, /Next\.js image performance|sizes="100vw"|LCP/, name)
+    assert.match(source, /blocked by `npm run build`|`npm run build` .*blocks/, name)
+  }
+})
+
 test("product docs describe the current visited-page PWA fallback strategy", () => {
   for (const [name, source] of [
     ["web/README.md", webReadme],
