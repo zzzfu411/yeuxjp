@@ -20,32 +20,36 @@ export function useSrsDeck(storageKey: string) {
   const [map, setMap] = useState<SrsMap>(() => ({}))
   const [now, setNow] = useState(0)
 
+  const refreshDeck = useCallback(() => {
+    setMap(readSrsMap(storageKey))
+    setNow(Date.now())
+  }, [storageKey])
+
   useEffect(() => {
     let cancelled = false
 
     Promise.resolve().then(() => {
       if (cancelled) return
-      setMap(readSrsMap(storageKey))
-      setNow(Date.now())
+      refreshDeck()
     })
 
     const interval = window.setInterval(() => setNow(Date.now()), 30 * 1000)
 
     const onStorage = (e: StorageEvent) => {
       if (e.key !== storageKey) return
-      setMap(readSrsMap(storageKey))
+      refreshDeck()
     }
 
     const onCustom = (e: Event) => {
       const detail = (e as CustomEvent).detail as { storageKey?: string } | undefined
       if (detail?.storageKey !== storageKey) return
-      setMap(readSrsMap(storageKey))
+      refreshDeck()
     }
 
     const onLearningStore = (e: Event) => {
       const detail = (e as CustomEvent).detail as { keys?: readonly string[] } | undefined
       if (!detail?.keys?.includes(storageKey)) return
-      setMap(readSrsMap(storageKey))
+      refreshDeck()
     }
 
     window.addEventListener("storage", onStorage)
@@ -59,7 +63,7 @@ export function useSrsDeck(storageKey: string) {
       window.removeEventListener(SRS_EVENT, onCustom)
       window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
-  }, [storageKey])
+  }, [refreshDeck, storageKey])
 
   const dueIds = useMemo(() => {
     return Object.entries(map)
@@ -74,6 +78,7 @@ export function useSrsDeck(storageKey: string) {
       const previous = readSrsMap(storageKey)
       if (previous[id]) {
         setMap(previous)
+        setNow(Date.now())
         return true
       }
       const now = Date.now()
@@ -81,6 +86,7 @@ export function useSrsDeck(storageKey: string) {
       if (!writeSrsMap(storageKey, next)) return false
       notifySrs(storageKey)
       setMap(filterSrsMapForStorage(storageKey, next))
+      setNow(now)
       return true
     },
     [storageKey]
@@ -91,6 +97,7 @@ export function useSrsDeck(storageKey: string) {
       const previous = readSrsMap(storageKey)
       if (!previous[id]) {
         setMap(previous)
+        setNow(Date.now())
         return true
       }
       const next = { ...previous }
@@ -98,6 +105,7 @@ export function useSrsDeck(storageKey: string) {
       if (!writeSrsMap(storageKey, next)) return false
       notifySrs(storageKey)
       setMap(next)
+      setNow(Date.now())
       return true
     },
     [storageKey]
@@ -106,16 +114,17 @@ export function useSrsDeck(storageKey: string) {
   const grade = useCallback(
     (id: string, result: SrsResult) => {
       if (!gradeSrs(storageKey, id, result)) return false
-      setMap(readSrsMap(storageKey))
+      refreshDeck()
       return true
     },
-    [storageKey]
+    [refreshDeck, storageKey]
   )
 
   const clear = useCallback(() => {
     if (!writeSrsMap(storageKey, {})) return false
     notifySrs(storageKey)
     setMap({})
+    setNow(Date.now())
     return true
   }, [storageKey])
 
