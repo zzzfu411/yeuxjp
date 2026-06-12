@@ -64,6 +64,29 @@ test("mistakeToQuestion preserves answers and de-duplicates options", () => {
   ])
 })
 
+test("mistakeToQuestion de-duplicates legacy mistake options by normalized answers", () => {
+  const question = review.mistakeToQuestion({
+    id: "m-normalized",
+    type: "lesson:typing",
+    questionText: "あ",
+    correctAnswer: "a",
+    correctDisplay: "あ",
+    options: [
+      { value: "Ａ", display: "Ａ" },
+      { value: "a", display: "a" },
+      { value: "ka", display: "ka" },
+    ],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  })
+
+  assert.deepEqual(question.options, [
+    { value: "Ａ", display: "Ａ" },
+    { value: "ka", display: "ka" },
+  ])
+})
+
 test("review question generators produce shared Question objects", () => {
   const kanaQuestion = review.makeKanaReviewQuestion("a", () => 0)
   const vocabQuestion = review.makeVocabReviewQuestion(

@@ -2,7 +2,7 @@ import { kanaData } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
 import { pickUniqueQuestionOptions } from "@/lib/question-options"
-import type { Question } from "@/lib/questions"
+import { normalizeAnswer, type Question } from "@/lib/questions"
 import { sortSrsIdsByDue, type SrsMap } from "@/lib/srs-model"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 
@@ -40,12 +40,14 @@ export function ensureQuestionOptions(question: Pick<Question, "correctAnswer" |
   const options: Question["options"] = []
 
   for (const option of question.options) {
-    if (seen.has(option.value)) continue
-    seen.add(option.value)
+    const key = normalizeAnswer(option.value)
+    if (seen.has(key)) continue
+    seen.add(key)
     options.push(option)
   }
 
-  if (!seen.has(question.correctAnswer)) {
+  const correctKey = normalizeAnswer(question.correctAnswer)
+  if (!seen.has(correctKey)) {
     options.unshift({
       value: question.correctAnswer,
       display: question.correctDisplay ?? question.correctAnswer,
