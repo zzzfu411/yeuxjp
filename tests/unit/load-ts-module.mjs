@@ -7,11 +7,50 @@ import ts from "typescript"
 const root = path.resolve(import.meta.dirname, "..", "..")
 const runId = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
 const cacheRoot = path.join(os.tmpdir(), "yasashi-japanese-test-cache")
+const legacyProjectCacheRoot = path.join(root, ".test-cache")
 const cacheDir = path.join(cacheRoot, runId)
+const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const loaded = new Set()
+let staleCacheCleaned = false
+
+function isManagedCacheEntry(name, entry) {
+  if (name === "node_modules" || name === "next-build.lock") return false
+  if (entry.isDirectory() && /^\d+(?:-\d+-[a-z0-9]+)?$/i.test(name)) return true
+  return entry.isFile() && /^src__.*\.mjs$/i.test(name)
+}
+
+export function cleanupStaleTestCache({
+  cacheRoot: targetRoot = cacheRoot,
+  currentRunId = runId,
+  now = Date.now(),
+  ttlMs = DEFAULT_CACHE_TTL_MS,
+} = {}) {
+  if (!fs.existsSync(targetRoot)) return
+
+  for (const entry of fs.readdirSync(targetRoot, { withFileTypes: true })) {
+    if (entry.name === currentRunId || !isManagedCacheEntry(entry.name, entry)) continue
+
+    const target = path.join(targetRoot, entry.name)
+    if (path.dirname(target) !== targetRoot) continue
+
+    try {
+      const stats = fs.statSync(target)
+      if (now - stats.mtimeMs < ttlMs) continue
+      fs.rmSync(target, { recursive: true, force: true })
+    } catch {
+      // A stale cache entry can disappear between readdir/stat/rm when tests run
+      // concurrently; the next test run will get another chance to clean it.
+    }
+  }
+}
 
 function ensureCacheRoot() {
   fs.mkdirSync(cacheRoot, { recursive: true })
+  if (!staleCacheCleaned) {
+    staleCacheCleaned = true
+    cleanupStaleTestCache()
+    cleanupStaleTestCache({ cacheRoot: legacyProjectCacheRoot })
+  }
 
   const sourceNodeModules = path.join(root, "node_modules")
   const cacheNodeModules = path.join(cacheRoot, "node_modules")
