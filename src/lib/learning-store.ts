@@ -129,11 +129,11 @@ function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, now: num
 function filterOrphanMistakeSrsEntries(entries: LearningBackup["entries"], now: number = Date.now()) {
   const mistakesEntry = entries[STORAGE_KEYS.MISTAKES]
   const mistakeSrsEntry = entries[STORAGE_KEYS.SRS_MISTAKES]
-  if (typeof mistakesEntry !== "string" || typeof mistakeSrsEntry !== "string") {
+  if (typeof mistakeSrsEntry !== "string") {
     return true
   }
 
-  const mistakes = normalizeMistakeList(JSON.parse(mistakesEntry), now)
+  const mistakes = typeof mistakesEntry === "string" ? normalizeMistakeList(JSON.parse(mistakesEntry), now) : []
   const mistakeIds = new Set(mistakes.map((item) => item.id))
   const mistakeSrs = normalizeSrsMapForBackup(JSON.parse(mistakeSrsEntry), (id) => mistakeIds.has(id), now)
   if (mistakeSrs === null) return false

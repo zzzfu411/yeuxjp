@@ -148,6 +148,18 @@ test("learning backup export removes mistake SRS entries without notebook record
   assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_MISTAKES])), ["m1"])
 })
 
+test("learning backup export drops mistake SRS when notebook records are missing", () => {
+  const { map } = installWindow()
+  map.set(storage.STORAGE_KEYS.SRS_MISTAKES, JSON.stringify({
+    orphan: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+  }))
+
+  const backup = store.tryCreateLearningBackup(123)
+
+  assert.ok(backup)
+  assert.deepEqual(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_MISTAKES]), {})
+})
+
 test("restoreLearningBackup normalizes managed entries before writing", () => {
   const { map } = installWindow()
   const backup = {
@@ -193,6 +205,22 @@ test("restoreLearningBackup removes mistake SRS entries without notebook records
 
   assert.equal(store.restoreLearningBackup(backup), true)
   assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_MISTAKES))), ["m1"])
+})
+
+test("restoreLearningBackup drops mistake SRS when notebook records are missing", () => {
+  const { map } = installWindow()
+  const backup = {
+    version: store.LEARNING_BACKUP_VERSION,
+    exportedAt: 123,
+    entries: {
+      [storage.STORAGE_KEYS.SRS_MISTAKES]: JSON.stringify({
+        orphan: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+      }),
+    },
+  }
+
+  assert.equal(store.restoreLearningBackup(backup), true)
+  assert.deepEqual(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_MISTAKES)), {})
 })
 
 test("restoreLearningBackup rejects malformed managed entries before mutating", () => {

@@ -1,6 +1,7 @@
 const CACHE_VERSION = "v5";
 const STATIC_CACHE_NAME = `yasashi-static-${CACHE_VERSION}`;
 const NAVIGATION_CACHE_NAME = `yasashi-navigation-${CACHE_VERSION}`;
+const APP_CACHE_PREFIXES = ["yasashi-static-", "yasashi-navigation-"];
 const OFFLINE_FALLBACK_URL = "/offline.html";
 
 const CORE_STATIC_ASSETS = [
@@ -64,13 +65,19 @@ self.addEventListener("message", (event) => {
   }
 });
 
+function isOutdatedAppCache(cacheName) {
+  return APP_CACHE_PREFIXES.some((prefix) => cacheName.startsWith(prefix)) &&
+    cacheName !== STATIC_CACHE_NAME &&
+    cacheName !== NAVIGATION_CACHE_NAME;
+}
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) => Promise.all(
         keys
-          .filter((key) => key !== STATIC_CACHE_NAME && key !== NAVIGATION_CACHE_NAME)
+          .filter(isOutdatedAppCache)
           .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())

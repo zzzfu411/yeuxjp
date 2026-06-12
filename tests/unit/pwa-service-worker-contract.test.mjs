@@ -76,6 +76,7 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /const CACHE_VERSION = "v\d+"/)
   assert.match(sw, /const STATIC_CACHE_NAME = `yasashi-static-\$\{CACHE_VERSION\}`/)
   assert.match(sw, /const NAVIGATION_CACHE_NAME = `yasashi-navigation-\$\{CACHE_VERSION\}`/)
+  assert.match(sw, /const APP_CACHE_PREFIXES = \["yasashi-static-", "yasashi-navigation-"\]/)
   assert.match(sw, /const OFFLINE_FALLBACK_URL = "\/offline\.html"/)
   assert.match(sw, /const CORE_STATIC_ASSETS = \[/)
   assert.match(sw, /cache\.addAll\(CORE_STATIC_ASSETS\)/)
@@ -85,6 +86,9 @@ test("service worker caches static assets and visited navigation pages without l
   assert.doesNotMatch(sw, /cache\.addAll\(STATIC_ASSETS\)/)
   assert.match(sw, /self\.addEventListener\("message"/)
   assert.match(sw, /event\.data\?\.type === "SKIP_WAITING"/)
+  assert.match(sw, /function isOutdatedAppCache\(cacheName\)/)
+  assert.match(sw, /APP_CACHE_PREFIXES\.some\(\(prefix\) => cacheName\.startsWith\(prefix\)\)/)
+  assert.match(sw, /\.filter\(isOutdatedAppCache\)/)
   assert.match(sw, /\/brand\/logo-mark\.svg/)
   assert.match(sw, /\/brand\/logo-wordmark\.svg/)
   assert.match(sw, /\/assets\/kana\/kana-seion\.webp/)
@@ -171,6 +175,60 @@ test("service worker install tolerates non-critical static asset failures", asyn
   assert.equal(typeof messageHandler, "function")
   messageHandler({ data: { type: "SKIP_WAITING" } })
   assert.equal(skipWaitingCalled, true)
+})
+
+test("service worker activation removes only outdated app-owned caches", async () => {
+  let activateHandler = null
+  let clientsClaimed = false
+  const deleted = []
+  const sandbox = {
+    caches: {
+      async keys() {
+        return [
+          "yasashi-static-v5",
+          "yasashi-navigation-v5",
+          "yasashi-static-v4",
+          "yasashi-navigation-v4",
+          "third-party-cache",
+          "workbox-precache-v1",
+        ]
+      },
+      async delete(key) {
+        deleted.push(key)
+        return true
+      },
+    },
+    self: {
+      location: { origin: "https://example.test" },
+      clients: {
+        async claim() {
+          clientsClaimed = true
+        },
+      },
+      addEventListener(type, handler) {
+        if (type === "activate") activateHandler = handler
+      },
+      skipWaiting() {},
+    },
+    URL,
+    Response,
+    Promise,
+  }
+  sandbox.globalThis = sandbox
+
+  vm.runInNewContext(sw, sandbox)
+  assert.equal(typeof activateHandler, "function")
+
+  let activatePromise = null
+  activateHandler({
+    waitUntil(promise) {
+      activatePromise = promise
+    },
+  })
+
+  await activatePromise
+  assert.deepEqual(deleted.sort(), ["yasashi-navigation-v4", "yasashi-static-v4"])
+  assert.equal(clientsClaimed, true)
 })
 
 test("PWA offline E2E verifies visited-page cache, fallback, and local state preservation", () => {
