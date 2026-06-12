@@ -13,6 +13,7 @@ function read(relPath) {
 
 function installWindow({ failWrites = false } = {}) {
   const map = new Map()
+  const events = []
   global.window = {
     localStorage: {
       getItem: (key) => (map.has(key) ? map.get(key) : null),
@@ -21,12 +22,23 @@ function installWindow({ failWrites = false } = {}) {
         map.set(key, String(value))
       },
     },
+    dispatchEvent: (event) => {
+      events.push(event)
+      return true
+    },
   }
-  return map
+  global.CustomEvent = class CustomEvent extends Event {
+    constructor(type, init) {
+      super(type)
+      this.detail = init?.detail
+    }
+  }
+
+  return { map, events }
 }
 
 test("speech preferences read legacy quiz fields and clamp values", () => {
-  const map = installWindow()
+  const { map } = installWindow()
   map.set("speech", JSON.stringify({
     rate: 2,
     quizRepeat: 3,
@@ -43,7 +55,7 @@ test("speech preferences read legacy quiz fields and clamp values", () => {
 })
 
 test("speech preference updates persist and apply defaults", () => {
-  const map = installWindow()
+  const { map, events } = installWindow()
 
   const next = speech.updateSpeechPreferences({ rate: 0.75, repeat: 2 }, "speech")
 
@@ -51,10 +63,13 @@ test("speech preference updates persist and apply defaults", () => {
   assert.equal(next.repeat, 2)
   assert.equal(JSON.parse(map.get("speech")).rate, 0.75)
   assert.equal(speech.getSpeechDefaults().rate, 0.75)
+  assert.equal(events.length, 1)
+  assert.equal(events[0].type, speech.SPEECH_PREFS_EVENT)
+  assert.deepEqual(events[0].detail, { storageKey: "speech" })
 })
 
 test("speech preference update failures keep the previous readable preference", () => {
-  const map = installWindow()
+  const { map, events } = installWindow()
   map.set("speech", JSON.stringify({ rate: 0.85, repeat: 2, autoPlay: false, gapMs: 400 }))
 
   global.window.localStorage.setItem = () => {
@@ -66,10 +81,11 @@ test("speech preference update failures keep the previous readable preference", 
   assert.deepEqual(next, { rate: 0.85, repeat: 2, autoPlay: false, gapMs: 400 })
   assert.equal(JSON.parse(map.get("speech")).rate, 0.85)
   assert.equal(speech.getSpeechDefaults().rate, 0.85)
+  assert.equal(events.length, 0)
 })
 
 test("speech preference reset failures do not report default preferences", () => {
-  const map = installWindow()
+  const { map, events } = installWindow()
   map.set("speech", JSON.stringify({ rate: 0.75, repeat: 3, autoPlay: false, gapMs: 100 }))
 
   global.window.localStorage.setItem = () => {
@@ -81,6 +97,20 @@ test("speech preference reset failures do not report default preferences", () =>
   assert.deepEqual(next, { rate: 0.75, repeat: 3, autoPlay: false, gapMs: 100 })
   assert.equal(JSON.parse(map.get("speech")).repeat, 3)
   assert.equal(speech.getSpeechDefaults().rate, 0.75)
+  assert.equal(events.length, 0)
+})
+
+test("speech preference resets persist defaults and notify listeners", () => {
+  const { map, events } = installWindow()
+  map.set("speech", JSON.stringify({ rate: 0.75, repeat: 3, autoPlay: false, gapMs: 100 }))
+
+  const next = speech.resetSpeechPreferences("speech")
+
+  assert.deepEqual(next, speech.DEFAULT_SPEECH_PREFERENCES)
+  assert.deepEqual(JSON.parse(map.get("speech")), speech.DEFAULT_SPEECH_PREFERENCES)
+  assert.equal(events.length, 1)
+  assert.equal(events[0].type, speech.SPEECH_PREFS_EVENT)
+  assert.deepEqual(events[0].detail, { storageKey: "speech" })
 })
 
 test("speech preference writes report persistence failures to callers", () => {
@@ -95,6 +125,8 @@ test("speech preference writes report persistence failures to callers", () => {
   assert.match(source, /buildRepeatedSpeechTexts\(text, options\.repeat\)/)
   assert.match(source, /return true/)
   assert.match(source, /return false/)
+  assert.match(source, /SPEECH_PREFS_EVENT/)
+  assert.match(source, /notifySpeechPreferences\(storageKey\)/)
   assert.match(source, /if \(!writeSpeechPreferences\(next, storageKey\)\)/)
   assert.match(source, /if \(!writeSpeechPreferences\(DEFAULT_SPEECH_PREFERENCES, storageKey\)\)/)
 })

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import {
   DEFAULT_SPEECH_PREFERENCES,
   DEFAULT_SPEECH_PREFS_STORAGE_KEY,
+  SPEECH_PREFS_EVENT,
   loadSpeechPreferences,
   resetSpeechPreferences,
   updateSpeechPreferences,
@@ -61,13 +62,21 @@ export function SpeechPreferencesProvider({
       syncPreferences()
     }
 
+    const onSpeechPrefs = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { storageKey?: string } | undefined
+      if (detail?.storageKey !== storageKey) return
+      syncPreferences()
+    }
+
     window.addEventListener("storage", onStorage)
     window.addEventListener(LEARNING_STORE_EVENT, onLearningStore)
+    window.addEventListener(SPEECH_PREFS_EVENT, onSpeechPrefs)
 
     return () => {
       cancelled = true
       window.removeEventListener("storage", onStorage)
       window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
+      window.removeEventListener(SPEECH_PREFS_EVENT, onSpeechPrefs)
     }
   }, [storageKey])
 

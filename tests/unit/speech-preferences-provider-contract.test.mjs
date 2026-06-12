@@ -21,6 +21,16 @@ test("SpeechPreferencesProvider reloads preferences after learning data restore 
   assert.match(source, /detail\?\.keys\?\.includes\(STORAGE_KEYS\.SPEECH_PREFS\)/)
 })
 
+test("SpeechPreferencesProvider reloads preferences after same-tab speech preference events", () => {
+  const source = read("src/components/ui/speech-preferences.tsx")
+
+  assert.match(source, /SPEECH_PREFS_EVENT/)
+  assert.match(source, /const onSpeechPrefs = \(event: Event\) => \{/)
+  assert.match(source, /detail\?\.storageKey !== storageKey/)
+  assert.match(source, /window\.addEventListener\(SPEECH_PREFS_EVENT, onSpeechPrefs\)/)
+  assert.match(source, /window\.removeEventListener\(SPEECH_PREFS_EVENT, onSpeechPrefs\)/)
+})
+
 test("SpeechPreferencesProvider reloads preferences after cross-tab storage changes", () => {
   const source = read("src/components/ui/speech-preferences.tsx")
 

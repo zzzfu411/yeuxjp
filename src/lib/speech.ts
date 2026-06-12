@@ -155,6 +155,7 @@ export function speakJapaneseRepeated(text: string, options: SpeakRepeatOptions 
 }
 
 export const DEFAULT_SPEECH_PREFS_STORAGE_KEY = STORAGE_KEYS.SPEECH_PREFS
+export const SPEECH_PREFS_EVENT = "yasashi:speech-preferences:update"
 export { DEFAULT_SPEECH_PREFERENCES, type SpeechUserPreferences } from "@/lib/speech-preferences-model"
 
 export function applySpeechPreferences(prefs: SpeechUserPreferences) {
@@ -189,6 +190,11 @@ export function writeSpeechPreferences(
   }
 }
 
+export function notifySpeechPreferences(storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY) {
+  if (typeof window === "undefined") return
+  window.dispatchEvent(new CustomEvent(SPEECH_PREFS_EVENT, { detail: { storageKey } }))
+}
+
 export function loadSpeechPreferences(storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY) {
   const prefs = readSpeechPreferences(storageKey)
   applySpeechPreferences(prefs)
@@ -208,6 +214,7 @@ export function updateSpeechPreferences(
   }
 
   applySpeechPreferences(next)
+  notifySpeechPreferences(storageKey)
   return next
 }
 
@@ -219,5 +226,6 @@ export function resetSpeechPreferences(storageKey: string = DEFAULT_SPEECH_PREFS
   }
 
   applySpeechPreferences(DEFAULT_SPEECH_PREFERENCES)
+  notifySpeechPreferences(storageKey)
   return DEFAULT_SPEECH_PREFERENCES
 }
