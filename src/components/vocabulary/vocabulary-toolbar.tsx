@@ -97,7 +97,8 @@ export function VocabularyToolbar({
 
           <button
             onClick={onClearLearned}
-            className="rounded-full border bg-background px-4 py-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+            data-testid="vocabulary-clear-progress"
+            className="rounded-full border bg-background px-4 py-2 text-muted-foreground transition-colors hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
           >
             清空进度
           </button>

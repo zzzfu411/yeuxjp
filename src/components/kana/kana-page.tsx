@@ -10,6 +10,7 @@ import { KanaControls } from "@/components/kana/kana-controls"
 import { useKanaPageControls } from "@/components/kana/use-kana-page-controls"
 import { useKanaPageData } from "@/components/kana/use-kana-page-data"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
+import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog"
 
 function KanaPageContent() {
   const {
@@ -23,6 +24,7 @@ function KanaPageContent() {
     toggleOnlyUnmastered,
   } = useKanaPageControls()
   const [saveError, setSaveError] = useState(false)
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
   const { isMastered, toggleMastered, clearMastered } = useKanaProgress()
 
   const {
@@ -36,12 +38,18 @@ function KanaPageContent() {
   } = useKanaPageData(kanaSet, onlyUnmastered, isMastered)
 
   const handleClearMastered = useCallback(() => {
-    if (typeof window === "undefined") return
-    const ok = window.confirm("确认清空假名掌握进度吗？")
-    if (!ok) return
+    setConfirmClearOpen(true)
+  }, [])
+
+  const handleConfirmClearMastered = useCallback(() => {
+    setConfirmClearOpen(false)
     const saved = clearMastered()
     setSaveError(!saved)
   }, [clearMastered])
+
+  const handleCancelClearMastered = useCallback(() => {
+    setConfirmClearOpen(false)
+  }, [])
 
   const handleToggleMastered = useCallback(
     (romaji: string) => {
@@ -133,6 +141,15 @@ function KanaPageContent() {
         onClearMastered={handleClearMastered}
       />
       <PracticeSaveError show={saveError} />
+      <ConfirmActionDialog
+        open={confirmClearOpen}
+        title="清空假名掌握进度？"
+        description="已标记掌握的平假名和片假名会被清空。复习记录和其他学习数据不会被删除。"
+        confirmLabel="清空进度"
+        testId="kana-clear-progress-dialog"
+        onConfirm={handleConfirmClearMastered}
+        onCancel={handleCancelClearMastered}
+      />
       <SpeechSettingsBar className="max-w-3xl" />
 
       {kanaSet === "seion" && (

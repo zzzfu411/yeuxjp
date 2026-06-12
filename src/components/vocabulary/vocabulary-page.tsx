@@ -24,9 +24,11 @@ import { VocabularyToolbar } from "@/components/vocabulary/vocabulary-toolbar"
 import { useVocabularyLevelData } from "@/components/vocabulary/use-vocabulary-level-data"
 import { useVocabularyPageControls } from "@/components/vocabulary/use-vocabulary-page-controls"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
+import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog"
 
 function VocabularyPageContent() {
   const [saveError, setSaveError] = useState(false)
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
 
   const { isLearnedId, toggleLearnedId, clearLearned } = useVocabProgress()
   const {
@@ -92,12 +94,18 @@ function VocabularyPageContent() {
   }, [resetSelection, toggleOnlyUnlearned])
 
   const handleClearLearned = useCallback(() => {
-    if (typeof window === "undefined") return
-    const ok = window.confirm("确认清空词汇掌握进度吗？")
-    if (!ok) return
+    setConfirmClearOpen(true)
+  }, [])
+
+  const handleConfirmClearLearned = useCallback(() => {
+    setConfirmClearOpen(false)
     const saved = clearLearned()
     setSaveError(!saved)
   }, [clearLearned])
+
+  const handleCancelClearLearned = useCallback(() => {
+    setConfirmClearOpen(false)
+  }, [])
 
   const handleToggleLearned = useCallback(() => {
     if (!selectedVocab) return
@@ -165,6 +173,15 @@ function VocabularyPageContent() {
         onSelectCategory={scrollToCategory}
       />
       <PracticeSaveError show={saveError} />
+      <ConfirmActionDialog
+        open={confirmClearOpen}
+        title="清空词汇掌握进度？"
+        description="当前词汇掌握标记会被清空。复习记录、错题本和其他学习数据不会被删除。"
+        confirmLabel="清空进度"
+        testId="vocabulary-clear-progress-dialog"
+        onConfirm={handleConfirmClearLearned}
+        onCancel={handleCancelClearLearned}
+      />
 
       <VocabularyCategoryList
         categories={categories}

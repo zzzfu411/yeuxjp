@@ -142,6 +142,16 @@ export const requiredSelectors = [
     pattern: /data-testid="kana-mastery-toggle"/,
   },
   {
+    testId: "kana-clear-progress",
+    source: "src/components/kana/kana-controls.tsx",
+    pattern: /data-testid="kana-clear-progress"/,
+  },
+  {
+    testId: "kana-clear-progress-dialog-confirm",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-confirm`\}/,
+  },
+  {
     testId: "vocabulary-search",
     source: "src/components/vocabulary/vocabulary-toolbar.tsx",
     pattern: /data-testid="vocabulary-search"/,
@@ -160,6 +170,16 @@ export const requiredSelectors = [
     testId: "vocabulary-learned-toggle",
     source: "src/components/vocabulary/vocabulary-focus-modal.tsx",
     pattern: /data-testid="vocabulary-learned-toggle"/,
+  },
+  {
+    testId: "vocabulary-clear-progress",
+    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
+    pattern: /data-testid="vocabulary-clear-progress"/,
+  },
+  {
+    testId: "vocabulary-clear-progress-dialog-confirm",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-confirm`\}/,
   },
   {
     testId: "vocabulary-level-daily",

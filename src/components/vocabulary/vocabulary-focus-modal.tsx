@@ -34,9 +34,11 @@ export function VocabularyFocusModal({
     <Modal isOpen={vocab !== null} onClose={onClose} className="max-w-xl h-[70vh] flex flex-col p-0 overflow-hidden rounded-2xl">
       {vocab && (
         <>
-          <div
-            className="flex-1 relative cursor-pointer group bg-gradient-to-b from-card to-secondary/10"
+          <button
+            type="button"
+            className="group relative flex-1 cursor-pointer bg-gradient-to-b from-card to-secondary/10 text-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={onFlip}
+            aria-pressed={flipped}
             data-testid="vocabulary-focus-card"
           >
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
@@ -88,7 +90,7 @@ export function VocabularyFocusModal({
                 </div>
               )}
             </div>
-          </div>
+          </button>
 
           <div className="p-4 bg-background border-t flex justify-between items-center shrink-0 select-none">
             <Button variant="ghost" size="sm" onClick={onPrev} className="gap-1 pl-2 text-muted-foreground hover:text-foreground">

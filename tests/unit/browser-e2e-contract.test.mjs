@@ -229,6 +229,19 @@ test("browser E2E verifies mastered kana filters show the quiz empty state", () 
   assert.match(e2e, /getByTestId\("quiz-empty-state"\)\.waitFor\(\{ state: "visible" \}\)/)
 })
 
+test("browser E2E verifies kana and vocabulary reset confirmations", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /getByTestId\("kana-clear-progress"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("kana-clear-progress-dialog-confirm"\)\.click\(\)/)
+  assert.match(e2e, /canceling kana progress reset should keep mastered kana/)
+  assert.match(e2e, /mastered\.length === 0/)
+  assert.match(e2e, /getByTestId\("vocabulary-clear-progress"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-clear-progress-dialog-confirm"\)\.click\(\)/)
+  assert.match(e2e, /canceling vocabulary progress reset should keep learned vocabulary/)
+  assert.match(e2e, /learned\.length === 0/)
+})
+
 test("browser E2E verifies review empty and due states", () => {
   const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
@@ -265,7 +278,9 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
   const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /getByTestId\("vocabulary-expand-sur-n-35"\)\.click\(\)/)
-  assert.match(e2e, /getByTestId\("vocabulary-focus-card"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-focus-card"\)\.focus\(\)/)
+  assert.match(e2e, /keyboard\.press\("Space"\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-learned-toggle"\)\.waitFor\(\{ state: "visible" \}\)/)
   assert.match(e2e, /getByTestId\("vocabulary-learned-toggle"\)\.click\(\)/)
   assert.match(e2e, /yasashi\.vocab\.learned\.v1/)
   assert.match(e2e, /learnedVocab\.includes\("sur-n-35"\)/)

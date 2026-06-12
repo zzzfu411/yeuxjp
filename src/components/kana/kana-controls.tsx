@@ -119,9 +119,10 @@ export function KanaControls({
 
           <button
             onClick={onClearMastered}
+            data-testid="kana-clear-progress"
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
-              "bg-background text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+              "bg-background text-muted-foreground hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
             )}
           >
             清空进度

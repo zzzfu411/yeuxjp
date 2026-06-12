@@ -10,9 +10,18 @@ interface ModalProps {
   onClose: () => void
   children: React.ReactNode
   className?: string
+  ariaLabelledBy?: string
+  ariaDescribedBy?: string
 }
 
-export function Modal({ isOpen, onClose, children, className }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  children,
+  className,
+  ariaLabelledBy,
+  ariaDescribedBy,
+}: ModalProps) {
   const [show, setShow] = React.useState(isOpen)
   const previousOverflow = React.useRef<string | null>(null)
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
@@ -92,6 +101,8 @@ export function Modal({ isOpen, onClose, children, className }: ModalProps) {
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={ariaLabelledBy}
+        aria-describedby={ariaDescribedBy}
         tabIndex={-1}
         className={cn(
           "relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border bg-card text-card-foreground shadow-2xl outline-none",

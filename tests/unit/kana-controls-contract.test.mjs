@@ -29,6 +29,15 @@ test("kana page delegates mode, set, filter, and progress controls to KanaContro
   assert.match(page, /onToggleRomaji=\{toggleShowRomaji\}/)
   assert.match(page, /onToggleOnlyUnmastered=\{toggleOnlyUnmastered\}/)
   assert.match(page, /onClearMastered=\{handleClearMastered\}/)
+  assert.match(page, /from "@\/components\/ui\/confirm-action-dialog"/)
+  assert.match(page, /const \[confirmClearOpen, setConfirmClearOpen\] = useState\(false\)/)
+  assert.match(page, /setConfirmClearOpen\(true\)/)
+  assert.match(page, /<ConfirmActionDialog\b/)
+  assert.match(page, /open=\{confirmClearOpen\}/)
+  assert.match(page, /testId="kana-clear-progress-dialog"/)
+  assert.match(page, /onConfirm=\{handleConfirmClearMastered\}/)
+  assert.match(page, /onCancel=\{handleCancelClearMastered\}/)
+  assert.doesNotMatch(page, /window\.confirm/)
   assert.match(page, /from "@\/components\/practice\/practice-save-error"/)
   assert.match(page, /const \[saveError, setSaveError\] = useState\(false\)/)
   assert.match(page, /const saved = clearMastered\(\)/)
@@ -42,7 +51,7 @@ test("kana page delegates mode, set, filter, and progress controls to KanaContro
   assert.doesNotMatch(page, /setOnlyUnmastered\(\(value\) => !value\)/)
 })
 
-test("KanaControls owns kana mode tabs, set tabs, filters, and progress copy", () => {
+test("KanaControls owns kana mode tabs, set tabs, filters, and progress controls", () => {
   const source = read("src/components/kana/kana-controls.tsx")
 
   assert.match(source, /export function KanaControls/)
@@ -52,7 +61,10 @@ test("KanaControls owns kana mode tabs, set tabs, filters, and progress copy", (
   assert.match(source, /onToggleRomaji/)
   assert.match(source, /onToggleOnlyUnmastered/)
   assert.match(source, /onClearMastered/)
-  assert.match(source, /进度：\{progress\.learned\}\/\{progress\.total\}/)
+  assert.match(source, /data-testid="kana-clear-progress"/)
+  assert.match(source, /hover:bg-destructive\/10/)
+  assert.match(source, /progress\.learned/)
+  assert.match(source, /progress\.total/)
   assert.doesNotMatch(source, /Progress:/)
   assert.match(source, /<EyeOff/)
   assert.match(source, /<GlossaryButton/)

@@ -17,12 +17,27 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   assert.ok(Array.isArray(masteredKana) && masteredKana.includes("a"), "kana mastery toggle should persist kana a")
   const masteredKanaSrs = await readJsonStorage(page, "yasashi.srs.kana.v1")
   assert.ok(masteredKanaSrs?.a?.dueAt, "kana mastery toggle should enroll kana a for SRS review")
+  await page.keyboard.press("Escape")
+  await page.getByTestId("kana-clear-progress").click()
+  await page.getByRole("button", { name: "取消" }).click()
+  assert.ok(
+    (await readJsonStorage(page, "yasashi.kana.mastered.v1")).includes("a"),
+    "canceling kana progress reset should keep mastered kana"
+  )
+  await page.getByTestId("kana-clear-progress").click()
+  await page.getByTestId("kana-clear-progress-dialog-confirm").click()
+  await page.waitForFunction(() => {
+    const mastered = JSON.parse(localStorage.getItem("yasashi.kana.mastered.v1") ?? "[]")
+    return Array.isArray(mastered) && mastered.length === 0
+  })
 
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").fill("みせ")
   await page.getByText("みせ").first().waitFor({ state: "visible" })
   await page.getByTestId("vocabulary-expand-sur-n-35").click()
-  await page.getByTestId("vocabulary-focus-card").click()
+  await page.getByTestId("vocabulary-focus-card").focus()
+  await page.keyboard.press("Space")
+  await page.getByTestId("vocabulary-learned-toggle").waitFor({ state: "visible" })
   await page.getByTestId("vocabulary-learned-toggle").click()
   await page.waitForFunction(() => {
     const learned = JSON.parse(localStorage.getItem("yasashi.vocab.learned.v1") ?? "[]")
@@ -33,6 +48,19 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   assert.ok(Array.isArray(learnedVocab) && learnedVocab.includes("sur-n-35"), "vocabulary learned toggle should persist the selected vocabulary id")
   const vocabSrs = await readJsonStorage(page, "yasashi.srs.vocab.v1")
   assert.ok(vocabSrs?.["sur-n-35"]?.dueAt, "vocabulary learned toggle should enroll the selected vocabulary for SRS review")
+  await page.keyboard.press("Escape")
+  await page.getByTestId("vocabulary-clear-progress").click()
+  await page.getByRole("button", { name: "取消" }).click()
+  assert.ok(
+    (await readJsonStorage(page, "yasashi.vocab.learned.v1")).includes("sur-n-35"),
+    "canceling vocabulary progress reset should keep learned vocabulary"
+  )
+  await page.getByTestId("vocabulary-clear-progress").click()
+  await page.getByTestId("vocabulary-clear-progress-dialog-confirm").click()
+  await page.waitForFunction(() => {
+    const learned = JSON.parse(localStorage.getItem("yasashi.vocab.learned.v1") ?? "[]")
+    return Array.isArray(learned) && learned.length === 0
+  })
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-level-daily").click()
   await page.getByTestId("vocabulary-search").fill("Yakusoku")
