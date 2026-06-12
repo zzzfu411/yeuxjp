@@ -102,6 +102,29 @@ test("CLAUDE.md documents the shared E2E harness when the wrapper doc exists", (
   assert.match(claude, /optional Playwright handling/)
 })
 
+test("agent docs describe centralized test storage keys", () => {
+  const plan = optionalDocs.find(([name]) => name === "PLAN.md")?.[1]
+  const codex = optionalDocs.find(([name]) => name === "README_CODEX.md")?.[1]
+  const claude = optionalDocs.find(([name]) => name === "CLAUDE.md")?.[1]
+
+  if (plan) {
+    assert.match(plan, /Centralized E2E\/unit-test learning storage key usage/)
+    assert.match(plan, /yasashi\.\*\.v1/)
+  }
+
+  if (codex) {
+    assert.match(codex, /web\/tests\/e2e\/storage-keys\.mjs/)
+    assert.match(codex, /web\/src\/lib\/storage-keys\.ts/)
+    assert.match(codex, /Do not hard-code versioned `yasashi\.\*\.v1` keys in tests/)
+  }
+
+  if (claude) {
+    assert.match(claude, /storage-keys\.mjs/)
+    assert.match(claude, /only E2E file that should hard-code versioned `yasashi\.\*\.v1`/)
+    assert.match(claude, /web\/src\/lib\/storage-keys\.ts/)
+  }
+})
+
 test("agent docs contract supports nested workspaces and app-only CI checkouts", () => {
   assert.equal(fs.existsSync(path.join(appRoot, "package.json")), true)
   assert.equal(fs.existsSync(path.join(appRoot, "README.md")), true)
