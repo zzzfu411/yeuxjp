@@ -10,6 +10,7 @@ import {
   normalizeProfile,
 } from "@/lib/learning-progress-model"
 import { normalizeProgressList } from "@/lib/progress-list-storage"
+import { isReviewableKanaId } from "@/lib/review-visibility"
 import { normalizeSpeechPreferences } from "@/lib/speech-preferences-model"
 import { normalizeSrsState } from "@/lib/srs-model"
 
@@ -85,9 +86,12 @@ function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, now: num
       if (!Array.isArray(parsed.value)) return null
       return JSON.stringify(normalizePracticeResults(parsed.value, now))
     }
-    case STORAGE_KEYS.SRS_KANA:
     case STORAGE_KEYS.SRS_MISTAKES: {
       const map = normalizeSrsMapForBackup(parsed.value, undefined, now)
+      return map ? JSON.stringify(map) : null
+    }
+    case STORAGE_KEYS.SRS_KANA: {
+      const map = normalizeSrsMapForBackup(parsed.value, isReviewableKanaId, now)
       return map ? JSON.stringify(map) : null
     }
     case STORAGE_KEYS.SRS_VOCAB: {
@@ -100,7 +104,7 @@ function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, now: num
     }
     case STORAGE_KEYS.KANA_MASTERED: {
       if (!Array.isArray(parsed.value)) return null
-      return JSON.stringify(normalizeProgressList(parsed.value))
+      return JSON.stringify(normalizeProgressList(parsed.value).filter(isReviewableKanaId))
     }
     case STORAGE_KEYS.VOCAB_LEARNED: {
       if (!Array.isArray(parsed.value)) return null

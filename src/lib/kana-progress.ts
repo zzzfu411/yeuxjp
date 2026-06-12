@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
 import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressList, writeProgressList } from "@/lib/progress-list-storage"
+import { isReviewableKanaId } from "@/lib/review-visibility"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 
@@ -10,16 +11,17 @@ const STORAGE_LABEL = "kana-progress"
 
 export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
   const [mastered, setMastered] = useState<Set<string>>(() => new Set())
+  const readMastered = useCallback(() => readProgressList(storageKey, STORAGE_LABEL).filter(isReviewableKanaId), [storageKey])
 
   useEffect(() => {
     let cancelled = false
 
     Promise.resolve().then(() => {
       if (cancelled) return
-      setMastered(new Set(readProgressList(storageKey, STORAGE_LABEL)))
+      setMastered(new Set(readMastered()))
     })
 
-    const sync = () => setMastered(new Set(readProgressList(storageKey, STORAGE_LABEL)))
+    const sync = () => setMastered(new Set(readMastered()))
 
     const onStorage = (event: StorageEvent) => {
       if (event.key !== storageKey) return
@@ -48,13 +50,15 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
       window.removeEventListener(PROGRESS_UPDATE_EVENT, onCustom)
       window.removeEventListener(LEARNING_STORE_EVENT, onLearningStore)
     }
-  }, [storageKey])
+  }, [readMastered, storageKey])
 
   const isMastered = useCallback((romaji: string) => mastered.has(romaji), [mastered])
 
   const toggleMastered = useCallback(
     (romaji: string) => {
-      const base = new Set(readProgressList(storageKey, STORAGE_LABEL))
+      if (!isReviewableKanaId(romaji)) return true
+
+      const base = new Set(readMastered())
       const next = new Set(base)
       const wasMastered = next.has(romaji)
 
@@ -80,7 +84,7 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
       notifyProgressList(storageKey)
       return true
     },
-    [storageKey]
+    [readMastered, storageKey]
   )
 
   const clearMastered = useCallback(() => {

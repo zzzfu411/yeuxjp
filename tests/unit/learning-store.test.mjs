@@ -117,6 +117,21 @@ test("learning backup export normalizes active vocabulary indexes", () => {
   assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_VOCAB])), ["sur-g-1"])
 })
 
+test("learning backup export normalizes active kana indexes", () => {
+  const { map } = installWindow()
+  map.set(storage.STORAGE_KEYS.KANA_MASTERED, JSON.stringify(["a", "sokuon:kitte", "ka", "a"]))
+  map.set(storage.STORAGE_KEYS.SRS_KANA, JSON.stringify({
+    a: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+    "sokuon:kitte": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
+  }))
+
+  const backup = store.tryCreateLearningBackup(123)
+
+  assert.ok(backup)
+  assert.deepEqual(JSON.parse(backup.entries[storage.STORAGE_KEYS.KANA_MASTERED]), ["a", "ka"])
+  assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA])), ["a"])
+})
+
 test("safe learning backup creation fails when a managed key cannot be normalized", () => {
   const { map } = installWindow()
   map.set(storage.STORAGE_KEYS.USER_PROFILE, "{bad-json")
@@ -324,7 +339,7 @@ test("parseLearningBackup normalizes managed entries before restore", () => {
     version: store.LEARNING_BACKUP_VERSION,
     exportedAt: 456,
     entries: {
-      [storage.STORAGE_KEYS.KANA_MASTERED]: JSON.stringify([" a ", "a", "", "ka"]),
+      [storage.STORAGE_KEYS.KANA_MASTERED]: JSON.stringify([" a ", "a", "", "ka", "sokuon:kitte"]),
       [storage.STORAGE_KEYS.VOCAB_LEARNED]: JSON.stringify([" sur-g-1 ", "sur-g-999", "day-v-1", "sur-g-1"]),
       [storage.STORAGE_KEYS.LESSON_PROGRESS]: JSON.stringify({
         "day-1": { lessonId: "day-2", status: "completed", startedAt: 1 },
@@ -337,6 +352,7 @@ test("parseLearningBackup normalizes managed entries before restore", () => {
       ]),
       [storage.STORAGE_KEYS.SRS_KANA]: JSON.stringify({
         a: { box: 99, dueAt: 1, createdAt: 2, right: 1.2, wrong: -1 },
+        "sokuon:kitte": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
       }),
       [storage.STORAGE_KEYS.SRS_VOCAB]: JSON.stringify({
         " sur-g-1 ": { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
@@ -351,6 +367,7 @@ test("parseLearningBackup normalizes managed entries before restore", () => {
   assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.VOCAB_LEARNED]), ["sur-g-1", "day-v-1"])
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.LESSON_PROGRESS])), ["day-3"])
   assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.PRACTICE_RESULTS]).map((item) => item.itemId), ["ok", "sur-g-999"])
+  assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA])), ["a"])
   assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA]).a.box, 6)
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_VOCAB])).sort(), ["day-v-1", "sur-g-1"])
   assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_VOCAB])["day-v-1"].box, 6)
