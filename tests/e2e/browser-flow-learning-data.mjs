@@ -122,8 +122,8 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   )
 
   await page.getByTestId("learning-data-reset").click()
-  await page.getByTestId("learning-data-reset").getByText("确认清空").waitFor({ state: "visible" })
-  await page.getByTestId("learning-data-reset").click()
+  await page.getByTestId("learning-data-reset-dialog").waitFor({ state: "visible" })
+  await page.getByTestId("learning-data-reset-dialog-confirm").click()
   await page.waitForFunction((keys) => keys.every((key) => localStorage.getItem(key) === null), managedLearningBackupKeys)
   const resetSnapshot = await readManagedLearningBackupSnapshot(page)
   for (const key of managedLearningBackupKeys) {

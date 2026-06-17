@@ -374,6 +374,16 @@ export const requiredSelectors = [
     pattern: /data-testid="learning-data-reset"/,
   },
   {
+    testId: "learning-data-reset-dialog",
+    source: "src/components/review/learning-data-panel.tsx",
+    pattern: /testId="learning-data-reset-dialog"/,
+  },
+  {
+    testId: "learning-data-reset-dialog-confirm",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-confirm`\}/,
+  },
+  {
     testId: "pwa-update-banner",
     source: "src/components/pwa-register.tsx",
     pattern: /data-testid="pwa-update-banner"/,

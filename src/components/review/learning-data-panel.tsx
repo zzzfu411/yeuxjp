@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Download, RotateCcw, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog"
 import {
   parseLearningBackup,
   restoreLearningBackup,
@@ -24,12 +25,10 @@ function backupFileName(exportedAt: number) {
 export function LearningDataPanel({ className }: { className?: string }) {
   const fileRef = React.useRef<HTMLInputElement | null>(null)
   const [notice, setNotice] = React.useState<Notice | null>(null)
-  const [confirmReset, setConfirmReset] = React.useState(false)
-  const resetLabel = confirmReset ? "确认清空" : "清空"
-  const resetAriaLabel = confirmReset ? "确认清空本地学习数据" : "清空本地学习数据"
+  const [resetDialogOpen, setResetDialogOpen] = React.useState(false)
 
   const exportData = React.useCallback(() => {
-    setConfirmReset(false)
+    setResetDialogOpen(false)
     const backup = tryCreateLearningBackup()
     if (!backup) {
       setNotice({ tone: "error", text: "无法读取本地学习数据，导出失败。" })
@@ -56,7 +55,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
   }, [])
 
   const importData = React.useCallback((file: File) => {
-    setConfirmReset(false)
+    setResetDialogOpen(false)
     const reader = new FileReader()
     reader.onload = () => {
       const backup = parseLearningBackup(String(reader.result ?? ""))
@@ -71,7 +70,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
       }
 
       setNotice({ tone: "success", text: "学习数据已恢复。" })
-      setConfirmReset(false)
+      setResetDialogOpen(false)
     }
     reader.onerror = () => setNotice({ tone: "error", text: "备份文件无法读取。" })
     try {
@@ -82,20 +81,14 @@ export function LearningDataPanel({ className }: { className?: string }) {
   }, [])
 
   const resetData = React.useCallback(() => {
-    if (!confirmReset) {
-      setConfirmReset(true)
-      setNotice({ tone: "error", text: "再次点击清空本地数据。" })
-      return
-    }
-
     if (resetLearningData()) {
       setNotice({ tone: "success", text: "本地学习数据已清空。" })
-      setConfirmReset(false)
+      setResetDialogOpen(false)
       return
     }
 
     setNotice({ tone: "error", text: "清空失败。" })
-  }, [confirmReset])
+  }, [])
 
   return (
     <section className={cn("rounded-2xl border bg-card p-5 shadow-sm", className)} data-testid="learning-data-panel">
@@ -123,15 +116,18 @@ export function LearningDataPanel({ className }: { className?: string }) {
           </Button>
           <Button
             type="button"
-            variant={confirmReset ? "destructive" : "ghost"}
+            variant="ghost"
             size="sm"
             className="gap-1.5 rounded-full"
-            onClick={resetData}
-            aria-label={resetAriaLabel}
+            onClick={() => {
+              setNotice(null)
+              setResetDialogOpen(true)
+            }}
+            aria-label="清空本地学习数据"
             data-testid="learning-data-reset"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            {resetLabel}
+            清空
           </Button>
         </div>
       </div>
@@ -165,6 +161,16 @@ export function LearningDataPanel({ className }: { className?: string }) {
           {notice.text}
         </div>
       ) : null}
+
+      <ConfirmActionDialog
+        open={resetDialogOpen}
+        title="清空本地学习数据"
+        description="这会删除当前浏览器里的进度、SRS、错题本和朗读偏好。导出的备份文件不会受到影响。"
+        confirmLabel="清空"
+        testId="learning-data-reset-dialog"
+        onCancel={() => setResetDialogOpen(false)}
+        onConfirm={resetData}
+      />
     </section>
   )
 }
