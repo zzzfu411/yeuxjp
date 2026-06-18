@@ -5,7 +5,7 @@ import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-r
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { KanaReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
-import { ReviewDone } from "@/components/review/review-status"
+import { ReviewDone, ReviewEmptyQuestionState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
@@ -97,8 +97,17 @@ export function KanaReviewSession({
     return null
   }
 
+  if (!question) {
+    return (
+      <ReviewEmptyQuestionState
+        title="当前假名复习题不足"
+        message="这一轮假名复习暂时凑不出足够的唯一选项。返回复习页后稍后再试，或先继续课程和测验扩充题库。"
+        onExit={onExit}
+      />
+    )
+  }
+
   const handleSelect = (val: string) => {
-    if (!question) return
     const recorded = recordAnswerSelection(question, val)
     setSaveError(!recorded)
   }
@@ -119,7 +128,7 @@ export function KanaReviewSession({
       </ReviewPromptCard>
 
       <ReviewOptionGrid
-        options={question?.options ?? []}
+        options={question.options}
         correctAnswer={item.romaji}
         selectedAnswer={selected}
         onSelect={handleSelect}

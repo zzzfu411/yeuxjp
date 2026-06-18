@@ -5,7 +5,7 @@ import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-r
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { VocabReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
-import { ReviewDone, ReviewErrorState, ReviewLoadingState } from "@/components/review/review-status"
+import { ReviewDone, ReviewEmptyQuestionState, ReviewErrorState, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
@@ -38,12 +38,15 @@ export function VocabReviewSession({
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
   const question = useMemo(() => (item ? makeVocabReviewQuestion(item.id, vocabulary.data) : null), [item, vocabulary.data])
+  const missingReviewEntry = !!currentId && !item
+  const insufficientQuestionOptions = !!item && !question
 
   useEffect(() => {
-    if (currentId && !vocabulary.loading && !vocabulary.error && (!item || !question)) {
+    if (!currentId || vocabulary.loading || vocabulary.error) return
+    if (missingReviewEntry) {
       dropCurrent()
     }
-  }, [currentId, dropCurrent, item, question, vocabulary.error, vocabulary.loading])
+  }, [currentId, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: item?.kana,
@@ -83,6 +86,17 @@ export function VocabReviewSession({
       <ReviewErrorState
         title="单词复习题库加载失败"
         message="请返回复习页后重新进入，或稍后再试。"
+        onExit={onExit}
+        onRetry={vocabulary.retry}
+      />
+    )
+  }
+
+  if (insufficientQuestionOptions) {
+    return (
+      <ReviewEmptyQuestionState
+        title="当前单词复习题不足"
+        message="这一轮单词复习暂时凑不出足够的唯一选项。返回复习页后稍后再试，或先增加词汇题库范围。"
         onExit={onExit}
         onRetry={vocabulary.retry}
       />

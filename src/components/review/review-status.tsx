@@ -45,6 +45,27 @@ export function ReviewErrorState({
   )
 }
 
+export function ReviewEmptyQuestionState({
+  title,
+  message,
+  onExit,
+  onRetry,
+}: {
+  title: string
+  message: string
+  onExit: () => void
+  onRetry?: () => void
+}) {
+  return (
+    <ReviewErrorState
+      title={title}
+      message={message}
+      onExit={onExit}
+      onRetry={onRetry}
+    />
+  )
+}
+
 export function ReviewDone({
   title,
   onExit,

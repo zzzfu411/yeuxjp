@@ -6,7 +6,7 @@ import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
 import { MixedReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
-import { ReviewDone, ReviewErrorState, ReviewLoadingState } from "@/components/review/review-status"
+import { ReviewDone, ReviewEmptyQuestionState, ReviewErrorState, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
@@ -58,53 +58,73 @@ export function TodayReviewSession({
   const { dropCurrent } = review
   const currentKey = current ? `${current.deck}:${current.id}` : null
   const saveError = !!currentKey && saveErrorKey === currentKey
+  const kanaItem = useMemo(() => {
+    if (current?.deck !== "kana") return null
+    return kanaData.find((k) => k.romaji === current.id) ?? null
+  }, [current])
+  const vocabItem = useMemo(() => {
+    if (current?.deck !== "vocab") return null
+    return vocabulary.data.find((v) => v.id === current.id) ?? null
+  }, [current, vocabulary.data])
+  const kanaQuestion = useMemo(() => (kanaItem ? makeKanaReviewQuestion(kanaItem.romaji) : null), [kanaItem])
+  const vocabQuestion = useMemo(
+    () => (vocabItem ? makeVocabReviewQuestion(vocabItem.id, vocabulary.data) : null),
+    [vocabItem, vocabulary.data]
+  )
+  const mistakeItem = useMemo(() => {
+    if (current?.deck !== "mistakes") return null
+    return notebook.byId.get(current.id) ?? null
+  }, [current, notebook.byId])
+  const missingReviewEntry =
+    !!current &&
+    ((current.deck === "kana" && !kanaItem) ||
+      (current.deck === "vocab" && !vocabItem) ||
+      (current.deck === "mistakes" && !mistakeItem))
+  const insufficientQuestionOptions =
+    !!current &&
+    ((current.deck === "kana" && !!kanaItem && !kanaQuestion) ||
+      (current.deck === "vocab" && !!vocabItem && !vocabQuestion))
 
   const data: TodayReviewData | null = useMemo(() => {
     if (!current) return null
     if (current.deck === "kana") {
-      const item = kanaData.find((k) => k.romaji === current.id)
-      if (!item) return null
-      const question = makeKanaReviewQuestion(current.id)
-      if (!question) return null
+      if (!kanaItem || !kanaQuestion) return null
       return {
         deckLabel: "假名",
-        prompt: item.hiragana,
-        sub: item.katakana,
-        audio: item.hiragana,
-        question,
+        prompt: kanaItem.hiragana,
+        sub: kanaItem.katakana,
+        audio: kanaItem.hiragana,
+        question: kanaQuestion,
       }
     }
     if (current.deck === "vocab") {
-      const item = vocabulary.data.find((v) => v.id === current.id)
-      if (!item) return null
-      const question = makeVocabReviewQuestion(current.id, vocabulary.data)
-      if (!question) return null
+      if (!vocabItem || !vocabQuestion) return null
       return {
         deckLabel: "词汇",
-        prompt: item.kanji ?? item.kana,
-        sub: item.kanji ? item.kana : undefined,
-        audio: item.kana,
-        question,
+        prompt: vocabItem.kanji ?? vocabItem.kana,
+        sub: vocabItem.kanji ? vocabItem.kana : undefined,
+        audio: vocabItem.kana,
+        question: vocabQuestion,
       }
     }
 
-    const item = notebook.byId.get(current.id)
-    if (!item) return null
+    if (!mistakeItem) return null
     return {
       deckLabel: "错题",
-      prompt: item.questionText ?? item.questionAudio ?? "（无题干）",
-      sub: item.type,
-      audio: item.questionAudio,
-      question: mistakeToQuestion(item),
+      prompt: mistakeItem.questionText ?? mistakeItem.questionAudio ?? "（无题干）",
+      sub: mistakeItem.type,
+      audio: mistakeItem.questionAudio,
+      question: mistakeToQuestion(mistakeItem),
     }
-  }, [current, notebook.byId, vocabulary.data])
+  }, [current, kanaItem, kanaQuestion, mistakeItem, vocabItem, vocabQuestion])
 
   useEffect(() => {
     if (!current) return
     if (current.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
-    if (data) return
-    dropCurrent()
-  }, [current, data, dropCurrent, vocabulary.error, vocabulary.loading])
+    if (missingReviewEntry) {
+      dropCurrent()
+    }
+  }, [current, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.audio,
@@ -153,6 +173,21 @@ export function TodayReviewSession({
         message="部分词汇复习资源没有加载成功。请返回复习页后重新进入，或稍后再试。"
         onExit={onExit}
         onRetry={vocabulary.retry}
+      />
+    )
+  }
+
+  if (insufficientQuestionOptions) {
+    return (
+      <ReviewEmptyQuestionState
+        title={current?.deck === "kana" ? "当前假名复习题不足" : "当前单词复习题不足"}
+        message={
+          current?.deck === "kana"
+            ? "这一轮假名复习暂时凑不出足够的唯一选项。返回复习页后稍后再试，或先继续课程和测验扩充题库。"
+            : "这一轮单词复习暂时凑不出足够的唯一选项。返回复习页后稍后再试，或先增加词汇题库范围。"
+        }
+        onExit={onExit}
+        onRetry={current?.deck === "vocab" ? vocabulary.retry : undefined}
       />
     )
   }
