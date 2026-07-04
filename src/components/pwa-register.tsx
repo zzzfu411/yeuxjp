@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { warnInDevelopment } from "@/lib/dev-log"
-import { shouldUseDocumentNavigationOffline } from "@/lib/pwa-navigation"
+import { shouldUsePwaDocumentNavigation } from "@/lib/pwa-navigation"
 
 export const PWA_UPDATE_READY_EVENT = "yasashi:pwa-update-ready"
 
@@ -59,11 +59,9 @@ export function PwaRegister() {
     }
 
     const onOfflineLinkClick = (event: MouseEvent) => {
-      if (navigator.onLine) return
-
       const anchor = getOfflineNavigationAnchor(event)
       if (!anchor) return
-      if (!shouldUseDocumentNavigationOffline({
+      if (!shouldUsePwaDocumentNavigation({
         event,
         anchor: {
           href: anchor.getAttribute("href"),
@@ -76,6 +74,8 @@ export function PwaRegister() {
           hasDownload: anchor.hasAttribute("download"),
         },
         currentLocation: window.location,
+        isOnline: navigator.onLine,
+        hasServiceWorkerController: Boolean(navigator.serviceWorker.controller),
       })) return
 
       event.preventDefault()

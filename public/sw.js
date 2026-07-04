@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v5";
+const CACHE_VERSION = "v6";
 const STATIC_CACHE_NAME = `yasashi-static-${CACHE_VERSION}`;
 const NAVIGATION_CACHE_NAME = `yasashi-navigation-${CACHE_VERSION}`;
 const APP_CACHE_PREFIXES = ["yasashi-static-", "yasashi-navigation-"];
@@ -101,20 +101,45 @@ function isCacheableStaticAsset(request, requestUrl) {
     isAnimCjkSvg;
 }
 
+function getCanonicalNavigationUrl(requestUrl) {
+  if (!requestUrl.search && !requestUrl.hash) return null;
+  return new URL(requestUrl.pathname, self.location.origin).href;
+}
+
+async function matchCachedNavigation(cache, request, requestUrl) {
+  const cached = await cache.match(request);
+  if (cached) return cached;
+
+  const canonicalUrl = getCanonicalNavigationUrl(requestUrl);
+  if (!canonicalUrl) return null;
+
+  return cache.match(canonicalUrl);
+}
+
+async function cacheNavigationResponse(cache, request, requestUrl, response) {
+  await tryCachePut(cache, request, response.clone());
+
+  const canonicalUrl = getCanonicalNavigationUrl(requestUrl);
+  if (canonicalUrl) {
+    await tryCachePut(cache, canonicalUrl, response.clone());
+  }
+}
+
 async function networkFirstNavigation(request) {
   const cache = await caches.open(NAVIGATION_CACHE_NAME);
   const staticCache = await caches.open(STATIC_CACHE_NAME);
+  const requestUrl = new URL(request.url);
 
   try {
     const response = await fetch(request);
     if (response.ok && response.type === "basic") {
-      await tryCachePut(cache, request, response.clone());
+      await cacheNavigationResponse(cache, request, requestUrl, response);
     }
     return response;
   } catch {
-    const cached = await cache.match(request);
+    const cached = await matchCachedNavigation(cache, request, requestUrl);
     if (cached) return cached;
-    const staticCached = await staticCache.match(request);
+    const staticCached = await matchCachedNavigation(staticCache, request, requestUrl);
     if (staticCached) return staticCached;
     return staticCache.match(OFFLINE_FALLBACK_URL);
   }

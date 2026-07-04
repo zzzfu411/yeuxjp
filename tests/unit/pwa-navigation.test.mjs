@@ -45,6 +45,12 @@ function should(overrides = {}) {
 test("offline navigation helper allows same-origin primary route clicks", () => {
   assert.equal(should(), true)
   assert.equal(should({ anchor: anchor({ absoluteHref: "/review", pathname: "/review" }) }), true)
+  assert.equal(should({ anchor: anchor({
+    href: "/semantics?item=aru-iru",
+    absoluteHref: "https://yasashi.test/semantics?item=aru-iru",
+    pathname: "/semantics",
+    search: "?item=aru-iru",
+  }) }), true)
 })
 
 test("offline navigation helper rejects modified or already-handled clicks", () => {
@@ -64,4 +70,49 @@ test("offline navigation helper rejects anchors that should stay browser-native"
   assert.equal(should({ anchor: anchor({ href: "#section", absoluteHref: "https://yasashi.test/kana?set=seion#section", hash: "#section" }) }), false)
   assert.equal(should({ anchor: anchor({ absoluteHref: "https://example.test/review", origin: "https://example.test" }) }), false)
   assert.equal(should({ anchor: anchor({ href: "/kana?set=seion#table", absoluteHref: "https://yasashi.test/kana?set=seion#table", pathname: "/kana", search: "?set=seion", hash: "#table" }) }), false)
+})
+
+test("PWA document navigation helper promotes eligible links only when offline or service-worker controlled", () => {
+  const args = {
+    event,
+    anchor: anchor({ href: "/vocabulary?level=daily", absoluteHref: "https://yasashi.test/vocabulary?level=daily" }),
+    currentLocation,
+  }
+
+  assert.equal(navigation.shouldUsePwaDocumentNavigation({
+    ...args,
+    isOnline: false,
+    hasServiceWorkerController: false,
+  }), true)
+  assert.equal(navigation.shouldUsePwaDocumentNavigation({
+    ...args,
+    isOnline: true,
+    hasServiceWorkerController: true,
+  }), true)
+  assert.equal(navigation.shouldUsePwaDocumentNavigation({
+    ...args,
+    isOnline: true,
+    hasServiceWorkerController: false,
+  }), false)
+})
+
+test("PWA href navigation helper uses the same same-origin and hash-only guards", () => {
+  assert.equal(navigation.shouldUsePwaDocumentNavigationForHref({
+    href: "/semantics?item=aru-iru",
+    currentLocation,
+    isOnline: true,
+    hasServiceWorkerController: true,
+  }), true)
+  assert.equal(navigation.shouldUsePwaDocumentNavigationForHref({
+    href: "/kana?set=seion#table",
+    currentLocation,
+    isOnline: false,
+    hasServiceWorkerController: false,
+  }), false)
+  assert.equal(navigation.shouldUsePwaDocumentNavigationForHref({
+    href: "https://example.test/semantics?item=aru-iru",
+    currentLocation,
+    isOnline: false,
+    hasServiceWorkerController: false,
+  }), false)
 })

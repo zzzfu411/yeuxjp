@@ -5,6 +5,7 @@ import { useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Modal } from "@/components/ui/modal"
 import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
+import { shouldUsePwaDocumentNavigationForHref } from "@/lib/pwa-navigation"
 
 interface UrlControlledReferenceModalProps {
   children: ReactNode
@@ -27,9 +28,23 @@ export function UrlControlledReferenceModal({
 }: UrlControlledReferenceModalProps) {
   const router = useRouter()
 
+  const navigate = useCallback((href: string) => {
+    if (shouldUsePwaDocumentNavigationForHref({
+      href,
+      currentLocation: window.location,
+      isOnline: navigator.onLine,
+      hasServiceWorkerController: "serviceWorker" in navigator && Boolean(navigator.serviceWorker.controller),
+    })) {
+      window.location.assign(href)
+      return
+    }
+
+    router.push(href)
+  }, [router])
+
   const close = useCallback(() => {
-    router.push(closeHref)
-  }, [closeHref, router])
+    navigate(closeHref)
+  }, [closeHref, navigate])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -37,17 +52,17 @@ export function UrlControlledReferenceModal({
 
       if (event.key === "ArrowRight") {
         event.preventDefault()
-        router.push(nextHref)
+        navigate(nextHref)
       }
       if (event.key === "ArrowLeft") {
         event.preventDefault()
-        router.push(prevHref)
+        navigate(prevHref)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [nextHref, prevHref, router])
+  }, [navigate, nextHref, prevHref])
 
   return (
     <Modal

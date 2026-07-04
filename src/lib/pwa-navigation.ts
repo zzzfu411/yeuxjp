@@ -25,6 +25,34 @@ export type CurrentLocationLike = {
   search: string
 }
 
+export type PwaDocumentNavigationRuntime = {
+  isOnline: boolean
+  hasServiceWorkerController: boolean
+}
+
+function shouldPromoteToDocumentNavigation({
+  isOnline,
+  hasServiceWorkerController,
+}: PwaDocumentNavigationRuntime) {
+  return !isOnline || hasServiceWorkerController
+}
+
+export function isSameOriginDocumentNavigation({
+  href,
+  currentLocation,
+}: {
+  href: string | null
+  currentLocation: CurrentLocationLike
+}) {
+  if (!href || href.startsWith("#")) return false
+
+  const url = new URL(href, currentLocation.href)
+  if (url.origin !== currentLocation.origin) return false
+  if (url.pathname === currentLocation.pathname && url.search === currentLocation.search && url.hash) return false
+
+  return true
+}
+
 export function shouldUseDocumentNavigationOffline({
   event,
   anchor,
@@ -41,9 +69,45 @@ export function shouldUseDocumentNavigationOffline({
   if (anchor.target && anchor.target !== "_self") return false
   if (!anchor.href || anchor.href.startsWith("#")) return false
 
-  const url = new URL(anchor.absoluteHref, currentLocation.href)
-  if (url.origin !== currentLocation.origin) return false
-  if (url.pathname === currentLocation.pathname && url.search === currentLocation.search && url.hash) return false
+  return isSameOriginDocumentNavigation({
+    href: anchor.absoluteHref,
+    currentLocation,
+  })
+}
 
-  return true
+export function shouldUsePwaDocumentNavigation({
+  event,
+  anchor,
+  currentLocation,
+  isOnline,
+  hasServiceWorkerController,
+}: {
+  event: OfflineNavigationEventLike
+  anchor: OfflineNavigationCandidate | null
+  currentLocation: CurrentLocationLike
+} & PwaDocumentNavigationRuntime) {
+  if (!shouldPromoteToDocumentNavigation({ isOnline, hasServiceWorkerController })) return false
+
+  return shouldUseDocumentNavigationOffline({
+    event,
+    anchor,
+    currentLocation,
+  })
+}
+
+export function shouldUsePwaDocumentNavigationForHref({
+  href,
+  currentLocation,
+  isOnline,
+  hasServiceWorkerController,
+}: {
+  href: string
+  currentLocation: CurrentLocationLike
+} & PwaDocumentNavigationRuntime) {
+  if (!shouldPromoteToDocumentNavigation({ isOnline, hasServiceWorkerController })) return false
+
+  return isSameOriginDocumentNavigation({
+    href,
+    currentLocation,
+  })
 }

@@ -89,6 +89,20 @@ try {
   await waitForServiceWorker(page)
   await assertServiceWorkerStaticCache(page)
 
+  await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
+  await page.getByTestId("kana-card-a").waitFor({ state: "visible", timeout: 10_000 })
+  await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
+  await page.getByTestId("vocabulary-search").waitFor({ state: "visible", timeout: 10_000 })
+  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+  await page.getByTestId("quiz-mode-hiragana-romaji").waitFor({ state: "visible", timeout: 10_000 })
+  await page.goto(`${baseUrl}/semantics`, { waitUntil: "networkidle" })
+  const firstSemanticsHref = await page.locator('a[href^="/semantics/"]').first().getAttribute("href")
+  assert.ok(firstSemanticsHref, "semantics page should expose at least one static detail link")
+  const semanticsItemId = firstSemanticsHref.split("/").pop()
+  await page.goto(`${baseUrl}${firstSemanticsHref}`, { waitUntil: "networkidle" })
+  await page.waitForURL(new RegExp(`${firstSemanticsHref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+
   const visitedLessonUrl = `${baseUrl}/learn/day-1-a-row-hello`
   await page.getByTestId("home-start-learning").click()
   await page.waitForURL(/\/learn\/day-1-a-row-hello/)
@@ -128,12 +142,37 @@ try {
   assert.equal(offlineAnimCjkSvg.ok, true, "offline cache should serve a visited AnimCJK SVG")
   assert.match(offlineAnimCjkSvg.body, /<svg/i, "offline AnimCJK response should remain an SVG")
 
+  await page.goto(`${baseUrl}/kana?mode=katakana&set=yoon`, { waitUntil: "domcontentloaded" })
+  await page.getByTestId("kana-card-kya").waitFor({ state: "visible", timeout: 10_000 })
+  assert.ok(await page.getByTestId("kana-card-kya").isVisible(), "offline canonical navigation should serve a cached kana query route")
+
+  await page.goto(`${baseUrl}/vocabulary?level=daily`, { waitUntil: "domcontentloaded" })
+  await page.getByTestId("vocabulary-search").waitFor({ state: "visible", timeout: 10_000 })
+  assert.ok(await page.getByTestId("vocabulary-search").isVisible(), "offline canonical navigation should serve a cached vocabulary query route")
+
+  await page.goto(`${baseUrl}/quiz?mode=hiragana-romaji`, { waitUntil: "domcontentloaded" })
+  await page.getByTestId("quiz-score").waitFor({ state: "visible", timeout: 10_000 })
+  assert.ok(await page.getByTestId("quiz-score").isVisible(), "offline canonical navigation should serve a cached quiz query route")
+
+  await page.goto(`${baseUrl}/semantics?item=${semanticsItemId}`, { waitUntil: "domcontentloaded" })
+  await page.waitForURL(new RegExp(`${firstSemanticsHref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+  assert.ok(page.url().endsWith(firstSemanticsHref), "offline legacy semantics query should document-navigate to the cached static detail route")
+
   const sentinel = JSON.stringify({ goal: "balanced", dailyMinutes: 15, startedAt: 123, updatedAt: 123 })
   await page.evaluate(({ key, value }) => {
     localStorage.setItem(key, value)
   }, { key: E2E_STORAGE_KEYS.USER_PROFILE, value: sentinel })
 
   await context.setOffline(false)
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
+  const knownRouteAbortUrl = `${baseUrl}/learn/day-1-a-row-hello`
+  const abortKnownRoute = (route) => route.abort("failed")
+  await context.route(knownRouteAbortUrl, abortKnownRoute)
+  await page.getByTestId("home-start-learning").click()
+  await page.waitForURL(/\/learn\/day-1-a-row-hello/)
+  assert.ok(await page.getByTestId("lesson-next").isVisible(), "service-worker-controlled online links should use document navigation and recover from a cached page")
+  await context.unroute(knownRouteAbortUrl, abortKnownRoute)
+
   const fallbackUrl = `${baseUrl}/offline-smoke-${Date.now()}`
   await context.route(fallbackUrl, (route) => route.abort("failed"))
   await page.goto(fallbackUrl, { waitUntil: "domcontentloaded" })

@@ -52,18 +52,24 @@ test("PWA registration surfaces service worker updates without forcing a reload"
   assert.doesNotMatch(register, /skipWaiting\(\)/)
 })
 
-test("PWA registration lets offline links fall back to document navigation", () => {
+test("PWA registration lets offline or service-worker-controlled links fall back to document navigation", () => {
   assert.match(register, /function getOfflineNavigationAnchor\(event: MouseEvent\)/)
   assert.match(register, /closest<HTMLAnchorElement>\("a\[href\]"\)/)
-  assert.match(register, /shouldUseDocumentNavigationOffline\(\{/)
+  assert.match(register, /shouldUsePwaDocumentNavigation\(\{/)
   assert.match(register, /hasDownload: anchor\.hasAttribute\("download"\)/)
-  assert.match(register, /if \(navigator\.onLine\) return/)
+  assert.doesNotMatch(register, /if \(navigator\.onLine\) return/)
+  assert.match(register, /isOnline: navigator\.onLine/)
+  assert.match(register, /hasServiceWorkerController: Boolean\(navigator\.serviceWorker\.controller\)/)
   assert.match(register, /document\.addEventListener\("click", onOfflineLinkClick, true\)/)
   assert.match(register, /document\.removeEventListener\("click", onOfflineLinkClick, true\)/)
   assert.match(register, /event\.preventDefault\(\)/)
   assert.match(register, /event\.stopPropagation\(\)/)
   assert.match(register, /window\.location\.assign\(anchor\.href\)/)
   assert.match(pwaNavigation, /export function shouldUseDocumentNavigationOffline/)
+  assert.match(pwaNavigation, /export function shouldUsePwaDocumentNavigation/)
+  assert.match(pwaNavigation, /export function shouldUsePwaDocumentNavigationForHref/)
+  assert.match(pwaNavigation, /hasServiceWorkerController/)
+  assert.match(pwaNavigation, /!isOnline \|\| hasServiceWorkerController/)
   assert.match(pwaNavigation, /event\.button !== 0/)
   assert.match(pwaNavigation, /event\.metaKey \|\| event\.ctrlKey \|\| event\.shiftKey \|\| event\.altKey/)
   assert.match(pwaNavigation, /anchor\.hasDownload/)
@@ -105,7 +111,12 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /Cache writes are best effort and must not block a valid network response/)
   assert.match(sw, /await tryCachePut\(cache, request, response\.clone\(\)\)/)
   assert.match(sw, /cache\.match\(request\)/)
-  assert.match(sw, /const staticCached = await staticCache\.match\(request\)/)
+  assert.match(sw, /function getCanonicalNavigationUrl\(requestUrl\)/)
+  assert.match(sw, /return new URL\(requestUrl\.pathname, self\.location\.origin\)\.href/)
+  assert.match(sw, /async function matchCachedNavigation\(cache, request, requestUrl\)/)
+  assert.match(sw, /cache\.match\(canonicalUrl\)/)
+  assert.match(sw, /const cached = await matchCachedNavigation\(cache, request, requestUrl\)/)
+  assert.match(sw, /const staticCached = await matchCachedNavigation\(staticCache, request, requestUrl\)/)
   assert.match(sw, /if \(staticCached\) return staticCached/)
   assert.match(sw, /staticCache\.match\(OFFLINE_FALLBACK_URL\)/)
   assert.match(sw, /function isCacheableStaticAsset\(request, requestUrl\)/)
@@ -189,6 +200,8 @@ test("service worker activation removes only outdated app-owned caches", async (
     caches: {
       async keys() {
         return [
+          "yasashi-static-v6",
+          "yasashi-navigation-v6",
           "yasashi-static-v5",
           "yasashi-navigation-v5",
           "yasashi-static-v4",
@@ -231,7 +244,7 @@ test("service worker activation removes only outdated app-owned caches", async (
   })
 
   await activatePromise
-  assert.deepEqual(deleted.sort(), ["yasashi-navigation-v4", "yasashi-static-v4"])
+  assert.deepEqual(deleted.sort(), ["yasashi-navigation-v4", "yasashi-navigation-v5", "yasashi-static-v4", "yasashi-static-v5"])
   assert.equal(clientsClaimed, true)
 })
 
@@ -254,8 +267,8 @@ test("service worker navigation fallback ignores preserved non-app caches", asyn
           async match(request) {
             const url = typeof request === "string" ? request : request.url
             const absoluteUrl = url.startsWith("/") ? `https://example.test${url}` : url
-            if (name === "yasashi-navigation-v5") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
-            if (name === "yasashi-static-v5") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
+            if (name === "yasashi-navigation-v6") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
+            if (name === "yasashi-static-v6") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
             return preservedEntries.get(absoluteUrl) ?? preservedEntries.get(url) ?? null
           },
           async put() {},
@@ -316,6 +329,82 @@ test("service worker navigation fallback ignores preserved non-app caches", asyn
   assert.equal(await (await responded).text(), "offline fallback")
 })
 
+test("service worker navigation fallback canonicalizes query URLs before offline fallback", async () => {
+  let fetchHandler = null
+  const navigationEntries = new Map([
+    ["https://example.test/semantics", new Response("cached semantics page", { status: 200 })],
+  ])
+  const staticEntries = new Map([
+    ["https://example.test/vocabulary", new Response("cached vocabulary shell", { status: 200 })],
+    ["https://example.test/offline.html", new Response("offline fallback", { status: 200 })],
+  ])
+  const sandbox = {
+    caches: {
+      async open(name) {
+        return {
+          async match(request) {
+            const url = typeof request === "string" ? request : request.url
+            const absoluteUrl = url.startsWith("/") ? `https://example.test${url}` : url
+            if (name === "yasashi-navigation-v6") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
+            if (name === "yasashi-static-v6") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
+            return null
+          },
+          async put() {},
+        }
+      },
+    },
+    async fetch() {
+      throw new Error("offline")
+    },
+    self: {
+      location: { origin: "https://example.test" },
+      addEventListener(type, handler) {
+        if (type === "fetch") fetchHandler = handler
+      },
+      skipWaiting() {},
+      clients: { claim() {} },
+    },
+    URL,
+    Response,
+    Promise,
+  }
+  sandbox.globalThis = sandbox
+
+  vm.runInNewContext(sw, sandbox)
+  assert.equal(typeof fetchHandler, "function")
+
+  async function navigate(url) {
+    let responded = null
+    fetchHandler({
+      request: {
+        method: "GET",
+        mode: "navigate",
+        destination: "document",
+        url,
+      },
+      respondWith(promise) {
+        responded = promise
+      },
+      waitUntil() {},
+    })
+
+    return (await responded).text()
+  }
+
+  assert.equal(
+    await navigate("https://example.test/semantics?item=aru-iru"),
+    "cached semantics page"
+  )
+  assert.equal(
+    await navigate("https://example.test/vocabulary?level=daily"),
+    "cached vocabulary shell"
+  )
+  assert.equal(
+    await navigate("https://example.test/unvisited?x=1"),
+    "offline fallback"
+  )
+})
+
 test("service worker serves cached static assets while refreshing them in the background", async () => {
   let fetchHandler = null
   const currentStaticEntries = new Map([
@@ -331,12 +420,12 @@ test("service worker serves cached static assets while refreshing them in the ba
       async open(name) {
         return {
           async match(request) {
-            if (name === "yasashi-static-v5") return currentStaticEntries.get(request.url) ?? null
+            if (name === "yasashi-static-v6") return currentStaticEntries.get(request.url) ?? null
             return preservedEntries.get(request.url) ?? null
           },
           async put(request, response) {
             putCalls.push({ cache: name, url: request.url })
-            if (name === "yasashi-static-v5") currentStaticEntries.set(request.url, response)
+            if (name === "yasashi-static-v6") currentStaticEntries.set(request.url, response)
             else preservedEntries.set(request.url, response)
           },
         }
@@ -383,7 +472,7 @@ test("service worker serves cached static assets while refreshing them in the ba
   assert.equal(await (await responded).text(), "current icon")
   await Promise.all(waitUntilPromises)
   assert.deepEqual(fetchCalls, [{ url: "https://example.test/icons/icon-192.png", cache: "no-cache" }])
-  assert.deepEqual(putCalls, [{ cache: "yasashi-static-v5", url: "https://example.test/icons/icon-192.png" }])
+  assert.deepEqual(putCalls, [{ cache: "yasashi-static-v6", url: "https://example.test/icons/icon-192.png" }])
   assert.equal(await currentStaticEntries.get("https://example.test/icons/icon-192.png").text(), "new icon")
   assert.equal(await preservedEntries.get("https://example.test/icons/icon-192.png").text(), "stale preserved icon")
 })
@@ -416,6 +505,14 @@ test("PWA offline E2E verifies visited-page cache, fallback, and local state pre
   assert.match(pwaE2e, /name\.startsWith\("yasashi-static-"\)/)
   assert.match(pwaE2e, /\/_next\/static\//)
   assert.match(pwaE2e, /service worker static cache should contain Next static assets/)
+  assert.match(pwaE2e, /\/kana/)
+  assert.match(pwaE2e, /kana-card-a/)
+  assert.match(pwaE2e, /\/vocabulary/)
+  assert.match(pwaE2e, /vocabulary-search/)
+  assert.match(pwaE2e, /\/quiz/)
+  assert.match(pwaE2e, /quiz-mode-hiragana-romaji/)
+  assert.match(pwaE2e, /\/semantics/)
+  assert.match(pwaE2e, /a\[href\^="\/semantics\/"\]/)
   assert.match(pwaE2e, /context\.setOffline\(true\)/)
   assert.match(pwaE2e, /\/learn\/day-1-a-row-hello/)
   assert.match(pwaE2e, /page\.getByTestId\("home-start-learning"\)\.click\(\)/)
@@ -431,6 +528,18 @@ test("PWA offline E2E verifies visited-page cache, fallback, and local state pre
   assert.match(pwaE2e, /offline client-side links should fall back to document navigation for cached pages/)
   assert.match(pwaE2e, /offline cache should serve a visited AnimCJK SVG/)
   assert.match(pwaE2e, /offline AnimCJK response should remain an SVG/)
+  assert.match(pwaE2e, /\/kana\?mode=katakana&set=yoon/)
+  assert.match(pwaE2e, /offline canonical navigation should serve a cached kana query route/)
+  assert.match(pwaE2e, /\/vocabulary\?level=daily/)
+  assert.match(pwaE2e, /offline canonical navigation should serve a cached vocabulary query route/)
+  assert.match(pwaE2e, /\/quiz\?mode=hiragana-romaji/)
+  assert.match(pwaE2e, /offline canonical navigation should serve a cached quiz query route/)
+  assert.match(pwaE2e, /\/semantics\?item=\$\{semanticsItemId\}/)
+  assert.match(pwaE2e, /offline legacy semantics query should document-navigate to the cached static detail route/)
+  assert.match(pwaE2e, /const knownRouteAbortUrl = `\$\{baseUrl\}\/learn\/day-1-a-row-hello`/)
+  assert.match(pwaE2e, /context\.route\(knownRouteAbortUrl, abortKnownRoute\)/)
+  assert.match(pwaE2e, /context\.unroute\(knownRouteAbortUrl, abortKnownRoute\)/)
+  assert.match(pwaE2e, /service-worker-controlled online links should use document navigation and recover from a cached page/)
   assert.match(pwaE2e, /context\.route\(fallbackUrl, \(route\) => route\.abort\("failed"\)\)/)
   assert.match(pwaE2e, /page\.goto\(fallbackUrl/)
   assert.match(pwaE2e, /navigation failures should render the offline fallback/)
