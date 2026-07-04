@@ -21,9 +21,13 @@ const YAKUSOKU_KANA = String.fromCodePoint(0x3084, 0x304f, 0x305d, 0x304f)
 const SHIRU = String.fromCodePoint(0x77e5, 0x308b)
 const WAKARU = String.fromCodePoint(0x5206, 0x304b, 0x308b)
 const SHIRU_EXAMPLE = String.fromCodePoint(0x4f4f, 0x6240, 0x3092, 0x77e5, 0x3063, 0x3066, 0x3044, 0x308b, 0x3002)
+const PRAGMATICS_MORNING_TITLE = String.fromCodePoint(0x65e9, 0x5b89)
+const OHAYOU_GOZAIMASU = String.fromCodePoint(0x304a, 0x306f, 0x3088, 0x3046, 0x3054, 0x3056, 0x3044, 0x307e, 0x3059, 0x3002)
 const OFFLINE_FALLBACK_TEXT = String.fromCodePoint(0x5f53, 0x524d, 0x79bb, 0x7ebf)
 const semanticsItemId = "s-shiru-wakaru"
 const semanticsDetailPath = `/semantics/${semanticsItemId}`
+const pragmaticsItemId = "p-aisatsu-morning"
+const pragmaticsDetailPath = `/pragmatics/${pragmaticsItemId}`
 
 async function ensureProductionServer() {
   baseUrl = await startProductionServer({
@@ -146,6 +150,12 @@ try {
   await assertBodyIncludes(page, SHIRU, "online semantics prewarm should load the fixed detail page")
   await assertBodyIncludes(page, WAKARU, "online semantics prewarm should load the comparison term")
   await assertBodyIncludes(page, SHIRU_EXAMPLE, "online semantics prewarm should load example sentences")
+
+  await page.goto(`${baseUrl}/pragmatics`, { waitUntil: "networkidle" })
+  await page.goto(`${baseUrl}${pragmaticsDetailPath}`, { waitUntil: "networkidle" })
+  await page.waitForURL(new RegExp(`${pragmaticsDetailPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+  await assertBodyIncludes(page, PRAGMATICS_MORNING_TITLE, "online pragmatics prewarm should load the fixed detail page")
+  await assertBodyIncludes(page, OHAYOU_GOZAIMASU, "online pragmatics prewarm should load example responses")
   await page.goto(baseUrl, { waitUntil: "networkidle" })
 
   const visitedLessonUrl = `${baseUrl}/learn/day-1-a-row-hello`
@@ -215,6 +225,12 @@ try {
   await assertBodyIncludes(page, SHIRU, "offline semantics query should render the cached detail term")
   await assertBodyIncludes(page, WAKARU, "offline semantics query should render the cached comparison term")
   await assertBodyIncludes(page, SHIRU_EXAMPLE, "offline semantics query should render cached example sentences")
+
+  await page.goto(`${baseUrl}${pragmaticsDetailPath}`, { waitUntil: "domcontentloaded" })
+  assert.ok(page.url().endsWith(pragmaticsDetailPath), "offline pragmatics detail should stay on the cached static detail route")
+  await assertBodyIncludes(page, PRAGMATICS_MORNING_TITLE, "offline pragmatics detail should render the cached title")
+  await assertBodyIncludes(page, OHAYOU_GOZAIMASU, "offline pragmatics detail should render cached example responses")
+  await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline pragmatics detail should not render the fallback page")
 
   const sentinel = JSON.stringify({ goal: "balanced", dailyMinutes: 15, startedAt: 123, updatedAt: 123 })
   await page.evaluate(({ key, value }) => {
