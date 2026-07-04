@@ -60,6 +60,29 @@ test("recommendation surfaces do not import the aggregated vocabulary dataset", 
   assert.match(recommendationModel, /summarizeLearnedVocabIds/)
 })
 
+test("home and review dashboard surfaces do not import eager vocabulary datasets", () => {
+  const surfaceFiles = [
+    "src/components/home/home-page.tsx",
+    "src/lib/home-page-model.ts",
+    "src/components/review/review-page.tsx",
+    "src/components/review/review-dashboard.tsx",
+    "src/lib/review-dashboard-model.ts",
+  ]
+  const forbidden = [
+    /@\/data\/vocabulary\/(?:survival|daily|fluent)/,
+    /vocabByLevel/,
+    /vocabData/,
+    /survivalVocab|dailyVocab|fluentVocab/,
+  ]
+
+  for (const file of surfaceFiles) {
+    const source = fs.readFileSync(path.join(root, file), "utf8")
+    for (const pattern of forbidden) {
+      assert.doesNotMatch(source, pattern, `${file} should not eagerly import full vocabulary data`)
+    }
+  }
+})
+
 test("vocabulary public index does not re-export eager aggregate datasets", () => {
   const source = fs.readFileSync(path.join(root, "src/data/vocabulary/index.ts"), "utf8")
 
