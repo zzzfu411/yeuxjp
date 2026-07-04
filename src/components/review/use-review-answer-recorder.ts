@@ -35,7 +35,6 @@ export function useReviewAnswerRecorder({
           enrollReviewOnCorrect: false,
         })
         if (!recorded) return false
-        if (result.question.mistakeId && !result.correct) return true
         return grade(result)
       })
     })) {
