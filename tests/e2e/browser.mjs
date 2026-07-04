@@ -13,6 +13,7 @@ import {
   verifyLessonFlow,
   verifyMobileSmoke,
   verifyPwaUpdateBannerFlow,
+  verifyProfileSaveFailureFlow,
   verifyQuizAndMistakeFlow,
   verifyPracticeSaveFailureFlow,
   verifyProgressSaveFailureFlow,
@@ -54,6 +55,7 @@ try {
   await verifyReferenceKeyboardFlow(page, baseUrl)
   await verifyQuizAndMistakeFlow(page, baseUrl)
   await verifyDueReviewFlow(page, baseUrl)
+  await verifyProfileSaveFailureFlow(page, baseUrl)
   await verifyPracticeSaveFailureFlow(page, baseUrl)
   await verifyProgressSaveFailureFlow(page, baseUrl)
   await verifyLearningDataFlow(page, baseUrl)

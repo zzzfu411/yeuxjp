@@ -58,6 +58,7 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
     "verifyReferenceKeyboardFlow",
     "verifyQuizAndMistakeFlow",
     "verifyDueReviewFlow",
+    "verifyProfileSaveFailureFlow",
     "verifyPracticeSaveFailureFlow",
     "verifyProgressSaveFailureFlow",
     "verifyLearningDataFlow",
@@ -366,6 +367,19 @@ test("browser E2E verifies save failures keep quiz, lesson, and review on the cu
   assert.match(e2e, /getByTestId\("review-remaining"\)/)
   assert.match(e2e, /kanaSrs\?\.a\?\.box, 1/)
   assert.match(e2e, /PRACTICE_RESULTS/)
+})
+
+test("browser E2E verifies onboarding profile save failures stay recoverable", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /verifyProfileSaveFailureFlow/)
+  assert.match(e2e, /E2E simulated profile write failure/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.USER_PROFILE/)
+  assert.match(e2e, /getByTestId\("onboarding-save"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("practice-save-error"\)/)
+  assert.match(e2e, /readJsonStorage\(page, E2E_STORAGE_KEYS\.USER_PROFILE\), null/)
+  assert.match(e2e, /getByTestId\("onboarding-save"\)\.isVisible\(\)/)
+  assert.match(e2e, /profile save retry should persist the selected daily minutes/)
 })
 
 test("browser E2E verifies kana and vocabulary progress save failures roll back state", () => {

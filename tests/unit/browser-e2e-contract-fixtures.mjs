@@ -15,6 +15,7 @@ export const browserFixtureModulePaths = [
 export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-lesson.mjs",
   "tests/e2e/browser-flow-content.mjs",
+  "tests/e2e/browser-flow-profile-save.mjs",
   "tests/e2e/browser-flow-quiz.mjs",
   "tests/e2e/browser-flow-practice-save.mjs",
   "tests/e2e/browser-flow-progress-save.mjs",
