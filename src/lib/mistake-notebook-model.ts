@@ -11,6 +11,7 @@ export type MistakeItem = {
   questionText?: string
   questionAudio?: string
   correctAnswer: string
+  acceptedAnswers?: string[]
   correctDisplay?: string
   lastWrongAnswer?: string
   explanation?: string
@@ -26,6 +27,7 @@ export type RecordMistakeInput = {
   questionText?: string
   questionAudio?: string
   correctAnswer: string
+  acceptedAnswers?: string[]
   correctDisplay?: string
   wrongAnswer: string
   explanation?: string
@@ -105,6 +107,23 @@ export function normalizeMistakeOptions(options: unknown): MistakeOption[] {
   return normalized
 }
 
+export function normalizeAcceptedMistakeAnswers(answers: unknown): string[] | undefined {
+  if (!Array.isArray(answers)) return undefined
+
+  const seen = new Set<string>()
+  const normalized: string[] = []
+
+  for (const answer of answers) {
+    if (typeof answer !== "string") continue
+    const value = answer.trim()
+    if (!value || seen.has(value)) continue
+    seen.add(value)
+    normalized.push(value)
+  }
+
+  return normalized.length ? normalized : undefined
+}
+
 export function normalizeMistakeList(input: unknown, now: number = Date.now()): MistakeItem[] {
   if (!Array.isArray(input)) return []
 
@@ -121,6 +140,7 @@ export function normalizeMistakeList(input: unknown, now: number = Date.now()): 
       questionText: stringOrUndefined(item.questionText),
       questionAudio: stringOrUndefined(item.questionAudio),
       correctAnswer: item.correctAnswer,
+      acceptedAnswers: normalizeAcceptedMistakeAnswers(item.acceptedAnswers),
       correctDisplay: stringOrUndefined(item.correctDisplay),
       lastWrongAnswer: stringOrUndefined(item.lastWrongAnswer),
       explanation: stringOrUndefined(item.explanation),
@@ -151,6 +171,7 @@ export function upsertWrongMistake(previous: readonly MistakeItem[], input: Reco
     questionText: input.questionText,
     questionAudio: input.questionAudio,
     correctAnswer: input.correctAnswer,
+    acceptedAnswers: normalizeAcceptedMistakeAnswers(input.acceptedAnswers) ?? base?.acceptedAnswers,
     correctDisplay: input.correctDisplay,
     lastWrongAnswer: input.wrongAnswer,
     explanation: input.explanation,

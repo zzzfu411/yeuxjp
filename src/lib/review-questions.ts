@@ -64,6 +64,7 @@ export function mistakeToQuestion(item: MistakeItem): Question {
     questionText: item.questionText,
     questionAudio: item.questionAudio,
     correctAnswer: item.correctAnswer,
+    acceptedAnswers: item.acceptedAnswers,
     correctDisplay: item.correctDisplay,
     explanation: item.explanation,
     options: ensureQuestionOptions(item),

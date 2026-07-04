@@ -3,6 +3,7 @@ import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const review = await loadTsModule("src/lib/review-questions.ts")
+const questions = await loadTsModule("src/lib/questions.ts")
 
 test("today review queue prioritizes mistakes before due-sorted kana and vocab", () => {
   const queue = review.buildTodayReviewQueue({
@@ -119,4 +120,21 @@ test("vocabulary review questions require enough distractor options", () => {
   )
 
   assert.equal(question, null)
+})
+
+test("mistake review questions accept stored alternate answers", () => {
+  const question = review.mistakeToQuestion({
+    id: "m-accepted",
+    type: "lesson:typing",
+    questionText: "prompt",
+    correctAnswer: "hello",
+    acceptedAnswers: ["hi"],
+    options: [{ value: "hello", display: "hello" }],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  })
+
+  assert.deepEqual(question.acceptedAnswers, ["hi"])
+  assert.equal(questions.makeQuestionResult(question, "hi", 1).correct, true)
 })

@@ -68,6 +68,7 @@ export function questionToMistakeInput(result: QuestionResult) {
     questionText: question.questionText,
     questionAudio: question.questionAudio,
     correctAnswer: question.correctAnswer,
+    acceptedAnswers: question.acceptedAnswers,
     correctDisplay: question.correctDisplay,
     wrongAnswer: result.selectedAnswer,
     explanation: question.explanation,

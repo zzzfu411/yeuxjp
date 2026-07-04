@@ -99,3 +99,20 @@ test("mistake review questions keep the existing mistake id when wrong again", (
   assert.equal(result.correct, false)
   assert.equal(input.id, "existing-mistake-id")
 })
+
+test("wrong question results preserve accepted answers for mistake review", () => {
+  const result = questions.makeQuestionResult(
+    {
+      type: "lesson:typing",
+      correctAnswer: "hello",
+      acceptedAnswers: ["hi", "hey"],
+      options: [{ value: "hello", display: "hello" }],
+    },
+    "wrong",
+    1_700_000_000_002
+  )
+  const input = questions.questionToMistakeInput(result)
+
+  assert.equal(result.correct, false)
+  assert.deepEqual(input.acceptedAnswers, ["hi", "hey"])
+})

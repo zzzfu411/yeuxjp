@@ -115,3 +115,31 @@ test("mistake notebook model removes by id without mutating missing lists", () =
   assert.equal(model.removeMistakeById(list, "missing"), list)
   assert.deepEqual(model.removeMistakeById(list, "one"), [])
 })
+
+test("mistake notebook model preserves normalized accepted answers", () => {
+  const first = model.upsertWrongMistake(
+    [],
+    {
+      type: "lesson:typing",
+      questionText: "greeting",
+      correctAnswer: "hello",
+      acceptedAnswers: ["hi", "", "hi", "hey"],
+      wrongAnswer: "bye",
+    },
+    100
+  )
+
+  const second = model.upsertWrongMistake(
+    first,
+    {
+      type: "lesson:typing",
+      questionText: "greeting",
+      correctAnswer: "hello",
+      wrongAnswer: "yo",
+    },
+    200
+  )
+
+  assert.deepEqual(first[0].acceptedAnswers, ["hi", "hey"])
+  assert.deepEqual(second[0].acceptedAnswers, ["hi", "hey"])
+})
