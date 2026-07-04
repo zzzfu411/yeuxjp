@@ -445,6 +445,12 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
   assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/kana`/)
   assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/quiz`/)
   assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/review`/)
+  assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/grammar`/)
+  assert.match(e2e, /getByTestId\("grammar-point-n5-wa"\)/)
+  assert.match(e2e, /mobilePage\.goto\(`\$\{baseUrl\}\/semantics\/s-shiru-wakaru`/)
+  assert.match(e2e, /getByText\("Know \(Data\)"\)/)
+  assert.match(e2e, /function assertNoHorizontalOverflow/)
+  assert.match(e2e, /scrollWidth <= size\.clientWidth \+ 1/)
   assert.match(e2e, /mobileContext\.close\(\)/)
 })
 
