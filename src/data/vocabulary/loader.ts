@@ -1,10 +1,21 @@
 import type { VocabLevel, Vocabulary } from "./types"
 import { getVocabLevelForId } from "./stats"
 
-export async function loadVocabularyLevel(level: VocabLevel): Promise<Vocabulary[]> {
-  if (level === "survival") return (await import("./survival")).survivalVocab
-  if (level === "daily") return (await import("./daily")).dailyVocab
-  return (await import("./fluent")).fluentVocab
+const vocabularyLevelLoaders: Record<VocabLevel, () => Promise<Vocabulary[]>> = {
+  survival: () => import("./survival").then((module) => module.survivalVocab),
+  daily: () => import("./daily").then((module) => module.dailyVocab),
+  fluent: () => import("./fluent").then((module) => module.fluentVocab),
+}
+
+const vocabularyLevelPromises = new Map<VocabLevel, Promise<Vocabulary[]>>()
+
+export function loadVocabularyLevel(level: VocabLevel): Promise<Vocabulary[]> {
+  const cached = vocabularyLevelPromises.get(level)
+  if (cached) return cached
+
+  const promise = vocabularyLevelLoaders[level]()
+  vocabularyLevelPromises.set(level, promise)
+  return promise
 }
 
 export async function loadVocabularyScope(scope: VocabLevel | "all"): Promise<Vocabulary[]> {

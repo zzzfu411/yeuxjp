@@ -17,6 +17,14 @@ test("vocabulary loader returns the requested level only", async () => {
   assert.equal(fluent.every((item) => item.level === "fluent"), true)
 })
 
+test("vocabulary loader reuses in-flight level loads", async () => {
+  const first = loader.loadVocabularyLevel("daily")
+  const second = loader.loadVocabularyLevel("daily")
+
+  assert.strictEqual(first, second)
+  assert.strictEqual(await first, await second)
+})
+
 test("vocabulary scope all combines every level", async () => {
   const survival = await loader.loadVocabularyLevel("survival")
   const daily = await loader.loadVocabularyLevel("daily")
