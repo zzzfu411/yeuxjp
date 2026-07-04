@@ -37,9 +37,11 @@ test("app README documents the current E2E coverage layers", () => {
   assert.match(webReadme, /npm run check:release/)
   assert.match(webReadme, /HTTP route health/)
   assert.match(webReadme, /real interactions with Playwright/)
+  assert.match(webReadme, /waiting-worker `SKIP_WAITING`/)
   assert.match(webReadme, /production build/)
   assert.match(webReadme, /service worker/)
   assert.match(webReadme, /offline/)
+  assert.match(webReadme, /real cached kana\/vocabulary\/quiz\/semantics content/)
 })
 
 test("product docs distinguish dependency freshness warnings from actionable build warnings", () => {
