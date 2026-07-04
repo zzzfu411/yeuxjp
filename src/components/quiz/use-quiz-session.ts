@@ -1,12 +1,11 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { speakJapaneseRepeated } from "@/lib/speech"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningStatus } from "@/lib/learning-status"
 import type { Question } from "@/lib/questions"
 import { createQuizStats } from "@/lib/quiz-session"
-import { useSpeechPreferences } from "@/components/ui/speech-preferences"
+import { useQuizAudio } from "@/components/quiz/use-quiz-audio"
 import { useQuizAnswerRecorder } from "@/components/quiz/use-quiz-answer-recorder"
 import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
 import {
@@ -25,7 +24,6 @@ import {
 } from "@/lib/quiz-generators"
 
 export function useQuizSession(mode: QuizMode) {
-  const speech = useSpeechPreferences()
   const mistakes = useMistakeNotebook()
   const learning = useLearningStatus()
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
@@ -62,11 +60,11 @@ export function useQuizSession(mode: QuizMode) {
     return filterUnlearnedVocab(vocabBasePool, learning.isVocabLearned, onlyUnlearnedVocab)
   }, [learning.isVocabLearned, onlyUnlearnedVocab, vocabBasePool])
 
-  const playAudio = useCallback((text: string) => {
-    const repeat = speech?.prefs.repeat ?? 1
-    const gapMs = speech?.prefs.gapMs ?? 250
-    speakJapaneseRepeated(text, { repeat, gapMs })
-  }, [speech?.prefs.gapMs, speech?.prefs.repeat])
+  const { playAudio } = useQuizAudio({
+    autoPlayText: currentQuestion?.questionAudio,
+    autoPlayKey: currentQuestion,
+    autoPlayEnabled: Boolean(currentQuestion?.autoPlayAudio),
+  })
 
   const generateQuestion = useCallback(() => {
     const preflightReason = getQuizPreflightEmptyReason({
@@ -95,11 +93,6 @@ export function useQuizSession(mode: QuizMode) {
       setSelectedOption(null)
       setSaveError(false)
       setEmptyReason("loading")
-
-      const autoPlay = speech?.prefs.autoPlay ?? true
-      if (q.questionAudio && q.autoPlayAudio && autoPlay) {
-        setTimeout(() => playAudio(q.questionAudio!), 500)
-      }
       return
     }
 
@@ -113,8 +106,6 @@ export function useQuizSession(mode: QuizMode) {
     mode,
     onlyUnlearnedVocab,
     onlyUnmasteredKana,
-    playAudio,
-    speech?.prefs.autoPlay,
     vocabBasePool,
     vocabError,
     vocabLoading,

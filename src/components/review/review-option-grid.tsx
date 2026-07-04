@@ -21,12 +21,14 @@ export type ReviewOption = {
 export function ReviewOptionGrid({
   options,
   correctAnswer,
+  acceptedAnswers,
   selectedAnswer,
   onSelect,
   optionClassName = "h-16 text-base font-medium leading-tight",
 }: {
   options: ReviewOption[]
   correctAnswer: string
+  acceptedAnswers?: string[]
   selectedAnswer: string | null
   onSelect: (value: string) => void
   optionClassName?: string
@@ -38,7 +40,7 @@ export function ReviewOptionGrid({
         const feedback = getAnswerOptionFeedback({
           selectedAnswer,
           optionValue: option.value,
-          isCorrectOption: isQuestionAnswerCorrect({ correctAnswer }, option.value),
+          isCorrectOption: isQuestionAnswerCorrect({ correctAnswer, acceptedAnswers }, option.value),
         })
 
         return (

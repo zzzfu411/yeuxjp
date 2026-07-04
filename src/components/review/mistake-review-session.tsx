@@ -117,6 +117,7 @@ export function MistakeReviewSession({
       <ReviewOptionGrid
         options={question.options}
         correctAnswer={correct}
+        acceptedAnswers={question.acceptedAnswers}
         selectedAnswer={selected}
         onSelect={handleSelect}
       />

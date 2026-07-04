@@ -354,7 +354,17 @@ export const requiredSelectors = [
     pattern: /data-testid="review-remaining"/,
   },
   {
+    testId: "review-next",
+    source: "src/components/review/review-session-frame.tsx",
+    pattern: /data-testid="review-next"/,
+  },
+  {
     testId: "review-answer-a",
+    source: "src/components/review/review-option-grid.tsx",
+    pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
+  },
+  {
+    testId: "review-answer-sur-g-1",
     source: "src/components/review/review-option-grid.tsx",
     pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
   },

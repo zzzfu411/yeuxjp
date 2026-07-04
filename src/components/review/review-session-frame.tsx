@@ -53,7 +53,12 @@ export function ReviewNextButton({
   if (!show) return null
 
   return (
-    <Button onClick={onNext} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
+    <Button
+      onClick={onNext}
+      size="lg"
+      className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2"
+      data-testid="review-next"
+    >
       下一题 <RefreshCw className="w-4 h-4" />
     </Button>
   )

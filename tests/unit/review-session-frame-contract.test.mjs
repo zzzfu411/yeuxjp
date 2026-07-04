@@ -40,6 +40,7 @@ test("review session frame owns shared review layout chrome", () => {
   assert.match(source, /<RefreshCw\b/)
   assert.match(source, /ReviewPromptCard/)
   assert.match(source, /ReviewNextButton/)
+  assert.match(source, /data-testid="review-next"/)
 })
 
 test("mistake review session exposes a stable browser test id", () => {

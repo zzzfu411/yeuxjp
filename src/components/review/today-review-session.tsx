@@ -223,6 +223,7 @@ export function TodayReviewSession({
       <ReviewOptionGrid
         options={data.question.options}
         correctAnswer={data.question.correctAnswer}
+        acceptedAnswers={data.question.acceptedAnswers}
         selectedAnswer={selected}
         onSelect={handleSelect}
       />
