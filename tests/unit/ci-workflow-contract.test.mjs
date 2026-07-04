@@ -45,6 +45,7 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
   assert.match(workflow, /apple-touch-icon\\\.png/)
   assert.match(workflow, /favicon\\\.ico/)
   assert.match(workflow, /icons\//)
+  assert.match(workflow, /brand\//)
   assert.match(workflow, /assets\//)
   assert.match(workflow, /animcjk\//)
   assert.match(workflow, /src\/app\/layout\\\.tsx/)

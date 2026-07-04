@@ -70,7 +70,7 @@ jobs:
 
           git diff --name-only "$base" "$head" > changed-files.txt
 
-          if grep -E '^(public/(sw\.js|manifest\.webmanifest|offline\.html|apple-touch-icon\.png|favicon\.ico|icons/|assets/|animcjk/)|src/app/layout\.tsx|src/components/pwa-register\.tsx|src/lib/pwa-navigation\.ts|tests/e2e/pwa-offline\.mjs|tests/e2e/harness\.mjs|package\.json|package-lock\.json)$' changed-files.txt > /dev/null; then
+          if grep -E '^(public/(sw\.js|manifest\.webmanifest|offline\.html|apple-touch-icon\.png|favicon\.ico|icons/|brand/|assets/|animcjk/)|src/app/layout\.tsx|src/components/pwa-register\.tsx|src/lib/pwa-navigation\.ts|tests/e2e/pwa-offline\.mjs|tests/e2e/harness\.mjs|package\.json|package-lock\.json)$' changed-files.txt > /dev/null; then
             echo "pwa=true" >> "$GITHUB_OUTPUT"
           else
             echo "pwa=false" >> "$GITHUB_OUTPUT"
