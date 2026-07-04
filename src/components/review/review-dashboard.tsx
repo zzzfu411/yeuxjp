@@ -97,6 +97,7 @@ export function ReviewDashboard({
           total={kana.total}
           onStart={kana.onStart}
           startDisabled={!kana.due}
+          startTestId="review-start-kana"
           extra={
             kana.enrollMissing > 0 ? (
               <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={kana.onEnrollMissing}>
@@ -115,6 +116,7 @@ export function ReviewDashboard({
           total={vocab.total}
           onStart={vocab.onStart}
           startDisabled={!vocab.due}
+          startTestId="review-start-vocab"
           extra={
             vocab.enrollMissing > 0 ? (
               <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={vocab.onEnrollMissing}>

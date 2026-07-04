@@ -315,6 +315,16 @@ export const requiredSelectors = [
     pattern: /data-testid="review-start-today"/,
   },
   {
+    testId: "review-start-kana",
+    source: "src/components/review/review-dashboard.tsx",
+    pattern: /startTestId="review-start-kana"/,
+  },
+  {
+    testId: "review-start-vocab",
+    source: "src/components/review/review-dashboard.tsx",
+    pattern: /startTestId="review-start-vocab"/,
+  },
+  {
     testId: "review-empty-state",
     source: "src/components/review/review-banners.tsx",
     pattern: /data-testid="review-empty-state"/,

@@ -136,4 +136,38 @@ export async function verifyDueReviewFlow(page, baseUrl) {
       ),
     "mixed today review should write vocabulary practice history"
   )
+
+  await seedReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-start-kana").click()
+  await page.getByTestId("review-answer-a").click()
+  await page.waitForFunction((storageKeys) => {
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    return srs?.a?.box > 1 &&
+      Array.isArray(practice) &&
+      practice.some((item) =>
+        item.itemId === "a" &&
+        item.itemType === "kana" &&
+        item.mode === "recognition" &&
+        item.correct === true
+      )
+  }, E2E_STORAGE_KEYS)
+
+  await seedMixedReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-start-vocab").click()
+  await page.getByTestId("review-answer-sur-g-1").click()
+  await page.waitForFunction((storageKeys) => {
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_VOCAB) ?? "{}")
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    return srs?.["sur-g-1"]?.box > 1 &&
+      Array.isArray(practice) &&
+      practice.some((item) =>
+        item.itemId === "sur-g-1" &&
+        item.itemType === "vocab" &&
+        item.mode === "meaning" &&
+        item.correct === true
+      )
+  }, E2E_STORAGE_KEYS)
 }

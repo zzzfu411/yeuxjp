@@ -332,6 +332,8 @@ test("browser E2E verifies review empty and due states", () => {
   assert.match(e2e, /getByTestId\("review-due-state"\)/)
   assert.match(e2e, /getByTestId\("review-today-due"\)/)
   assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("review-start-kana"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("review-start-vocab"\)\.click\(\)/)
   assert.match(e2e, /wrongKanaOption/)
   assert.match(e2e, /wrong review answer should reset kana SRS to immediate review/)
   assert.match(e2e, /getByTestId\("review-next"\)\.click\(\)/)
