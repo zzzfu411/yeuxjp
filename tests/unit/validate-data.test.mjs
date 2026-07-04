@@ -152,6 +152,20 @@ test("data validation verifies PWA manifest install metadata and PNG dimensions"
   assert.match(source, /"\/apple-touch-icon\.png"/)
 })
 
+test("data validation guards PWA static asset cache drift", () => {
+  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+
+  assert.match(source, /function serviceWorkerStaticAssets/)
+  assert.match(source, /function cacheWorthyPublicAssets/)
+  assert.match(source, /function isCacheWorthyPublicAsset/)
+  assert.match(source, /serviceWorkerArrayBody\(swText, "STATIC_ASSETS"\)/)
+  assert.match(source, /relPath\.startsWith\("\/assets\/"\)/)
+  assert.match(source, /relPath\.startsWith\("\/brand\/"\)/)
+  assert.match(source, /relPath\.startsWith\("\/icons\/"\)/)
+  assert.match(source, /PWA service worker STATIC_ASSETS is missing cache-worthy public assets/)
+  assert.match(source, /PWA service worker caches cache-worthy public assets/)
+})
+
 test("data validation requires explicit vocabulary fields and matching levels", () => {
   const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
 

@@ -64,6 +64,72 @@ function matches(text, regex) {
   return Array.from(text.matchAll(regex), (m) => m[1])
 }
 
+function serviceWorkerConstStrings(text) {
+  const constants = new Map()
+  for (const match of text.matchAll(/const\s+([A-Z_][A-Z0-9_]*)\s*=\s*(["'])(.*?)\2\s*;/g)) {
+    constants.set(match[1], match[3])
+  }
+  return constants
+}
+
+function serviceWorkerArrayBody(text, name) {
+  const match = new RegExp(`const\\s+${name}\\s*=\\s*\\[`).exec(text)
+  if (!match) return null
+  const start = match.index + match[0].lastIndexOf("[")
+  const end = findBalancedClose(text, start, "[", "]")
+  if (end < 0) return null
+  return text.slice(start + 1, end)
+}
+
+function serviceWorkerStaticAssets(text) {
+  const constants = serviceWorkerConstStrings(text)
+
+  function readArray(name, trail = new Set()) {
+    if (trail.has(name)) return []
+    const body = serviceWorkerArrayBody(text, name)
+    if (body == null) return []
+
+    const nextTrail = new Set(trail)
+    nextTrail.add(name)
+    const assets = []
+    for (const match of body.matchAll(/\.\.\.([A-Z_][A-Z0-9_]*)|(["'])(.*?)\2|\b([A-Z_][A-Z0-9_]*)\b/g)) {
+      const spreadName = match[1]
+      const literal = match[3]
+      const constName = match[4]
+      if (spreadName) {
+        assets.push(...readArray(spreadName, nextTrail))
+      } else if (literal != null) {
+        assets.push(literal)
+      } else if (constName && constants.has(constName)) {
+        assets.push(constants.get(constName))
+      }
+    }
+    return assets
+  }
+
+  return Array.from(new Set(readArray("STATIC_ASSETS")))
+}
+
+function publicRootRelPath(file) {
+  return `/${path.relative(path.join(root, "public"), file).replace(/\\/g, "/")}`
+}
+
+function isCacheWorthyPublicAsset(file) {
+  const relPath = publicRootRelPath(file)
+  if (!/\.(ico|png|webp|jpe?g|svg)$/i.test(relPath)) return false
+  return relPath === "/favicon.ico" ||
+    relPath === "/apple-touch-icon.png" ||
+    relPath.startsWith("/assets/") ||
+    relPath.startsWith("/brand/") ||
+    relPath.startsWith("/icons/")
+}
+
+function cacheWorthyPublicAssets() {
+  return walkFiles(path.join(root, "public"), isCacheWorthyPublicAsset)
+    .map(publicRootRelPath)
+    .sort()
+}
+
 function objectBlocks(text) {
   return Array.from(text.matchAll(/\{[^{}]*\}/g), (m) => m[0])
 }
@@ -431,13 +497,12 @@ function validateServiceWorkerAssets() {
   if (!exists(swPath)) return
 
   const swText = read(swPath)
-  const assetsMatch = swText.match(/const\s+STATIC_ASSETS\s*=\s*\[([\s\S]*?)\];/)
-  if (!assetsMatch) {
+  if (!serviceWorkerArrayBody(swText, "STATIC_ASSETS")) {
     fail("PWA service worker is missing STATIC_ASSETS")
     return
   }
 
-  const assets = matches(assetsMatch[1], /["']([^"']+)["']/g)
+  const assets = serviceWorkerStaticAssets(swText)
   if (!assets.length) fail("PWA service worker STATIC_ASSETS is empty")
 
   for (const asset of assets) {
@@ -447,6 +512,13 @@ function validateServiceWorkerAssets() {
       continue
     }
     requireFile(`public/${asset.slice(1)}`, `PWA cached asset ${asset}`)
+  }
+
+  const missingCacheAssets = cacheWorthyPublicAssets().filter((asset) => !assets.includes(asset))
+  if (missingCacheAssets.length) {
+    fail(`PWA service worker STATIC_ASSETS is missing cache-worthy public assets: ${missingCacheAssets.join(", ")}`)
+  } else {
+    pass(`PWA service worker caches cache-worthy public assets (${cacheWorthyPublicAssets().length})`)
   }
 }
 
