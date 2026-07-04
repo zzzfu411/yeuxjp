@@ -59,6 +59,7 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
     "verifyQuizAndMistakeFlow",
     "verifyDueReviewFlow",
     "verifyPracticeSaveFailureFlow",
+    "verifyProgressSaveFailureFlow",
     "verifyLearningDataFlow",
     "verifyPwaUpdateBannerFlow",
     "verifyMobileSmoke",
@@ -360,6 +361,24 @@ test("browser E2E verifies save failures keep quiz and review on the current que
   assert.match(e2e, /getByTestId\("review-remaining"\)/)
   assert.match(e2e, /kanaSrs\?\.a\?\.box, 1/)
   assert.match(e2e, /PRACTICE_RESULTS/)
+})
+
+test("browser E2E verifies kana and vocabulary progress save failures roll back state", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /verifyProgressSaveFailureFlow/)
+  assert.match(e2e, /E2E simulated \$\{failureLabel\} write failure/)
+  assert.match(e2e, /"kana progress"/)
+  assert.match(e2e, /"vocabulary progress"/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.KANA_MASTERED/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.VOCAB_LEARNED/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_KANA/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_VOCAB/)
+  assert.match(e2e, /getByTestId\("practice-save-error"\)/)
+  assert.match(e2e, /failed kana progress clear should keep mastered kana/)
+  assert.match(e2e, /failed kana progress clear should restore kana SRS/)
+  assert.match(e2e, /failed vocabulary progress clear should keep learned vocabulary/)
+  assert.match(e2e, /failed vocabulary progress clear should restore vocabulary SRS/)
 })
 
 test("browser E2E includes a mobile viewport smoke pass for core routes", () => {

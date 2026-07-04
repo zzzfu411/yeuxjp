@@ -15,6 +15,7 @@ import {
   verifyPwaUpdateBannerFlow,
   verifyQuizAndMistakeFlow,
   verifyPracticeSaveFailureFlow,
+  verifyProgressSaveFailureFlow,
   verifyReferenceKeyboardFlow,
 } from "./browser-flows.mjs"
 
@@ -54,6 +55,7 @@ try {
   await verifyQuizAndMistakeFlow(page, baseUrl)
   await verifyDueReviewFlow(page, baseUrl)
   await verifyPracticeSaveFailureFlow(page, baseUrl)
+  await verifyProgressSaveFailureFlow(page, baseUrl)
   await verifyLearningDataFlow(page, baseUrl)
   await verifyPwaUpdateBannerFlow(page, baseUrl)
   await verifyMobileSmoke(browser, baseUrl)

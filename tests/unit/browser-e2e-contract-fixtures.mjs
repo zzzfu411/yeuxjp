@@ -17,6 +17,7 @@ export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-content.mjs",
   "tests/e2e/browser-flow-quiz.mjs",
   "tests/e2e/browser-flow-practice-save.mjs",
+  "tests/e2e/browser-flow-progress-save.mjs",
   "tests/e2e/browser-flow-reference.mjs",
   "tests/e2e/browser-flow-review.mjs",
   "tests/e2e/browser-flow-learning-data.mjs",
