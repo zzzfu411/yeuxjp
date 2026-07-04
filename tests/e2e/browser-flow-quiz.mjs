@@ -65,6 +65,34 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
     "correct mistake review should advance mistake SRS without deleting notebook history"
   )
 
+  const mistakeId = "e2e-mistake:kana-a"
+  await seedDueMistakeReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId(`recent-mistake-remove-${mistakeId}`).click()
+  await page.waitForFunction(({ storageKeys, id }) => {
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")
+    return Array.isArray(mistakes) && !mistakes.some((item) => item.id === id) && !srs?.[id]
+  }, { storageKeys: E2E_STORAGE_KEYS, id: mistakeId })
+  const afterRemoveMistakes = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
+  assert.ok(
+    Array.isArray(afterRemoveMistakes) && !afterRemoveMistakes.some((item) => item.id === mistakeId),
+    "removing a recent mistake should delete it from the notebook"
+  )
+  const afterRemoveMistakeSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_MISTAKES)
+  assert.equal(afterRemoveMistakeSrs?.[mistakeId], undefined, "removing a recent mistake should delete its mistake SRS")
+
+  await seedDueMistakeReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("mistakes-clear").click()
+  await page.waitForFunction((storageKeys) => {
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")
+    return Array.isArray(mistakes) && mistakes.length === 0 && Object.keys(srs).length === 0
+  }, E2E_STORAGE_KEYS)
+  await page.getByTestId("recent-mistakes").waitFor({ state: "hidden" })
+  assert.equal(await page.getByTestId("review-start-mistakes").isDisabled(), true, "clearing mistakes should disable mistake review")
+
   await assertQuizModeRecordsPractice(page, baseUrl, {
     mode: "audio-kana",
     itemType: "kana",

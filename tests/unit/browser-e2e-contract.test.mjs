@@ -217,6 +217,12 @@ test("browser E2E verifies wrong quiz answers enter the mistake notebook", () =>
   assert.match(e2e, /recent-mistake-\$\{recordedQuizMistake\.id\}/)
   assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("mistake-review-session"\)/)
+  assert.match(e2e, /recent-mistake-remove-\$\{mistakeId\}/)
+  assert.match(e2e, /removing a recent mistake should delete it from the notebook/)
+  assert.match(e2e, /removing a recent mistake should delete its mistake SRS/)
+  assert.match(e2e, /getByTestId\("mistakes-clear"\)\.click\(\)/)
+  assert.match(e2e, /Object\.keys\(srs\)\.length === 0/)
+  assert.match(e2e, /clearing mistakes should disable mistake review/)
 })
 
 test("browser E2E verifies correct mistake reviews retain notebook history", () => {

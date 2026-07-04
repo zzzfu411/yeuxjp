@@ -25,7 +25,14 @@ export function RecentMistakes({ mistakes, onRemove }: RecentMistakesProps) {
               </div>
               <div className="text-sm font-medium break-words">{mistake.questionText ?? mistake.questionAudio ?? "（无题干）"}</div>
             </div>
-            <Button type="button" variant="ghost" size="sm" className="shrink-0" onClick={() => onRemove(mistake.id)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="shrink-0"
+              data-testid={`recent-mistake-remove-${mistake.id}`}
+              onClick={() => onRemove(mistake.id)}
+            >
               移除
             </Button>
           </div>

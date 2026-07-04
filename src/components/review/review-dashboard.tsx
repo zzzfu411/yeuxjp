@@ -142,7 +142,14 @@ export function ReviewDashboard({
                 初始化复习（{mistakes.enrollMissing}）
               </Button>
             ) : mistakes.total ? (
-              <Button type="button" variant="ghost" size="sm" className="rounded-full" onClick={mistakes.onClear}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="rounded-full"
+                data-testid="mistakes-clear"
+                onClick={mistakes.onClear}
+              >
                 清空错题本
               </Button>
             ) : (

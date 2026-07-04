@@ -353,6 +353,11 @@ export const requiredSelectors = [
     pattern: /data-testid="recent-mistakes"/,
   },
   {
+    testId: "mistakes-clear",
+    source: "src/components/review/review-dashboard.tsx",
+    pattern: /data-testid="mistakes-clear"/,
+  },
+  {
     testId: "review-start-mistakes",
     source: "src/components/review/review-dashboard.tsx",
     pattern: /startTestId="review-start-mistakes"/,
@@ -459,5 +464,10 @@ export const dynamicSelectorContracts = [
     label: "recent mistake rows",
     source: "src/components/review/recent-mistakes.tsx",
     pattern: /data-testid=\{`recent-mistake-\$\{mistake\.id\}`\}/,
+  },
+  {
+    label: "recent mistake remove buttons",
+    source: "src/components/review/recent-mistakes.tsx",
+    pattern: /data-testid=\{`recent-mistake-remove-\$\{mistake\.id\}`\}/,
   },
 ]
