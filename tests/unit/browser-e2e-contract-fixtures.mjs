@@ -179,6 +179,11 @@ export const requiredSelectors = [
     pattern: /data-testid="kana-clear-progress"/,
   },
   {
+    testId: "kana-clear-progress-dialog-cancel",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-cancel`\}/,
+  },
+  {
     testId: "kana-clear-progress-dialog-confirm",
     source: "src/components/ui/confirm-action-dialog.tsx",
     pattern: /data-testid=\{`\$\{testId\}-confirm`\}/,
@@ -212,6 +217,11 @@ export const requiredSelectors = [
     testId: "vocabulary-clear-progress",
     source: "src/components/vocabulary/vocabulary-toolbar.tsx",
     pattern: /data-testid="vocabulary-clear-progress"/,
+  },
+  {
+    testId: "vocabulary-clear-progress-dialog-cancel",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-cancel`\}/,
   },
   {
     testId: "vocabulary-clear-progress-dialog-confirm",
@@ -377,6 +387,11 @@ export const requiredSelectors = [
     testId: "learning-data-reset-dialog",
     source: "src/components/review/learning-data-panel.tsx",
     pattern: /testId="learning-data-reset-dialog"/,
+  },
+  {
+    testId: "learning-data-reset-dialog-cancel",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-cancel`\}/,
   },
   {
     testId: "learning-data-reset-dialog-confirm",

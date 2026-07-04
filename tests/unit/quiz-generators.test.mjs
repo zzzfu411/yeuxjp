@@ -123,4 +123,6 @@ test("audio contrast and verb conjugation modes include explanations or audio", 
   assert.ok(audio.questionAudio)
   assert.equal(verb.itemType, "grammar")
   assert.ok(verb.explanation)
+  assert.match(verb.questionText, /（吃）/)
+  assert.doesNotMatch(verb.questionText, /\{verb\.meaning\}/)
 })

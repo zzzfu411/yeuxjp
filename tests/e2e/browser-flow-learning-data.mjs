@@ -123,6 +123,16 @@ export async function verifyLearningDataFlow(page, baseUrl) {
 
   await page.getByTestId("learning-data-reset").click()
   await page.getByTestId("learning-data-reset-dialog").waitFor({ state: "visible" })
+  await page.getByTestId("learning-data-reset-dialog-cancel").click()
+  await page.getByTestId("learning-data-reset-dialog").waitFor({ state: "hidden" })
+  assertManagedLearningSnapshot(
+    await readManagedLearningBackupSnapshot(page),
+    normalizedStaleSnapshot,
+    "canceling all learning data reset should keep managed learning keys"
+  )
+
+  await page.getByTestId("learning-data-reset").click()
+  await page.getByTestId("learning-data-reset-dialog").waitFor({ state: "visible" })
   await page.getByTestId("learning-data-reset-dialog-confirm").click()
   await page.waitForFunction((keys) => keys.every((key) => localStorage.getItem(key) === null), managedLearningBackupKeys)
   const resetSnapshot = await readManagedLearningBackupSnapshot(page)

@@ -54,12 +54,15 @@ test("product docs distinguish dependency freshness warnings from actionable bui
   }
 })
 
-test("product docs describe the current visited-page PWA fallback strategy", () => {
+test("product docs describe the current PWA navigation fallback strategy", () => {
   for (const [name, source] of [
     ["web/README.md", webReadme],
     ...optionalDocs,
   ]) {
     assert.match(source, /visited|already visited|previously visited|pages the learner has already visited/, name)
+    assert.match(source, /canonical pathname|canonical pages|query deep links|query deep-link/, name)
+    assert.match(source, /\/kana\?set=yoon|\/vocabulary\?level=daily|\/quiz\?mode=hiragana-romaji/, name)
+    assert.match(source, /service-worker-controlled|browser reports online|reports online|online navigation failure/, name)
     assert.match(source, /offline\.html/, name)
     assert.match(source, /localStorage|learning state/, name)
   }

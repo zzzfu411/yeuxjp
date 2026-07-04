@@ -91,7 +91,7 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   assert.ok(masteredKanaSrs?.a?.dueAt, "kana mastery toggle should enroll kana a for SRS review")
   await page.keyboard.press("Escape")
   await page.getByTestId("kana-clear-progress").click()
-  await page.getByRole("button", { name: "取消" }).click()
+  await page.getByTestId("kana-clear-progress-dialog-cancel").click()
   assert.ok(
     (await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)).includes("a"),
     "canceling kana progress reset should keep mastered kana"
@@ -138,7 +138,7 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   assert.ok(vocabSrs?.["sur-n-35"]?.dueAt, "vocabulary learned toggle should enroll the selected vocabulary for SRS review")
   await page.keyboard.press("Escape")
   await page.getByTestId("vocabulary-clear-progress").click()
-  await page.getByRole("button", { name: "取消" }).click()
+  await page.getByTestId("vocabulary-clear-progress-dialog-cancel").click()
   assert.ok(
     (await readJsonStorage(page, E2E_STORAGE_KEYS.VOCAB_LEARNED)).includes("sur-n-35"),
     "canceling vocabulary progress reset should keep learned vocabulary"
