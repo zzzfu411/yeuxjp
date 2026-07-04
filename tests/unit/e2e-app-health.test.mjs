@@ -19,6 +19,56 @@ function fakeResponse(status, html = "") {
   }
 }
 
+function listen(server, port) {
+  return new Promise((resolve, reject) => {
+    server.once("error", reject)
+    server.listen(port, "127.0.0.1", () => {
+      server.off("error", reject)
+      resolve()
+    })
+  })
+}
+
+function close(server) {
+  return new Promise((resolve) => {
+    if (!server.listening) {
+      resolve()
+      return
+    }
+    server.close(resolve)
+  })
+}
+
+async function canListen(port) {
+  const server = net.createServer()
+  try {
+    await listen(server, port)
+    return true
+  } catch {
+    return false
+  } finally {
+    await close(server)
+  }
+}
+
+async function createOccupiedPortWithBindableFallback() {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const server = net.createServer()
+    await listen(server, 0)
+    const address = server.address()
+    const occupiedPort = typeof address === "object" && address ? address.port : 0
+    const fallbackPort = occupiedPort + 1
+
+    if (occupiedPort > 0 && fallbackPort <= 65_535 && await canListen(fallbackPort)) {
+      return { server, occupiedPort, fallbackPort }
+    }
+
+    await close(server)
+  }
+
+  throw new Error("Could not find a deterministic fallback port fixture")
+}
+
 test("E2E app health recognizes current app pages", () => {
   assert.deepEqual(appHealthRoutes, [
     "/",
@@ -76,15 +126,11 @@ test("E2E app health treats unreachable candidates as unavailable", async () => 
 })
 
 test("E2E harness can choose a fallback port when the preferred port is occupied", async () => {
-  const server = net.createServer()
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
-  const occupiedPort = server.address().port
+  const { server, occupiedPort, fallbackPort } = await createOccupiedPortWithBindableFallback()
 
   try {
-    const availablePort = await findAvailablePort(occupiedPort, { maxAttempts: 5 })
-    assert.notEqual(availablePort, occupiedPort)
-    assert.equal(Number.isInteger(availablePort), true)
+    assert.equal(await findAvailablePort(occupiedPort, { maxAttempts: 2 }), fallbackPort)
   } finally {
-    await new Promise((resolve) => server.close(resolve))
+    await close(server)
   }
 })

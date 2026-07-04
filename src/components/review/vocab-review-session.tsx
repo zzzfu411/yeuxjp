@@ -129,7 +129,8 @@ export function VocabReviewSession({
 
       <ReviewOptionGrid
         options={question.options}
-        correctAnswer={item.id}
+        correctAnswer={question.correctAnswer}
+        acceptedAnswers={question.acceptedAnswers}
         selectedAnswer={selected}
         onSelect={handleSelect}
       />

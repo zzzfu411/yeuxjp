@@ -49,4 +49,7 @@ test("VocabReviewSession owns vocabulary loading, prompt, question, and SRS grad
   assert.match(source, /return srs\.gradeExisting\(item\.id/)
   assert.match(source, /setSaveError\(!recorded\)/)
   assert.match(source, /<PracticeSaveError show=\{saveError\} \/>/)
+  assert.match(source, /correctAnswer=\{question\.correctAnswer\}/)
+  assert.match(source, /acceptedAnswers=\{question\.acceptedAnswers\}/)
+  assert.doesNotMatch(source, /correctAnswer=\{item\.id\}/)
 })

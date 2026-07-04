@@ -129,7 +129,8 @@ export function KanaReviewSession({
 
       <ReviewOptionGrid
         options={question.options}
-        correctAnswer={item.romaji}
+        correctAnswer={question.correctAnswer}
+        acceptedAnswers={question.acceptedAnswers}
         selectedAnswer={selected}
         onSelect={handleSelect}
         optionClassName="h-16 text-lg font-medium"
