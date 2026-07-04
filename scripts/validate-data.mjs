@@ -68,9 +68,93 @@ function objectBlocks(text) {
   return Array.from(text.matchAll(/\{[^{}]*\}/g), (m) => m[0])
 }
 
+function findBalancedClose(text, start, openChar, closeChar) {
+  let depth = 0
+  let quote = null
+  let escaped = false
+
+  for (let i = start; i < text.length; i += 1) {
+    const char = text[i]
+
+    if (quote) {
+      if (escaped) {
+        escaped = false
+      } else if (char === "\\") {
+        escaped = true
+      } else if (char === quote) {
+        quote = null
+      }
+      continue
+    }
+
+    if (char === "\"" || char === "'" || char === "`") {
+      quote = char
+      continue
+    }
+
+    if (char === openChar) depth += 1
+    if (char === closeChar) {
+      depth -= 1
+      if (depth === 0) return i
+    }
+  }
+
+  return -1
+}
+
+function topLevelObjectBlocks(text) {
+  const blocks = []
+  let start = -1
+  let depth = 0
+  let quote = null
+  let escaped = false
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i]
+
+    if (quote) {
+      if (escaped) {
+        escaped = false
+      } else if (char === "\\") {
+        escaped = true
+      } else if (char === quote) {
+        quote = null
+      }
+      continue
+    }
+
+    if (char === "\"" || char === "'" || char === "`") {
+      quote = char
+      continue
+    }
+
+    if (char === "{") {
+      if (depth === 0) start = i
+      depth += 1
+    } else if (char === "}") {
+      depth -= 1
+      if (depth === 0 && start >= 0) {
+        blocks.push(text.slice(start, i + 1))
+        start = -1
+      }
+    }
+  }
+
+  return blocks
+}
+
+function arrayBody(block, name) {
+  const match = new RegExp(`${name}:\\s*\\[`).exec(block)
+  if (!match) return null
+  const start = match.index + match[0].lastIndexOf("[")
+  const end = findBalancedClose(block, start, "[", "]")
+  if (end < 0) return null
+  return block.slice(start + 1, end)
+}
+
 function prop(block, name) {
-  const match = block.match(new RegExp(`${name}:\\s*['"]([^'"]+)['"]`))
-  return match?.[1]
+  const match = block.match(new RegExp(`${name}:\\s*(["'])([\\s\\S]*?)\\1`))
+  return match?.[2]
 }
 
 function requiredString(block, file, id, name) {
@@ -88,6 +172,119 @@ function arrayStrings(block, name) {
 function requireFile(relPath, label = relPath) {
   if (exists(relPath)) pass(`${label} exists`)
   else fail(`${label} is missing`)
+}
+
+function validateObjectArrayFields(block, file, id, arrayName, fieldNames) {
+  const body = arrayBody(block, arrayName)
+  const items = body ? topLevelObjectBlocks(body) : []
+  if (!items.length) {
+    fail(`${file} ${id} needs at least one ${arrayName} item`)
+    return
+  }
+
+  for (const item of items) {
+    for (const field of fieldNames) {
+      requiredString(item, file, id, field)
+    }
+  }
+}
+
+function validateGrammarData(text) {
+  const file = "src/data/grammar-data.ts"
+  const levels = Array.from(text.matchAll(/^\s*(N5|N4|N3|N2|N1|Anime):\s*\[/gm))
+  const allowedLevels = new Set(["N5", "N4", "N3", "N2", "N1", "Anime"])
+  let checked = 0
+
+  for (let i = 0; i < levels.length; i += 1) {
+    const containingLevel = levels[i][1]
+    const start = levels[i].index
+    const end = levels[i + 1]?.index ?? text.length
+    const section = text.slice(start, end)
+
+    for (const block of topLevelObjectBlocks(section).filter((item) => /id:\s*['"]/.test(item))) {
+      checked += 1
+      const id = requiredString(block, file, "(unknown)", "id") ?? "(unknown)"
+      requiredString(block, file, id, "title")
+      requiredString(block, file, id, "structure")
+      requiredString(block, file, id, "explanation")
+      const level = requiredString(block, file, id, "level")
+      if (level && !allowedLevels.has(level)) fail(`${file} ${id} has unknown level: ${level}`)
+      if (level && level !== containingLevel) {
+        fail(`${file} ${id} level must match containing grammar bucket: expected ${containingLevel}, got ${level}`)
+      }
+      validateObjectArrayFields(block, file, id, "examples", ["japanese", "romaji", "meaning"])
+    }
+  }
+
+  if (checked) pass(`grammar entries checked (${checked})`)
+  else fail("grammar data validation did not find any entries")
+}
+
+function validateSemanticsData(text) {
+  const file = "src/data/semantics-data.ts"
+  let checked = 0
+
+  for (const block of topLevelObjectBlocks(text).filter((item) => /id:\s*['"]/.test(item))) {
+    checked += 1
+    const id = requiredString(block, file, "(unknown)", "id") ?? "(unknown)"
+    requiredString(block, file, id, "title")
+    requiredString(block, file, id, "explanation")
+    for (const name of ["pair", "meaning"]) {
+      const values = arrayStrings(block, name)
+      if (values.length !== 2 || values.some((value) => !value.trim())) {
+        fail(`${file} ${id} ${name} must contain exactly two non-empty strings`)
+      }
+    }
+    validateObjectArrayFields(block, file, id, "examples", ["sentence", "translation", "nuance"])
+  }
+
+  if (checked) pass(`semantics entries checked (${checked})`)
+  else fail("semantics data validation did not find any entries")
+}
+
+function validatePragmaticsData(text) {
+  const file = "src/data/pragmatics-data.ts"
+  const responseTypes = new Set(["Good", "Bad", "Native", "Anime"])
+  let checked = 0
+
+  for (const block of topLevelObjectBlocks(text).filter((item) => /id:\s*['"]/.test(item))) {
+    checked += 1
+    const id = requiredString(block, file, "(unknown)", "id") ?? "(unknown)"
+    requiredString(block, file, id, "title")
+    requiredString(block, file, id, "situation")
+    requiredString(block, file, id, "context")
+    requiredString(block, file, id, "culturalNote")
+
+    const responses = topLevelObjectBlocks(arrayBody(block, "responses") ?? "")
+    if (!responses.length) fail(`${file} ${id} needs at least one responses item`)
+    for (const response of responses) {
+      const type = requiredString(response, file, id, "type")
+      if (type && !responseTypes.has(type)) fail(`${file} ${id} has unknown response type: ${type}`)
+      requiredString(response, file, id, "expression")
+      requiredString(response, file, id, "explanation")
+    }
+  }
+
+  if (checked) pass(`pragmatics entries checked (${checked})`)
+  else fail("pragmatics data validation did not find any entries")
+}
+
+function validateGlossaryData(text) {
+  const file = "src/data/glossary.ts"
+  const categories = new Set(["kana", "pronunciation", "grammar", "levels"])
+  let checked = 0
+
+  for (const block of topLevelObjectBlocks(text).filter((item) => /id:\s*['"]/.test(item))) {
+    checked += 1
+    const id = requiredString(block, file, "(unknown)", "id") ?? "(unknown)"
+    requiredString(block, file, id, "term")
+    requiredString(block, file, id, "short")
+    const category = requiredString(block, file, id, "category")
+    if (category && !categories.has(category)) fail(`${file} ${id} has unknown category: ${category}`)
+  }
+
+  if (checked) pass(`glossary entries checked (${checked})`)
+  else fail("glossary data validation did not find any entries")
 }
 
 function validateLessonPracticeMetadata(lessonText, { kanaIdSet, vocabIdSet, grammarIdSet }) {
@@ -516,16 +713,24 @@ if (registryCoveredIds.size === vocabIdSet.size) {
 const kanaIdSet = new Set(kanaRomaji)
 
 let grammarIds = []
-for (const file of [
-  "src/data/grammar-data.ts",
-  "src/data/semantics-data.ts",
-  "src/data/pragmatics-data.ts",
-  "src/data/glossary.ts",
+const grammarText = read("src/data/grammar-data.ts")
+const semanticsText = read("src/data/semantics-data.ts")
+const pragmaticsText = read("src/data/pragmatics-data.ts")
+const glossaryText = read("src/data/glossary.ts")
+for (const [file, text] of [
+  ["src/data/grammar-data.ts", grammarText],
+  ["src/data/semantics-data.ts", semanticsText],
+  ["src/data/pragmatics-data.ts", pragmaticsText],
+  ["src/data/glossary.ts", glossaryText],
 ]) {
-  const ids = matches(read(file), /id:\s*['"]([^'"]+)['"]/g)
+  const ids = matches(text, /id:\s*['"]([^'"]+)['"]/g)
   if (file === "src/data/grammar-data.ts") grammarIds = ids
   unique(`${file} id`, ids)
 }
+validateGrammarData(grammarText)
+validateSemanticsData(semanticsText)
+validatePragmaticsData(pragmaticsText)
+validateGlossaryData(glossaryText)
 
 const grammarIdSet = new Set(grammarIds)
 
