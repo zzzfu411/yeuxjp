@@ -37,7 +37,7 @@ export function VocabReviewSession({
 
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
-  const question = useMemo(() => (item ? makeVocabReviewQuestion(item.id, vocabulary.data) : null), [item, vocabulary.data])
+  const question = useMemo(() => (item ? makeVocabReviewQuestion(item, vocabulary.data) : null), [item, vocabulary.data])
   const missingReviewEntry = !!currentId && !item
   const insufficientQuestionOptions = !!item && !question
 

@@ -129,6 +129,22 @@ test("review question generators produce shared Question objects", () => {
   assert.equal(vocabQuestion.options.length, 4)
 })
 
+test("vocabulary review question generator accepts a pre-resolved vocabulary item", () => {
+  const vocabPool = [
+    { id: "v1", kana: "mizu", romaji: "mizu", meaning: "water", category: "food", level: "survival" },
+    { id: "v2", kana: "cha", romaji: "cha", meaning: "tea", category: "food", level: "survival" },
+    { id: "v3", kana: "gohan", romaji: "gohan", meaning: "rice", category: "food", level: "survival" },
+    { id: "v4", kana: "pan", romaji: "pan", meaning: "bread", category: "food", level: "survival" },
+  ]
+
+  const question = review.makeVocabReviewQuestion(vocabPool[0], vocabPool, () => 0)
+
+  assert.equal(question.itemId, "v1")
+  assert.equal(question.correctAnswer, "v1")
+  assert.equal(question.correctDisplay, "water")
+  assert.equal(question.options.length, 4)
+})
+
 test("vocabulary review questions require enough distractor options", () => {
   const question = review.makeVocabReviewQuestion(
     "v1",

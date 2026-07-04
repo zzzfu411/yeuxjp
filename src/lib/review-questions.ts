@@ -151,8 +151,8 @@ export function makeKanaReviewQuestion(id: string, random: () => number = Math.r
   }
 }
 
-export function makeVocabReviewQuestion(id: string, vocab: Vocabulary[], random: () => number = Math.random): Question | null {
-  const item = vocab.find((v) => v.id === id)
+export function makeVocabReviewQuestion(itemOrId: string | Vocabulary, vocab: Vocabulary[], random: () => number = Math.random): Question | null {
+  const item = typeof itemOrId === "string" ? vocab.find((v) => v.id === itemOrId) : itemOrId
   if (!item) return null
 
   const options = pickUniqueQuestionOptions({

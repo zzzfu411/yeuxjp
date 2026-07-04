@@ -68,7 +68,7 @@ export function TodayReviewSession({
   }, [current, vocabulary.data])
   const kanaQuestion = useMemo(() => (kanaItem ? makeKanaReviewQuestion(kanaItem.romaji) : null), [kanaItem])
   const vocabQuestion = useMemo(
-    () => (vocabItem ? makeVocabReviewQuestion(vocabItem.id, vocabulary.data) : null),
+    () => (vocabItem ? makeVocabReviewQuestion(vocabItem, vocabulary.data) : null),
     [vocabItem, vocabulary.data]
   )
   const mistakeItem = useMemo(() => {
