@@ -382,6 +382,12 @@ test("browser E2E verifies save failures keep quiz, lesson, and review on the cu
   assert.match(e2e, /getByTestId\("review-remaining"\)/)
   assert.match(e2e, /kanaSrs\?\.a\?\.box, 1/)
   assert.match(e2e, /PRACTICE_RESULTS/)
+  assert.match(e2e, /E2E simulated review SRS write failure/)
+  assert.match(e2e, /getByTestId\("review-next"\)\.isVisible\(\), false/)
+  assert.match(e2e, /getAttribute\("aria-pressed"\), "false"/)
+  assert.match(e2e, /failed review SRS write should roll back practice history/)
+  assert.match(e2e, /failed review SRS write should roll back mistake notebook writes/)
+  assert.match(e2e, /failed review SRS write should keep the original kana SRS state/)
 })
 
 test("browser E2E verifies onboarding profile save failures stay recoverable", () => {
