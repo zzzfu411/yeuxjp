@@ -47,6 +47,7 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
   assert.match(workflow, /icons\//)
   assert.match(workflow, /assets\//)
   assert.match(workflow, /animcjk\//)
+  assert.match(workflow, /src\/app\/layout\\\.tsx/)
   assert.match(workflow, /src\/components\/pwa-register\\\.tsx/)
   assert.match(workflow, /src\/lib\/pwa-navigation\\\.ts/)
   assert.match(workflow, /tests\/e2e\/pwa-offline\\\.mjs/)
