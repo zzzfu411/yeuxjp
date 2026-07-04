@@ -12,6 +12,10 @@ type PwaUpdateReadyEventDetail = {
   registration?: ServiceWorkerRegistration | null
 }
 
+type PwaTestWindow = Window & {
+  __yasashiEnablePwaUpdateTestEvent?: boolean
+}
+
 function getOfflineNavigationAnchor(event: MouseEvent) {
   if (!(event.target instanceof Element)) return null
 
@@ -93,6 +97,7 @@ export function PwaRegister() {
     }
 
     const enableTestUpdateEvent = process.env.NODE_ENV !== "production"
+      || Boolean((window as PwaTestWindow).__yasashiEnablePwaUpdateTestEvent)
     if (enableTestUpdateEvent) {
       window.addEventListener(PWA_UPDATE_READY_EVENT, onUpdateReadyEvent)
     }

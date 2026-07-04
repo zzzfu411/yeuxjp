@@ -34,6 +34,7 @@ async function ensureProductionServer() {
     baseUrl,
     port,
     controller: serverController,
+    label: "pwa production e2e",
   })
 }
 

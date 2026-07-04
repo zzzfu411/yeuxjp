@@ -36,6 +36,9 @@ test("browser E2E can skip missing optional Playwright but has a required mode",
   assert.match(e2e, /isE2ERequired\("E2E_BROWSER_REQUIRED"\)/)
   assert.match(e2e, /importPlaywrightOrSkip/)
   assert.match(e2e, /skipOptionalPlaywrightRuntimeError/)
+  assert.match(e2e, /startProductionServer/)
+  assert.match(e2e, /const serverStarter = browserE2ERequired \? startProductionServer : reuseOrStartDevServer/)
+  assert.match(e2e, /label: "browser production e2e"/)
   assert.match(harness, /process\.argv\.includes\("--required"\)/)
   assert.match(harness, /process\.env\[envName\] === "1"/)
   assert.match(e2e, /Browser E2E skipped: Playwright is not installed/)
@@ -553,6 +556,8 @@ test("browser E2E verifies the PWA update banner interaction", () => {
   const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /verifyPwaUpdateBannerFlow/)
+  assert.match(e2e, /addInitScript/)
+  assert.match(e2e, /__yasashiEnablePwaUpdateTestEvent = true/)
   assert.match(e2e, /yasashi:pwa-update-ready/)
   assert.match(e2e, /getByTestId\("pwa-update-banner"\)/)
   assert.match(e2e, /getByRole\("region", \{ name: "应用更新" \}\)/)

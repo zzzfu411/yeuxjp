@@ -185,21 +185,21 @@ export async function reuseOrStartDevServer({ baseUrl, port, controller }) {
   return selectedBaseUrl
 }
 
-export function runBuildIfNeeded() {
+export function runBuildIfNeeded(label = "production E2E") {
   if (process.env.E2E_BASE_URL) return
   const result = runNextBuildSync()
   if (result.status !== 0) {
     const detail = result.error ? `: ${result.error.message}` : ""
-    throw new Error(`Production build failed before PWA E2E${detail}`)
+    throw new Error(`Production build failed before ${label}${detail}`)
   }
 }
 
-export async function startProductionServer({ baseUrl, port, controller }) {
+export async function startProductionServer({ baseUrl, port, controller, label = "production E2E" }) {
   if (process.env.E2E_BASE_URL && await canServeRoutes(baseUrl)) return baseUrl
 
-  const releaseBuildLock = await acquireBuildLock({ label: "pwa production e2e" })
+  const releaseBuildLock = await acquireBuildLock({ label })
   controller.holdRelease(releaseBuildLock)
-  runBuildIfNeeded()
+  runBuildIfNeeded(label)
   const selectedPort = await findAvailablePort(port)
   const selectedBaseUrl = `http://127.0.0.1:${selectedPort}`
   controller.spawn(process.execPath, [nextCli, "start", "--hostname", "127.0.0.1", "--port", String(selectedPort)], {

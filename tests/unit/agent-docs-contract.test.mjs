@@ -37,6 +37,8 @@ test("app README documents the current E2E coverage layers", () => {
   assert.match(webReadme, /npm run check:release/)
   assert.match(webReadme, /HTTP route health/)
   assert.match(webReadme, /real interactions with Playwright/)
+  assert.match(webReadme, /strict `npm run e2e:browser:required` release path builds the production app/)
+  assert.match(webReadme, /runs the click-flow suite against `next start`/)
   assert.match(webReadme, /waiting-worker `SKIP_WAITING`/)
   assert.match(webReadme, /production build/)
   assert.match(webReadme, /service worker/)

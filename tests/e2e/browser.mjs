@@ -4,6 +4,7 @@ import {
   isE2ERequired,
   reuseOrStartDevServer,
   skipOptionalPlaywrightRuntimeError,
+  startProductionServer,
 } from "./harness.mjs"
 import {
   verifyDueReviewFlow,
@@ -27,10 +28,12 @@ const browserE2ERequired = isE2ERequired("E2E_BROWSER_REQUIRED")
 const serverController = createServerController()
 
 async function ensureServer() {
-  baseUrl = await reuseOrStartDevServer({
+  const serverStarter = browserE2ERequired ? startProductionServer : reuseOrStartDevServer
+  baseUrl = await serverStarter({
     baseUrl,
     port,
     controller: serverController,
+    label: "browser production e2e",
   })
 }
 

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict"
 
 export async function verifyPwaUpdateBannerFlow(page, baseUrl) {
+  await page.addInitScript(() => {
+    window.__yasashiEnablePwaUpdateTestEvent = true
+  })
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   await page.evaluate(() => window.dispatchEvent(new Event("yasashi:pwa-update-ready")))
 
