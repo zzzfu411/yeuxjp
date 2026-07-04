@@ -37,6 +37,28 @@ test("normalizeSrsState clamps invalid persisted values", () => {
   assert.equal(state.wrong, 1)
 })
 
+test("normalizeSrsState rejects non-finite persisted numbers", () => {
+  const now = 1_700_000_000_000
+  const state = srs.normalizeSrsState(
+    {
+      box: Number.POSITIVE_INFINITY,
+      dueAt: Number.NaN,
+      createdAt: Number.NEGATIVE_INFINITY,
+      lastReviewedAt: Number.POSITIVE_INFINITY,
+      right: Number.POSITIVE_INFINITY,
+      wrong: Number.NaN,
+    },
+    now
+  )
+
+  assert.equal(state.box, 1)
+  assert.equal(state.dueAt, now + 10 * 60 * 1000)
+  assert.equal(state.createdAt, now)
+  assert.equal(state.lastReviewedAt, undefined)
+  assert.equal(state.right, 0)
+  assert.equal(state.wrong, 0)
+})
+
 test("sortSrsIdsByDue orders queued ids by due time", () => {
   const map = {
     late: { ...srs.createSrsState(1_700_000_000_000), dueAt: 1_700_000_003_000 },
@@ -64,4 +86,18 @@ test("getNextSrsDueAt ignores due items and returns the soonest future review", 
 
   assert.equal(next, now + 2_000)
   assert.equal(srs.getNextSrsDueAt([{ due: { ...srs.createSrsState(now), dueAt: now } }], now), null)
+})
+
+test("getNextSrsDueAt normalizes non-finite due dates before scheduling", () => {
+  const now = 1_700_000_000_000
+  const next = srs.getNextSrsDueAt(
+    [
+      {
+        broken: { ...srs.createSrsState(now), dueAt: Number.NaN },
+      },
+    ],
+    now
+  )
+
+  assert.equal(next, now + 10 * 60 * 1000)
 })

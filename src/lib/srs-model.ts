@@ -31,6 +31,10 @@ function nextDueAt(box: number, now: number) {
   return now + BOX_INTERVAL_MS[safeBox]
 }
 
+function finiteNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null
+}
+
 export function createSrsState(now: number = Date.now()): SrsState {
   return {
     box: 1,
@@ -45,14 +49,16 @@ export function normalizeSrsState(input: unknown, now: number = Date.now()): Srs
   if (!input || typeof input !== "object") return createSrsState(now)
   const obj = input as Record<string, unknown>
 
-  const createdAt = typeof obj.createdAt === "number" ? obj.createdAt : now
-  const lastReviewedAt = typeof obj.lastReviewedAt === "number" ? obj.lastReviewedAt : undefined
+  const createdAt = finiteNumber(obj.createdAt) ?? now
+  const lastReviewedAt = finiteNumber(obj.lastReviewedAt) ?? undefined
 
-  const box = clampBox(typeof obj.box === "number" ? obj.box : 1)
-  const dueAt = typeof obj.dueAt === "number" ? obj.dueAt : nextDueAt(box, now)
+  const box = clampBox(finiteNumber(obj.box) ?? 1)
+  const dueAt = finiteNumber(obj.dueAt) ?? nextDueAt(box, now)
 
-  const right = typeof obj.right === "number" ? Math.max(0, Math.floor(obj.right)) : 0
-  const wrong = typeof obj.wrong === "number" ? Math.max(0, Math.floor(obj.wrong)) : 0
+  const rightValue = finiteNumber(obj.right)
+  const wrongValue = finiteNumber(obj.wrong)
+  const right = rightValue === null ? 0 : Math.max(0, Math.floor(rightValue))
+  const wrong = wrongValue === null ? 0 : Math.max(0, Math.floor(wrongValue))
 
   return { box, dueAt, createdAt, lastReviewedAt, right, wrong }
 }
