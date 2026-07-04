@@ -6,12 +6,24 @@ import {
   skipOptionalPlaywrightRuntimeError,
   startProductionServer,
 } from "./harness.mjs"
+import { seionHiraganaToRomaji } from "./browser-fixtures.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 const port = Number(process.env.E2E_PWA_PORT ?? 3220)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
 const pwaE2ERequired = isE2ERequired("E2E_PWA_REQUIRED")
 const serverController = createServerController()
+const KANA_A = String.fromCodePoint(0x3042)
+const KATAKANA_KYA = String.fromCodePoint(0x30ad, 0x30e3)
+const KONNICHIWA = String.fromCodePoint(0x3053, 0x3093, 0x306b, 0x3061, 0x306f)
+const YAKUSOKU_KANJI = String.fromCodePoint(0x7d04, 0x675f)
+const YAKUSOKU_KANA = String.fromCodePoint(0x3084, 0x304f, 0x305d, 0x304f)
+const SHIRU = String.fromCodePoint(0x77e5, 0x308b)
+const WAKARU = String.fromCodePoint(0x5206, 0x304b, 0x308b)
+const SHIRU_EXAMPLE = String.fromCodePoint(0x4f4f, 0x6240, 0x3092, 0x77e5, 0x3063, 0x3066, 0x3044, 0x308b, 0x3002)
+const OFFLINE_FALLBACK_TEXT = String.fromCodePoint(0x5f53, 0x524d, 0x79bb, 0x7ebf)
+const semanticsItemId = "s-shiru-wakaru"
+const semanticsDetailPath = `/semantics/${semanticsItemId}`
 
 async function ensureProductionServer() {
   baseUrl = await startProductionServer({
@@ -66,6 +78,32 @@ async function assertServiceWorkerStaticCache(page) {
   assert.ok(cacheState.nextStaticUrls.length > 0, "service worker static cache should contain Next static assets")
 }
 
+async function assertLocatorIncludes(locator, expected, message) {
+  const text = await locator.innerText()
+  assert.ok(text.includes(expected), `${message}; got ${JSON.stringify(text)}`)
+}
+
+async function assertBodyIncludes(page, expected, message) {
+  await assertLocatorIncludes(page.locator("body"), expected, message)
+}
+
+async function assertBodyExcludes(page, expected, message) {
+  const text = await page.locator("body").innerText()
+  assert.ok(!text.includes(expected), `${message}; got ${JSON.stringify(text)}`)
+}
+
+async function assertKnownHiraganaRomajiQuestion(page, message) {
+  await page.getByTestId("quiz-question-text").waitFor({ state: "visible", timeout: 10_000 })
+  const quizPrompt = (await page.getByTestId("quiz-question-text").innerText()).trim()
+  const expectedAnswer = seionHiraganaToRomaji[quizPrompt]
+  assert.ok(expectedAnswer, `${message}: quiz prompt should be a known seion kana, got ${quizPrompt}`)
+  const hasExpectedOption = await page.locator('[data-testid^="quiz-answer-option-"]').evaluateAll(
+    (buttons, expected) => buttons.some((button) => button.textContent?.trim() === expected),
+    expectedAnswer
+  )
+  assert.ok(hasExpectedOption, `${message}: quiz options should include ${expectedAnswer}`)
+}
+
 let browser = null
 let context = null
 let failure = null
@@ -91,16 +129,23 @@ try {
 
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").waitFor({ state: "visible", timeout: 10_000 })
-  await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
+  await assertLocatorIncludes(page.getByTestId("kana-card-a"), KANA_A, "online kana prewarm should load real kana content")
+  await assertLocatorIncludes(page.getByTestId("kana-card-a"), "a", "online kana prewarm should load romaji content")
+
+  await page.goto(`${baseUrl}/vocabulary?level=daily`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").waitFor({ state: "visible", timeout: 10_000 })
-  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
-  await page.getByTestId("quiz-mode-hiragana-romaji").waitFor({ state: "visible", timeout: 10_000 })
+  await page.getByText(YAKUSOKU_KANJI).first().waitFor({ state: "visible", timeout: 10_000 })
+  await assertBodyIncludes(page, YAKUSOKU_KANA, "online vocabulary prewarm should load daily vocabulary details")
+
+  await page.goto(`${baseUrl}/quiz?mode=hiragana-romaji`, { waitUntil: "networkidle" })
+  await assertKnownHiraganaRomajiQuestion(page, "online quiz prewarm should load a real question")
+
   await page.goto(`${baseUrl}/semantics`, { waitUntil: "networkidle" })
-  const firstSemanticsHref = await page.locator('a[href^="/semantics/"]').first().getAttribute("href")
-  assert.ok(firstSemanticsHref, "semantics page should expose at least one static detail link")
-  const semanticsItemId = firstSemanticsHref.split("/").pop()
-  await page.goto(`${baseUrl}${firstSemanticsHref}`, { waitUntil: "networkidle" })
-  await page.waitForURL(new RegExp(`${firstSemanticsHref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+  await page.goto(`${baseUrl}${semanticsDetailPath}`, { waitUntil: "networkidle" })
+  await page.waitForURL(new RegExp(`${semanticsDetailPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+  await assertBodyIncludes(page, SHIRU, "online semantics prewarm should load the fixed detail page")
+  await assertBodyIncludes(page, WAKARU, "online semantics prewarm should load the comparison term")
+  await assertBodyIncludes(page, SHIRU_EXAMPLE, "online semantics prewarm should load example sentences")
   await page.goto(baseUrl, { waitUntil: "networkidle" })
 
   const visitedLessonUrl = `${baseUrl}/learn/day-1-a-row-hello`
@@ -124,14 +169,18 @@ try {
   await context.setOffline(true)
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("home-start-learning").isVisible(), "offline static cache should serve the app home page")
+  await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline home should render the cached app shell instead of fallback copy")
 
   await page.getByTestId("home-start-learning").click()
   await page.waitForURL(/\/learn\/day-1-a-row-hello/)
   assert.ok(await page.getByTestId("lesson-next").isVisible(), "offline client-side links should fall back to document navigation for cached pages")
+  await assertBodyIncludes(page, KONNICHIWA, "offline client-side lesson navigation should render lesson content")
+  await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline client-side lesson navigation should not render the fallback page")
 
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   await page.goto(visitedLessonUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("lesson-next").isVisible(), "offline navigation cache should serve a visited lesson page")
+  await assertBodyIncludes(page, KONNICHIWA, "offline visited lesson page should render cached lesson content")
   const offlineAnimCjkSvg = await page.evaluate(async (path) => {
     const response = await fetch(path)
     return {
@@ -141,22 +190,31 @@ try {
   }, animCjkPath)
   assert.equal(offlineAnimCjkSvg.ok, true, "offline cache should serve a visited AnimCJK SVG")
   assert.match(offlineAnimCjkSvg.body, /<svg/i, "offline AnimCJK response should remain an SVG")
+  assert.match(offlineAnimCjkSvg.body, /viewBox="0 0 1024 1024"/i, "offline AnimCJK response should be the expected glyph SVG")
 
   await page.goto(`${baseUrl}/kana?mode=katakana&set=yoon`, { waitUntil: "domcontentloaded" })
   await page.getByTestId("kana-card-kya").waitFor({ state: "visible", timeout: 10_000 })
   assert.ok(await page.getByTestId("kana-card-kya").isVisible(), "offline canonical navigation should serve a cached kana query route")
+  await assertLocatorIncludes(page.getByTestId("kana-card-kya"), KATAKANA_KYA, "offline kana query should render katakana yoon content")
+  await assertLocatorIncludes(page.getByTestId("kana-card-kya"), "kya", "offline kana query should render romaji content")
 
   await page.goto(`${baseUrl}/vocabulary?level=daily`, { waitUntil: "domcontentloaded" })
   await page.getByTestId("vocabulary-search").waitFor({ state: "visible", timeout: 10_000 })
   assert.ok(await page.getByTestId("vocabulary-search").isVisible(), "offline canonical navigation should serve a cached vocabulary query route")
+  await page.getByText(YAKUSOKU_KANJI).first().waitFor({ state: "visible", timeout: 10_000 })
+  await assertBodyIncludes(page, YAKUSOKU_KANA, "offline vocabulary query should render daily vocabulary content")
 
   await page.goto(`${baseUrl}/quiz?mode=hiragana-romaji`, { waitUntil: "domcontentloaded" })
   await page.getByTestId("quiz-score").waitFor({ state: "visible", timeout: 10_000 })
   assert.ok(await page.getByTestId("quiz-score").isVisible(), "offline canonical navigation should serve a cached quiz query route")
+  await assertKnownHiraganaRomajiQuestion(page, "offline quiz query should render a real question")
 
   await page.goto(`${baseUrl}/semantics?item=${semanticsItemId}`, { waitUntil: "domcontentloaded" })
-  await page.waitForURL(new RegExp(`${firstSemanticsHref.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
-  assert.ok(page.url().endsWith(firstSemanticsHref), "offline legacy semantics query should document-navigate to the cached static detail route")
+  await page.waitForURL(new RegExp(`${semanticsDetailPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+  assert.ok(page.url().endsWith(semanticsDetailPath), "offline legacy semantics query should document-navigate to the cached static detail route")
+  await assertBodyIncludes(page, SHIRU, "offline semantics query should render the cached detail term")
+  await assertBodyIncludes(page, WAKARU, "offline semantics query should render the cached comparison term")
+  await assertBodyIncludes(page, SHIRU_EXAMPLE, "offline semantics query should render cached example sentences")
 
   const sentinel = JSON.stringify({ goal: "balanced", dailyMinutes: 15, startedAt: 123, updatedAt: 123 })
   await page.evaluate(({ key, value }) => {
