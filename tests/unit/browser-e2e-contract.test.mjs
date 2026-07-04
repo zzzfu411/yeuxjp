@@ -322,6 +322,14 @@ test("browser E2E verifies reference modal keyboard navigation respects focused 
   assert.match(e2e, /getByTestId\("grammar-modal-prev"\)\.click\(\)/)
   assert.match(e2e, /document\.activeElement\?\.getAttribute\("data-testid"\)/)
   assert.match(e2e, /closing a grammar modal should restore focus to the opened card/)
+  assert.match(e2e, /\/semantics\?item=s-shiru-wakaru/)
+  assert.match(e2e, /waitForURL\(\/\\\/semantics\\\/s-shiru-wakaru\$\/\)/)
+  assert.match(e2e, /keyboard\.press\("ArrowRight"\)/)
+  assert.match(e2e, /waitForURL\(\/\\\/semantics\\\/s-miru-kinds\$\/\)/)
+  assert.match(e2e, /keyboard\.press\("Escape"\)/)
+  assert.match(e2e, /waitForURL\(\/\\\/semantics\$\/\)/)
+  assert.match(e2e, /\/pragmatics\/p-aisatsu-morning/)
+  assert.match(e2e, /waitForURL\(\/\\\/pragmatics\$\/\)/)
 })
 
 test("browser E2E verifies review empty and due states", () => {

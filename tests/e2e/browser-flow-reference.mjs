@@ -31,4 +31,23 @@ export async function verifyReferenceKeyboardFlow(page, baseUrl) {
     "grammar-point-n5-wa",
     "closing a grammar modal should restore focus to the opened card"
   )
+
+  await page.goto(`${baseUrl}/semantics?item=s-shiru-wakaru`, { waitUntil: "networkidle" })
+  await page.waitForURL(/\/semantics\/s-shiru-wakaru$/)
+  await page.getByRole("dialog").waitFor({ state: "visible" })
+
+  await page.keyboard.press("ArrowRight")
+  await page.waitForURL(/\/semantics\/s-miru-kinds$/)
+  await page.getByRole("dialog").waitFor({ state: "visible" })
+
+  await page.keyboard.press("Escape")
+  await page.waitForURL(/\/semantics$/)
+  await page.getByRole("dialog").waitFor({ state: "hidden" })
+
+  await page.goto(`${baseUrl}/pragmatics/p-aisatsu-morning`, { waitUntil: "networkidle" })
+  await page.getByRole("dialog").waitFor({ state: "visible" })
+
+  await page.keyboard.press("Escape")
+  await page.waitForURL(/\/pragmatics$/)
+  await page.getByRole("dialog").waitFor({ state: "hidden" })
 }
