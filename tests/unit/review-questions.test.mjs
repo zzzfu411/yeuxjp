@@ -5,7 +5,7 @@ import { loadTsModule } from "./load-ts-module.mjs"
 const review = await loadTsModule("src/lib/review-questions.ts")
 const questions = await loadTsModule("src/lib/questions.ts")
 
-test("today review queue prioritizes mistakes before due-sorted kana and vocab", () => {
+test("today review queue prioritizes mistakes before due-sorted mixed decks", () => {
   const queue = review.buildTodayReviewQueue({
     dueMistakeIds: ["m2", "m1"],
     kanaDueIds: ["ka", "a", "sokuon:きって"],
@@ -25,9 +25,30 @@ test("today review queue prioritizes mistakes before due-sorted kana and vocab",
     { deck: "mistakes", id: "m2" },
     { deck: "mistakes", id: "m1" },
     { deck: "kana", id: "a" },
-    { deck: "kana", id: "ka" },
     { deck: "vocab", id: "vo-early" },
+    { deck: "kana", id: "ka" },
     { deck: "vocab", id: "vo-late" },
+  ])
+})
+
+test("today review queue uses the shorter due deck first when due times match", () => {
+  const queue = review.buildTodayReviewQueue({
+    dueMistakeIds: [],
+    kanaDueIds: ["ka", "a"],
+    kanaSrsMap: {
+      ka: { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      a: { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+    },
+    vocabDueIds: ["v1"],
+    vocabSrsMap: {
+      v1: { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+    },
+  })
+
+  assert.deepEqual(queue, [
+    { deck: "vocab", id: "v1" },
+    { deck: "kana", id: "ka" },
+    { deck: "kana", id: "a" },
   ])
 })
 

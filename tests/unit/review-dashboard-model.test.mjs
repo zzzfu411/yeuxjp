@@ -63,9 +63,9 @@ test("review dashboard model filters visible due ids and builds the today queue"
   assert.deepEqual(dashboard.mistakeEnrollMissing, [])
   assert.deepEqual(dashboard.todayQueue, [
     { deck: "mistakes", id: "m2" },
+    { deck: "vocab", id: "sur-g-1" },
     { deck: "kana", id: "a" },
     { deck: "kana", id: "ka" },
-    { deck: "vocab", id: "sur-g-1" },
   ])
   assert.equal(dashboard.totalEnrolled, 5)
   assert.equal(dashboard.totalDue, 4)

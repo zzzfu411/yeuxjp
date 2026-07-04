@@ -3,14 +3,66 @@ import type { Vocabulary } from "@/data/vocabulary/types"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
 import { pickUniqueQuestionOptions } from "@/lib/question-options"
 import { normalizeAnswer, type Question } from "@/lib/questions"
-import { sortSrsIdsByDue, type SrsMap } from "@/lib/srs-model"
+import type { SrsMap } from "@/lib/srs-model"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 
 export type ReviewDeck = "kana" | "vocab" | "mistakes"
 export type TodayReviewItem = { deck: ReviewDeck; id: string }
 
+type DueReviewItem = TodayReviewItem & {
+  deck: "kana" | "vocab"
+  dueAt: number
+  deckSize: number
+  order: number
+}
+
+const DUE_REVIEW_DECK_ORDER = {
+  kana: 0,
+  vocab: 1,
+} as const
+
 export { isReviewableKanaId }
 export { shuffleList } from "@/lib/question-options"
+
+function getReviewDueAt(map: SrsMap, id: string) {
+  return map[id]?.dueAt ?? Number.MAX_SAFE_INTEGER
+}
+
+function buildDueReviewItems({
+  deck,
+  ids,
+  srsMap,
+}: {
+  deck: "kana" | "vocab"
+  ids: string[]
+  srsMap: SrsMap
+}): DueReviewItem[] {
+  const deckSize = ids.length
+  return ids.map((id, order) => ({
+    deck,
+    id,
+    dueAt: getReviewDueAt(srsMap, id),
+    deckSize,
+    order,
+  }))
+}
+
+function sortDueReviewItems(items: DueReviewItem[]): TodayReviewItem[] {
+  return [...items]
+    .sort((a, b) => {
+      const dueOrder = a.dueAt - b.dueAt
+      if (dueOrder !== 0) return dueOrder
+
+      const deckSizeOrder = a.deckSize - b.deckSize
+      if (deckSizeOrder !== 0) return deckSizeOrder
+
+      const deckOrder = DUE_REVIEW_DECK_ORDER[a.deck] - DUE_REVIEW_DECK_ORDER[b.deck]
+      if (deckOrder !== 0) return deckOrder
+
+      return a.order - b.order
+    })
+    .map(({ deck, id }) => ({ deck, id }))
+}
 
 export function buildTodayReviewQueue({
   dueMistakeIds,
@@ -25,13 +77,15 @@ export function buildTodayReviewQueue({
   vocabDueIds: string[]
   vocabSrsMap: SrsMap
 }): TodayReviewItem[] {
-  const sortedKanaIds = sortSrsIdsByDue(kanaDueIds.filter(isReviewableKanaId), kanaSrsMap)
-  const sortedVocabIds = sortSrsIdsByDue(vocabDueIds, vocabSrsMap)
+  const kanaIds = kanaDueIds.filter(isReviewableKanaId)
+  const dueItems = [
+    ...buildDueReviewItems({ deck: "kana", ids: kanaIds, srsMap: kanaSrsMap }),
+    ...buildDueReviewItems({ deck: "vocab", ids: vocabDueIds, srsMap: vocabSrsMap }),
+  ]
 
   return [
     ...dueMistakeIds.map((id) => ({ deck: "mistakes" as const, id })),
-    ...sortedKanaIds.map((id) => ({ deck: "kana" as const, id })),
-    ...sortedVocabIds.map((id) => ({ deck: "vocab" as const, id })),
+    ...sortDueReviewItems(dueItems),
   ]
 }
 
