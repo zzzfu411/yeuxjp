@@ -350,7 +350,7 @@ test("browser E2E verifies review empty and due states", () => {
   assert.match(e2e, /mixed today review should write vocabulary practice history/)
 })
 
-test("browser E2E verifies save failures keep quiz and review on the current question", () => {
+test("browser E2E verifies save failures keep quiz, lesson, and review on the current question", () => {
   const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /verifyPracticeSaveFailureFlow/)
@@ -358,6 +358,11 @@ test("browser E2E verifies save failures keep quiz and review on the current que
   assert.match(e2e, /getByTestId\("practice-save-error"\)/)
   assert.match(e2e, /getByTestId\("quiz-score"\)/)
   assert.match(e2e, /0\\\/0\\b/)
+  assert.match(e2e, /\/learn\/day-1-a-row-hello/)
+  assert.match(e2e, /getByTestId\("lesson-answer-a"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("lesson-next"\)\.isDisabled\(\)/)
+  assert.match(e2e, /ITEM_PROGRESS/)
+  assert.match(e2e, /SRS_KANA/)
   assert.match(e2e, /getByTestId\("review-remaining"\)/)
   assert.match(e2e, /kanaSrs\?\.a\?\.box, 1/)
   assert.match(e2e, /PRACTICE_RESULTS/)
