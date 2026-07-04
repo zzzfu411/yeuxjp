@@ -32,6 +32,7 @@ export interface ChoiceStep extends LessonStepBase {
   prompt: string
   options: string[]
   answer: string
+  acceptedAnswers?: string[]
   explanation?: string
   audioText?: string
   itemId: string

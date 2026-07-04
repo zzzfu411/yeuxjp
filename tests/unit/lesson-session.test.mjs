@@ -17,6 +17,14 @@ test("lesson practice steps convert to shared Question objects", () => {
   assert.equal(choiceQuestion.mode, "recognition")
   assert.deepEqual(choiceQuestion.options.map((option) => option.value), choice.options)
 
+  const alternateChoice = session.lessonStepToQuestion({
+    ...choice,
+    answer: "a",
+    acceptedAnswers: ["A", "ａ"],
+    options: ["a", "ka", "sa", "ta"],
+  })
+  assert.deepEqual(alternateChoice.acceptedAnswers, ["A", "ａ"])
+
   const typingQuestion = session.lessonStepToQuestion(typing)
   assert.equal(typingQuestion.type, "lesson:typing")
   assert.equal(typingQuestion.itemType, "vocab")

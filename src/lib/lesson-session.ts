@@ -14,6 +14,7 @@ export function lessonStepToQuestion(step: LessonPracticeStep): Question {
       questionText: step.prompt,
       questionAudio: step.audioText,
       correctAnswer: step.answer,
+      acceptedAnswers: step.acceptedAnswers,
       explanation: step.explanation,
       options: step.options.map((option) => ({ value: option, display: option })),
     }

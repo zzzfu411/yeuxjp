@@ -11,6 +11,7 @@ import {
   shouldShowCorrectAnswerIcon,
   shouldShowWrongAnswerIcon,
 } from "@/lib/answer-option-feedback"
+import { isQuestionAnswerCorrect } from "@/lib/questions"
 import { cn } from "@/lib/utils"
 
 export function LessonStepBody({
@@ -87,7 +88,7 @@ export function LessonStepBody({
             const feedback = getAnswerOptionFeedback({
               selectedAnswer: result ? selected : null,
               optionValue: option,
-              isCorrectOption: option === step.answer,
+              isCorrectOption: isQuestionAnswerCorrect({ correctAnswer: step.answer, acceptedAnswers: step.acceptedAnswers }, option),
             })
             return (
               <Button
