@@ -6,6 +6,7 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, "..")
 const workspaceRoot = path.resolve(root, "..")
 const srcDir = path.join(root, "src")
+const PWA_STATIC_ASSET_BUDGET_BYTES = 3 * 1024 * 1024
 
 let failed = false
 
@@ -28,6 +29,14 @@ function pass(message) {
 
 function exists(relPath) {
   return fs.existsSync(path.join(root, relPath))
+}
+
+function fileSize(relPath) {
+  return fs.statSync(path.join(root, relPath)).size
+}
+
+function formatBytes(bytes) {
+  return `${(bytes / 1024 / 1024).toFixed(2)} MiB`
 }
 
 function isObject(value) {
@@ -505,13 +514,16 @@ function validateServiceWorkerAssets() {
   const assets = serviceWorkerStaticAssets(swText)
   if (!assets.length) fail("PWA service worker STATIC_ASSETS is empty")
 
+  let cachedAssetBytes = 0
   for (const asset of assets) {
     if (asset === "/") continue
     if (!asset.startsWith("/")) {
       fail(`PWA service worker asset must be root-relative: ${asset}`)
       continue
     }
-    requireFile(`public/${asset.slice(1)}`, `PWA cached asset ${asset}`)
+    const relPath = `public/${asset.slice(1)}`
+    requireFile(relPath, `PWA cached asset ${asset}`)
+    if (exists(relPath)) cachedAssetBytes += fileSize(relPath)
   }
 
   const missingCacheAssets = cacheWorthyPublicAssets().filter((asset) => !assets.includes(asset))
@@ -519,6 +531,16 @@ function validateServiceWorkerAssets() {
     fail(`PWA service worker STATIC_ASSETS is missing cache-worthy public assets: ${missingCacheAssets.join(", ")}`)
   } else {
     pass(`PWA service worker caches cache-worthy public assets (${cacheWorthyPublicAssets().length})`)
+  }
+
+  if (cachedAssetBytes > PWA_STATIC_ASSET_BUDGET_BYTES) {
+    fail(
+      `PWA service worker STATIC_ASSETS total size is ${formatBytes(cachedAssetBytes)}, above ${formatBytes(PWA_STATIC_ASSET_BUDGET_BYTES)}`
+    )
+  } else {
+    pass(
+      `PWA service worker STATIC_ASSETS total size is ${formatBytes(cachedAssetBytes)} / ${formatBytes(PWA_STATIC_ASSET_BUDGET_BYTES)}`
+    )
   }
 }
 
