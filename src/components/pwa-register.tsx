@@ -8,6 +8,9 @@ import { warnInDevelopment } from "@/lib/dev-log"
 import { shouldUsePwaDocumentNavigation } from "@/lib/pwa-navigation"
 
 export const PWA_UPDATE_READY_EVENT = "yasashi:pwa-update-ready"
+type PwaUpdateReadyEventDetail = {
+  registration?: ServiceWorkerRegistration | null
+}
 
 function getOfflineNavigationAnchor(event: MouseEvent) {
   if (!(event.target instanceof Element)) return null
@@ -53,7 +56,13 @@ export function PwaRegister() {
       markUpdateReady()
     }
 
-    const onUpdateReadyEvent = () => {
+    const onUpdateReadyEvent = (event: Event) => {
+      const registration = event instanceof CustomEvent
+        ? (event as CustomEvent<PwaUpdateReadyEventDetail>).detail?.registration
+        : null
+      if (registration?.waiting) {
+        waitingRegistrationRef.current = registration
+      }
       setUpdateReady(true)
       setDismissed(false)
     }

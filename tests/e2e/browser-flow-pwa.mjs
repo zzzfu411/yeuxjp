@@ -13,6 +13,26 @@ export async function verifyPwaUpdateBannerFlow(page, baseUrl) {
   await page.getByTestId("pwa-update-dismiss").click()
   await banner.waitFor({ state: "hidden" })
 
+  await page.evaluate(() => {
+    window.__yasashiPwaMessages = []
+    window.dispatchEvent(new CustomEvent("yasashi:pwa-update-ready", {
+      detail: {
+        registration: {
+          waiting: {
+            postMessage(message) {
+              window.__yasashiPwaMessages.push(message)
+            },
+          },
+        },
+      },
+    }))
+  })
+  await banner.waitFor({ state: "visible" })
+  await page.getByTestId("pwa-update-refresh").click()
+  await page.waitForFunction(() => window.__yasashiPwaMessages?.some((message) => message?.type === "SKIP_WAITING"))
+  assert.equal(await page.getByTestId("pwa-update-refresh").isDisabled(), true, "PWA update refresh should wait after posting SKIP_WAITING")
+  await page.reload({ waitUntil: "networkidle" })
+
   await page.evaluate(() => window.dispatchEvent(new Event("yasashi:pwa-update-ready")))
   await banner.waitFor({ state: "visible" })
 
