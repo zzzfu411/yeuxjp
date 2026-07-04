@@ -39,3 +39,19 @@ test("SpeechPreferencesProvider reloads preferences after cross-tab storage chan
   assert.match(source, /window\.addEventListener\("storage", onStorage\)/)
   assert.match(source, /window\.removeEventListener\("storage", onStorage\)/)
 })
+
+test("SpeechSettingsBar reports preference persistence failures", () => {
+  const source = read("src/components/ui/speech-preferences.tsx")
+
+  assert.match(source, /from "@\/components\/practice\/practice-save-error"/)
+  assert.match(source, /updateSpeechPreferencesWithStatus/)
+  assert.match(source, /resetSpeechPreferencesWithStatus/)
+  assert.match(source, /return result\.saved/)
+  assert.match(source, /const \[saveError, setSaveError\] = React\.useState\(false\)/)
+  assert.match(source, /setSaveError\(!update\(patch\)\)/)
+  assert.match(source, /setSaveError\(!reset\(\)\)/)
+  assert.match(source, /data-testid=\{`speech-repeat-\$\{n\}`\}/)
+  assert.match(source, /data-testid="speech-preferences-reset"/)
+  assert.match(source, /<PracticeSaveError/)
+  assert.match(source, /title="语音设置没有保存成功"/)
+})

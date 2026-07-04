@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { Button } from "@/components/ui/button"
 import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
@@ -10,8 +11,8 @@ import {
   DEFAULT_SPEECH_PREFS_STORAGE_KEY,
   SPEECH_PREFS_EVENT,
   loadSpeechPreferences,
-  resetSpeechPreferences,
-  updateSpeechPreferences,
+  resetSpeechPreferencesWithStatus,
+  updateSpeechPreferencesWithStatus,
   type SpeechUserPreferences,
 } from "@/lib/speech"
 
@@ -19,8 +20,8 @@ export type SpeechPreferences = SpeechUserPreferences
 
 type SpeechPreferencesContextValue = {
   prefs: SpeechPreferences
-  update: (patch: Partial<SpeechPreferences>) => void
-  reset: () => void
+  update: (patch: Partial<SpeechPreferences>) => boolean
+  reset: () => boolean
 }
 
 const SpeechPreferencesContext = React.createContext<SpeechPreferencesContextValue | null>(null)
@@ -82,13 +83,17 @@ export function SpeechPreferencesProvider({
 
   const update = React.useCallback(
     (patch: Partial<SpeechPreferences>) => {
-      setPrefs(() => updateSpeechPreferences(patch, storageKey))
+      const result = updateSpeechPreferencesWithStatus(patch, storageKey)
+      setPrefs(result.prefs)
+      return result.saved
     },
     [storageKey]
   )
 
   const reset = React.useCallback(() => {
-    setPrefs(() => resetSpeechPreferences(storageKey))
+    const result = resetSpeechPreferencesWithStatus(storageKey)
+    setPrefs(result.prefs)
+    return result.saved
   }, [storageKey])
 
   const value = React.useMemo<SpeechPreferencesContextValue>(() => ({ prefs, update, reset }), [prefs, reset, update])
@@ -104,8 +109,25 @@ export function SpeechSettingsBar({
   showQuizOptions?: boolean
 }) {
   const ctx = useSpeechPreferences()
+  const [saveError, setSaveError] = React.useState(false)
+  const update = ctx?.update
+  const reset = ctx?.reset
+
+  const savePatch = React.useCallback(
+    (patch: Partial<SpeechPreferences>) => {
+      if (!update) return
+      setSaveError(!update(patch))
+    },
+    [update]
+  )
+
+  const resetPrefs = React.useCallback(() => {
+    if (!reset) return
+    setSaveError(!reset())
+  }, [reset])
+
   if (!ctx) return null
-  const { prefs, update, reset } = ctx
+  const { prefs } = ctx
 
   const rateOptions: { label: string; value: number }[] = [
     { label: "很慢", value: 0.75 },
@@ -117,7 +139,13 @@ export function SpeechSettingsBar({
     <div className={cn("w-full rounded-xl border bg-muted/10 p-4 space-y-3", className)}>
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm font-semibold text-foreground">听力设置</div>
-        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={reset}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground"
+          data-testid="speech-preferences-reset"
+          onClick={resetPrefs}
+        >
           恢复默认
         </Button>
       </div>
@@ -131,7 +159,8 @@ export function SpeechSettingsBar({
             variant={prefs.rate === opt.value ? "default" : "outline"}
             size="sm"
             className="rounded-full"
-            onClick={() => update({ rate: opt.value })}
+            data-testid={`speech-rate-${String(opt.value).replace(".", "-")}`}
+            onClick={() => savePatch({ rate: opt.value })}
           >
             {opt.label}
           </Button>
@@ -149,9 +178,10 @@ export function SpeechSettingsBar({
               variant={prefs.repeat === n ? "default" : "outline"}
               size="sm"
               className="rounded-full"
-              onClick={() => update({ repeat: n as 1 | 2 | 3 })}
+              data-testid={`speech-repeat-${n}`}
+              onClick={() => savePatch({ repeat: n as 1 | 2 | 3 })}
             >
-              ×{n}
+              x{n}
             </Button>
           ))}
 
@@ -162,12 +192,19 @@ export function SpeechSettingsBar({
             variant={prefs.autoPlay ? "secondary" : "outline"}
             size="sm"
             className="rounded-full"
-            onClick={() => update({ autoPlay: !prefs.autoPlay })}
+            data-testid="speech-autoplay-toggle"
+            onClick={() => savePatch({ autoPlay: !prefs.autoPlay })}
           >
             {prefs.autoPlay ? "自动播放：开" : "自动播放：关"}
           </Button>
         </div>
       )}
+
+      <PracticeSaveError
+        show={saveError}
+        title="语音设置没有保存成功"
+        description="请检查浏览器存储权限或剩余空间，然后再试一次。"
+      />
     </div>
   )
 }

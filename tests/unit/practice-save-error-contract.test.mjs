@@ -15,8 +15,10 @@ test("PracticeSaveError exposes an accessible shared persistence failure message
   assert.match(source, /export function PracticeSaveError/)
   assert.match(source, /role="alert"/)
   assert.match(source, /data-testid="practice-save-error"/)
-  assert.match(source, /本次答案没有保存成功/)
-  assert.match(source, /浏览器存储权限/)
+  assert.match(source, /title = "本次答案没有保存成功"/)
+  assert.match(source, /description = "请检查浏览器存储权限或剩余空间，然后再试一次。"/)
+  assert.match(source, /\{title\}/)
+  assert.match(source, /\{description\}/)
 })
 
 test("all answer surfaces render the shared save failure message", () => {

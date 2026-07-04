@@ -61,6 +61,7 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
     "verifyProfileSaveFailureFlow",
     "verifyPracticeSaveFailureFlow",
     "verifyProgressSaveFailureFlow",
+    "verifySpeechPreferenceSaveFailureFlow",
     "verifyLearningDataFlow",
     "verifyPwaUpdateBannerFlow",
     "verifyMobileSmoke",
@@ -398,6 +399,18 @@ test("browser E2E verifies kana and vocabulary progress save failures roll back 
   assert.match(e2e, /failed kana progress clear should restore kana SRS/)
   assert.match(e2e, /failed vocabulary progress clear should keep learned vocabulary/)
   assert.match(e2e, /failed vocabulary progress clear should restore vocabulary SRS/)
+})
+
+test("browser E2E verifies speech preference save failures stay recoverable", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /verifySpeechPreferenceSaveFailureFlow/)
+  assert.match(e2e, /E2E simulated speech preference write failure/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.SPEECH_PREFS/)
+  assert.match(e2e, /getByTestId\("speech-repeat-2"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("practice-save-error"\)/)
+  assert.match(e2e, /readJsonStorage\(page, E2E_STORAGE_KEYS\.SPEECH_PREFS\), null/)
+  assert.match(e2e, /speech preference save retry should persist repeat count/)
 })
 
 test("browser E2E includes a mobile viewport smoke pass for core routes", () => {

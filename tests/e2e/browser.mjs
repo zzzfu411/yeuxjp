@@ -18,6 +18,7 @@ import {
   verifyPracticeSaveFailureFlow,
   verifyProgressSaveFailureFlow,
   verifyReferenceKeyboardFlow,
+  verifySpeechPreferenceSaveFailureFlow,
 } from "./browser-flows.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
@@ -58,6 +59,7 @@ try {
   await verifyProfileSaveFailureFlow(page, baseUrl)
   await verifyPracticeSaveFailureFlow(page, baseUrl)
   await verifyProgressSaveFailureFlow(page, baseUrl)
+  await verifySpeechPreferenceSaveFailureFlow(page, baseUrl)
   await verifyLearningDataFlow(page, baseUrl)
   await verifyPwaUpdateBannerFlow(page, baseUrl)
   await verifyMobileSmoke(browser, baseUrl)

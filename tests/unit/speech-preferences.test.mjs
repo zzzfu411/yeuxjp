@@ -58,12 +58,15 @@ test("speech preference updates persist and apply defaults", () => {
   const { map, events } = installWindow()
 
   const next = speech.updateSpeechPreferences({ rate: 0.75, repeat: 2 }, "speech")
+  const result = speech.updateSpeechPreferencesWithStatus({ autoPlay: false }, "speech")
 
   assert.equal(next.rate, 0.75)
   assert.equal(next.repeat, 2)
+  assert.equal(result.saved, true)
+  assert.equal(result.prefs.autoPlay, false)
   assert.equal(JSON.parse(map.get("speech")).rate, 0.75)
   assert.equal(speech.getSpeechDefaults().rate, 0.75)
-  assert.equal(events.length, 1)
+  assert.equal(events.length, 2)
   assert.equal(events[0].type, speech.SPEECH_PREFS_EVENT)
   assert.deepEqual(events[0].detail, { storageKey: "speech" })
 })
@@ -77,8 +80,10 @@ test("speech preference update failures keep the previous readable preference", 
   }
 
   const next = speech.updateSpeechPreferences({ rate: 1.0, repeat: 3 }, "speech")
+  const result = speech.updateSpeechPreferencesWithStatus({ rate: 1.2 }, "speech")
 
   assert.deepEqual(next, { rate: 0.85, repeat: 2, autoPlay: false, gapMs: 400 })
+  assert.deepEqual(result, { prefs: { rate: 0.85, repeat: 2, autoPlay: false, gapMs: 400 }, saved: false })
   assert.equal(JSON.parse(map.get("speech")).rate, 0.85)
   assert.equal(speech.getSpeechDefaults().rate, 0.85)
   assert.equal(events.length, 0)
@@ -93,8 +98,10 @@ test("speech preference reset failures do not report default preferences", () =>
   }
 
   const next = speech.resetSpeechPreferences("speech")
+  const result = speech.resetSpeechPreferencesWithStatus("speech")
 
   assert.deepEqual(next, { rate: 0.75, repeat: 3, autoPlay: false, gapMs: 100 })
+  assert.deepEqual(result, { prefs: { rate: 0.75, repeat: 3, autoPlay: false, gapMs: 100 }, saved: false })
   assert.equal(JSON.parse(map.get("speech")).repeat, 3)
   assert.equal(speech.getSpeechDefaults().rate, 0.75)
   assert.equal(events.length, 0)
@@ -105,10 +112,12 @@ test("speech preference resets persist defaults and notify listeners", () => {
   map.set("speech", JSON.stringify({ rate: 0.75, repeat: 3, autoPlay: false, gapMs: 100 }))
 
   const next = speech.resetSpeechPreferences("speech")
+  const result = speech.resetSpeechPreferencesWithStatus("speech")
 
   assert.deepEqual(next, speech.DEFAULT_SPEECH_PREFERENCES)
+  assert.deepEqual(result, { prefs: speech.DEFAULT_SPEECH_PREFERENCES, saved: true })
   assert.deepEqual(JSON.parse(map.get("speech")), speech.DEFAULT_SPEECH_PREFERENCES)
-  assert.equal(events.length, 1)
+  assert.equal(events.length, 2)
   assert.equal(events[0].type, speech.SPEECH_PREFS_EVENT)
   assert.deepEqual(events[0].detail, { storageKey: "speech" })
 })
@@ -127,6 +136,10 @@ test("speech preference writes report persistence failures to callers", () => {
   assert.match(source, /return false/)
   assert.match(source, /SPEECH_PREFS_EVENT/)
   assert.match(source, /notifySpeechPreferences\(storageKey\)/)
+  assert.match(source, /updateSpeechPreferencesWithStatus/)
+  assert.match(source, /resetSpeechPreferencesWithStatus/)
+  assert.match(source, /saved: false/)
+  assert.match(source, /saved: true/)
   assert.match(source, /if \(!writeSpeechPreferences\(next, storageKey\)\)/)
   assert.match(source, /if \(!writeSpeechPreferences\(DEFAULT_SPEECH_PREFERENCES, storageKey\)\)/)
 })

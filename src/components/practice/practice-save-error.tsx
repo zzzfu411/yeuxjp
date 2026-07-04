@@ -2,7 +2,15 @@
 
 import { AlertTriangle } from "lucide-react"
 
-export function PracticeSaveError({ show }: { show: boolean }) {
+export function PracticeSaveError({
+  show,
+  title = "本次答案没有保存成功",
+  description = "请检查浏览器存储权限或剩余空间，然后再试一次。",
+}: {
+  show: boolean
+  title?: string
+  description?: string
+}) {
   if (!show) return null
 
   return (
@@ -14,10 +22,8 @@ export function PracticeSaveError({ show }: { show: boolean }) {
       <div className="flex items-start gap-2">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
         <div>
-          <div className="font-semibold">本次答案没有保存成功</div>
-          <div className="mt-1 text-amber-800 dark:text-amber-100/80">
-            请检查浏览器存储权限或剩余空间，然后再试一次。
-          </div>
+          <div className="font-semibold">{title}</div>
+          <div className="mt-1 text-amber-800 dark:text-amber-100/80">{description}</div>
         </div>
       </div>
     </div>

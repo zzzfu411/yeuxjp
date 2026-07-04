@@ -206,27 +206,38 @@ export function updateSpeechPreferences(
   patch: Partial<SpeechUserPreferences>,
   storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY
 ) {
+  return updateSpeechPreferencesWithStatus(patch, storageKey).prefs
+}
+
+export function updateSpeechPreferencesWithStatus(
+  patch: Partial<SpeechUserPreferences>,
+  storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY
+) {
   const prev = readSpeechPreferences(storageKey)
   const next = mergeSpeechPreferencesPatch(prev, patch)
 
   if (!writeSpeechPreferences(next, storageKey)) {
     applySpeechPreferences(prev)
-    return prev
+    return { prefs: prev, saved: false }
   }
 
   applySpeechPreferences(next)
   notifySpeechPreferences(storageKey)
-  return next
+  return { prefs: next, saved: true }
 }
 
 export function resetSpeechPreferences(storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY) {
+  return resetSpeechPreferencesWithStatus(storageKey).prefs
+}
+
+export function resetSpeechPreferencesWithStatus(storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY) {
   const prev = readSpeechPreferences(storageKey)
   if (!writeSpeechPreferences(DEFAULT_SPEECH_PREFERENCES, storageKey)) {
     applySpeechPreferences(prev)
-    return prev
+    return { prefs: prev, saved: false }
   }
 
   applySpeechPreferences(DEFAULT_SPEECH_PREFERENCES)
   notifySpeechPreferences(storageKey)
-  return DEFAULT_SPEECH_PREFERENCES
+  return { prefs: DEFAULT_SPEECH_PREFERENCES, saved: true }
 }

@@ -21,6 +21,7 @@ export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-progress-save.mjs",
   "tests/e2e/browser-flow-reference.mjs",
   "tests/e2e/browser-flow-review.mjs",
+  "tests/e2e/browser-flow-speech-save.mjs",
   "tests/e2e/browser-flow-learning-data.mjs",
   "tests/e2e/browser-flow-pwa.mjs",
   "tests/e2e/browser-flow-mobile.mjs",
@@ -385,6 +386,11 @@ export const requiredSelectors = [
     testId: "practice-save-error",
     source: "src/components/practice/practice-save-error.tsx",
     pattern: /data-testid="practice-save-error"/,
+  },
+  {
+    testId: "speech-repeat-2",
+    source: "src/components/ui/speech-preferences.tsx",
+    pattern: /data-testid=\{`speech-repeat-\$\{n\}`\}/,
   },
   {
     testId: "learning-data-panel",
