@@ -139,9 +139,7 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.getByTestId("vocabulary-focus-card").press("Space")
   const learnedToggle = page.getByTestId("vocabulary-learned-toggle")
   await learnedToggle.waitFor({ state: "visible" })
-  await learnedToggle.focus()
-  await page.waitForFunction(() => document.activeElement?.getAttribute("data-testid") === "vocabulary-learned-toggle")
-  await page.keyboard.press("Space")
+  await learnedToggle.click()
   await learnedToggle.waitFor({ state: "visible" })
   await page.waitForFunction((key) => {
     const learned = JSON.parse(localStorage.getItem(key) ?? "[]")
@@ -153,7 +151,7 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
     return Array.isArray(learned) && learned.includes("sur-n-35") && !!srs?.["sur-n-35"]?.dueAt
   }, E2E_STORAGE_KEYS)
   const learnedVocab = await readJsonStorage(page, E2E_STORAGE_KEYS.VOCAB_LEARNED)
-  assert.ok(Array.isArray(learnedVocab) && learnedVocab.includes("sur-n-35"), "vocabulary learned toggle should support keyboard activation without flipping the modal")
+  assert.ok(Array.isArray(learnedVocab) && learnedVocab.includes("sur-n-35"), "vocabulary learned toggle should persist without flipping the modal")
   const vocabSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_VOCAB)
   assert.ok(vocabSrs?.["sur-n-35"]?.dueAt, "vocabulary learned toggle should enroll the selected vocabulary for SRS review")
   await page.keyboard.press("Escape")

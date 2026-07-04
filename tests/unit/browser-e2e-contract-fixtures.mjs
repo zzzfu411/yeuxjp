@@ -123,6 +123,11 @@ export const requiredSelectors = [
     pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
   },
   {
+    testId: "lesson-answer-i",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,
+  },
+  {
     testId: "lesson-answer-ka",
     source: "src/components/lesson/lesson-step-body.tsx",
     pattern: /data-testid=\{`lesson-answer-\$\{option\}`\}/,

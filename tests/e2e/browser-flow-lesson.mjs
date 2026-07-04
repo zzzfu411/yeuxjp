@@ -121,4 +121,61 @@ export async function verifyLessonFlow(page, baseUrl) {
     null,
     "locked lesson preview should not enroll SRS"
   )
+
+  await page.evaluate(() => localStorage.clear())
+  await page.goto(`${baseUrl}/learn/day-1-a-row-hello`, { waitUntil: "networkidle" })
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-answer-i").waitFor({ state: "visible" })
+  await page.getByTestId("lesson-answer-i").click()
+  await page.waitForFunction((storageKeys) => {
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    return Array.isArray(practice) &&
+      practice.some((item) =>
+        item.lessonId === "day-1-a-row-hello" &&
+        item.lessonStepId === "recognize-a" &&
+        item.itemId === "a" &&
+        item.itemType === "kana" &&
+        item.mode === "recognition" &&
+        item.correct === false &&
+        item.answer === "i"
+      ) &&
+      Array.isArray(mistakes) &&
+      mistakes.some((item) =>
+        item.type === "lesson:multipleChoice" &&
+        item.correctAnswer === "a" &&
+        item.lastWrongAnswer === "i" &&
+        item.wrongCount >= 1
+      )
+  }, E2E_STORAGE_KEYS)
+  const wrongLessonPractice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+  assert.ok(
+    Array.isArray(wrongLessonPractice) &&
+      wrongLessonPractice.some((item) =>
+        item.lessonId === "day-1-a-row-hello" &&
+        item.lessonStepId === "recognize-a" &&
+        item.itemId === "a" &&
+        item.correct === false &&
+        item.answer === "i"
+      ),
+    "wrong lesson answer should write failed practice history"
+  )
+  const wrongLessonMistakes = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
+  assert.ok(
+    Array.isArray(wrongLessonMistakes) &&
+      wrongLessonMistakes.some((item) =>
+        item.type === "lesson:multipleChoice" &&
+        item.correctAnswer === "a" &&
+        item.lastWrongAnswer === "i" &&
+        item.wrongCount >= 1
+      ),
+    "wrong lesson answer should enter the mistake notebook"
+  )
+  assert.equal(
+    await page.evaluate((key) => localStorage.getItem(key), E2E_STORAGE_KEYS.SRS_KANA),
+    null,
+    "wrong lesson answer should not enroll kana SRS"
+  )
+  await page.evaluate(() => localStorage.clear())
 }
