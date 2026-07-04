@@ -14,6 +14,7 @@ import {
   verifyMobileSmoke,
   verifyPwaUpdateBannerFlow,
   verifyQuizAndMistakeFlow,
+  verifyPracticeSaveFailureFlow,
   verifyReferenceKeyboardFlow,
 } from "./browser-flows.mjs"
 
@@ -52,6 +53,7 @@ try {
   await verifyReferenceKeyboardFlow(page, baseUrl)
   await verifyQuizAndMistakeFlow(page, baseUrl)
   await verifyDueReviewFlow(page, baseUrl)
+  await verifyPracticeSaveFailureFlow(page, baseUrl)
   await verifyLearningDataFlow(page, baseUrl)
   await verifyPwaUpdateBannerFlow(page, baseUrl)
   await verifyMobileSmoke(browser, baseUrl)

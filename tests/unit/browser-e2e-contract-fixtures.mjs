@@ -16,6 +16,7 @@ export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-lesson.mjs",
   "tests/e2e/browser-flow-content.mjs",
   "tests/e2e/browser-flow-quiz.mjs",
+  "tests/e2e/browser-flow-practice-save.mjs",
   "tests/e2e/browser-flow-reference.mjs",
   "tests/e2e/browser-flow-review.mjs",
   "tests/e2e/browser-flow-learning-data.mjs",
@@ -367,6 +368,11 @@ export const requiredSelectors = [
     testId: "review-answer-sur-g-1",
     source: "src/components/review/review-option-grid.tsx",
     pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
+  },
+  {
+    testId: "practice-save-error",
+    source: "src/components/practice/practice-save-error.tsx",
+    pattern: /data-testid="practice-save-error"/,
   },
   {
     testId: "learning-data-panel",

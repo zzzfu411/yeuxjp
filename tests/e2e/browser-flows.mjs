@@ -1,6 +1,7 @@
 export { verifyLessonFlow } from "./browser-flow-lesson.mjs"
 export { verifyKanaAndVocabularyFlow } from "./browser-flow-content.mjs"
 export { verifyQuizAndMistakeFlow } from "./browser-flow-quiz.mjs"
+export { verifyPracticeSaveFailureFlow } from "./browser-flow-practice-save.mjs"
 export { verifyReferenceKeyboardFlow } from "./browser-flow-reference.mjs"
 export { verifyDueReviewFlow, verifyInitialReviewEmptyState } from "./browser-flow-review.mjs"
 export { verifyLearningDataFlow } from "./browser-flow-learning-data.mjs"

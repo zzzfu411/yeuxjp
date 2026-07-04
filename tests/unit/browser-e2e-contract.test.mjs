@@ -58,6 +58,7 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
     "verifyReferenceKeyboardFlow",
     "verifyQuizAndMistakeFlow",
     "verifyDueReviewFlow",
+    "verifyPracticeSaveFailureFlow",
     "verifyLearningDataFlow",
     "verifyPwaUpdateBannerFlow",
     "verifyMobileSmoke",
@@ -344,6 +345,19 @@ test("browser E2E verifies review empty and due states", () => {
   assert.match(e2e, /reviewedVocabSrs\?\.\["sur-g-1"\]\?\.box > 1/)
   assert.match(e2e, /correct review answer should write practice history/)
   assert.match(e2e, /mixed today review should write vocabulary practice history/)
+})
+
+test("browser E2E verifies save failures keep quiz and review on the current question", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /verifyPracticeSaveFailureFlow/)
+  assert.match(e2e, /E2E simulated practice write failure/)
+  assert.match(e2e, /getByTestId\("practice-save-error"\)/)
+  assert.match(e2e, /getByTestId\("quiz-score"\)/)
+  assert.match(e2e, /0\\\/0\\b/)
+  assert.match(e2e, /getByTestId\("review-remaining"\)/)
+  assert.match(e2e, /kanaSrs\?\.a\?\.box, 1/)
+  assert.match(e2e, /PRACTICE_RESULTS/)
 })
 
 test("browser E2E includes a mobile viewport smoke pass for core routes", () => {
