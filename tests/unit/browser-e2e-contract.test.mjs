@@ -566,7 +566,12 @@ test("browser E2E verifies the PWA update banner interaction", () => {
 test("browser E2E text assertions reject mojibake fallbacks", () => {
   const e2e = readBrowserE2ESources()
 
+  assert.match(e2e, /async function verifyKanaStrokeBoardRendered/)
   assert.match(e2e, /getByTestId\("kana-stroke-board"\)/)
+  assert.match(e2e, /querySelector\("svg"\)/)
+  assert.match(e2e, /querySelector\("\[data-stroke-index\]"\)/)
+  assert.match(e2e, /getAttribute\("data-active-stroke"\)/)
+  assert.match(e2e, /activeStroke > 0/)
   assert.match(e2e, /getByTestId\("quiz-score"\)/)
   assert.doesNotMatch(e2e, /绗旈/) // mojibake-ok detector fixture
   assert.doesNotMatch(e2e, /寰楀垎/) // mojibake-ok detector fixture

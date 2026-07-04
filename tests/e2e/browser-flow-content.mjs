@@ -72,13 +72,34 @@ async function verifyDialogTabTrap(page) {
   assert.equal(wrappedForward.activeIndex, 0, "Tab from the last modal control should wrap focus to the first modal control")
 }
 
+async function verifyKanaStrokeBoardRendered(page) {
+  const board = page.getByTestId("kana-stroke-board")
+  await board.waitFor({ state: "visible" })
+  await page.waitForFunction(() => {
+    const boardElement = document.querySelector('[data-testid="kana-stroke-board"]')
+    const progressElement = boardElement?.querySelector("[data-active-stroke]")
+    const activeStroke = Number(progressElement?.getAttribute("data-active-stroke"))
+    return Boolean(
+      boardElement?.querySelector("svg") &&
+      boardElement?.querySelector("[data-stroke-index]") &&
+      Number.isFinite(activeStroke)
+    )
+  })
+  await page.waitForFunction(() => {
+    const boardElement = document.querySelector('[data-testid="kana-stroke-board"]')
+    const progressElement = boardElement?.querySelector("[data-active-stroke]")
+    const activeStroke = Number(progressElement?.getAttribute("data-active-stroke") ?? "0")
+    return activeStroke > 0
+  })
+}
+
 export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").click()
   await verifyDialogHasAccessibleName(page, "kana detail modal")
   await verifyDialogTabTrap(page)
   await page.getByTestId("kana-stroke-toggle").click()
-  await page.getByTestId("kana-stroke-board").waitFor({ state: "visible" })
+  await verifyKanaStrokeBoardRendered(page)
   await page.getByTestId("kana-mastery-toggle").click()
   await page.waitForFunction((storageKeys) => {
     const mastered = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERED) ?? "[]")
