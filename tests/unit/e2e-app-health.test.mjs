@@ -92,6 +92,8 @@ test("E2E app health recognizes current app pages", () => {
 test("E2E app health declares expected not-found routes", () => {
   assert.deepEqual(appNotFoundRoutes, [
     "/learn/__missing__",
+    "/semantics/__missing__",
+    "/pragmatics/__missing__",
   ])
 })
 

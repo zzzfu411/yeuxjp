@@ -15,6 +15,8 @@ export const appHealthRoutes = [
 
 export const appNotFoundRoutes = [
   "/learn/__missing__",
+  "/semantics/__missing__",
+  "/pragmatics/__missing__",
 ]
 
 function wait(ms) {
