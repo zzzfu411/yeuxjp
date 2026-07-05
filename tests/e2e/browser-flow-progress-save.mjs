@@ -39,7 +39,8 @@ async function openVocabularyFocusModal(page) {
   await page.getByTestId("vocabulary-expand-back-sur-n-35").waitFor({ state: "visible" })
   await page.getByTestId("vocabulary-expand-back-sur-n-35").press("Space")
   await page.getByRole("dialog").waitFor({ state: "visible" })
-  await page.getByTestId("vocabulary-focus-card").press("Space")
+  await page.getByTestId("vocabulary-focus-card").click()
+  await page.waitForFunction(() => document.querySelector('[data-testid="vocabulary-focus-card"]')?.getAttribute("aria-pressed") === "true")
   await page.getByTestId("vocabulary-learned-toggle").waitFor({ state: "visible" })
 }
 

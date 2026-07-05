@@ -75,7 +75,7 @@ export function Navbar() {
             <Link href="/review">复习</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/path">开始学习</Link>
+            <Link href="/path" data-testid="nav-start-learning">开始学习</Link>
           </Button>
         </div>
       </div>

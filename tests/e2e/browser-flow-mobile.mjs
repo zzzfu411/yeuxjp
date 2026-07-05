@@ -1,5 +1,8 @@
 import assert from "node:assert/strict"
 
+import { readJsonStorage } from "./harness.mjs"
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
+
 async function assertNoHorizontalOverflow(page, label) {
   const size = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
@@ -22,8 +25,41 @@ export async function verifyMobileSmoke(browser, baseUrl) {
     const mobilePage = await mobileContext.newPage()
     await mobilePage.goto(baseUrl, { waitUntil: "networkidle" })
     await mobilePage.getByTestId("home-start-learning").waitFor({ state: "visible" })
+
+    await mobilePage.getByTestId("nav-start-learning").click()
+    await mobilePage.waitForURL(/\/path$/)
+    await mobilePage.getByTestId("path-next-learning").waitFor({ state: "visible" })
+    await assertNoHorizontalOverflow(mobilePage, "mobile path route after header CTA")
+
+    await mobilePage.getByTestId("speech-controls-open").click()
+    await mobilePage.getByRole("dialog").waitFor({ state: "visible" })
+    const speechDialogName = await mobilePage.evaluate(() => {
+      const dialog = document.querySelector('[role="dialog"][aria-modal="true"]')
+      const labelledBy = dialog?.getAttribute("aria-labelledby")
+      return labelledBy ? document.getElementById(labelledBy)?.textContent?.trim() ?? "" : ""
+    })
+    assert.ok(speechDialogName.length > 0, "mobile speech settings dialog should have an accessible name")
+    await mobilePage.getByTestId("speech-repeat-2").click()
+    await mobilePage.waitForFunction((key) => {
+      const prefs = JSON.parse(localStorage.getItem(key) ?? "{}")
+      return prefs.repeat === 2
+    }, E2E_STORAGE_KEYS.SPEECH_PREFS)
+    assert.equal(
+      (await readJsonStorage(mobilePage, E2E_STORAGE_KEYS.SPEECH_PREFS))?.repeat,
+      2,
+      "mobile speech settings should persist repeat changes"
+    )
+    await mobilePage.keyboard.press("Escape")
+    await mobilePage.getByRole("dialog").waitFor({ state: "hidden" })
+
     await mobilePage.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
-    await mobilePage.getByTestId("kana-card-a").waitFor({ state: "visible" })
+    await mobilePage.getByTestId("kana-card-a").click()
+    await mobilePage.getByRole("dialog").waitFor({ state: "visible" })
+    await mobilePage.getByTestId("kana-stroke-toggle").waitFor({ state: "visible" })
+    await assertNoHorizontalOverflow(mobilePage, "mobile kana detail modal")
+    await mobilePage.keyboard.press("Escape")
+    await mobilePage.getByRole("dialog").waitFor({ state: "hidden" })
+
     await mobilePage.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
     await mobilePage.getByTestId("quiz-mode-hiragana-romaji").waitFor({ state: "visible" })
     await mobilePage.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })

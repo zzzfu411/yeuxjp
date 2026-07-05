@@ -78,6 +78,11 @@ export const requiredSelectors = [
     pattern: /data-testid="home-start-learning"/,
   },
   {
+    testId: "nav-start-learning",
+    source: "src/components/layout/navbar.tsx",
+    pattern: /data-testid="nav-start-learning"/,
+  },
+  {
     testId: "onboarding-goal-travel",
     source: "src/components/home/onboarding-panel.tsx",
     pattern: /data-testid=\{`onboarding-goal-\$\{item\.value\}`\}/,
@@ -416,6 +421,11 @@ export const requiredSelectors = [
     testId: "speech-repeat-2",
     source: "src/components/ui/speech-preferences.tsx",
     pattern: /data-testid=\{`speech-repeat-\$\{n\}`\}/,
+  },
+  {
+    testId: "speech-controls-open",
+    source: "src/components/ui/speech-controls-button.tsx",
+    pattern: /data-testid="speech-controls-open"/,
   },
   {
     testId: "learning-data-panel",

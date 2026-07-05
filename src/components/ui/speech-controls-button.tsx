@@ -20,6 +20,7 @@ export function SpeechControlsButton() {
         className="gap-2"
         onClick={() => setOpen(true)}
         aria-label="打开听力控制面板"
+        data-testid="speech-controls-open"
       >
         <Headphones className="w-4 h-4" />
         <span className="hidden sm:inline">听力</span>
