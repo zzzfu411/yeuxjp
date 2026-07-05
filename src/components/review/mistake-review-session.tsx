@@ -54,7 +54,8 @@ export function MistakeReviewSession({
     }, [item, srs]),
     grade: useCallback((result: QuestionResult) => {
       if (!item) return false
-      return srs.gradeExisting(item.id, result.correct ? "good" : "again")
+      if (!result.correct) return true
+      return srs.gradeExisting(item.id, "good")
     }, [item, srs]),
   })
 

@@ -147,7 +147,10 @@ export function TodayReviewSession({
       if (!current) return false
       if (current.deck === "kana") return kanaSrs.gradeExisting(current.id, result.correct ? "good" : "again")
       if (current.deck === "vocab") return vocabSrs.gradeExisting(current.id, result.correct ? "good" : "again")
-      if (current.deck === "mistakes") return mistakeSrs.gradeExisting(current.id, result.correct ? "good" : "again")
+      if (current.deck === "mistakes") {
+        if (!result.correct) return true
+        return mistakeSrs.gradeExisting(current.id, "good")
+      }
       return false
     }, [current, kanaSrs, mistakeSrs, vocabSrs]),
   })

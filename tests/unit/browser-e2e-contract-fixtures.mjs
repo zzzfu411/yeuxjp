@@ -388,6 +388,11 @@ export const requiredSelectors = [
     pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
   },
   {
+    testId: "review-answer-i",
+    source: "src/components/review/review-option-grid.tsx",
+    pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
+  },
+  {
     testId: "review-answer-sur-g-1",
     source: "src/components/review/review-option-grid.tsx",
     pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,

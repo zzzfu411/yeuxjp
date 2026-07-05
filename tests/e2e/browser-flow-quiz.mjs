@@ -65,6 +65,31 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
     "correct mistake review should advance mistake SRS without deleting notebook history"
   )
 
+  await seedDueMistakeReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-start-mistakes").click()
+  await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
+  await page.getByTestId("review-answer-i").click()
+  await page.waitForFunction((storageKeys) => {
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")
+    const item = Array.isArray(mistakes) ? mistakes.find((mistake) => mistake.id === "e2e-mistake:kana-a") : null
+    return item?.wrongCount === 3 &&
+      srs?.["e2e-mistake:kana-a"]?.wrong === 3 &&
+      srs?.["e2e-mistake:kana-a"]?.box === 0
+  }, E2E_STORAGE_KEYS)
+  const wrongRetainedMistakes = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
+  const wrongRetainedMistake = Array.isArray(wrongRetainedMistakes)
+    ? wrongRetainedMistakes.find((item) => item.id === "e2e-mistake:kana-a")
+    : null
+  assert.equal(wrongRetainedMistake?.wrongCount, 3, "wrong mistake review should increment notebook count once")
+  const wrongReviewedMistakeSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_MISTAKES)
+  assert.equal(
+    wrongReviewedMistakeSrs?.["e2e-mistake:kana-a"]?.wrong,
+    3,
+    "wrong mistake review should grade mistake SRS exactly once"
+  )
+
   const mistakeId = "e2e-mistake:kana-a"
   await seedDueMistakeReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
