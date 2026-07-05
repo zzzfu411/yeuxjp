@@ -71,8 +71,8 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
   assert.match(workflow, /src\/app\/\(globals\\\.css\|layout\\\.tsx\|page\\\.tsx\|\(path\|grammar\|learn\|kana\|vocabulary\|quiz\|review\|semantics\|pragmatics\)\/\.\*\)/)
   assert.match(workflow, /src\/components\/\(home\|path\|layout\|learning\|lesson\|kana\|vocabulary\|quiz\|review\|reference\|ui\)\/\.\*/)
   assert.match(workflow, /src\/components\/\(mode-toggle\|theme-provider\|pwa-register\)\\\.tsx/)
-  assert.match(workflow, /src\/lib\/\(animcjk\|answer-option-feedback[\s\S]*\|path[\s\S]*\|skill-tree[\s\S]*\|vocabulary\)\.\*\\\.ts/)
-  assert.match(workflow, /src\/data\/\(lessons\\\.ts\|kana-data\\\.ts\|vocabulary\/\.\*\|grammar-data\\\.ts\|semantics-data\\\.ts\|pragmatics-data\\\.ts\)/)
+  assert.match(workflow, /src\/lib\/\(animcjk\|answer-option-feedback[\s\S]*\|dev-log[\s\S]*\|glossary-model[\s\S]*\|managed-learning[\s\S]*\|progress-list-storage[\s\S]*\|path[\s\S]*\|skill-tree[\s\S]*\|utils[\s\S]*\|vocabulary\)\.\*\\\.ts/)
+  assert.match(workflow, /src\/data\/\(lessons\\\.ts\|kana-data\\\.ts\|vocabulary\/\.\*\|glossary\\\.ts\|grammar-data\\\.ts\|semantics-data\\\.ts\|pragmatics-data\\\.ts\)/)
   assert.match(workflow, /tests\/e2e\/\(pwa-offline\\\.mjs\|harness\\\.mjs\|storage-keys\\\.mjs\|browser-fixtures\\\.mjs\|browser-fixture-\.\*\\\.mjs\)/)
   assert.match(workflow, /package\\\.json/)
   assert.match(workflow, /package-lock\\\.json/)
@@ -83,8 +83,11 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
   const { pwa } = extractChangeFilters(workflow)
   assertPathsMatch(pwa, [
     "public/sw.js",
+    "public/manifest.webmanifest",
+    "public/offline.html",
     "public/icons/icon-192.png",
     "public/assets/kana/kana-seion.webp",
+    "public/assets/review/review-streak.webp",
     "public/animcjk/kana/12354.svg",
     "src/app/layout.tsx",
     "src/app/path/page.tsx",
@@ -93,13 +96,37 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
     "src/components/path/skill-tree-page.tsx",
     "src/components/learning/next-step-card.tsx",
     "src/components/kana/kana-page.tsx",
+    "src/components/kana/kana-glyph-board.tsx",
+    "src/components/kana/kana-stroke-animcjk.tsx",
+    "src/components/kana/kana-stroke-controls.tsx",
+    "src/components/kana/use-animcjk-playback.ts",
+    "src/components/kana/use-animcjk-svgs.ts",
+    "src/components/pwa-register.tsx",
     "src/components/theme-provider.tsx",
+    "src/lib/animcjk.ts",
+    "src/lib/dev-log.ts",
+    "src/lib/glossary-model.ts",
     "src/lib/path-page-model.ts",
     "src/lib/skill-tree.ts",
+    "src/lib/learning-session.ts",
+    "src/lib/learning-status.ts",
+    "src/lib/learning-store.ts",
     "src/lib/learning-progress.ts",
+    "src/lib/managed-learning-keys.ts",
+    "src/lib/managed-learning-storage.ts",
     "src/lib/pwa-navigation.ts",
+    "src/lib/progress-list-storage.ts",
+    "src/lib/review-answer-recording.ts",
+    "src/lib/review-dashboard-model.ts",
+    "src/lib/review-questions.ts",
+    "src/lib/review-session.ts",
+    "src/lib/storage-keys.ts",
+    "src/lib/utils.ts",
+    "src/data/glossary.ts",
     "src/data/vocabulary/daily.ts",
     "tests/e2e/pwa-offline.mjs",
+    "tests/e2e/harness.mjs",
+    "tests/e2e/storage-keys.mjs",
     "tests/e2e/browser-fixture-review.mjs",
     "package-lock.json",
   ])
@@ -107,6 +134,7 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
     "README.md",
     "scripts/build.mjs",
     "tests/e2e/browser-flow-lesson.mjs",
+    "tests/e2e/browser-flow-pwa.mjs",
   ])
 })
 
@@ -123,8 +151,8 @@ test("GitHub Actions workflow automatically runs strict browser gates for learni
   assert.match(workflow, /src\/app\/\(globals\\\.css\|layout\\\.tsx\|page\\\.tsx\|\(path\|learn\|kana\|vocabulary\|quiz\|review\|grammar\|semantics\|pragmatics\)\/\.\*\)/)
   assert.match(workflow, /src\/components\/\(home\|path\|layout\|learning\|lesson\|practice\|kana\|vocabulary\|quiz\|review\|reference\|ui\)\/\.\*/)
   assert.match(workflow, /src\/components\/\(mode-toggle\|theme-provider\|pwa-register\)\\\.tsx/)
-  assert.match(workflow, /src\/lib\/\(animcjk\|answer-option-feedback[\s\S]*\|path[\s\S]*\|skill-tree[\s\S]*\|vocabulary\)\.\*\\\.ts/)
-  assert.match(workflow, /src\/data\/\(lessons\\\.ts\|kana-data\\\.ts\|vocabulary\/\.\*\|grammar-data\\\.ts\|semantics-data\\\.ts\|pragmatics-data\\\.ts\)/)
+  assert.match(workflow, /src\/lib\/\(animcjk\|answer-option-feedback[\s\S]*\|dev-log[\s\S]*\|glossary-model[\s\S]*\|managed-learning[\s\S]*\|progress-list-storage[\s\S]*\|path[\s\S]*\|skill-tree[\s\S]*\|utils[\s\S]*\|vocabulary\)\.\*\\\.ts/)
+  assert.match(workflow, /src\/data\/\(lessons\\\.ts\|kana-data\\\.ts\|vocabulary\/\.\*\|glossary\\\.ts\|grammar-data\\\.ts\|semantics-data\\\.ts\|pragmatics-data\\\.ts\)/)
   assert.match(workflow, /tests\/e2e\/\(browser\\\.mjs\|browser-\.\*\\\.mjs\|harness\\\.mjs\|storage-keys\\\.mjs\)/)
   assert.match(workflow, /package\\\.json/)
   assert.match(workflow, /package-lock\\\.json/)
@@ -141,18 +169,45 @@ test("GitHub Actions workflow automatically runs strict browser gates for learni
     "src/components/path/skill-tree-page.tsx",
     "src/components/learning/next-step-card.tsx",
     "src/components/kana/kana-page.tsx",
+    "src/components/kana/kana-glyph-board.tsx",
+    "src/components/kana/kana-stroke-animcjk.tsx",
+    "src/components/kana/kana-stroke-controls.tsx",
+    "src/components/kana/use-animcjk-playback.ts",
+    "src/components/pwa-register.tsx",
+    "src/components/practice/practice-save-error.tsx",
     "src/components/theme-provider.tsx",
+    "src/lib/animcjk.ts",
+    "src/lib/dev-log.ts",
+    "src/lib/glossary-model.ts",
     "src/lib/path-page-model.ts",
     "src/lib/skill-tree.ts",
     "src/lib/learning-progress.ts",
+    "src/lib/learning-session.ts",
+    "src/lib/learning-status.ts",
+    "src/lib/managed-learning-keys.ts",
+    "src/lib/managed-learning-storage.ts",
+    "src/lib/progress-list-storage.ts",
     "src/lib/question-options.ts",
+    "src/lib/review-answer-recording.ts",
+    "src/lib/review-dashboard-model.ts",
+    "src/lib/review-questions.ts",
+    "src/lib/review-session.ts",
+    "src/lib/storage-keys.ts",
+    "src/lib/utils.ts",
+    "src/data/glossary.ts",
     "src/data/vocabulary/daily.ts",
+    "tests/e2e/browser.mjs",
     "tests/e2e/browser-flow-lesson.mjs",
+    "tests/e2e/browser-flow-pwa.mjs",
     "tests/e2e/browser-fixtures.mjs",
+    "tests/e2e/browser-fixture-learning-data.mjs",
+    "tests/e2e/harness.mjs",
+    "tests/e2e/storage-keys.mjs",
     "package-lock.json",
   ])
   assertPathsDoNotMatch(browser, [
     "README.md",
+    "public/offline.html",
     "public/icons/icon-192.png",
     "scripts/build.mjs",
   ])
