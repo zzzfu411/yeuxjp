@@ -20,7 +20,7 @@ try {
     const response = await fetch(`${baseUrl}${route}`)
     assert.equal(response.status, 200, `${route} should return 200`)
     const html = await response.text()
-    assert.equal(pageLooksLikeYasashi(html), true, `${route} should return a Next.js page`)
+    assert.equal(pageLooksLikeYasashi(html, route), true, `${route} should return the expected Yasashi page content`)
   }
 
   for (const route of appNotFoundRoutes) {

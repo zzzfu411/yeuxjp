@@ -23,6 +23,7 @@ const WAKARU = String.fromCodePoint(0x5206, 0x304b, 0x308b)
 const SHIRU_EXAMPLE = String.fromCodePoint(0x4f4f, 0x6240, 0x3092, 0x77e5, 0x3063, 0x3066, 0x3044, 0x308b, 0x3002)
 const PRAGMATICS_MORNING_TITLE = String.fromCodePoint(0x65e9, 0x5b89)
 const OHAYOU_GOZAIMASU = String.fromCodePoint(0x304a, 0x306f, 0x3088, 0x3046, 0x3054, 0x3056, 0x3044, 0x307e, 0x3059, 0x3002)
+const GRAMMAR_DOJO = "Grammar Dojo"
 const OFFLINE_FALLBACK_TEXT = String.fromCodePoint(0x5f53, 0x524d, 0x79bb, 0x7ebf)
 const OFFLINE_HOME_LINK_TEXT = String.fromCodePoint(0x56de, 0x5230, 0x9996, 0x9875)
 const semanticsItemId = "s-shiru-wakaru"
@@ -152,6 +153,13 @@ try {
   await page.getByTestId("review-today-due").waitFor({ state: "visible", timeout: 10_000 })
   assert.ok(await page.getByTestId("review-start-kana").isEnabled(), "online review prewarm should load due local review state")
 
+  await page.goto(`${baseUrl}/path`, { waitUntil: "networkidle" })
+  await page.getByTestId("path-next-learning").waitFor({ state: "visible", timeout: 10_000 })
+
+  await page.goto(`${baseUrl}/grammar?level=N5`, { waitUntil: "networkidle" })
+  await page.getByTestId("grammar-point-n5-wa").waitFor({ state: "visible", timeout: 10_000 })
+  await assertBodyIncludes(page, GRAMMAR_DOJO, "online grammar prewarm should load the grammar reference")
+
   await page.goto(`${baseUrl}/semantics`, { waitUntil: "networkidle" })
   await page.goto(`${baseUrl}${semanticsDetailPath}`, { waitUntil: "networkidle" })
   await page.waitForURL(new RegExp(`${semanticsDetailPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
@@ -226,6 +234,16 @@ try {
   await page.getByTestId("quiz-score").waitFor({ state: "visible", timeout: 10_000 })
   assert.ok(await page.getByTestId("quiz-score").isVisible(), "offline canonical navigation should serve a cached quiz query route")
   await assertKnownHiraganaRomajiQuestion(page, "offline quiz query should render a real question")
+
+  await page.goto(`${baseUrl}/path`, { waitUntil: "domcontentloaded" })
+  await page.getByTestId("path-next-learning").waitFor({ state: "visible", timeout: 10_000 })
+  assert.ok(await page.getByTestId("path-next-learning").isVisible(), "offline path page should render the cached learning path")
+  await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline path page should not render the fallback page")
+
+  await page.goto(`${baseUrl}/grammar?level=N5`, { waitUntil: "domcontentloaded" })
+  await page.getByTestId("grammar-point-n5-wa").waitFor({ state: "visible", timeout: 10_000 })
+  await assertBodyIncludes(page, GRAMMAR_DOJO, "offline grammar query should render the cached grammar reference")
+  await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline grammar query should not render the fallback page")
 
   await page.goto(`${baseUrl}/review`, { waitUntil: "domcontentloaded" })
   await page.getByTestId("review-due-state").waitFor({ state: "visible", timeout: 10_000 })

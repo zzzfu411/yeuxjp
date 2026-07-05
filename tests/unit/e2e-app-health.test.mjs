@@ -3,9 +3,11 @@ import net from "node:net"
 import test from "node:test"
 import {
   appHealthRoutes,
+  appHealthRouteSentinels,
   appNotFoundRoutes,
   canReach,
   canServeRoutes,
+  getRouteHealthSentinels,
   pageLooksLikeYasashi,
   routeLooksHealthy,
 } from "../e2e/app-health.mjs"
@@ -84,8 +86,16 @@ test("E2E app health recognizes current app pages", () => {
     "/pragmatics/p-aisatsu-morning",
     "/learn/day-1-a-row-hello",
   ])
+  assert.deepEqual(Object.keys(appHealthRouteSentinels), appHealthRoutes)
+  assert.equal(getRouteHealthSentinels("/kana").some((sentinel) => sentinel.test("kana-card-a")), true)
   assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>"), true)
   assert.equal(pageLooksLikeYasashi("<html><body><div id=\"__next\"></div></body></html>"), true)
+  assert.equal(pageLooksLikeYasashi("<html>home-start-learning</html>", "/"), true)
+  assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>", "/kana"), false)
+  assert.equal(pageLooksLikeYasashi("<html>kana-card-a</html>", "/kana"), true)
+  assert.equal(pageLooksLikeYasashi("<html>Select Mode</html>", "/quiz"), true)
+  assert.equal(pageLooksLikeYasashi("<html>path-next-learning</html>", "/path"), true)
+  assert.equal(pageLooksLikeYasashi("<html>grammar-point-n5-wa</html>", "/grammar"), true)
   assert.equal(pageLooksLikeYasashi("<html>Different local app</html>"), false)
 })
 
@@ -102,14 +112,17 @@ test("E2E app health checks every candidate route before reusing a server", asyn
   const fetchImpl = async (url) => {
     seen.push(url)
     if (url.endsWith("/kana")) return fakeResponse(404, "not found")
-    return fakeResponse(200, "Yasashi")
+    if (url.endsWith("/quiz")) return fakeResponse(200, "Select Mode")
+    return fakeResponse(200, "home-start-learning")
   }
 
   assert.equal(await routeLooksHealthy("http://local.test", "/", fetchImpl), true)
+  assert.equal(await routeLooksHealthy("http://local.test", "/quiz", fetchImpl), true)
   assert.equal(await routeLooksHealthy("http://local.test", "/kana", fetchImpl), false)
   assert.equal(await canServeRoutes("http://local.test", ["/", "/kana", "/quiz"], fetchImpl), false)
   assert.deepEqual(seen, [
     "http://local.test/",
+    "http://local.test/quiz",
     "http://local.test/kana",
     "http://local.test/",
     "http://local.test/kana",
