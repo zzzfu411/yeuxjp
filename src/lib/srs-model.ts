@@ -35,25 +35,32 @@ function finiteNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null
 }
 
+function safeTimestamp(value: unknown, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  return Number.isFinite(fallback) ? fallback : 0
+}
+
 export function createSrsState(now: number = Date.now()): SrsState {
+  const safeNow = safeTimestamp(now)
   return {
     box: 1,
-    dueAt: nextDueAt(1, now),
-    createdAt: now,
+    dueAt: nextDueAt(1, safeNow),
+    createdAt: safeNow,
     right: 0,
     wrong: 0,
   }
 }
 
 export function normalizeSrsState(input: unknown, now: number = Date.now()): SrsState {
-  if (!input || typeof input !== "object") return createSrsState(now)
+  const safeNow = safeTimestamp(now)
+  if (!input || typeof input !== "object") return createSrsState(safeNow)
   const obj = input as Record<string, unknown>
 
-  const createdAt = finiteNumber(obj.createdAt) ?? now
+  const createdAt = finiteNumber(obj.createdAt) ?? safeNow
   const lastReviewedAt = finiteNumber(obj.lastReviewedAt) ?? undefined
 
   const box = clampBox(finiteNumber(obj.box) ?? 1)
-  const dueAt = finiteNumber(obj.dueAt) ?? nextDueAt(box, now)
+  const dueAt = finiteNumber(obj.dueAt) ?? nextDueAt(box, safeNow)
 
   const rightValue = finiteNumber(obj.right)
   const wrongValue = finiteNumber(obj.wrong)
@@ -64,35 +71,39 @@ export function normalizeSrsState(input: unknown, now: number = Date.now()): Srs
 }
 
 export function applySrsResult(state: SrsState, result: SrsResult, now: number = Date.now()): SrsState {
+  const safeNow = safeTimestamp(now)
+  const current = normalizeSrsState(state, safeNow)
   if (result === "good") {
-    const box = clampBox(state.box + 1)
+    const box = clampBox(current.box + 1)
     return {
-      ...state,
+      ...current,
       box,
-      dueAt: nextDueAt(box, now),
-      lastReviewedAt: now,
-      right: state.right + 1,
+      dueAt: nextDueAt(box, safeNow),
+      lastReviewedAt: safeNow,
+      right: current.right + 1,
     }
   }
 
   const box = 0
   return {
-    ...state,
+    ...current,
     box,
-    dueAt: nextDueAt(box, now),
-    lastReviewedAt: now,
-    wrong: state.wrong + 1,
+    dueAt: nextDueAt(box, safeNow),
+    lastReviewedAt: safeNow,
+    wrong: current.wrong + 1,
   }
 }
 
 export function isDue(state: SrsState, now: number = Date.now()) {
-  return state.dueAt <= now
+  const safeNow = safeTimestamp(now)
+  return normalizeSrsState(state, safeNow).dueAt <= safeNow
 }
 
 export type SrsMap = Record<string, SrsState>
 
 export function sortSrsIdsByDue(ids: string[], map: SrsMap): string[] {
-  return [...ids].sort((a, b) => (map[a]?.dueAt ?? Number.MAX_SAFE_INTEGER) - (map[b]?.dueAt ?? Number.MAX_SAFE_INTEGER))
+  const dueValue = (id: string) => finiteNumber(map[id]?.dueAt) ?? Number.MAX_SAFE_INTEGER
+  return [...ids].sort((a, b) => dueValue(a) - dueValue(b))
 }
 
 export function getNextSrsDueAt(maps: SrsMap[], now: number = Date.now()): number | null {

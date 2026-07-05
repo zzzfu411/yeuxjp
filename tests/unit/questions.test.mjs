@@ -68,6 +68,26 @@ test("question results replace non-finite answer timestamps", () => {
   }
 })
 
+test("question results stay finite when the system clock is invalid", () => {
+  const originalDateNow = Date.now
+  Date.now = () => Number.NaN
+  try {
+    const result = questions.makeQuestionResult(
+      {
+        type: "quiz:kana",
+        correctAnswer: "a",
+        options: [{ value: "a", display: "a" }],
+      },
+      "a",
+      Number.NaN
+    )
+
+    assert.equal(result.answeredAt, 0)
+  } finally {
+    Date.now = originalDateNow
+  }
+})
+
 test("mistake notebook options are de-duplicated with answer normalization", () => {
   const result = questions.makeQuestionResult(
     {

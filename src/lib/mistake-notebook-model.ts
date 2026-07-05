@@ -48,7 +48,8 @@ function stringOrUndefined(value: unknown) {
 }
 
 function safeTimestamp(value: unknown, fallback: number) {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  return Number.isFinite(fallback) ? fallback : 0
 }
 
 function safeCount(value: unknown) {
@@ -125,6 +126,7 @@ export function normalizeAcceptedMistakeAnswers(answers: unknown): string[] | un
 }
 
 export function normalizeMistakeList(input: unknown, now: number = Date.now()): MistakeItem[] {
+  const safeNow = safeTimestamp(now, 0)
   if (!Array.isArray(input)) return []
 
   const byId = new Map<string, MistakeItem>()
@@ -147,8 +149,8 @@ export function normalizeMistakeList(input: unknown, now: number = Date.now()): 
       meta: normalizeMistakeMeta(item.meta),
       options: normalizeMistakeOptions(item.options),
       wrongCount: safeCount(item.wrongCount),
-      createdAt: safeTimestamp(item.createdAt, now),
-      lastWrongAt: safeTimestamp(item.lastWrongAt, now),
+      createdAt: safeTimestamp(item.createdAt, safeNow),
+      lastWrongAt: safeTimestamp(item.lastWrongAt, safeNow),
     }
 
     const previous = byId.get(normalized.id)
@@ -161,6 +163,7 @@ export function normalizeMistakeList(input: unknown, now: number = Date.now()): 
 }
 
 export function upsertWrongMistake(previous: readonly MistakeItem[], input: RecordMistakeInput, now: number = Date.now()) {
+  const safeNow = safeTimestamp(now, 0)
   const id = input.id ?? buildMistakeId(input)
   const index = previous.findIndex((item) => item.id === id)
   const base = index >= 0 ? previous[index] : null
@@ -178,15 +181,15 @@ export function upsertWrongMistake(previous: readonly MistakeItem[], input: Reco
     meta: input.meta,
     options: normalizeMistakeOptions(input.options),
     wrongCount: (base?.wrongCount ?? 0) + 1,
-    createdAt: base?.createdAt ?? now,
-    lastWrongAt: now,
+    createdAt: base?.createdAt ?? safeNow,
+    lastWrongAt: safeNow,
   }
 
   const next = [...previous]
   if (index >= 0) next[index] = updated
   else next.unshift(updated)
 
-  return normalizeMistakeList(next, now)
+  return normalizeMistakeList(next, safeNow)
 }
 
 export function removeMistakeById(previous: readonly MistakeItem[], id: string) {

@@ -48,7 +48,8 @@ export function isQuestionAnswerCorrect(question: Pick<Question, "correctAnswer"
 }
 
 function finiteNumber(value: unknown, fallback: number) {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  return Number.isFinite(fallback) ? fallback : 0
 }
 
 export function makeQuestionResult(question: Question, selectedAnswer: string, now: number = Date.now()): QuestionResult {

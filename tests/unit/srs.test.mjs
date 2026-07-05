@@ -59,6 +59,39 @@ test("normalizeSrsState rejects non-finite persisted numbers", () => {
   assert.equal(state.wrong, 0)
 })
 
+test("SRS timestamps stay finite when inputs and system clock are invalid", () => {
+  const originalDateNow = Date.now
+  Date.now = () => Number.NaN
+  try {
+    const created = srs.createSrsState(Number.NaN)
+    assert.equal(created.createdAt, 0)
+    assert.equal(created.dueAt, 10 * 60 * 1000)
+
+    const normalized = srs.normalizeSrsState({ box: 1, dueAt: Number.NaN, createdAt: Number.NaN }, Number.NaN)
+    assert.equal(normalized.createdAt, 0)
+    assert.equal(normalized.dueAt, 10 * 60 * 1000)
+
+    const reviewed = srs.applySrsResult(
+      {
+        box: Number.NaN,
+        dueAt: Number.NaN,
+        createdAt: Number.NaN,
+        right: Number.NaN,
+        wrong: Number.NaN,
+      },
+      "good",
+      Number.NaN
+    )
+    assert.equal(reviewed.createdAt, 0)
+    assert.equal(reviewed.lastReviewedAt, 0)
+    assert.equal(reviewed.dueAt, 24 * 60 * 60 * 1000)
+    assert.equal(reviewed.right, 1)
+    assert.equal(reviewed.wrong, 0)
+  } finally {
+    Date.now = originalDateNow
+  }
+})
+
 test("sortSrsIdsByDue orders queued ids by due time", () => {
   const map = {
     late: { ...srs.createSrsState(1_700_000_000_000), dueAt: 1_700_000_003_000 },
@@ -67,6 +100,10 @@ test("sortSrsIdsByDue orders queued ids by due time", () => {
   }
 
   assert.deepEqual(srs.sortSrsIdsByDue(["missing", "late", "early"], map), ["early", "late", "missing"])
+  assert.deepEqual(srs.sortSrsIdsByDue(["broken", "early"], { ...map, broken: { ...map.early, dueAt: Number.NaN } }), [
+    "early",
+    "broken",
+  ])
 })
 
 test("getNextSrsDueAt ignores due items and returns the soonest future review", () => {

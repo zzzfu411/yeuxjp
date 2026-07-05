@@ -292,6 +292,47 @@ test("practice result normalization replaces non-finite timing fields", () => {
   ])
 })
 
+test("learning progress timestamps stay finite when inputs and system clock are invalid", () => {
+  const originalDateNow = Date.now
+  Date.now = () => Number.NaN
+  try {
+    assert.equal(model.createItemProgress("a", "kana", Number.NaN).updatedAt, 0)
+    assert.equal(model.normalizeProfile({ goal: "balanced" }, Number.NaN).createdAt, 0)
+    assert.equal(model.normalizeLessonProgressMap({ one: { lessonId: "one", startedAt: Number.NaN } }, Number.NaN).one.startedAt, 0)
+    assert.equal(model.normalizeItemProgressMap({ a: { itemType: "kana", updatedAt: Number.NaN } }, Number.NaN).a.updatedAt, 0)
+    assert.equal(
+      model.normalizePracticeResults([{ itemId: "a", itemType: "kana", mode: "recognition", correct: true }], Number.NaN)[0]
+        .createdAt,
+      0
+    )
+    assert.equal(
+      model.appendPracticeResult(
+        [],
+        {
+          itemId: "a",
+          itemType: "kana",
+          mode: "recognition",
+          correct: true,
+        },
+        Number.NaN
+      )[0].createdAt,
+      0
+    )
+    assert.equal(
+      model.updateItemProgressForPractice({}, {
+        itemId: "a",
+        itemType: "kana",
+        mode: "recognition",
+        correct: true,
+        createdAt: Number.NaN,
+      }).a.updatedAt,
+      0
+    )
+  } finally {
+    Date.now = originalDateNow
+  }
+})
+
 test("practice recording helpers append history and update item mastery from stored snapshots", () => {
   const rawHistory = Array.from({ length: 300 }, (_, index) => ({
     itemId: `old-${index}`,

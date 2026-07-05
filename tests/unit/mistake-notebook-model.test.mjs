@@ -61,6 +61,42 @@ test("mistake notebook model normalizes persisted mistakes safely", () => {
   assert.equal(list[1].createdAt, 2)
 })
 
+test("mistake notebook timestamps stay finite when inputs and system clock are invalid", () => {
+  const originalDateNow = Date.now
+  Date.now = () => Number.NaN
+  try {
+    const normalized = model.normalizeMistakeList(
+      [
+        {
+          id: "broken",
+          type: "quiz:kana",
+          correctAnswer: "a",
+          wrongCount: 1,
+          createdAt: Number.NaN,
+          lastWrongAt: Number.POSITIVE_INFINITY,
+        },
+      ],
+      Number.NaN
+    )
+    assert.equal(normalized[0].createdAt, 0)
+    assert.equal(normalized[0].lastWrongAt, 0)
+
+    const inserted = model.upsertWrongMistake(
+      [],
+      {
+        type: "quiz:kana",
+        correctAnswer: "a",
+        wrongAnswer: "ka",
+      },
+      Number.NaN
+    )
+    assert.equal(inserted[0].createdAt, 0)
+    assert.equal(inserted[0].lastWrongAt, 0)
+  } finally {
+    Date.now = originalDateNow
+  }
+})
+
 test("mistake notebook model upserts wrong answers without dropping history", () => {
   const first = model.upsertWrongMistake(
     [],

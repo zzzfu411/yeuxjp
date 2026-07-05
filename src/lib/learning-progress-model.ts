@@ -71,7 +71,8 @@ export function clampScore(value: number) {
 }
 
 function finiteNumber(value: unknown, fallback: number) {
-  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  return Number.isFinite(fallback) ? fallback : 0
 }
 
 function finiteNumberOrUndefined(value: unknown) {
