@@ -114,6 +114,35 @@ async function verifyKanaClearDialogKeyboardFlow(page, baseUrl) {
   assert.ok(afterEscapeSrs?.a?.dueAt, "confirm dialog Escape should preserve kana SRS state")
 }
 
+async function verifyKanaClearDialogKeyboardConfirmFlow(page, baseUrl) {
+  await seedKanaProgress(page, baseUrl)
+  await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
+
+  const trigger = page.getByTestId("kana-clear-progress")
+  await trigger.focus()
+  await trigger.click()
+  await page.getByRole("dialog").waitFor({ state: "visible" })
+  await page.waitForFunction(() => document.activeElement?.getAttribute("role") === "dialog")
+
+  const initial = await readDialogFocusState(page)
+  assert.equal(initial.hasDialog, true, "confirm dialog should be visible before keyboard confirm")
+  assert.ok(initial.focusableCount >= 3, "keyboard confirm needs close, cancel, and confirm controls")
+
+  await page.keyboard.press("Shift+Tab")
+  const confirmFocus = await readDialogFocusState(page)
+  assert.equal(confirmFocus.containsFocus, true, "Shift+Tab should focus the confirm dialog control")
+  assert.equal(confirmFocus.activeIndex, initial.focusableCount - 1, "Shift+Tab should move focus to the confirm action")
+
+  await page.keyboard.press("Enter")
+  await page.getByRole("dialog").waitFor({ state: "hidden" })
+  await page.waitForFunction(() => document.activeElement?.getAttribute("data-testid") === "kana-clear-progress")
+
+  const afterConfirmMastered = await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)
+  const afterConfirmSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
+  assert.deepEqual(afterConfirmMastered, [], "confirm dialog keyboard confirm should clear kana progress")
+  assert.deepEqual(afterConfirmSrs ?? {}, {}, "confirm dialog keyboard confirm should clear kana SRS state")
+}
+
 async function verifyLearningDataResetDialogKeyboardFlow(page, baseUrl) {
   await seedLearningDataBackupState(page, baseUrl)
   const beforeEscapeSnapshot = await readManagedLearningBackupSnapshot(page)
@@ -131,5 +160,6 @@ async function verifyLearningDataResetDialogKeyboardFlow(page, baseUrl) {
 
 export async function verifyConfirmDialogKeyboardFlow(page, baseUrl) {
   await verifyKanaClearDialogKeyboardFlow(page, baseUrl)
+  await verifyKanaClearDialogKeyboardConfirmFlow(page, baseUrl)
   await verifyLearningDataResetDialogKeyboardFlow(page, baseUrl)
 }
