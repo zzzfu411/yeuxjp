@@ -59,3 +59,24 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
   assert.match(workflow, /run: npm run e2e:pwa:required/)
   assert.doesNotMatch(workflow, /run: npm run e2e:pwa\s*$/m)
 })
+
+test("GitHub Actions workflow automatically runs strict browser gates for learning-flow changes", () => {
+  assert.equal(fs.existsSync(workflowPath), true)
+
+  const workflow = fs.readFileSync(workflowPath, "utf8")
+
+  assert.match(workflow, /detect-browser-changes:/)
+  assert.match(workflow, /browser: \$\{\{ steps\.filter\.outputs\.browser \}\}/)
+  assert.match(workflow, /browser-check:/)
+  assert.match(workflow, /needs: detect-browser-changes/)
+  assert.match(workflow, /needs\.detect-browser-changes\.outputs\.browser == 'true'/)
+  assert.match(workflow, /src\/components\/\(home\|path\|learning\|lesson\|practice\|kana\|vocabulary\|quiz\|review\)\//)
+  assert.match(workflow, /src\/lib\/\(animcjk\|answer-option-feedback\|kana\|learning\|lesson\|mistake\|question-options\|questions\|quiz\|review\|srs\|verb-conjugation\|vocab\)/)
+  assert.match(workflow, /src\/data\/\(lessons\\\.ts\|kana-data\\\.ts\|vocabulary\/\)/)
+  assert.match(workflow, /tests\/e2e\/\(browser\\\.mjs\|browser-\.\*\\\.mjs\|harness\\\.mjs\)/)
+  assert.match(workflow, /package\\\.json/)
+  assert.match(workflow, /package-lock\\\.json/)
+  assert.match(workflow, /run: npm run e2e:install:ci/)
+  assert.match(workflow, /run: npm run e2e:browser:required/)
+  assert.doesNotMatch(workflow, /run: npm run e2e:browser\s*$/m)
+})
