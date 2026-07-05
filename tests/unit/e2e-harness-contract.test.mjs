@@ -29,6 +29,8 @@ test("E2E harness owns shared Playwright optional dependency handling", () => {
 test("E2E harness owns server lifecycle and storage helpers", () => {
   const buildScript = fs.readFileSync(path.join(root, "scripts/build.mjs"), "utf8")
   const buildLock = fs.readFileSync(path.join(root, "scripts/build-lock.mjs"), "utf8")
+  const runBuildIfNeededBody = harness.match(/export function runBuildIfNeeded[\s\S]*?\n}\n\nexport async function startProductionServer/)?.[0] ?? ""
+  const startProductionServerBody = harness.match(/export async function startProductionServer[\s\S]*?\n}\n\nexport async function readJsonStorage/)?.[0] ?? ""
 
   assert.match(harness, /export function createServerController/)
   assert.match(harness, /spawnSync\("taskkill"/)
@@ -50,9 +52,11 @@ test("E2E harness owns server lifecycle and storage helpers", () => {
   assert.doesNotMatch(harness, /spawnSync\("cmd\.exe", \["\/d", "\/s", "\/c"/)
   assert.doesNotMatch(harness, /npm\.cmd run dev/)
   assert.match(harness, /export async function startProductionServer\(\{ baseUrl, port, controller, label = "production E2E" \}\)/)
+  assert.match(startProductionServerBody, /if \(process\.env\.E2E_BASE_URL && await canServeRoutes\(baseUrl\)\) return baseUrl/)
   assert.match(harness, /const releaseBuildLock = await acquireBuildLock\(\{ label \}\)/)
   assert.match(harness, /controller\.holdRelease\(releaseBuildLock\)/)
   assert.match(harness, /runBuildIfNeeded\(label\)/)
+  assert.doesNotMatch(runBuildIfNeededBody, /E2E_BASE_URL/)
   assert.match(harness, /controller\.spawn\(process\.execPath, \[nextCli, "start", "--hostname", "127\.0\.0\.1", "--port"/)
   assert.match(harness, /export async function readJsonStorage/)
   assert.match(buildScript, /withBuildLock/)

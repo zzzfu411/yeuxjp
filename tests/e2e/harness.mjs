@@ -186,7 +186,6 @@ export async function reuseOrStartDevServer({ baseUrl, port, controller }) {
 }
 
 export function runBuildIfNeeded(label = "production E2E") {
-  if (process.env.E2E_BASE_URL) return
   const result = runNextBuildSync()
   if (result.status !== 0) {
     const detail = result.error ? `: ${result.error.message}` : ""
