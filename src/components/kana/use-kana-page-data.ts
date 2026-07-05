@@ -13,7 +13,26 @@ import {
 
 type IsKanaMastered = (romaji: string) => boolean
 
-export function useKanaPageData(kanaSet: KanaSet, onlyUnmastered: boolean, isMastered: IsKanaMastered) {
+export interface KanaPageData {
+  activeProgress: {
+    learned: number
+    total: number
+  }
+  rows: {
+    seion: readonly string[]
+    dakuon: readonly string[]
+    yoon: readonly string[]
+    special: readonly string[]
+    seionDakuon: readonly string[]
+  }
+  visibleSeion: typeof kanaData
+  visibleDakuonHandakuon: typeof kanaData
+  visibleYoon: typeof kanaData
+  visibleSpecial: typeof kanaData
+  visibleSeionDakuon: typeof kanaData
+}
+
+export function useKanaPageData(kanaSet: KanaSet, onlyUnmastered: boolean, isMastered: IsKanaMastered): KanaPageData {
   const seion = useMemo(() => getKanaSetData(kanaData, "seion"), [])
   const dakuonHandakuon = useMemo(() => getKanaSetData(kanaData, "dakuon"), [])
   const yoon = useMemo(() => getKanaSetData(kanaData, "yoon"), [])
