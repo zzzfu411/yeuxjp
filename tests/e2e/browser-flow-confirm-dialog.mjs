@@ -1,5 +1,10 @@
 import assert from "node:assert/strict"
 
+import {
+  assertManagedLearningSnapshot,
+  readManagedLearningBackupSnapshot,
+  seedLearningDataBackupState,
+} from "./browser-fixtures.mjs"
 import { readJsonStorage } from "./harness.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
@@ -56,11 +61,8 @@ async function seedKanaProgress(page, baseUrl) {
   }, E2E_STORAGE_KEYS)
 }
 
-export async function verifyConfirmDialogKeyboardFlow(page, baseUrl) {
-  await seedKanaProgress(page, baseUrl)
-  await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
-
-  const trigger = page.getByTestId("kana-clear-progress")
+async function openConfirmDialogFromTrigger(page, triggerTestId) {
+  const trigger = page.getByTestId(triggerTestId)
   await trigger.focus()
   await trigger.click()
   await page.getByRole("dialog").waitFor({ state: "visible" })
@@ -91,7 +93,17 @@ export async function verifyConfirmDialogKeyboardFlow(page, baseUrl) {
 
   await page.keyboard.press("Escape")
   await page.getByRole("dialog").waitFor({ state: "hidden" })
-  await page.waitForFunction(() => document.activeElement?.getAttribute("data-testid") === "kana-clear-progress")
+  await page.waitForFunction(
+    (expectedTestId) => document.activeElement?.getAttribute("data-testid") === expectedTestId,
+    triggerTestId
+  )
+}
+
+async function verifyKanaClearDialogKeyboardFlow(page, baseUrl) {
+  await seedKanaProgress(page, baseUrl)
+  await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
+
+  await openConfirmDialogFromTrigger(page, "kana-clear-progress")
 
   const afterEscapeMastered = await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)
   const afterEscapeSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
@@ -100,4 +112,24 @@ export async function verifyConfirmDialogKeyboardFlow(page, baseUrl) {
     "confirm dialog Escape should cancel without clearing kana progress"
   )
   assert.ok(afterEscapeSrs?.a?.dueAt, "confirm dialog Escape should preserve kana SRS state")
+}
+
+async function verifyLearningDataResetDialogKeyboardFlow(page, baseUrl) {
+  await seedLearningDataBackupState(page, baseUrl)
+  const beforeEscapeSnapshot = await readManagedLearningBackupSnapshot(page)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("learning-data-panel").waitFor({ state: "visible" })
+
+  await openConfirmDialogFromTrigger(page, "learning-data-reset")
+
+  assertManagedLearningSnapshot(
+    await readManagedLearningBackupSnapshot(page),
+    beforeEscapeSnapshot,
+    "learning data reset dialog Escape should cancel without clearing managed learning keys"
+  )
+}
+
+export async function verifyConfirmDialogKeyboardFlow(page, baseUrl) {
+  await verifyKanaClearDialogKeyboardFlow(page, baseUrl)
+  await verifyLearningDataResetDialogKeyboardFlow(page, baseUrl)
 }

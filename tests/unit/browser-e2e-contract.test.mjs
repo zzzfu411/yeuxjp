@@ -332,7 +332,8 @@ test("browser E2E verifies destructive confirm dialogs support keyboard cancel a
   const e2e = readBrowserE2ESources()
 
   assert.match(e2e, /verifyConfirmDialogKeyboardFlow/)
-  assert.match(e2e, /const trigger = page\.getByTestId\("kana-clear-progress"\)/)
+  assert.match(e2e, /openConfirmDialogFromTrigger/)
+  assert.match(e2e, /const trigger = page\.getByTestId\(triggerTestId\)/)
   assert.match(e2e, /trigger\.focus\(\)/)
   assert.match(e2e, /trigger\.click\(\)/)
   assert.match(e2e, /getByRole\("dialog"\)\.waitFor\(\{ state: "visible" \}\)/)
@@ -343,11 +344,16 @@ test("browser E2E verifies destructive confirm dialogs support keyboard cancel a
   assert.match(e2e, /keyboard\.press\("Tab"\)/)
   assert.match(e2e, /keyboard\.press\("Escape"\)/)
   assert.match(e2e, /getByRole\("dialog"\)\.waitFor\(\{ state: "hidden" \}\)/)
-  assert.match(e2e, /document\.activeElement\?\.getAttribute\("data-testid"\) === "kana-clear-progress"/)
+  assert.match(e2e, /document\.activeElement\?\.getAttribute\("data-testid"\) === expectedTestId/)
+  assert.match(e2e, /openConfirmDialogFromTrigger\(page, "kana-clear-progress"\)/)
+  assert.match(e2e, /openConfirmDialogFromTrigger\(page, "learning-data-reset"\)/)
   assert.match(e2e, /E2E_STORAGE_KEYS\.KANA_MASTERED/)
   assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_KANA/)
+  assert.match(e2e, /readManagedLearningBackupSnapshot/)
+  assert.match(e2e, /assertManagedLearningSnapshot/)
   assert.match(e2e, /confirm dialog Escape should cancel without clearing kana progress/)
   assert.match(e2e, /confirm dialog Escape should preserve kana SRS state/)
+  assert.match(e2e, /learning data reset dialog Escape should cancel without clearing managed learning keys/)
 })
 
 test("browser E2E verifies reference modal keyboard navigation respects focused controls", () => {
