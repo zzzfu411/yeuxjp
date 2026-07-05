@@ -169,7 +169,15 @@ export function LessonStepBody({
             const total = step.chunks.filter((item) => item === chunk).length
             const disabled = readOnly || usedCount(chunk) >= total || !!result
             return (
-              <Button key={`${chunk}-${idx}`} type="button" variant="outline" className="rounded-full" onClick={() => onPickChunk(chunk)} disabled={disabled}>
+              <Button
+                key={`${chunk}-${idx}`}
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => onPickChunk(chunk)}
+                disabled={disabled}
+                data-testid={`lesson-sentence-chunk-${idx}`}
+              >
                 {chunk}
               </Button>
             )
@@ -183,7 +191,13 @@ export function LessonStepBody({
           <Button type="button" variant="ghost" className="rounded-full" onClick={onResetChunks} disabled={readOnly || !built.length || !!result}>
             清空
           </Button>
-          <Button type="button" className="rounded-full" onClick={onSubmitSentence} disabled={readOnly || !built.length || !!result}>
+          <Button
+            type="button"
+            className="rounded-full"
+            onClick={onSubmitSentence}
+            disabled={readOnly || !built.length || !!result}
+            data-testid="lesson-submit-sentence"
+          >
             提交句子
           </Button>
         </div>

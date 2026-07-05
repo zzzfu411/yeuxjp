@@ -155,6 +155,31 @@ export const requiredSelectors = [
     pattern: /data-testid="lesson-submit-typing"/,
   },
   {
+    testId: "lesson-sentence-chunk-0",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
+  },
+  {
+    testId: "lesson-sentence-chunk-1",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
+  },
+  {
+    testId: "lesson-sentence-chunk-2",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
+  },
+  {
+    testId: "lesson-sentence-chunk-3",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
+  },
+  {
+    testId: "lesson-submit-sentence",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid="lesson-submit-sentence"/,
+  },
+  {
     testId: "lesson-completed-summary",
     source: "src/components/lesson/lesson-runner.tsx",
     pattern: /data-testid="lesson-completed-summary"/,

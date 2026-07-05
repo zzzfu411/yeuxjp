@@ -177,5 +177,95 @@ export async function verifyLessonFlow(page, baseUrl) {
     null,
     "wrong lesson answer should not enroll kana SRS"
   )
+
+  await page.evaluate((storageKeys) => {
+    const now = Date.now()
+    const completedLessonIds = [
+      "day-1-a-row-hello",
+      "day-2-ka-row-thanks",
+      "day-3-sa-ta-row-sumimasen",
+    ]
+    localStorage.clear()
+    localStorage.setItem(
+      storageKeys.LESSON_PROGRESS,
+      JSON.stringify(Object.fromEntries(completedLessonIds.map((lessonId, index) => [
+        lessonId,
+        {
+          lessonId,
+          status: "completed",
+          startedAt: now - 10_000 + index,
+          completedAt: now - 5000 + index,
+          score: 100,
+          currentStepIndex: 5,
+          lastStepId: "summary",
+          updatedAt: now - 5000 + index,
+        },
+      ])))
+    )
+  }, E2E_STORAGE_KEYS)
+  await page.goto(`${baseUrl}/learn/day-4-na-ha-ma-intro-sentence`, { waitUntil: "networkidle" })
+  const ha = String.fromCodePoint(0x306f)
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId(`lesson-answer-${ha}`).waitFor({ state: "visible" })
+  await page.getByTestId(`lesson-answer-${ha}`).click()
+  await page.getByTestId("lesson-next").click()
+
+  await page.getByTestId("lesson-sentence-chunk-1").click()
+  await page.getByTestId("lesson-sentence-chunk-3").click()
+  await page.getByTestId("lesson-sentence-chunk-2").click()
+  await page.getByTestId("lesson-sentence-chunk-0").click()
+  await page.getByTestId("lesson-submit-sentence").click()
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("lesson-typing-input").fill(ha)
+  await page.getByTestId("lesson-submit-typing").click()
+  await page.waitForFunction((storageKeys) => {
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    const kanaSrs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
+    return Array.isArray(practice) &&
+      practice.some((item) =>
+        item.lessonId === "day-4-na-ha-ma-intro-sentence" &&
+        item.lessonStepId === "build-intro" &&
+        item.itemId === "sentence-intro-student" &&
+        item.itemType === "sentence" &&
+        item.mode === "production" &&
+        item.correct === true
+      ) &&
+      practice.some((item) =>
+        item.lessonId === "day-4-na-ha-ma-intro-sentence" &&
+        item.lessonStepId === "dictation-ha" &&
+        item.itemId === "ha" &&
+        item.itemType === "kana" &&
+        item.mode === "listening" &&
+        item.correct === true
+      ) &&
+      !!kanaSrs?.ha?.dueAt
+  }, E2E_STORAGE_KEYS)
+  const day4Practice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+  assert.ok(
+    Array.isArray(day4Practice) &&
+      day4Practice.some((item) =>
+        item.lessonStepId === "build-intro" &&
+        item.itemId === "sentence-intro-student" &&
+        item.itemType === "sentence" &&
+        item.mode === "production" &&
+        item.correct === true
+      ),
+    "sentence build lesson step should write sentence production practice"
+  )
+  assert.ok(
+    Array.isArray(day4Practice) &&
+      day4Practice.some((item) =>
+        item.lessonStepId === "dictation-ha" &&
+        item.itemId === "ha" &&
+        item.itemType === "kana" &&
+        item.mode === "listening" &&
+        item.correct === true
+      ),
+    "dictation lesson step should write kana listening practice"
+  )
+  const day4KanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
+  assert.ok(day4KanaSrs?.ha?.dueAt, "correct dictation lesson answer should enroll kana ha for SRS")
+
   await page.evaluate(() => localStorage.clear())
 }
