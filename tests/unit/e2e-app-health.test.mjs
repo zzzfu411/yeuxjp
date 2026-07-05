@@ -95,7 +95,10 @@ test("E2E app health recognizes current app pages", () => {
   assert.equal(pageLooksLikeYasashi("<html>kana-card-a</html>", "/kana"), true)
   assert.equal(pageLooksLikeYasashi("<html>Select Mode</html>", "/quiz"), true)
   assert.equal(pageLooksLikeYasashi("<html>path-next-learning</html>", "/path"), true)
-  assert.equal(pageLooksLikeYasashi("<html>grammar-point-n5-wa</html>", "/grammar"), true)
+  assert.equal(pageLooksLikeYasashi("<html>grammar-point-n5-wa</html>", "/grammar"), false)
+  assert.equal(pageLooksLikeYasashi("<html>grammar-point-n5-wa Grammar Dojo</html>", "/grammar"), true)
+  assert.equal(pageLooksLikeYasashi("<html>learning-data-panel</html>", "/review"), false)
+  assert.equal(pageLooksLikeYasashi("<html>learning-data-panel review-empty-state</html>", "/review"), true)
   assert.equal(pageLooksLikeYasashi("<html>Different local app</html>"), false)
 })
 

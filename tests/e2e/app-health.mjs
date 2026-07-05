@@ -21,21 +21,21 @@ export const appNotFoundRoutes = [
 
 const OHAYOU_GOZAIMASU = String.fromCodePoint(0x304a, 0x306f, 0x3088, 0x3046, 0x3054, 0x3056, 0x3044, 0x307e, 0x3059)
 
-const defaultPageSentinels = [/Yasashi Japanese/, /__next/]
+const defaultPageSentinelGroups = { any: [/Yasashi Japanese/, /__next/] }
 
 export const appHealthRouteSentinels = {
-  "/": [/home-start-learning/],
-  "/kana": [/kana-card-a/],
-  "/vocabulary": [/vocabulary-search/],
-  "/quiz": [/Select Mode/],
-  "/review": [/learning-data-panel/, /review-empty-state/, /review-scheduled-empty-state/],
-  "/path": [/path-next-learning/],
-  "/grammar": [/grammar-point-n5-wa/, /Grammar Dojo/],
-  "/semantics": [/Nuance Lab/, /s-shiru-wakaru/],
-  "/semantics/s-shiru-wakaru": [/s-shiru-wakaru/, /shiru-wakaru/],
-  "/pragmatics": [/p-aisatsu-morning/],
-  "/pragmatics/p-aisatsu-morning": [new RegExp(OHAYOU_GOZAIMASU), /p-aisatsu-morning/],
-  "/learn/day-1-a-row-hello": [/lesson-next/, /day-1-a-row-hello/],
+  "/": { all: [/home-start-learning/] },
+  "/kana": { all: [/kana-card-a/] },
+  "/vocabulary": { all: [/vocabulary-search/] },
+  "/quiz": { all: [/Select Mode/] },
+  "/review": { all: [/learning-data-panel/], any: [/review-empty-state/, /review-scheduled-empty-state/] },
+  "/path": { all: [/path-next-learning/] },
+  "/grammar": { all: [/grammar-point-n5-wa/, /Grammar Dojo/] },
+  "/semantics": { all: [/Nuance Lab/, /s-shiru-wakaru/] },
+  "/semantics/s-shiru-wakaru": { all: [/Nuance Lab/, /s-shiru-wakaru/] },
+  "/pragmatics": { all: [/p-aisatsu-morning/] },
+  "/pragmatics/p-aisatsu-morning": { all: [new RegExp(OHAYOU_GOZAIMASU), /p-aisatsu-morning/] },
+  "/learn/day-1-a-row-hello": { all: [/lesson-next/, /day-1-a-row-hello/] },
 }
 
 function wait(ms) {
@@ -43,12 +43,22 @@ function wait(ms) {
 }
 
 export function getRouteHealthSentinels(route) {
-  return appHealthRouteSentinels[route] ?? defaultPageSentinels
+  const groups = appHealthRouteSentinels[route] ?? defaultPageSentinelGroups
+  return [...(groups.all ?? []), ...(groups.any ?? [])]
+}
+
+function matchesSentinel(html, sentinel) {
+  return sentinel.test(html)
 }
 
 export function pageLooksLikeYasashi(html, route = null) {
-  const sentinels = route ? getRouteHealthSentinels(route) : defaultPageSentinels
-  return sentinels.some((sentinel) => sentinel.test(html))
+  const groups = route ? appHealthRouteSentinels[route] ?? defaultPageSentinelGroups : defaultPageSentinelGroups
+  const required = groups.all ?? []
+  const alternatives = groups.any ?? []
+  return (
+    required.every((sentinel) => matchesSentinel(html, sentinel)) &&
+    (!alternatives.length || alternatives.some((sentinel) => matchesSentinel(html, sentinel)))
+  )
 }
 
 export async function canReach(url, fetchImpl = fetch) {
