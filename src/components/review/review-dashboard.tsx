@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { LearningDataPanel } from "@/components/review/learning-data-panel"
 import { RecentMistakes } from "@/components/review/recent-mistakes"
@@ -64,6 +66,14 @@ export function ReviewDashboard({
   onStartToday,
 }: ReviewDashboardProps) {
   const nextDueLabel = formatReviewNextDueAt(nextDueAt)
+  const [confirmClearMistakesOpen, setConfirmClearMistakesOpen] = useState(false)
+
+  const requestClearMistakes = () => setConfirmClearMistakesOpen(true)
+  const cancelClearMistakes = () => setConfirmClearMistakesOpen(false)
+  const confirmClearMistakes = () => {
+    setConfirmClearMistakesOpen(false)
+    mistakes.onClear()
+  }
 
   return (
     <div className="container py-10 px-4 mx-auto max-w-4xl space-y-8 mb-20">
@@ -148,7 +158,7 @@ export function ReviewDashboard({
                 size="sm"
                 className="rounded-full"
                 data-testid="mistakes-clear"
-                onClick={mistakes.onClear}
+                onClick={requestClearMistakes}
               >
                 清空错题本
               </Button>
@@ -160,6 +170,16 @@ export function ReviewDashboard({
       </div>
 
       <PracticeSaveError show={mistakes.saveError} />
+
+      <ConfirmActionDialog
+        open={confirmClearMistakesOpen}
+        title="清空错题本？"
+        description="错题记录和对应的错题复习队列会被删除。课程进度、假名和词汇复习记录不会受到影响。"
+        confirmLabel="清空错题"
+        testId="mistakes-clear-dialog"
+        onConfirm={confirmClearMistakes}
+        onCancel={cancelClearMistakes}
+      />
 
       {!!mistakes.total && <RecentMistakes mistakes={mistakes.recent} onRemove={mistakes.onRemove} />}
 

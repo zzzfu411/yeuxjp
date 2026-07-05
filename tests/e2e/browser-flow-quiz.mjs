@@ -5,6 +5,7 @@ import {
   assertQuizModeRecordsPractice,
   openQuizMode,
   seedDueMistakeReviewState,
+  seedMissingThenDueMistakeReviewState,
   seionHiraganaToRomaji,
   seionRomaji,
 } from "./browser-fixtures.mjs"
@@ -112,6 +113,12 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
     "wrong mistake review should write failed original item practice history"
   )
 
+  await seedMissingThenDueMistakeReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-start-mistakes").click()
+  await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
+
   const mistakeId = "e2e-mistake:kana-a"
   await seedDueMistakeReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
@@ -132,6 +139,14 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   await seedDueMistakeReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("mistakes-clear").click()
+  await page.getByTestId("mistakes-clear-dialog-cancel").click()
+  await page.waitForFunction(({ storageKeys, id }) => {
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")
+    return Array.isArray(mistakes) && mistakes.some((item) => item.id === id) && !!srs?.[id]
+  }, { storageKeys: E2E_STORAGE_KEYS, id: mistakeId })
+  await page.getByTestId("mistakes-clear").click()
+  await page.getByTestId("mistakes-clear-dialog-confirm").click()
   await page.waitForFunction((storageKeys) => {
     const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")

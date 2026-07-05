@@ -17,6 +17,14 @@ test("quiz preflight reports vocabulary loading and load errors before generatin
     model.getQuizPreflightEmptyReason({
       mode: "meaning-vocab",
       vocabLoading: true,
+      vocabError: true,
+    }),
+    "loading"
+  )
+  assert.equal(
+    model.getQuizPreflightEmptyReason({
+      mode: "meaning-vocab",
+      vocabLoading: true,
       vocabError: false,
     }),
     "loading"

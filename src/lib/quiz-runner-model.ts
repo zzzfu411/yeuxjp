@@ -12,8 +12,8 @@ export function getQuizPreflightEmptyReason({
   vocabError: boolean
 }): QuizEmptyReason | null {
   if (mode !== "meaning-vocab") return null
-  if (vocabError) return "load-error"
   if (vocabLoading) return "loading"
+  if (vocabError) return "load-error"
   return null
 }
 

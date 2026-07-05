@@ -4,18 +4,54 @@ import { readJsonStorage } from "./harness.mjs"
 import { openQuizMode, seedReviewState } from "./browser-fixtures.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
+const STORAGE_FAILURE_KEY = "__yasashiE2EFailStorageKey"
+const STORAGE_FAILURE_MESSAGE_KEY = "__yasashiE2EFailStorageMessage"
+const storageFailureHookPages = new WeakSet()
+
+function installStorageFailureHook({ keyName, messageName }) {
+  if (window.__yasashiE2EStorageFailureHookInstalled) return
+
+  const originalSetItem = Storage.prototype.setItem
+  window.__yasashiE2EStorageFailureHookInstalled = true
+  window.__yasashiRestoreSetItem = () => {
+    try {
+      window.sessionStorage.removeItem(keyName)
+      window.sessionStorage.removeItem(messageName)
+    } catch {}
+    delete window.__yasashiFailStorageKey
+    delete window.__yasashiFailStorageMessage
+  }
+
+  Storage.prototype.setItem = function setItemWithE2EFailure(storageKey, value) {
+    let targetKey = window.__yasashiFailStorageKey ?? null
+    let failureMessage = window.__yasashiFailStorageMessage ?? "E2E simulated storage write failure"
+
+    try {
+      targetKey = window.sessionStorage.getItem(keyName) ?? targetKey
+      failureMessage = window.sessionStorage.getItem(messageName) ?? failureMessage
+    } catch {}
+
+    if (targetKey && storageKey === targetKey) throw new Error(failureMessage)
+    return originalSetItem.call(this, storageKey, value)
+  }
+}
+
+async function ensureStorageFailureHook(page) {
+  const hookArgs = { keyName: STORAGE_FAILURE_KEY, messageName: STORAGE_FAILURE_MESSAGE_KEY }
+  if (!storageFailureHookPages.has(page)) {
+    await page.addInitScript(installStorageFailureHook, hookArgs)
+    storageFailureHookPages.add(page)
+  }
+  await page.evaluate(installStorageFailureHook, hookArgs)
+}
+
 async function failStorageKeyWrites(page, key, failureMessage) {
+  await ensureStorageFailureHook(page)
   await page.evaluate(({ key: targetKey, failureMessage: message }) => {
-    window.__yasashiRestoreSetItem?.()
-    const originalSetItem = Storage.prototype.setItem
-    window.__yasashiRestoreSetItem = () => {
-      Storage.prototype.setItem = originalSetItem
-      delete window.__yasashiRestoreSetItem
-    }
-    Storage.prototype.setItem = function setItemWithE2EFailure(storageKey, value) {
-      if (storageKey === targetKey) throw new Error(message)
-      return originalSetItem.call(this, storageKey, value)
-    }
+    window.sessionStorage.setItem("__yasashiE2EFailStorageKey", targetKey)
+    window.sessionStorage.setItem("__yasashiE2EFailStorageMessage", message)
+    window.__yasashiFailStorageKey = targetKey
+    window.__yasashiFailStorageMessage = message
   }, { key, failureMessage })
 }
 
@@ -27,10 +63,14 @@ async function failReviewSrsWrites(page) {
   await failStorageKeyWrites(page, E2E_STORAGE_KEYS.SRS_KANA, "E2E simulated review SRS write failure")
 }
 
-async function restorePracticeResultWrites(page) {
+async function restoreStorageKeyWrites(page) {
   await page.evaluate(() => {
     window.__yasashiRestoreSetItem?.()
   })
+}
+
+async function restorePracticeResultWrites(page) {
+  await restoreStorageKeyWrites(page)
 }
 
 export async function verifyPracticeSaveFailureFlow(page, baseUrl) {
@@ -92,6 +132,32 @@ export async function verifyPracticeSaveFailureFlow(page, baseUrl) {
     "failed review SRS write should keep the original kana SRS state"
   )
   await restorePracticeResultWrites(page)
+
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await page.evaluate(() => localStorage.clear())
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await page.getByTestId("onboarding-goal-travel").click()
+  await page.getByTestId("onboarding-some").click()
+  await page.getByTestId("onboarding-always").click()
+  await page.getByTestId("onboarding-save").click()
+  await page.getByTestId("home-start-learning").waitFor({ state: "visible" })
+  await failStorageKeyWrites(page, E2E_STORAGE_KEYS.LESSON_PROGRESS, "E2E simulated lesson progress write failure")
+  await page.getByTestId("home-start-learning").click()
+  await page.waitForURL(/\/learn\/day-1-a-row-hello/)
+  await page.getByTestId("practice-save-error").waitFor({ state: "visible" })
+  assert.equal(
+    await readJsonStorage(page, E2E_STORAGE_KEYS.LESSON_PROGRESS),
+    null,
+    "failed lesson start should not leave partial lesson progress"
+  )
+  await page.getByTestId("lesson-next").click()
+  await page.getByTestId("practice-save-error").waitFor({ state: "visible" })
+  assert.equal(
+    await readJsonStorage(page, E2E_STORAGE_KEYS.LESSON_PROGRESS),
+    null,
+    "failed lesson position save should not create lesson progress after start failed"
+  )
+  await restoreStorageKeyWrites(page)
 
   await page.goto(`${baseUrl}/learn/day-1-a-row-hello`, { waitUntil: "networkidle" })
   await page.evaluate(() => localStorage.clear())

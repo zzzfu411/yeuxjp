@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
@@ -32,12 +32,26 @@ export function MistakeReviewSession({
 }) {
   const [saveErrorId, setSaveErrorId] = useState<string | null>(null)
   const review = useReviewSessionState(ids)
+  const { dropCurrent } = review
   const selected = review.selectedAnswer
   const lastOk = review.lastAnswerCorrect
 
   const currentId = review.currentItem
   const item = currentId ? notebook.byId.get(currentId) ?? null : null
   const saveError = !!currentId && saveErrorId === currentId
+
+  useEffect(() => {
+    if (!currentId || item) return
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
+      setSaveErrorId(null)
+      dropCurrent()
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [currentId, dropCurrent, item])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: item?.questionAudio,
@@ -69,9 +83,7 @@ export function MistakeReviewSession({
     )
   }
 
-  if (!item) {
-    return <ReviewDone title="错题不存在（可能已移除）" onExit={onExit} />
-  }
+  if (!item) return null
 
   const question = mistakeToQuestion(item)
   const correct = question.correctAnswer
@@ -89,7 +101,7 @@ export function MistakeReviewSession({
   const handleRemove = () => {
     const removed = notebook.remove(item.id)
     setSaveErrorId(removed ? null : item.id)
-    if (removed) review.dropCurrent()
+    if (removed) dropCurrent()
   }
 
   return (

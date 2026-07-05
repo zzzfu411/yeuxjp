@@ -363,6 +363,16 @@ export const requiredSelectors = [
     pattern: /data-testid="mistakes-clear"/,
   },
   {
+    testId: "mistakes-clear-dialog-cancel",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-cancel`\}/,
+  },
+  {
+    testId: "mistakes-clear-dialog-confirm",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-confirm`\}/,
+  },
+  {
     testId: "review-start-mistakes",
     source: "src/components/review/review-dashboard.tsx",
     pattern: /startTestId="review-start-mistakes"/,
