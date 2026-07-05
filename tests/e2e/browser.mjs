@@ -20,6 +20,7 @@ import {
   verifyProgressSaveFailureFlow,
   verifyReferenceKeyboardFlow,
   verifySpeechPreferenceSaveFailureFlow,
+  verifyVocabularyLoadRetryFlow,
 } from "./browser-flows.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
@@ -55,6 +56,7 @@ try {
 
   await verifyLessonFlow(page, baseUrl)
   await verifyInitialReviewEmptyState(page, baseUrl)
+  await verifyVocabularyLoadRetryFlow(page, baseUrl)
   await verifyKanaAndVocabularyFlow(page, baseUrl)
   await verifyReferenceKeyboardFlow(page, baseUrl)
   await verifyQuizAndMistakeFlow(page, baseUrl)

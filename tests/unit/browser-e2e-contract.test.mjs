@@ -57,6 +57,7 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
   const helperNames = [
     "verifyLessonFlow",
     "verifyInitialReviewEmptyState",
+    "verifyVocabularyLoadRetryFlow",
     "verifyKanaAndVocabularyFlow",
     "verifyReferenceKeyboardFlow",
     "verifyQuizAndMistakeFlow",
@@ -504,6 +505,35 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
   assert.match(e2e, /fill\("Gainen"\)/)
   assert.match(e2e, /getByText\("約束"\)\.first\(\)\.waitFor\(\{ state: "visible" \}\)/)
   assert.match(e2e, /getByText\("概念"\)\.first\(\)\.waitFor\(\{ state: "visible" \}\)/)
+})
+
+test("browser E2E verifies dynamic vocabulary load retry recovery", () => {
+  const e2e = readBrowserE2ESources()
+  const loader = readSource("src/data/vocabulary/loader.ts")
+
+  assert.match(e2e, /verifyVocabularyLoadRetryFlow/)
+  assert.match(e2e, /failNextVocabularyLoad/)
+  assert.match(e2e, /__yasashiE2EVocabularyLoadFailures/)
+  assert.match(e2e, /getByTestId\("quiz-mode-meaning-vocab"\)\.click\(\)/)
+  assert.match(e2e, /failNextVocabularyLoad\(page, "survival"\)/)
+  assert.match(e2e, /getByTestId\("quiz-retry-vocabulary"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /getByTestId\("quiz-retry-vocabulary"\)\.click\(\)/)
+  assert.match(e2e, /failNextVocabularyLoad\(page, "daily"\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-level-daily"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-retry-load"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /getByTestId\("vocabulary-retry-load"\)\.click\(\)/)
+  assert.match(e2e, /fill\("Yakusoku"\)/)
+  assert.match(e2e, /failNextVocabularyLoad\(page, "fluent"\)/)
+  assert.match(e2e, /getByTestId\("review-start-vocab"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("review-retry-load"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /getByTestId\("review-retry-load"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("review-answer-flu-abs-1"\)/)
+  assert.match(loader, /__yasashiE2EVocabularyLoadFailures/)
+  assert.match(loader, /consumeE2EVocabularyLoadFailure/)
+  assert.match(loader, /window\.location\.hostname !== "localhost"/)
+  assert.match(loader, /window\.location\.hostname !== "127\.0\.0\.1"/)
+  assert.match(loader, /\.catch\(\(error\) => \{/)
+  assert.match(loader, /vocabularyLevelPromises\.delete\(level\)/)
 })
 
 test("browser E2E verifies learning data export reset and import through the UI", () => {

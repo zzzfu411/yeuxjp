@@ -23,6 +23,7 @@ export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-review.mjs",
   "tests/e2e/browser-flow-speech-save.mjs",
   "tests/e2e/browser-flow-learning-data.mjs",
+  "tests/e2e/browser-flow-load-retry.mjs",
   "tests/e2e/browser-flow-pwa.mjs",
   "tests/e2e/browser-flow-mobile.mjs",
 ]
@@ -248,6 +249,11 @@ export const requiredSelectors = [
     pattern: /data-testid=\{`vocabulary-level-\$\{level\.id\}`\}/,
   },
   {
+    testId: "vocabulary-retry-load",
+    source: "src/components/vocabulary/vocabulary-category-list.tsx",
+    pattern: /data-testid="vocabulary-retry-load"/,
+  },
+  {
     testId: "vocabulary-level-fluent",
     source: "src/components/vocabulary/vocabulary-toolbar.tsx",
     pattern: /data-testid=\{`vocabulary-level-\$\{level\.id\}`\}/,
@@ -306,6 +312,11 @@ export const requiredSelectors = [
     testId: "quiz-empty-state",
     source: "src/components/quiz/quiz-empty-state.tsx",
     pattern: /data-testid="quiz-empty-state"/,
+  },
+  {
+    testId: "quiz-retry-vocabulary",
+    source: "src/components/quiz/quiz-empty-state.tsx",
+    pattern: /data-testid="quiz-retry-vocabulary"/,
   },
   {
     testId: "grammar-point-n5-wa",
@@ -398,6 +409,11 @@ export const requiredSelectors = [
     pattern: /data-testid="review-next"/,
   },
   {
+    testId: "review-retry-load",
+    source: "src/components/review/review-status.tsx",
+    pattern: /data-testid="review-retry-load"/,
+  },
+  {
     testId: "review-answer-a",
     source: "src/components/review/review-option-grid.tsx",
     pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
@@ -409,6 +425,11 @@ export const requiredSelectors = [
   },
   {
     testId: "review-answer-sur-g-1",
+    source: "src/components/review/review-option-grid.tsx",
+    pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
+  },
+  {
+    testId: "review-answer-flu-abs-1",
     source: "src/components/review/review-option-grid.tsx",
     pattern: /data-testid=\{`review-answer-\$\{option\.value\}`\}/,
   },

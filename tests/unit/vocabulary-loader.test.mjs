@@ -1,7 +1,10 @@
 import assert from "node:assert/strict"
+import fs from "node:fs"
+import path from "node:path"
 import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
+const root = path.resolve(import.meta.dirname, "..", "..")
 const loader = await loadTsModule("src/data/vocabulary/loader.ts")
 
 test("vocabulary loader returns the requested level only", async () => {
@@ -23,6 +26,14 @@ test("vocabulary loader reuses in-flight level loads", async () => {
 
   assert.strictEqual(first, second)
   assert.strictEqual(await first, await second)
+})
+
+test("vocabulary loader evicts failed level loads before retry", () => {
+  const source = fs.readFileSync(path.join(root, "src/data/vocabulary/loader.ts"), "utf8")
+
+  assert.match(source, /\.catch\(\(error\) => \{/)
+  assert.match(source, /vocabularyLevelPromises\.delete\(level\)/)
+  assert.match(source, /throw error/)
 })
 
 test("vocabulary scope all combines every level", async () => {
