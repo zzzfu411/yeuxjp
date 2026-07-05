@@ -1,6 +1,8 @@
 import {
+  createPageIssueCollector,
   createServerController,
   importPlaywrightOrSkip,
+  isExpectedBrowserRequestAbort,
   isE2ERequired,
   reuseOrStartDevServer,
   skipOptionalPlaywrightRuntimeError,
@@ -42,6 +44,7 @@ async function ensureServer() {
 let browser = null
 let context = null
 let failure = null
+let issueCollector = null
 
 try {
   const { chromium } = await importPlaywrightOrSkip({
@@ -52,8 +55,14 @@ try {
   })
   await ensureServer()
   browser = await chromium.launch({ headless: true })
+  issueCollector = createPageIssueCollector({
+    label: "Browser E2E",
+    allowRequestFailure: isExpectedBrowserRequestAbort,
+  })
   context = await browser.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 900 } })
+  issueCollector.attachContext(context)
   const page = await context.newPage()
+  issueCollector.attachPage(page)
 
   await verifyLessonFlow(page, baseUrl)
   await verifyInitialReviewEmptyState(page, baseUrl)
@@ -69,7 +78,8 @@ try {
   await verifySpeechPreferenceSaveFailureFlow(page, baseUrl)
   await verifyLearningDataFlow(page, baseUrl)
   await verifyPwaUpdateBannerFlow(page, baseUrl)
-  await verifyMobileSmoke(browser, baseUrl)
+  await verifyMobileSmoke(browser, baseUrl, issueCollector)
+  issueCollector.assertNoIssues()
 
   console.log(`Browser E2E checks passed at ${baseUrl}`)
 } catch (error) {
@@ -84,7 +94,7 @@ try {
     failure = null
   } else {
     console.error(serverController.output)
-    failure = error
+    failure = issueCollector?.appendToError(error) ?? error
   }
 } finally {
   await context?.close()

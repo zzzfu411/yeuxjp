@@ -15,14 +15,16 @@ async function assertNoHorizontalOverflow(page, label) {
   )
 }
 
-export async function verifyMobileSmoke(browser, baseUrl) {
+export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null) {
   const mobileContext = await browser.newContext({
     viewport: { width: 390, height: 844 },
     isMobile: true,
     hasTouch: true,
   })
+  issueCollector?.attachContext(mobileContext)
   try {
     const mobilePage = await mobileContext.newPage()
+    issueCollector?.attachPage(mobilePage)
     await mobilePage.goto(baseUrl, { waitUntil: "networkidle" })
     await mobilePage.getByTestId("home-start-learning").waitFor({ state: "visible" })
 

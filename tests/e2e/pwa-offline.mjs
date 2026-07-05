@@ -1,7 +1,9 @@
 import assert from "node:assert/strict"
 import {
+  createPageIssueCollector,
   createServerController,
   importPlaywrightOrSkip,
+  isExpectedBrowserRequestAbort,
   isE2ERequired,
   skipOptionalPlaywrightRuntimeError,
   startProductionServer,
@@ -114,6 +116,39 @@ async function assertKnownHiraganaRomajiQuestion(page, message) {
 let browser = null
 let context = null
 let failure = null
+let issueCollector = null
+const allowedRouteAbortUrls = new Set()
+let allowOfflineResourceFailures = false
+
+function isOfflineFailureText(failureText) {
+  return failureText === "net::ERR_FAILED" || failureText === "net::ERR_INTERNET_DISCONNECTED"
+}
+
+function isIntentionalOfflineRscFailure(request) {
+  if (!allowOfflineResourceFailures) return false
+  if (request.resourceType() !== "fetch") return false
+  if (!isOfflineFailureText(request.failure()?.errorText)) return false
+
+  const requestUrl = new URL(request.url())
+  return requestUrl.searchParams.has("_rsc")
+}
+
+function allowIntentionalPwaRequestFailure(request) {
+  return isExpectedBrowserRequestAbort(request) ||
+    allowedRouteAbortUrls.has(request.url()) ||
+    isIntentionalOfflineRscFailure(request)
+}
+
+function allowIntentionalPwaConsoleError(message) {
+  if (!/Failed to load resource/.test(message.text())) return false
+  if (!/ERR_FAILED|ERR_INTERNET_DISCONNECTED/.test(message.text())) return false
+
+  const locationUrl = message.location().url
+  if (locationUrl && allowedRouteAbortUrls.has(locationUrl)) return true
+  if (allowOfflineResourceFailures) return true
+
+  return Array.from(allowedRouteAbortUrls).some((url) => message.text().includes(url))
+}
 
 try {
   const { chromium } = await importPlaywrightOrSkip({
@@ -124,8 +159,15 @@ try {
   })
   await ensureProductionServer()
   browser = await chromium.launch({ headless: true })
+  issueCollector = createPageIssueCollector({
+    label: "PWA E2E",
+    allowConsoleMessage: allowIntentionalPwaConsoleError,
+    allowRequestFailure: allowIntentionalPwaRequestFailure,
+  })
   context = await browser.newContext()
+  issueCollector.attachContext(context)
   const page = await context.newPage()
+  issueCollector.attachPage(page)
   const cdp = await disableHttpCache(context, page)
 
   await page.goto(baseUrl, { waitUntil: "networkidle" })
@@ -192,6 +234,7 @@ try {
   assert.equal(onlineAnimCjkSvg.ok, true, "AnimCJK SVG should load online before offline cache verification")
   assert.match(onlineAnimCjkSvg.body, /<svg/i, "AnimCJK online response should be an SVG")
 
+  allowOfflineResourceFailures = true
   await context.setOffline(true)
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("home-start-learning").isVisible(), "offline static cache should serve the app home page")
@@ -267,6 +310,7 @@ try {
   await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline pragmatics detail should not render the fallback page")
 
   const realOfflineFallbackUrl = `${baseUrl}/offline-unvisited-${Date.now()}`
+  allowedRouteAbortUrls.add(realOfflineFallbackUrl)
   const abortRealOfflineFallback = (route) => route.abort("failed")
   await context.route(realOfflineFallbackUrl, abortRealOfflineFallback)
   await page.goto(realOfflineFallbackUrl, { waitUntil: "domcontentloaded" })
@@ -278,8 +322,10 @@ try {
   await context.unroute(realOfflineFallbackUrl, abortRealOfflineFallback)
 
   await context.setOffline(false)
+  allowOfflineResourceFailures = false
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   const knownRouteAbortUrl = `${baseUrl}/learn/day-1-a-row-hello`
+  allowedRouteAbortUrls.add(knownRouteAbortUrl)
   const abortKnownRoute = (route) => route.abort("failed")
   await context.route(knownRouteAbortUrl, abortKnownRoute)
   await page.getByTestId("home-start-learning").click()
@@ -300,6 +346,7 @@ try {
   }, learningStateSentinel)
 
   const fallbackUrl = `${baseUrl}/offline-smoke-${Date.now()}`
+  allowedRouteAbortUrls.add(fallbackUrl)
   await context.route(fallbackUrl, (route) => route.abort("failed"))
   await page.goto(fallbackUrl, { waitUntil: "domcontentloaded" })
   assert.match(await page.locator("body").innerText(), /当前离线/, "navigation failures should render the offline fallback")
@@ -313,6 +360,7 @@ try {
     "offline fallback must not overwrite any managed local learning state"
   )
   await cdp.detach()
+  issueCollector.assertNoIssues()
 
   console.log(`PWA offline E2E checks passed at ${baseUrl}`)
 } catch (error) {
@@ -327,7 +375,7 @@ try {
     failure = null
   } else {
     console.error(serverController.output)
-    failure = error
+    failure = issueCollector?.appendToError(error) ?? error
   }
 } finally {
   await context?.close()

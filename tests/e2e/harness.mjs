@@ -118,6 +118,108 @@ export function skipOptionalPlaywrightRuntimeError({
   return true
 }
 
+function formatPageUrl(page) {
+  try {
+    return page.url() || "about:blank"
+  } catch {
+    return "unknown page"
+  }
+}
+
+function formatError(error) {
+  if (error instanceof Error) return error.stack ?? error.message
+  return String(error)
+}
+
+function formatRequestFailure(request) {
+  const failure = request.failure()?.errorText ?? "unknown failure"
+  return `${request.method()} ${request.url()} (${request.resourceType()}): ${failure}`
+}
+
+export function isExpectedBrowserRequestAbort(request) {
+  if (request.failure()?.errorText !== "net::ERR_ABORTED") return false
+
+  const requestUrl = new URL(request.url())
+  const isNextRscPrefetch = request.resourceType() === "fetch" && requestUrl.searchParams.has("_rsc")
+  const isAnimCjkProbe =
+    request.method() === "HEAD" &&
+    request.resourceType() === "fetch" &&
+    requestUrl.pathname.startsWith("/animcjk/") &&
+    requestUrl.pathname.endsWith(".svg")
+  const isNextStaticChunk =
+    request.method() === "GET" &&
+    request.resourceType() === "script" &&
+    requestUrl.pathname.startsWith("/_next/static/chunks/")
+
+  return isNextRscPrefetch || isAnimCjkProbe || isNextStaticChunk
+}
+
+export function createPageIssueCollector({
+  label = "Browser E2E",
+  allowConsoleMessage = () => false,
+  allowRequestFailure = () => false,
+} = {}) {
+  const issues = []
+  const attachedPages = new WeakSet()
+  const attachedContexts = new WeakSet()
+
+  function recordIssue(kind, detail) {
+    issues.push(`[${kind}] ${detail}`)
+  }
+
+  function attachPage(page) {
+    if (!page || attachedPages.has(page)) return
+    attachedPages.add(page)
+
+    page.on("pageerror", (error) => {
+      recordIssue("pageerror", `${formatPageUrl(page)}\n${formatError(error)}`)
+    })
+
+    page.on("console", (message) => {
+      if (message.type() !== "error") return
+      if (allowConsoleMessage(message, page)) return
+      recordIssue("console.error", `${formatPageUrl(page)}\n${message.text()}`)
+    })
+
+    page.on("requestfailed", (request) => {
+      if (allowRequestFailure(request, page)) return
+      recordIssue("requestfailed", `${formatPageUrl(page)}\n${formatRequestFailure(request)}`)
+    })
+  }
+
+  function attachContext(context) {
+    if (!context || attachedContexts.has(context)) return
+    attachedContexts.add(context)
+    context.on("page", attachPage)
+    for (const page of context.pages()) attachPage(page)
+  }
+
+  function assertNoIssues() {
+    if (!issues.length) return
+    const details = issues.map((issue, index) => `${index + 1}. ${issue}`).join("\n")
+    const error = new Error(`${label} captured ${issues.length} unexpected browser issue(s):\n${details}`)
+    error.name = "PageIssueCollectorError"
+    throw error
+  }
+
+  function appendToError(error) {
+    if (!issues.length) return error
+    if (error instanceof Error && error.name === "PageIssueCollectorError") return error
+    const details = issues.map((issue, index) => `${index + 1}. ${issue}`).join("\n")
+    const merged = new Error(`${formatError(error)}\n\n${label} also captured ${issues.length} browser issue(s):\n${details}`)
+    merged.name = "PageIssueCollectorError"
+    return merged
+  }
+
+  return {
+    issues,
+    attachContext,
+    attachPage,
+    appendToError,
+    assertNoIssues,
+  }
+}
+
 export function createServerController() {
   let server = null
   let output = ""

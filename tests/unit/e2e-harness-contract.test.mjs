@@ -1,7 +1,10 @@
 import assert from "node:assert/strict"
+import { EventEmitter } from "node:events"
 import fs from "node:fs"
 import path from "node:path"
 import test from "node:test"
+
+import { createPageIssueCollector, isExpectedBrowserRequestAbort } from "../e2e/harness.mjs"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
 const workspacePackagePath = path.join(root, "..", "package.json")
@@ -24,6 +27,122 @@ test("E2E harness owns shared Playwright optional dependency handling", () => {
   assert.match(harness, /Executable doesn't exist/)
   assert.match(harness, /playwright install/)
   assert.match(harness, /if \(required\) return false/)
+})
+
+test("E2E harness collects browser runtime issues", () => {
+  class FakePage extends EventEmitter {
+    constructor(url) {
+      super()
+      this.currentUrl = url
+    }
+
+    url() {
+      return this.currentUrl
+    }
+  }
+
+  const page = new FakePage("http://127.0.0.1:3210/quiz")
+  const collector = createPageIssueCollector({ label: "Unit E2E" })
+  collector.attachPage(page)
+  collector.attachPage(page)
+
+  page.emit("console", { type: () => "error", text: () => "Unexpected console failure" })
+  page.emit("pageerror", new Error("Unexpected page failure"))
+  page.emit("requestfailed", {
+    method: () => "GET",
+    url: () => "http://127.0.0.1:3210/_next/static/chunk.js",
+    resourceType: () => "script",
+    failure: () => ({ errorText: "net::ERR_FAILED" }),
+  })
+
+  assert.equal(collector.issues.length, 3)
+  assert.throws(
+    () => collector.assertNoIssues(),
+    /Unit E2E captured 3 unexpected browser issue\(s\):[\s\S]*console\.error[\s\S]*pageerror[\s\S]*requestfailed/
+  )
+  assert.match(
+    collector.appendToError(new Error("Primary assertion failed")).message,
+    /Primary assertion failed[\s\S]*Unit E2E also captured 3 browser issue\(s\)/
+  )
+})
+
+test("E2E harness issue collector supports context pages and allowlists", () => {
+  class FakePage extends EventEmitter {
+    constructor(url) {
+      super()
+      this.currentUrl = url
+    }
+
+    url() {
+      return this.currentUrl
+    }
+  }
+
+  class FakeContext extends EventEmitter {
+    constructor(pages) {
+      super()
+      this.currentPages = pages
+    }
+
+    pages() {
+      return this.currentPages
+    }
+  }
+
+  const existingPage = new FakePage("http://127.0.0.1:3220/")
+  const newPage = new FakePage("http://127.0.0.1:3220/offline-smoke")
+  const context = new FakeContext([existingPage])
+  const collector = createPageIssueCollector({
+    allowConsoleMessage: (message) => message.text().includes("Failed to load resource"),
+    allowRequestFailure: (request) => request.url().includes("/offline-smoke"),
+  })
+
+  collector.attachContext(context)
+  context.emit("page", newPage)
+  existingPage.emit("console", { type: () => "warning", text: () => "Allowed warning" })
+  newPage.emit("console", { type: () => "error", text: () => "Failed to load resource: net::ERR_FAILED" })
+  newPage.emit("requestfailed", {
+    method: () => "GET",
+    url: () => "http://127.0.0.1:3220/offline-smoke",
+    resourceType: () => "document",
+    failure: () => ({ errorText: "net::ERR_FAILED" }),
+  })
+
+  assert.deepEqual(collector.issues, [])
+  assert.doesNotThrow(() => collector.assertNoIssues())
+})
+
+test("E2E harness only treats known browser request aborts as benign", () => {
+  const makeRequest = ({ url, method = "GET", resourceType = "fetch", errorText = "net::ERR_ABORTED" }) => ({
+    method: () => method,
+    url: () => url,
+    resourceType: () => resourceType,
+    failure: () => ({ errorText }),
+  })
+
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({ url: "http://127.0.0.1:3210/review?_rsc=abc" })),
+    true
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({ url: "http://127.0.0.1:3210/animcjk/kana/12354.svg", method: "HEAD" })),
+    true
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({
+      url: "http://127.0.0.1:3210/_next/static/chunks/app.js",
+      resourceType: "script",
+    })),
+    true
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({ url: "http://127.0.0.1:3210/_next/static/app.js", resourceType: "script" })),
+    false
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({ url: "http://127.0.0.1:3210/review?_rsc=abc", errorText: "net::ERR_FAILED" })),
+    false
+  )
 })
 
 test("E2E harness owns server lifecycle and storage helpers", () => {
@@ -75,6 +194,47 @@ test("optional browser E2E scripts skip missing Playwright browser binaries", ()
     assert.match(source, /npm run e2e:install --prefix web/)
     assert.match(source, /failure = null/)
   }
+})
+
+test("browser-backed E2E scripts fail on unexpected page issues", () => {
+  const browser = fs.readFileSync(path.join(root, "tests/e2e/browser.mjs"), "utf8")
+  const pwa = fs.readFileSync(path.join(root, "tests/e2e/pwa-offline.mjs"), "utf8")
+  const mobile = fs.readFileSync(path.join(root, "tests/e2e/browser-flow-mobile.mjs"), "utf8")
+
+  assert.match(harness, /export function isExpectedBrowserRequestAbort/)
+  assert.match(harness, /requestUrl\.searchParams\.has\("_rsc"\)/)
+  assert.match(harness, /requestUrl\.pathname\.startsWith\("\/animcjk\/"\)/)
+  assert.match(harness, /requestUrl\.pathname\.startsWith\("\/_next\/static\/chunks\/"\)/)
+  assert.match(browser, /allowRequestFailure: isExpectedBrowserRequestAbort/)
+  assert.match(
+    pwa,
+    /isExpectedBrowserRequestAbort\(request\)[\s\S]*allowedRouteAbortUrls\.has\(request\.url\(\)\)[\s\S]*isIntentionalOfflineRscFailure\(request\)/
+  )
+  assert.match(pwa, /let allowOfflineResourceFailures = false/)
+  assert.match(pwa, /function isIntentionalOfflineRscFailure\(request\)/)
+  assert.match(pwa, /requestUrl\.searchParams\.has\("_rsc"\)/)
+  assert.match(pwa, /allowOfflineResourceFailures = true/)
+  assert.match(pwa, /allowOfflineResourceFailures = false/)
+  assert.match(pwa, /message\.location\(\)\.url/)
+  assert.match(pwa, /allowedRouteAbortUrls\.has\(locationUrl\)/)
+  assert.match(pwa, /if \(allowOfflineResourceFailures\) return true/)
+  assert.match(pwa, /message\.text\(\)\.includes\(url\)/)
+  assert.match(browser, /issueCollector\?\.appendToError\(error\) \?\? error/)
+  assert.match(pwa, /issueCollector\?\.appendToError\(error\) \?\? error/)
+
+  for (const source of [browser, pwa]) {
+    assert.match(source, /createPageIssueCollector/)
+    assert.match(source, /issueCollector\.attachContext\(context\)/)
+    assert.match(source, /issueCollector\.attachPage\(page\)/)
+    assert.match(source, /issueCollector\.assertNoIssues\(\)/)
+  }
+
+  assert.match(browser, /verifyMobileSmoke\(browser, baseUrl, issueCollector\)/)
+  assert.match(mobile, /issueCollector\?\.attachContext\(mobileContext\)/)
+  assert.match(mobile, /issueCollector\?\.attachPage\(mobilePage\)/)
+  assert.match(pwa, /allowedRouteAbortUrls\.add\(realOfflineFallbackUrl\)/)
+  assert.match(pwa, /allowedRouteAbortUrls\.add\(knownRouteAbortUrl\)/)
+  assert.match(pwa, /allowedRouteAbortUrls\.add\(fallbackUrl\)/)
 })
 
 test("browser-backed E2E scripts exit explicitly after cleanup", () => {
