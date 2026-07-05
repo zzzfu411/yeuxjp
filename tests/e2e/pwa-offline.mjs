@@ -6,7 +6,7 @@ import {
   skipOptionalPlaywrightRuntimeError,
   startProductionServer,
 } from "./harness.mjs"
-import { seionHiraganaToRomaji } from "./browser-fixtures.mjs"
+import { seedReviewState, seionHiraganaToRomaji } from "./browser-fixtures.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 const port = Number(process.env.E2E_PWA_PORT ?? 3220)
@@ -146,6 +146,12 @@ try {
   await page.goto(`${baseUrl}/quiz?mode=hiragana-romaji`, { waitUntil: "networkidle" })
   await assertKnownHiraganaRomajiQuestion(page, "online quiz prewarm should load a real question")
 
+  await seedReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-due-state").waitFor({ state: "visible", timeout: 10_000 })
+  await page.getByTestId("review-today-due").waitFor({ state: "visible", timeout: 10_000 })
+  assert.ok(await page.getByTestId("review-start-kana").isEnabled(), "online review prewarm should load due local review state")
+
   await page.goto(`${baseUrl}/semantics`, { waitUntil: "networkidle" })
   await page.goto(`${baseUrl}${semanticsDetailPath}`, { waitUntil: "networkidle" })
   await page.waitForURL(new RegExp(`${semanticsDetailPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
@@ -220,6 +226,14 @@ try {
   await page.getByTestId("quiz-score").waitFor({ state: "visible", timeout: 10_000 })
   assert.ok(await page.getByTestId("quiz-score").isVisible(), "offline canonical navigation should serve a cached quiz query route")
   await assertKnownHiraganaRomajiQuestion(page, "offline quiz query should render a real question")
+
+  await page.goto(`${baseUrl}/review`, { waitUntil: "domcontentloaded" })
+  await page.getByTestId("review-due-state").waitFor({ state: "visible", timeout: 10_000 })
+  await page.getByTestId("review-today-due").waitFor({ state: "visible", timeout: 10_000 })
+  assert.ok(await page.getByTestId("review-start-kana").isEnabled(), "offline review page should render due local review state")
+  await page.getByTestId("review-start-kana").click()
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible", timeout: 10_000 })
+  assert.ok(await page.getByTestId("review-answer-a").isVisible(), "offline review session should render the seeded kana answer")
 
   await page.goto(`${baseUrl}/semantics?item=${semanticsItemId}`, { waitUntil: "domcontentloaded" })
   await page.waitForURL(new RegExp(`${semanticsDetailPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
