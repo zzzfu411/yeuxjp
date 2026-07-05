@@ -591,6 +591,7 @@ function validateNoMojibakeMarkers() {
   const publicTextFiles = walkFiles(path.join(root, "public"), (file) => /\.(html|webmanifest|json|txt|svg|js|css)$/.test(file))
   const markdownFiles = [
     path.join(root, "README.md"),
+    path.join(workspaceRoot, "README.md"),
     path.join(workspaceRoot, "CLAUDE.md"),
     path.join(workspaceRoot, "README_CODEX.md"),
     path.join(workspaceRoot, "PLAN.md"),

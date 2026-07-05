@@ -30,6 +30,7 @@ test("data validation scans source, scripts, tests, public text assets, and docs
   assert.match(source, /html\|webmanifest\|json\|txt\|svg\|js\|css/)
   assert.match(source, /mojibake-ok/)
   assert.match(source, /README\.md/)
+  assert.match(source, /path\.join\(workspaceRoot, "README\.md"\)/)
   assert.match(source, /workspaceRoot/)
   assert.match(source, /CLAUDE\.md/)
   assert.match(source, /README_CODEX\.md/)
