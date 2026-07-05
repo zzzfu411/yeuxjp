@@ -24,6 +24,7 @@ const SHIRU_EXAMPLE = String.fromCodePoint(0x4f4f, 0x6240, 0x3092, 0x77e5, 0x306
 const PRAGMATICS_MORNING_TITLE = String.fromCodePoint(0x65e9, 0x5b89)
 const OHAYOU_GOZAIMASU = String.fromCodePoint(0x304a, 0x306f, 0x3088, 0x3046, 0x3054, 0x3056, 0x3044, 0x307e, 0x3059, 0x3002)
 const OFFLINE_FALLBACK_TEXT = String.fromCodePoint(0x5f53, 0x524d, 0x79bb, 0x7ebf)
+const OFFLINE_HOME_LINK_TEXT = String.fromCodePoint(0x56de, 0x5230, 0x9996, 0x9875)
 const semanticsItemId = "s-shiru-wakaru"
 const semanticsDetailPath = `/semantics/${semanticsItemId}`
 const pragmaticsItemId = "p-aisatsu-morning"
@@ -232,6 +233,17 @@ try {
   await assertBodyIncludes(page, PRAGMATICS_MORNING_TITLE, "offline pragmatics detail should render the cached title")
   await assertBodyIncludes(page, OHAYOU_GOZAIMASU, "offline pragmatics detail should render cached example responses")
   await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline pragmatics detail should not render the fallback page")
+
+  const realOfflineFallbackUrl = `${baseUrl}/offline-unvisited-${Date.now()}`
+  const abortRealOfflineFallback = (route) => route.abort("failed")
+  await context.route(realOfflineFallbackUrl, abortRealOfflineFallback)
+  await page.goto(realOfflineFallbackUrl, { waitUntil: "domcontentloaded" })
+  await assertBodyIncludes(page, OFFLINE_FALLBACK_TEXT, "real offline unvisited pages should render the offline fallback")
+  await page.getByRole("link", { name: OFFLINE_HOME_LINK_TEXT }).click()
+  await page.getByTestId("home-start-learning").waitFor({ state: "visible", timeout: 10_000 })
+  assert.equal(page.url(), `${baseUrl}/`, "offline fallback home link should navigate to the cached app shell")
+  await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline fallback home link should restore the cached home app shell")
+  await context.unroute(realOfflineFallbackUrl, abortRealOfflineFallback)
 
   const sentinel = JSON.stringify({ goal: "balanced", dailyMinutes: 15, startedAt: 123, updatedAt: 123 })
   await page.evaluate(({ key, value }) => {
