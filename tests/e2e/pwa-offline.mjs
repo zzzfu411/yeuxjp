@@ -7,7 +7,7 @@ import {
   startProductionServer,
 } from "./harness.mjs"
 import { seedReviewState, seionHiraganaToRomaji } from "./browser-fixtures.mjs"
-import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
+import { managedLearningBackupKeys } from "./storage-keys.mjs"
 
 const port = Number(process.env.E2E_PWA_PORT ?? 3220)
 let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
@@ -277,11 +277,6 @@ try {
   await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline fallback home link should restore the cached home app shell")
   await context.unroute(realOfflineFallbackUrl, abortRealOfflineFallback)
 
-  const sentinel = JSON.stringify({ goal: "balanced", dailyMinutes: 15, startedAt: 123, updatedAt: 123 })
-  await page.evaluate(({ key, value }) => {
-    localStorage.setItem(key, value)
-  }, { key: E2E_STORAGE_KEYS.USER_PROFILE, value: sentinel })
-
   await context.setOffline(false)
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   const knownRouteAbortUrl = `${baseUrl}/learn/day-1-a-row-hello`
@@ -292,13 +287,31 @@ try {
   assert.ok(await page.getByTestId("lesson-next").isVisible(), "service-worker-controlled online links should use document navigation and recover from a cached page")
   await context.unroute(knownRouteAbortUrl, abortKnownRoute)
 
+  const learningStateSentinel = Object.fromEntries(
+    managedLearningBackupKeys.map((key, index) => [
+      key,
+      JSON.stringify({ key, index, preservedBy: "pwa-offline-fallback" }),
+    ])
+  )
+  await page.evaluate((entries) => {
+    for (const [key, value] of Object.entries(entries)) {
+      localStorage.setItem(key, value)
+    }
+  }, learningStateSentinel)
+
   const fallbackUrl = `${baseUrl}/offline-smoke-${Date.now()}`
   await context.route(fallbackUrl, (route) => route.abort("failed"))
   await page.goto(fallbackUrl, { waitUntil: "domcontentloaded" })
   assert.match(await page.locator("body").innerText(), /当前离线/, "navigation failures should render the offline fallback")
 
-  const persisted = await page.evaluate((key) => localStorage.getItem(key), E2E_STORAGE_KEYS.USER_PROFILE)
-  assert.equal(persisted, sentinel, "offline fallback must not overwrite local learning state")
+  const persistedLearningState = await page.evaluate((keys) => {
+    return Object.fromEntries(keys.map((key) => [key, localStorage.getItem(key)]))
+  }, managedLearningBackupKeys)
+  assert.deepEqual(
+    persistedLearningState,
+    learningStateSentinel,
+    "offline fallback must not overwrite any managed local learning state"
+  )
   await cdp.detach()
 
   console.log(`PWA offline E2E checks passed at ${baseUrl}`)
