@@ -1,8 +1,9 @@
-const CACHE_VERSION = "v6";
+const CACHE_VERSION = "v7";
 const STATIC_CACHE_NAME = `yasashi-static-${CACHE_VERSION}`;
 const NAVIGATION_CACHE_NAME = `yasashi-navigation-${CACHE_VERSION}`;
 const APP_CACHE_PREFIXES = ["yasashi-static-", "yasashi-navigation-"];
 const OFFLINE_FALLBACK_URL = "/offline.html";
+const NAVIGATION_CACHE_MAX_ENTRIES = 40;
 
 const CORE_STATIC_ASSETS = [
   "/",
@@ -45,6 +46,20 @@ const STATIC_ASSETS = [
   "/assets/vocab-categories/daily.webp",
   "/assets/vocab-categories/numbers.webp"
 ];
+
+const CACHEABLE_STATIC_PATH_PREFIXES = [
+  "/_next/static/",
+  "/_next/image",
+  "/assets/",
+  "/icons/",
+  "/brand/"
+];
+
+const CACHEABLE_STATIC_EXACT_PATHS = new Set([
+  "/manifest.webmanifest",
+  "/favicon.ico",
+  "/apple-touch-icon.png"
+]);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -94,11 +109,16 @@ async function tryCachePut(cache, request, response) {
 
 function isCacheableStaticAsset(request, requestUrl) {
   const isAnimCjkSvg = requestUrl.pathname.startsWith("/animcjk/") && requestUrl.pathname.endsWith(".svg");
-  return request.destination === "image" ||
+  const isAllowedPath = CACHEABLE_STATIC_EXACT_PATHS.has(requestUrl.pathname) ||
+    CACHEABLE_STATIC_PATH_PREFIXES.some((prefix) => requestUrl.pathname.startsWith(prefix)) ||
+    isAnimCjkSvg;
+  return isAllowedPath && (
+    request.destination === "image" ||
     request.destination === "style" ||
     request.destination === "script" ||
     requestUrl.pathname === "/manifest.webmanifest" ||
-    isAnimCjkSvg;
+    isAnimCjkSvg
+  );
 }
 
 function getCanonicalNavigationUrl(requestUrl) {
@@ -122,6 +142,19 @@ async function cacheNavigationResponse(cache, request, requestUrl, response) {
   const canonicalUrl = getCanonicalNavigationUrl(requestUrl);
   if (canonicalUrl) {
     await tryCachePut(cache, canonicalUrl, response.clone());
+  }
+
+  await trimNavigationCache(cache);
+}
+
+async function trimNavigationCache(cache) {
+  try {
+    const keys = await cache.keys();
+    const overflow = keys.length - NAVIGATION_CACHE_MAX_ENTRIES;
+    if (overflow <= 0) return;
+    await Promise.all(keys.slice(0, overflow).map((request) => cache.delete(request)));
+  } catch {
+    // Cache pruning is best effort; navigation should still succeed.
   }
 }
 
@@ -167,6 +200,10 @@ async function refreshStaticAssetCache(request, requestUrl) {
 }
 
 async function cacheFirstStaticAsset(request, requestUrl, event) {
+  if (!isCacheableStaticAsset(request, requestUrl)) {
+    return fetch(request);
+  }
+
   const cache = await caches.open(STATIC_CACHE_NAME);
   const cached = await cache.match(request);
   if (cached) {
@@ -175,7 +212,7 @@ async function cacheFirstStaticAsset(request, requestUrl, event) {
   }
 
   const response = await fetch(request);
-  if (response.ok && isCacheableStaticAsset(request, requestUrl)) {
+  if (response.ok) {
     await tryCachePut(cache, request, response.clone());
   }
 
