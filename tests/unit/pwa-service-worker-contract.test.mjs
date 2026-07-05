@@ -92,6 +92,7 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /const APP_CACHE_PREFIXES = \["yasashi-static-", "yasashi-navigation-"\]/)
   assert.match(sw, /const OFFLINE_FALLBACK_URL = "\/offline\.html"/)
   assert.match(sw, /const NAVIGATION_CACHE_MAX_ENTRIES = 40/)
+  assert.match(sw, /const STATIC_CACHE_MAX_ENTRIES = 160/)
   assert.match(sw, /const CORE_STATIC_ASSETS = \[/)
   assert.match(sw, /cache\.addAll\(CORE_STATIC_ASSETS\)/)
   assert.match(sw, /Promise\.allSettled/)
@@ -109,6 +110,7 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /\/assets\/kana\/kana-all@2x\.webp/)
   assert.match(sw, /\/assets\/textures\/paper-washi-tile\.png/)
   assert.match(sw, /\/assets\/vocab-categories\/greetings\.webp/)
+  assert.match(sw, /const STATIC_ASSET_PATHS = new Set\(STATIC_ASSETS\)/)
   assert.match(sw, /const requestUrl = new URL\(request\.url\)/)
   assert.match(sw, /requestUrl\.origin !== self\.location\.origin/)
   assert.match(sw, /request\.method !== "GET"/)
@@ -123,6 +125,13 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /const keys = await cache\.keys\(\)/)
   assert.match(sw, /keys\.length - NAVIGATION_CACHE_MAX_ENTRIES/)
   assert.match(sw, /cache\.delete\(request\)/)
+  assert.match(sw, /function isPrecachedStaticRequest\(request\)/)
+  assert.match(sw, /STATIC_ASSET_PATHS\.has\(new URL\(request\.url\)\.pathname\)/)
+  assert.match(sw, /async function trimStaticAssetCache\(cache\)/)
+  assert.match(sw, /keys\.length - STATIC_CACHE_MAX_ENTRIES/)
+  assert.match(sw, /keys\.filter\(\(request\) => !isPrecachedStaticRequest\(request\)\)/)
+  assert.match(sw, /async function cacheStaticAssetResponse\(cache, request, response\)/)
+  assert.match(sw, /await trimStaticAssetCache\(cache\)/)
   assert.match(sw, /cache\.match\(request\)/)
   assert.match(sw, /function getCanonicalNavigationUrl\(requestUrl\)/)
   assert.match(sw, /return new URL\(requestUrl\.pathname, self\.location\.origin\)\.href/)
@@ -155,7 +164,7 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /request\.destination === "script"/)
   assert.match(sw, /requestUrl\.pathname\.startsWith\("\/animcjk\/"\)/)
   assert.match(sw, /requestUrl\.pathname\.endsWith\("\.svg"\)/)
-  assert.match(sw, /await tryCachePut\(cache, request, response\.clone\(\)\)/)
+  assert.match(sw, /await cacheStaticAssetResponse\(cache, request, response\.clone\(\)\)/)
   assert.doesNotMatch(sw, /localStorage/)
   assert.doesNotMatch(sw, /yasashi\.learning/)
   assert.doesNotMatch(sw, /yasashi\.srs/)
@@ -572,6 +581,78 @@ test("service worker trims old navigation cache entries after caching visited pa
   assert.equal(await (await responded).text(), "fresh page")
   assert.deepEqual(putCalls, [{ cache: "yasashi-navigation-v7", url: "https://example.test/new-page" }])
   assert.deepEqual(deleted, ["https://example.test/old-0", "https://example.test/old-1"])
+})
+
+test("service worker trims runtime static cache entries without deleting precached assets", async () => {
+  let fetchHandler = null
+  const putCalls = []
+  const deleted = []
+  const protectedRequest = { url: "https://example.test/offline.html" }
+  const runtimeRequests = Array.from({ length: 162 }, (_, index) => ({
+    url: `https://example.test/_next/static/old-${index}.js`,
+  }))
+  const sandbox = {
+    caches: {
+      async open(name) {
+        return {
+          async match() {
+            return null
+          },
+          async put(request) {
+            putCalls.push({ cache: name, url: request.url })
+          },
+          async keys() {
+            return [protectedRequest, ...runtimeRequests]
+          },
+          async delete(request) {
+            deleted.push(request.url)
+            return true
+          },
+        }
+      },
+    },
+    async fetch() {
+      return new Response("fresh chunk", { status: 200 })
+    },
+    self: {
+      location: { origin: "https://example.test" },
+      addEventListener(type, handler) {
+        if (type === "fetch") fetchHandler = handler
+      },
+      skipWaiting() {},
+      clients: { claim() {} },
+    },
+    URL,
+    Response,
+    Promise,
+  }
+  sandbox.globalThis = sandbox
+
+  vm.runInNewContext(sw, sandbox)
+  assert.equal(typeof fetchHandler, "function")
+
+  let responded = null
+  fetchHandler({
+    request: {
+      method: "GET",
+      mode: "no-cors",
+      destination: "script",
+      url: "https://example.test/_next/static/new-chunk.js",
+    },
+    respondWith(promise) {
+      responded = promise
+    },
+    waitUntil() {},
+  })
+
+  assert.equal(await (await responded).text(), "fresh chunk")
+  assert.deepEqual(putCalls, [{ cache: "yasashi-static-v7", url: "https://example.test/_next/static/new-chunk.js" }])
+  assert.deepEqual(deleted, [
+    "https://example.test/_next/static/old-0.js",
+    "https://example.test/_next/static/old-1.js",
+    "https://example.test/_next/static/old-2.js",
+  ])
+  assert.equal(deleted.includes("https://example.test/offline.html"), false)
 })
 
 test("service worker serves cached static assets while refreshing them in the background", async () => {

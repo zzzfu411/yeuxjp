@@ -4,6 +4,7 @@ const NAVIGATION_CACHE_NAME = `yasashi-navigation-${CACHE_VERSION}`;
 const APP_CACHE_PREFIXES = ["yasashi-static-", "yasashi-navigation-"];
 const OFFLINE_FALLBACK_URL = "/offline.html";
 const NAVIGATION_CACHE_MAX_ENTRIES = 40;
+const STATIC_CACHE_MAX_ENTRIES = 160;
 
 const CORE_STATIC_ASSETS = [
   "/",
@@ -46,6 +47,7 @@ const STATIC_ASSETS = [
   "/assets/vocab-categories/daily.webp",
   "/assets/vocab-categories/numbers.webp"
 ];
+const STATIC_ASSET_PATHS = new Set(STATIC_ASSETS);
 
 const CACHEABLE_STATIC_PATH_PREFIXES = [
   "/_next/static/",
@@ -158,6 +160,32 @@ async function trimNavigationCache(cache) {
   }
 }
 
+function isPrecachedStaticRequest(request) {
+  try {
+    return STATIC_ASSET_PATHS.has(new URL(request.url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+async function trimStaticAssetCache(cache) {
+  try {
+    const keys = await cache.keys();
+    const overflow = keys.length - STATIC_CACHE_MAX_ENTRIES;
+    if (overflow <= 0) return;
+
+    const removable = keys.filter((request) => !isPrecachedStaticRequest(request));
+    await Promise.all(removable.slice(0, overflow).map((request) => cache.delete(request)));
+  } catch {
+    // Runtime static cache pruning is best effort; cached assets should still respond.
+  }
+}
+
+async function cacheStaticAssetResponse(cache, request, response) {
+  await tryCachePut(cache, request, response);
+  await trimStaticAssetCache(cache);
+}
+
 async function matchNavigationFallback(cache, staticCache, request, requestUrl) {
   const cached = await matchCachedNavigation(cache, request, requestUrl);
   if (cached) return cached;
@@ -193,7 +221,7 @@ async function refreshStaticAssetCache(request, requestUrl) {
     const response = await fetch(request, { cache: "no-cache" });
     if (!response.ok) return;
     const cache = await caches.open(STATIC_CACHE_NAME);
-    await tryCachePut(cache, request, response.clone());
+    await cacheStaticAssetResponse(cache, request, response.clone());
   } catch {
     // Static asset refresh is best effort so cached assets remain usable offline.
   }
@@ -213,7 +241,7 @@ async function cacheFirstStaticAsset(request, requestUrl, event) {
 
   const response = await fetch(request);
   if (response.ok) {
-    await tryCachePut(cache, request, response.clone());
+    await cacheStaticAssetResponse(cache, request, response.clone());
   }
 
   return response;
