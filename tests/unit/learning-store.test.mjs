@@ -651,6 +651,26 @@ test("learning store restore and reset snapshot managed keys before mutating", (
   assert.match(source, /notifyLearningStore\(\{ action: "reset", keys: BACKUP_KEYS \}\)/)
 })
 
+test("learning store keeps backup normalization in a pure helper module", () => {
+  const storeSource = read("src/lib/learning-store.ts")
+  const backupSource = read("src/lib/learning-backup.ts")
+
+  assert.match(storeSource, /from "@\/lib\/learning-backup"/)
+  assert.match(storeSource, /normalizeBackupEntry\(key, value, exportedAt\)/)
+  assert.match(storeSource, /normalizeLearningBackup\(backup\)/)
+  assert.match(storeSource, /return parseLearningBackupText\(input\)/)
+  assert.doesNotMatch(storeSource, /function normalizeBackupEntry/)
+  assert.doesNotMatch(storeSource, /function normalizeLearningBackup/)
+
+  assert.match(backupSource, /export function normalizeBackupEntry/)
+  assert.match(backupSource, /export function normalizeLearningBackup/)
+  assert.match(backupSource, /export function parseLearningBackupText/)
+  assert.match(backupSource, /from "@\/lib\/managed-learning-keys"/)
+  assert.doesNotMatch(backupSource, /from "@\/lib\/managed-learning-storage"/)
+  assert.doesNotMatch(backupSource, /window\.localStorage/)
+  assert.doesNotMatch(backupSource, /notifyLearningStoreEvent/)
+})
+
 test("learning store restore and reset use managed transactions for rollback safety", () => {
   const source = read("src/lib/learning-store.ts")
   const restoreBody = source.match(/export function restoreLearningBackup[\s\S]*?\n}\n\nexport function resetLearningData/)?.[0] ?? ""
