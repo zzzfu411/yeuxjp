@@ -215,6 +215,7 @@ test("recordQuestionPractice public entrypoint is wrapped in a managed storage t
 test("recordQuestionPracticeWithoutTransaction stays limited to explicit transaction callers", () => {
   const allowedImporters = new Set([
     path.normalize(path.join(root, "src", "components", "review", "use-review-answer-recorder.ts")),
+    path.normalize(path.join(root, "src", "lib", "review-answer-recording.ts")),
   ])
   const unsafeImport = /import\s+\{[^}]*\brecordQuestionPracticeWithoutTransaction\b[^}]*\}\s+from\s+["']@\/lib\/learning-session["']/m
 
@@ -229,6 +230,8 @@ test("recordQuestionPracticeWithoutTransaction stays limited to explicit transac
   }
 
   const reviewRecorder = read("src/components/review/use-review-answer-recorder.ts")
-  assert.match(reviewRecorder, /runLearningStorageTransaction\(\(\) => \{/)
-  assert.match(reviewRecorder, /recordQuestionPracticeWithoutTransaction\(\{/)
+  const reviewRecording = read("src/lib/review-answer-recording.ts")
+  assert.match(reviewRecorder, /recordReviewQuestionPractice\(\{/)
+  assert.match(reviewRecording, /runLearningStorageTransaction\(\(\) => \{/)
+  assert.match(reviewRecording, /recordQuestionPracticeWithoutTransaction\(\{/)
 })

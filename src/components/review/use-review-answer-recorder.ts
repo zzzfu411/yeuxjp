@@ -2,10 +2,9 @@
 
 import { useCallback } from "react"
 import type { useLearningProgress } from "@/lib/learning-progress"
-import { recordQuestionPracticeWithoutTransaction } from "@/lib/learning-session"
-import { runLearningStorageTransaction } from "@/lib/learning-store"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
-import { makeQuestionResult, type Question, type QuestionResult } from "@/lib/questions"
+import type { Question, QuestionResult } from "@/lib/questions"
+import { recordReviewQuestionPractice } from "@/lib/review-answer-recording"
 
 type LearningProgressApi = ReturnType<typeof useLearningProgress>
 type MistakeNotebookApi = ReturnType<typeof useMistakeNotebook>
@@ -24,22 +23,14 @@ export function useReviewAnswerRecorder({
   grade: (result: QuestionResult) => boolean
 }) {
   return useCallback((question: Question, selectedAnswer: string) => {
-    const result = makeQuestionResult(question, selectedAnswer)
-    if (!recordAnswer(selectedAnswer, result.correct, () => {
-      return runLearningStorageTransaction(() => {
-        if (canRecord && !canRecord(result)) return false
-        const recorded = recordQuestionPracticeWithoutTransaction({
-          progress,
-          notebook,
-          result,
-          enrollReviewOnCorrect: false,
-        })
-        if (!recorded) return false
-        return grade(result)
-      })
-    })) {
-      return false
-    }
-    return true
+    return recordReviewQuestionPractice({
+      progress,
+      notebook,
+      question,
+      selectedAnswer,
+      recordAnswer,
+      canRecord,
+      grade,
+    })
   }, [canRecord, grade, notebook, progress, recordAnswer])
 }

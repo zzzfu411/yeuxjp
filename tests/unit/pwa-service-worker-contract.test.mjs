@@ -886,6 +886,34 @@ test("PWA offline E2E verifies visited-page cache, fallback, and local state pre
   assert.match(pwaE2e, /offline fallback must not overwrite local learning state/)
 })
 
+test("offline fallback copy stays readable and data-safe", () => {
+  const mojibakeChars = [
+    0xfffd,
+    0x7efe,
+    0x837b,
+    0x568e,
+    0x8930,
+    0x64b3,
+    0x5880,
+    0x9351,
+    0x70b2,
+    0x68e3,
+    0x682d,
+    0x9761,
+    0x952b,
+    0x7d31,
+  ].map((codePoint) => String.fromCodePoint(codePoint)).join("")
+
+  assert.match(offlineHtml, /<html lang="zh-CN">/)
+  assert.match(offlineHtml, /<title>Yasashi Japanese 离线中<\/title>/)
+  assert.match(offlineHtml, /<h1>当前离线<\/h1>/)
+  assert.match(offlineHtml, /已缓存的页面和笔顺资源仍可使用/)
+  assert.match(offlineHtml, /学习进度不会被 service worker 缓存或覆盖/)
+  assert.match(offlineHtml, /<a href="\/">回到首页<\/a>/)
+  assert.doesNotMatch(offlineHtml, /<script\b/i)
+  assert.doesNotMatch(offlineHtml, new RegExp(`[${mojibakeChars}]`))
+})
+
 test("PWA offline E2E asserts cached learning content, not just route shells", () => {
   assert.match(pwaE2e, /seionHiraganaToRomaji/)
   assert.match(pwaE2e, /KANA_A/)
