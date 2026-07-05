@@ -9,11 +9,24 @@ import {
 } from "./browser-fixtures.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
+async function assertReviewDashboardDue(page, message) {
+  await page.getByTestId("review-due-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-due").waitFor({ state: "visible" })
+  assert.ok(await page.getByTestId("review-start-today").isEnabled(), message)
+}
+
+async function assertReviewDashboardEmpty(page, message) {
+  await page.getByTestId("review-empty-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-empty").waitFor({ state: "visible" })
+  assert.equal(await page.getByTestId("review-start-today").count(), 0, message)
+}
+
 export async function verifyLearningDataFlow(page, baseUrl) {
   await seedLearningDataBackupState(page, baseUrl)
   const seededLearningBackupSnapshot = await readManagedLearningBackupSnapshot(page)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("learning-data-panel").waitFor({ state: "visible" })
+  await assertReviewDashboardDue(page, "seeded learning data should show due review work before export")
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByTestId("learning-data-export").click(),
@@ -135,6 +148,7 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   await page.getByTestId("learning-data-reset-dialog").waitFor({ state: "visible" })
   await page.getByTestId("learning-data-reset-dialog-confirm").click()
   await page.waitForFunction((keys) => keys.every((key) => localStorage.getItem(key) === null), managedLearningBackupKeys)
+  await assertReviewDashboardEmpty(page, "learning data reset should update the review dashboard without reloading")
   const resetSnapshot = await readManagedLearningBackupSnapshot(page)
   for (const key of managedLearningBackupKeys) {
     assert.equal(resetSnapshot[key], null, `learning data reset should clear managed learning key: ${key}`)
@@ -150,6 +164,7 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   const fileChooser = await fileChooserPromise
   await fileChooser.setFiles(backupPath)
   await page.waitForFunction((keys) => keys.every((key) => localStorage.getItem(key) !== null), managedLearningBackupKeys)
+  await assertReviewDashboardDue(page, "learning data import should update the review dashboard without reloading")
   const restoredSnapshot = await readManagedLearningBackupSnapshot(page)
   assertManagedLearningSnapshot(
     restoredSnapshot,
