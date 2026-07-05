@@ -32,5 +32,6 @@ test("LessonPracticeFeedback owns correct/wrong lesson feedback copy", () => {
   assert.match(source, /正确答案：/)
   assert.match(source, /这道题已加入错题本/)
   assert.match(source, /已加入 SRS 复习队列/)
-  assert.match(source, /step\.itemType === "kana" \|\| step\.itemType === "vocab"/)
+  assert.match(source, /canEnrollReviewItem\(step\.itemType, step\.itemId\)/)
+  assert.doesNotMatch(source, /step\.itemType === "kana" \|\| step\.itemType === "vocab"/)
 })

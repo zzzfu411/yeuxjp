@@ -181,17 +181,18 @@ export function useLearningProgress() {
   const saveLessonPosition = useCallback((lessonId: string, currentStepIndex: number, lastStepId?: string) => {
     const base = readLessonProgressMap()
     const current = base[lessonId]
+    if (!current) return false
     const now = Date.now()
     const next = {
       ...base,
       [lessonId]: {
         lessonId,
-        status: current?.status ?? ("started" as const),
-        startedAt: current?.startedAt ?? now,
-        completedAt: current?.completedAt,
-        score: current?.score,
+        status: current.status,
+        startedAt: current.startedAt,
+        completedAt: current.completedAt,
+        score: current.score,
         currentStepIndex: normalizeStepIndex(currentStepIndex),
-        lastStepId: lastStepId || current?.lastStepId,
+        lastStepId: lastStepId || current.lastStepId,
         updatedAt: now,
       },
     }

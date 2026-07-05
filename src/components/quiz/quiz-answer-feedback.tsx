@@ -40,6 +40,7 @@ export function QuizAnswerFeedback({
           sentence={question.questionText}
           selected={selectedOption}
           correct={question.correctAnswer}
+          acceptedAnswers={question.acceptedAnswers}
         />
       )}
 
@@ -49,6 +50,7 @@ export function QuizAnswerFeedback({
           askedForm={{ id: question.meta!.askedForm!.id as VerbConjForm, label: question.meta!.askedForm!.label }}
           selected={selectedOption}
           correct={question.correctAnswer}
+          acceptedAnswers={question.acceptedAnswers}
         />
       )}
 

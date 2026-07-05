@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { isQuestionAnswerCorrect } from "@/lib/questions"
 import { VERB_CONJ_FORMS, conjugateVerb, type VerbConjForm, type VerbKind } from "@/lib/verb-conjugation"
 
 function splitBlank(sentence: string) {
@@ -36,20 +37,26 @@ function ParticleFilledLine({
   )
 }
 
+function isFeedbackAnswerCorrect(correct: string, selected: string, acceptedAnswers?: string[]) {
+  return isQuestionAnswerCorrect({ correctAnswer: correct, acceptedAnswers }, selected)
+}
+
 export function ParticleFillFeedback({
   sentence,
   selected,
   correct,
+  acceptedAnswers,
   className,
 }: {
   sentence: string
   selected: string
   correct: string
+  acceptedAnswers?: string[]
   className?: string
 }) {
   const { before, after } = splitBlank(sentence)
 
-  const isCorrect = selected === correct
+  const isCorrect = isFeedbackAnswerCorrect(correct, selected, acceptedAnswers)
 
   return (
     <div className={cn("w-full rounded-xl border bg-muted/20 p-4 space-y-3", className)}>
@@ -97,16 +104,18 @@ export function ConjugationComparison({
   askedForm,
   selected,
   correct,
+  acceptedAnswers,
   className,
 }: {
   verb: ConjugationVerbMeta
   askedForm: { id: VerbConjForm; label: string }
   selected: string
   correct: string
+  acceptedAnswers?: string[]
   className?: string
 }) {
   const baseName = verb.kanji ? `${verb.kanji}（${verb.dict}）` : verb.dict
-  const isCorrect = selected === correct
+  const isCorrect = isFeedbackAnswerCorrect(correct, selected, acceptedAnswers)
 
   const allForms: { id: "dict" | VerbConjForm; label: string; value: string }[] = [
     { id: "dict", label: "辞书形", value: verb.dict },

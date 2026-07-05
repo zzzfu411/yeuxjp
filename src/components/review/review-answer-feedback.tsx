@@ -6,7 +6,7 @@ import type { Question } from "@/lib/questions"
 
 type ReviewFeedbackQuestion = Pick<
   Question,
-  "type" | "questionText" | "correctAnswer" | "correctDisplay" | "explanation" | "options" | "meta"
+  "type" | "questionText" | "correctAnswer" | "correctDisplay" | "acceptedAnswers" | "explanation" | "options" | "meta"
 >
 
 function isVerbKind(value: unknown): value is ConjugationVerbMeta["kind"] {
@@ -54,7 +54,12 @@ export function ReviewAnswerFeedback({
   return (
     <div role="status" aria-live="polite" className="contents">
       {canShowParticle ? (
-        <ParticleFillFeedback sentence={question.questionText!} selected={selectedDisplay} correct={question.correctAnswer} />
+        <ParticleFillFeedback
+          sentence={question.questionText!}
+          selected={selectedAnswer}
+          correct={question.correctAnswer}
+          acceptedAnswers={question.acceptedAnswers}
+        />
       ) : null}
 
       {canShowConjugation ? (
@@ -63,6 +68,7 @@ export function ReviewAnswerFeedback({
           askedForm={{ id: question.meta!.askedForm!.id as "masu" | "nai" | "te" | "ta", label: question.meta!.askedForm!.label }}
           selected={selectedAnswer}
           correct={question.correctAnswer}
+          acceptedAnswers={question.acceptedAnswers}
         />
       ) : null}
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningStatus } from "@/lib/learning-status"
 import type { Question } from "@/lib/questions"
@@ -24,6 +24,7 @@ import {
 } from "@/lib/quiz-generators"
 
 export function useQuizSession(mode: QuizMode) {
+  const answerPendingRef = useRef(false)
   const mistakes = useMistakeNotebook()
   const learning = useLearningStatus()
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
@@ -75,6 +76,7 @@ export function useQuizSession(mode: QuizMode) {
     if (preflightReason) {
       setCurrentQuestion(null)
       setSelectedOption(null)
+      answerPendingRef.current = false
       setSaveError(false)
       setEmptyReason(preflightReason)
       return
@@ -91,6 +93,7 @@ export function useQuizSession(mode: QuizMode) {
     if (q) {
       setCurrentQuestion(q)
       setSelectedOption(null)
+      answerPendingRef.current = false
       setSaveError(false)
       setEmptyReason("loading")
       return
@@ -98,6 +101,7 @@ export function useQuizSession(mode: QuizMode) {
 
     setCurrentQuestion(null)
     setSelectedOption(null)
+    answerPendingRef.current = false
     setSaveError(false)
     setEmptyReason(getQuizNoQuestionReason({ mode, onlyUnmasteredKana, onlyUnlearnedVocab }))
   }, [
@@ -120,11 +124,13 @@ export function useQuizSession(mode: QuizMode) {
   }, [generateQuestion])
 
   const handleSelect = useCallback((val: string) => {
-    if (selectedOption) return
+    if (selectedOption || answerPendingRef.current) return
     if (!currentQuestion) return
+    answerPendingRef.current = true
 
     const result = recordAnswer(currentQuestion, val)
     if (!result) {
+      answerPendingRef.current = false
       setSaveError(true)
       return
     }

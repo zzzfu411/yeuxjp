@@ -1,6 +1,7 @@
 "use client"
 
 import { CheckCircle2, XCircle } from "lucide-react"
+import { canEnrollReviewItem } from "@/lib/learning-session"
 import type { LessonPracticeStep } from "@/lib/lesson-session"
 import { cn } from "@/lib/utils"
 
@@ -11,6 +12,8 @@ export function LessonPracticeFeedback({
   step: LessonPracticeStep
   result: "correct" | "wrong"
 }) {
+  const showSrsEnrollment = result === "correct" && canEnrollReviewItem(step.itemType, step.itemId)
+
   return (
     <div
       role="status"
@@ -29,7 +32,7 @@ export function LessonPracticeFeedback({
       正确答案：<span className="font-semibold">{step.answer}</span>
       {"explanation" in step && step.explanation ? <div className="mt-1">{step.explanation}</div> : null}
       {result === "wrong" ? <div className="mt-1">这道题已加入错题本，稍后会在复习页出现。</div> : null}
-      {result === "correct" && (step.itemType === "kana" || step.itemType === "vocab") ? (
+      {showSrsEnrollment ? (
         <div className="mt-1">已加入 SRS 复习队列，系统会在合适时间提醒巩固。</div>
       ) : null}
     </div>

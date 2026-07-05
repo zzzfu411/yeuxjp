@@ -21,11 +21,18 @@ export function getReviewStorageKey(itemType: PracticeResult["itemType"]) {
   return null
 }
 
+export function canEnrollReviewItem(itemType: PracticeResult["itemType"], itemId: string) {
+  const storageKey = getReviewStorageKey(itemType)
+  if (!storageKey) return false
+  if (itemType === "kana") return isReviewableKanaId(itemId)
+  if (itemType === "vocab") return isKnownVocabularyId(itemId)
+  return false
+}
+
 export function enrollReviewItem(itemType: PracticeResult["itemType"], itemId: string) {
+  if (!canEnrollReviewItem(itemType, itemId)) return true
   const storageKey = getReviewStorageKey(itemType)
   if (!storageKey) return true
-  if (itemType === "kana" && !isReviewableKanaId(itemId)) return true
-  if (itemType === "vocab" && !isKnownVocabularyId(itemId)) return true
   return enrollSrs(storageKey, itemId)
 }
 

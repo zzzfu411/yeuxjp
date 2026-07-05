@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import type { LessonStep } from "@/data/lessons"
 import type { QuestionResult } from "@/lib/questions"
 
@@ -17,6 +17,7 @@ export function useLessonStepPractice({
   recordAnswer: LessonAnswerRecorder
   setSaveError: (value: boolean) => void
 }) {
+  const answerPendingRef = useRef(false)
   const [selected, setSelected] = useState<string | null>(null)
   const [typed, setTyped] = useState("")
   const [built, setBuilt] = useState<string[]>([])
@@ -27,13 +28,18 @@ export function useLessonStepPractice({
     setTyped("")
     setBuilt([])
     setResult(null)
+    answerPendingRef.current = false
     setSaveError(false)
   }, [setSaveError])
 
   const applyRecordedAnswer = useCallback(
     (answer: string, afterSuccess?: () => void) => {
+      if (answerPendingRef.current) return
+      answerPendingRef.current = true
+
       const recorded = recordAnswer(current, answer)
       if (!recorded) {
+        answerPendingRef.current = false
         setSaveError(true)
         return
       }

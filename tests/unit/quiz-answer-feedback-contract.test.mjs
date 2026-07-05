@@ -28,10 +28,19 @@ test("QuizAnswerFeedback owns particle, conjugation, explanation, and mistake pr
   assert.match(source, /ParticleFillFeedback/)
   assert.match(source, /ConjugationComparison/)
   assert.match(source, /isQuestionAnswerCorrect\(question, selectedOption\)/)
+  assert.match(source, /acceptedAnswers=\{question\.acceptedAnswers\}/)
   assert.match(source, /role="status"/)
   assert.match(source, /aria-live="polite"/)
   assert.match(source, /question\.explanation/)
   assert.match(source, /href="\/review"/)
   assert.match(source, /isVerbKind/)
   assert.match(source, /isVerbForm/)
+})
+
+test("special quiz feedback uses normalized answer checking", () => {
+  const source = read("src/components/quiz/feedback.tsx")
+
+  assert.match(source, /isQuestionAnswerCorrect/)
+  assert.match(source, /isFeedbackAnswerCorrect/)
+  assert.doesNotMatch(source, /selected === correct/)
 })

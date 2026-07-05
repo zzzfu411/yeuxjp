@@ -8,6 +8,7 @@ import { ReviewRunner, type ReviewSession } from "@/components/review/review-run
 import { ReviewDashboard } from "@/components/review/review-dashboard"
 import { buildReviewDashboardModel, enrollMissingReviewItems } from "@/lib/review-dashboard-model"
 import { useLearningStatus } from "@/lib/learning-status"
+import { runLearningStorageTransaction } from "@/lib/learning-store"
 
 const KANA_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_KANA
 const VOCAB_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_VOCAB
@@ -57,9 +58,9 @@ export function ReviewPage() {
     setReviewSaveError(false)
     setSession(nextSession)
   }
-  const enrollKanaMissing = () => setReviewSaveError(!enrollMissingReviewItems(dashboard.kanaEnrollMissing, kanaSrs.enroll))
-  const enrollVocabMissing = () => setReviewSaveError(!enrollMissingReviewItems(dashboard.vocabEnrollMissing, vocabSrs.enroll))
-  const enrollMistakeMissing = () => setReviewSaveError(!enrollMissingReviewItems(dashboard.mistakeEnrollMissing, (id) => mistakeSrs.grade(id, "again")))
+  const enrollKanaMissing = () => setReviewSaveError(!runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.kanaEnrollMissing, kanaSrs.enroll)))
+  const enrollVocabMissing = () => setReviewSaveError(!runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.vocabEnrollMissing, vocabSrs.enroll)))
+  const enrollMistakeMissing = () => setReviewSaveError(!runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.mistakeEnrollMissing, mistakeSrs.enroll)))
   const removeMistake = (id: string) => setReviewSaveError(!mistakes.remove(id))
   const clearMistakes = () => setReviewSaveError(!mistakes.clear())
 

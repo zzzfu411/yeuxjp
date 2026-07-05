@@ -98,9 +98,25 @@ test("enrollSrs creates a review item and dispatches an update", () => {
   assert.deepEqual(Object.keys(deck), ["kana:a"])
   assert.equal(deck["kana:a"].createdAt, now)
   assert.equal(deck["kana:a"].dueAt, now + 10 * 60 * 1000)
+  assert.equal(deck["kana:a"].right, 0)
+  assert.equal(deck["kana:a"].wrong, 0)
+  assert.equal(deck["kana:a"].lastReviewedAt, undefined)
   assert.equal(events.length, 1)
   assert.equal(events[0].type, storage.SRS_EVENT)
   assert.deepEqual(events[0].detail, { storageKey: "deck" })
+})
+
+test("enrollSrs restores missing mistake review items without counting a wrong answer", () => {
+  const { map } = installWindow()
+  const now = 1_700_000_000_000
+
+  assert.equal(storage.enrollSrs(STORAGE_KEYS.SRS_MISTAKES, "mistake:kana-a", now), true)
+
+  const deck = JSON.parse(map.get(STORAGE_KEYS.SRS_MISTAKES))
+  assert.equal(deck["mistake:kana-a"].createdAt, now)
+  assert.equal(deck["mistake:kana-a"].right, 0)
+  assert.equal(deck["mistake:kana-a"].wrong, 0)
+  assert.equal(deck["mistake:kana-a"].lastReviewedAt, undefined)
 })
 
 test("managed decks ignore invalid ids without writing or notifying", () => {

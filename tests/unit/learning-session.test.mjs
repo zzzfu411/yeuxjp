@@ -73,6 +73,15 @@ test("correct practice only enrolls reviewable kana and vocabulary SRS items", (
   assert.equal(vocabSrs["sur-g-999"], undefined)
 })
 
+test("review enrollment predicate matches actual SRS eligibility", () => {
+  assert.equal(session.canEnrollReviewItem("kana", "a"), true)
+  assert.equal(session.canEnrollReviewItem("kana", "sokuon:きって"), false)
+  assert.equal(session.canEnrollReviewItem("vocab", "sur-g-1"), true)
+  assert.equal(session.canEnrollReviewItem("vocab", "sur-g-999"), false)
+  assert.equal(session.canEnrollReviewItem("grammar", "n5-wa"), false)
+  assert.equal(session.canEnrollReviewItem("sentence", "sentence-intro-student"), false)
+})
+
 test("wrong practice records progress but does not enroll SRS", () => {
   const store = installLocalStorage()
   const recorded = []
@@ -181,6 +190,7 @@ test("recordQuestionPractice public entrypoint is wrapped in a managed storage t
 
   assert.match(source, /runLearningStorageTransaction/)
   assert.match(source, /function recordPracticeResultWithoutTransaction\(/)
+  assert.match(source, /export function canEnrollReviewItem\(/)
   assert.match(source, /export function recordPracticeResult\(/)
   assert.match(source, /return runLearningStorageTransaction\(\(\) => recordPracticeResultWithoutTransaction\(progress, result\)\)/)
   assert.match(source, /export function recordQuestionPractice\(/)
