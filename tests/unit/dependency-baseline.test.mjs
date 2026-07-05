@@ -18,6 +18,7 @@ const rootPackage = maybeReadJson(path.join(workspaceRoot, "package.json"))
 const rootLock = maybeReadJson(path.join(workspaceRoot, "package-lock.json"))
 const webPackage = readJson(path.join(root, "package.json"))
 const webLock = readJson(path.join(root, "package-lock.json"))
+const webGitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf8")
 
 test("wrapper package and lock remain dependency-free forwarding metadata when present", () => {
   if (!rootPackage || !rootLock) return
@@ -55,4 +56,10 @@ test("dependency baseline tests support app-only CI checkouts", () => {
   assert.equal(webPackage.private, true)
   assert.equal(webPackage.scripts.build, "node scripts/build.mjs")
   assert.ok(webLock.packages?.[""], "web lock should be valid from the app repository root")
+})
+
+test("browser-generated debug logs stay out of the app repository", () => {
+  assert.match(webGitignore, /^debug\.log$/m)
+  assert.match(webGitignore, /^npm-debug\.log\*/m)
+  assert.match(webGitignore, /^\.pnpm-debug\.log\*/m)
 })
