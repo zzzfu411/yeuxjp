@@ -612,6 +612,9 @@ function validateNoMojibakeMarkers() {
     "鏈", // mojibake-ok detector fixture
     "杩涘", // mojibake-ok detector fixture
     "銇裤", // mojibake-ok detector fixture
+    "璇硶", // mojibake-ok detector fixture
+    "鎼滅储", // mojibake-ok detector fixture
+    "閬撳満", // mojibake-ok detector fixture
   ]
   const replacementPattern = /\?{4,}/
   const failures = []

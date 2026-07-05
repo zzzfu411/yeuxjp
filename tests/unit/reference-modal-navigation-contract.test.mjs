@@ -37,19 +37,38 @@ test("grammar route is a server shell around GrammarReferencePage", () => {
   assert.match(page, /<GrammarReferencePage \/>/)
 })
 
-test("GrammarReferencePage delegates modal navigation to the shared hook", () => {
+test("GrammarReferencePage keeps grammar data and static shell on the server", () => {
   const source = read("src/components/reference/grammar-reference-page.tsx")
 
+  assert.doesNotMatch(source, /"use client"/)
+  assert.match(source, /import \{ grammarData \} from "@\/data\/grammar-data"/)
+  assert.match(source, /from "@\/components\/reference\/grammar-reference-controls"/)
+  assert.match(source, /<GrammarReferenceControls pointsByLevel=\{grammarData\} \/>/)
+  assert.match(source, /<NextStepCard \/>/)
+  assert.doesNotMatch(source, /useSearchParams/)
+  assert.doesNotMatch(source, /useState/)
+  assert.doesNotMatch(source, /useIndexedModalNavigation/)
+})
+
+test("GrammarReferenceControls owns grammar search, level state, and modal navigation", () => {
+  const source = read("src/components/reference/grammar-reference-controls.tsx")
+
+  assert.match(source, /"use client"/)
+  assert.match(source, /useSearchParams\(\)/)
   assert.match(source, /from "@\/lib\/use-indexed-modal-navigation"/)
   assert.match(source, /from "@\/components\/reference\/grammar-point-list"/)
   assert.match(source, /from "@\/components\/reference\/grammar-focus-modal"/)
   assert.match(source, /useIndexedModalNavigation\(/)
   assert.match(source, /from "@\/lib\/grammar-page-model"/)
   assert.match(source, /parseGrammarLevel\(urlLevel\)/)
-  assert.match(source, /filterGrammarPoints\(grammarData\[activeLevel\] \|\| \[\], searchQuery\)/)
+  assert.match(source, /filterGrammarPoints\(pointsByLevel\[activeLevel\] \|\| \[\], searchQuery\)/)
   assert.match(source, /GRAMMAR_LEVELS\.map/)
   assert.match(source, /<GrammarPointList points=\{currentPoints\} activeLevel=\{activeLevel\} onOpen=\{openAt\} \/>/)
   assert.match(source, /<GrammarFocusModal/)
+  assert.match(source, /<SpeechSettingsBar className="max-w-3xl mx-auto" \/>/)
+  assert.match(source, /作品口语/)
+  assert.match(source, /搜索语法/)
+  assert.match(source, /术语表/)
   assert.match(source, /onClose=\{close\}/)
   assert.match(source, /onPrev=\{goPrev\}/)
   assert.match(source, /onNext=\{goNext\}/)

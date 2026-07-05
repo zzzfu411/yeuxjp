@@ -35,7 +35,7 @@ test("data validation scans source, scripts, tests, public text assets, and docs
   assert.match(source, /CLAUDE\.md/)
   assert.match(source, /README_CODEX\.md/)
   assert.match(source, /PLAN\.md/)
-  for (const marker of ["绗旈", "寰楀", "褰撳", "瀛︿", "澶囦", "鏃犳", "娓呯", "閿欓", "瀵煎", "銇裤"]) { // mojibake-ok detector fixture
+  for (const marker of ["绗旈", "寰楀", "褰撳", "瀛︿", "澶囦", "鏃犳", "娓呯", "閿欓", "瀵煎", "銇裤", "璇硶", "鎼滅储", "閬撳満"]) { // mojibake-ok detector fixture
     assert.ok(source.includes(marker), `validator should detect ${marker}`)
   }
   assert.match(source, /source\/scripts\/root-scripts\/tests\/public\/docs text contains likely mojibake markers/)
