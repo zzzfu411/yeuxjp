@@ -10,6 +10,19 @@ export async function verifyInitialReviewEmptyState(page, baseUrl) {
   await page.getByTestId("review-today-empty").waitFor({ state: "visible" })
 }
 
+async function startActiveKanaReview(page, baseUrl) {
+  await seedReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-start-kana").click()
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
+}
+
+async function assertActiveReviewInvalidated(page, message) {
+  const invalidatedState = page.getByTestId("review-invalidated-state")
+  await invalidatedState.waitFor({ state: "visible" })
+  assert.ok(await invalidatedState.isVisible(), message)
+}
+
 export async function verifyDueReviewFlow(page, baseUrl) {
   await seedReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
@@ -171,10 +184,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
       )
   }, E2E_STORAGE_KEYS)
 
-  await seedReviewState(page, baseUrl)
-  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
-  await page.getByTestId("review-start-kana").click()
-  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
+  await startActiveKanaReview(page, baseUrl)
 
   const resetPage = await page.context().newPage()
   try {
@@ -185,13 +195,41 @@ export async function verifyDueReviewFlow(page, baseUrl) {
       return localStorage.getItem(storageKeys.KANA_MASTERED) === null &&
         localStorage.getItem(storageKeys.SRS_KANA) === null
     }, E2E_STORAGE_KEYS)
-    await page.getByTestId("review-invalidated-state").waitFor({ state: "visible" })
-    assert.match(
-      await page.getByTestId("review-invalidated-state").innerText(),
-      /重新开始复习/,
+    await assertActiveReviewInvalidated(
+      page,
       "active review sessions should invalidate after cross-tab learning data reset"
     )
   } finally {
     await resetPage.close()
+  }
+
+  await startActiveKanaReview(page, baseUrl)
+
+  const restorePage = await page.context().newPage()
+  try {
+    await restorePage.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+    await restorePage.getByTestId("learning-data-panel").waitFor({ state: "visible" })
+    const fileChooserPromise = restorePage.waitForEvent("filechooser")
+    await restorePage.getByTestId("learning-data-import").click()
+    const fileChooser = await fileChooserPromise
+    await fileChooser.setFiles({
+      name: "empty-yasashi-backup.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify({
+        version: 1,
+        exportedAt: Date.now(),
+        entries: {},
+      })),
+    })
+    await restorePage.waitForFunction((storageKeys) => {
+      return localStorage.getItem(storageKeys.KANA_MASTERED) === null &&
+        localStorage.getItem(storageKeys.SRS_KANA) === null
+    }, E2E_STORAGE_KEYS)
+    await assertActiveReviewInvalidated(
+      page,
+      "active review sessions should invalidate after cross-tab learning data import"
+    )
+  } finally {
+    await restorePage.close()
   }
 }

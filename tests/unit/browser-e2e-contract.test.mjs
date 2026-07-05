@@ -459,8 +459,11 @@ test("browser E2E verifies review empty and due states", () => {
   assert.match(e2e, /mixed today review should write vocabulary practice history/)
   assert.match(e2e, /page\.context\(\)\.newPage\(\)/)
   assert.match(e2e, /getByTestId\("learning-data-reset-dialog-confirm"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("learning-data-import"\)\.click\(\)/)
+  assert.match(e2e, /empty-yasashi-backup\.json/)
   assert.match(e2e, /getByTestId\("review-invalidated-state"\)/)
   assert.match(e2e, /active review sessions should invalidate after cross-tab learning data reset/)
+  assert.match(e2e, /active review sessions should invalidate after cross-tab learning data import/)
 })
 
 test("browser E2E verifies save failures keep quiz, lesson, and review on the current question", () => {
