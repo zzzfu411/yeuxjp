@@ -505,6 +505,16 @@ export const requiredSelectors = [
     pattern: /data-testid=\{`speech-repeat-\$\{n\}`\}/,
   },
   {
+    testId: "speech-autoplay-toggle",
+    source: "src/components/ui/speech-preferences.tsx",
+    pattern: /data-testid="speech-autoplay-toggle"/,
+  },
+  {
+    testId: "speech-preferences-reset",
+    source: "src/components/ui/speech-preferences.tsx",
+    pattern: /data-testid="speech-preferences-reset"/,
+  },
+  {
     testId: "speech-controls-open",
     source: "src/components/ui/speech-controls-button.tsx",
     pattern: /data-testid="speech-controls-open"/,

@@ -527,6 +527,12 @@ test("browser E2E verifies speech preference save failures stay recoverable", ()
   assert.match(e2e, /getByTestId\("practice-save-error"\)/)
   assert.match(e2e, /readJsonStorage\(page, E2E_STORAGE_KEYS\.SPEECH_PREFS\), null/)
   assert.match(e2e, /speech preference save retry should persist repeat count/)
+  assert.match(e2e, /getByTestId\("speech-autoplay-toggle"\)\.click\(\)/)
+  assert.match(e2e, /prefs\?\.autoPlay === false/)
+  assert.match(e2e, /speech autoplay toggle should persist autoplay preference/)
+  assert.match(e2e, /getByTestId\("speech-preferences-reset"\)\.click\(\)/)
+  assert.match(e2e, /prefs\?\.rate === 0\.9 && prefs\?\.repeat === 1 && prefs\?\.autoPlay === true && prefs\?\.gapMs === 250/)
+  assert.match(e2e, /speech preference reset should restore default speech preferences/)
 })
 
 test("browser E2E includes a mobile viewport smoke pass for core routes", () => {
