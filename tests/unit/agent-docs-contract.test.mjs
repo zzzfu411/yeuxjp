@@ -43,7 +43,9 @@ test("app README documents the current E2E coverage layers", () => {
   assert.match(webReadme, /production build/)
   assert.match(webReadme, /service worker/)
   assert.match(webReadme, /offline/)
-  assert.match(webReadme, /real cached kana\/vocabulary\/quiz\/semantics content/)
+  assert.match(webReadme, /\/path/)
+  assert.match(webReadme, /\/grammar\?level=N5/)
+  assert.match(webReadme, /real cached kana\/vocabulary\/quiz\/path\/grammar\/semantics\/pragmatics content/)
 })
 
 test("product docs distinguish dependency freshness warnings from actionable build warnings", () => {
@@ -66,6 +68,7 @@ test("product docs describe the current PWA navigation fallback strategy", () =>
     assert.match(source, /visited|already visited|previously visited|pages the learner has already visited/, name)
     assert.match(source, /canonical pathname|canonical pages|query deep links|query deep-link/, name)
     assert.match(source, /\/kana\?set=yoon|\/vocabulary\?level=daily|\/quiz\?mode=hiragana-romaji/, name)
+    assert.match(source, /\/grammar\?level=N5/, name)
     assert.match(source, /service-worker-controlled|browser reports online|reports online|online navigation failure/, name)
     assert.match(source, /offline\.html/, name)
     assert.match(source, /localStorage|learning state/, name)
