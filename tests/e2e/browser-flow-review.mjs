@@ -170,4 +170,28 @@ export async function verifyDueReviewFlow(page, baseUrl) {
         item.correct === true
       )
   }, E2E_STORAGE_KEYS)
+
+  await seedReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-start-kana").click()
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
+
+  const resetPage = await page.context().newPage()
+  try {
+    await resetPage.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+    await resetPage.getByTestId("learning-data-reset").click()
+    await resetPage.getByTestId("learning-data-reset-dialog-confirm").click()
+    await resetPage.waitForFunction((storageKeys) => {
+      return localStorage.getItem(storageKeys.KANA_MASTERED) === null &&
+        localStorage.getItem(storageKeys.SRS_KANA) === null
+    }, E2E_STORAGE_KEYS)
+    await page.getByTestId("review-invalidated-state").waitFor({ state: "visible" })
+    assert.match(
+      await page.getByTestId("review-invalidated-state").innerText(),
+      /重新开始复习/,
+      "active review sessions should invalidate after cross-tab learning data reset"
+    )
+  } finally {
+    await resetPage.close()
+  }
 }

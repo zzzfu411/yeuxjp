@@ -27,6 +27,7 @@ test("review status owns completion and loading surfaces", () => {
   assert.match(source, /export function ReviewErrorState/)
   assert.match(source, /export function ReviewDone/)
   assert.match(source, /state-complete\.webp/)
+  assert.match(source, /data-testid=\{stats \? "review-complete-state" : "review-invalidated-state"\}/)
   assert.match(source, /border-destructive\/30/)
   assert.match(source, /onRetry\?: \(\) => void/)
   assert.match(source, /data-testid="review-retry-load"/)

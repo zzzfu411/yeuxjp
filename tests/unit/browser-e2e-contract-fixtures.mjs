@@ -470,6 +470,11 @@ export const requiredSelectors = [
     pattern: /data-testid="review-next"/,
   },
   {
+    testId: "review-invalidated-state",
+    source: "src/components/review/review-status.tsx",
+    pattern: /"review-invalidated-state"/,
+  },
+  {
     testId: "review-retry-load",
     source: "src/components/review/review-status.tsx",
     pattern: /data-testid="review-retry-load"/,

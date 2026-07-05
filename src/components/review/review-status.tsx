@@ -78,7 +78,10 @@ export function ReviewDone({
   const accuracy = stats?.answered ? Math.round((stats.correct / stats.answered) * 100) : null
 
   return (
-    <div className="container py-16 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6">
+    <div
+      className="container py-16 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6"
+      data-testid={stats ? "review-complete-state" : "review-invalidated-state"}
+    >
       <div className="relative w-56 h-44 sm:w-72 sm:h-56">
         <Image
           src="/assets/states/state-complete.webp"
