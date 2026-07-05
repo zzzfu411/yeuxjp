@@ -16,6 +16,15 @@ test("pickUniqueQuestionOptions returns a shuffled target plus unique distractor
   assert.deepEqual(new Set(result.map((item) => item.id)), new Set(["a", "b", "c", "d"]))
 })
 
+test("question option shuffling tolerates invalid random values", () => {
+  const source = ["a", "b", "c", "d"]
+
+  assert.deepEqual(new Set(options.shuffleList(source, () => Number.NaN)), new Set(source))
+  assert.deepEqual(new Set(options.shuffleList(source, () => Number.POSITIVE_INFINITY)), new Set(source))
+  assert.deepEqual(new Set(options.shuffleList(source, () => -1)), new Set(source))
+  assert.deepEqual(options.shuffleList(source, () => 1).length, source.length)
+})
+
 test("pickUniqueQuestionOptions returns null when the option pool is too small", () => {
   const result = options.pickUniqueQuestionOptions({
     target: { id: "a" },
@@ -25,4 +34,26 @@ test("pickUniqueQuestionOptions returns null when the option pool is too small",
   })
 
   assert.equal(result, null)
+})
+
+test("pickUniqueQuestionOptions normalizes invalid option counts", () => {
+  const pool = [{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }, { id: "e" }]
+  const defaulted = options.pickUniqueQuestionOptions({
+    target: pool[0],
+    pool,
+    getValue: (item) => item.id,
+    random: () => Number.NaN,
+    optionCount: Number.NaN,
+  })
+  const minimum = options.pickUniqueQuestionOptions({
+    target: pool[0],
+    pool,
+    getValue: (item) => item.id,
+    random: () => 0,
+    optionCount: 1,
+  })
+
+  assert.equal(defaulted.length, 4)
+  assert.equal(minimum.length, 2)
+  assert.deepEqual(new Set(defaulted.map((item) => item.id)), new Set(["a", "b", "c", "d"]))
 })

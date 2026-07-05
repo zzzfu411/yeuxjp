@@ -82,6 +82,10 @@ function nonNegativeInteger(value: unknown, fallback = 0) {
   return Math.max(0, Math.floor(finiteNumber(value, fallback)))
 }
 
+function masteryScore(value: unknown) {
+  return typeof value === "number" ? clampScore(value) : 0
+}
+
 export function createItemProgress(itemId: string, itemType: PracticeItemType, now = Date.now()): ItemProgress {
   const updatedAt = finiteNumber(now, Date.now())
   return {
@@ -269,5 +273,12 @@ export function normalizeStepIndex(stepIndex: number) {
 
 export function averageMastery(item?: ItemProgress) {
   if (!item) return 0
-  return Math.round((item.recognition + item.listening + item.meaning + item.recall + item.production) / 5)
+  const scores = [
+    masteryScore(item.recognition),
+    masteryScore(item.listening),
+    masteryScore(item.meaning),
+    masteryScore(item.recall),
+    masteryScore(item.production),
+  ]
+  return Math.round(scores.reduce((total, score) => total + score, 0) / scores.length)
 }

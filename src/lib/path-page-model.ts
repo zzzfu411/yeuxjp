@@ -35,16 +35,43 @@ export interface SkillStatusResult {
   badge?: string
 }
 
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+}
+
+function safeCount(value: unknown) {
+  return Math.max(0, Math.floor(finiteNumber(value, 0)))
+}
+
+function safeDone(done: unknown, total: number) {
+  const count = safeCount(done)
+  return total > 0 ? Math.min(count, total) : 0
+}
+
+function clampRatio(value: unknown) {
+  const ratio = finiteNumber(value, 0)
+  return Math.max(0, Math.min(1, ratio))
+}
+
+function safeScore(value: unknown) {
+  return Math.max(0, Math.min(100, finiteNumber(value, 0)))
+}
+
 function ratio(done: number, total: number) {
-  return total ? done / total : 0
+  const safeTotal = safeCount(total)
+  if (safeTotal <= 0) return 0
+  return safeDone(done, safeTotal) / safeTotal
 }
 
 export function ratioText(done: number, total: number) {
-  return `${done}/${total}`
+  const safeTotal = safeCount(total)
+  return `${safeDone(done, safeTotal)}/${safeTotal}`
 }
 
 function makeStat(done: number, total: number): PathProgressStat {
-  return { total, done, ratio: ratio(done, total) }
+  const safeTotal = safeCount(total)
+  const safeCompleted = safeDone(done, safeTotal)
+  return { total: safeTotal, done: safeCompleted, ratio: ratio(safeCompleted, safeTotal) }
 }
 
 export function getKanaSkillStats(data: readonly Kana[], isMastered: (romaji: string) => boolean): PathKanaStats {
@@ -63,11 +90,11 @@ export function getKanaSkillStats(data: readonly Kana[], isMastered: (romaji: st
 }
 
 export function getRecommendedSkillId(kanaStats: PathKanaStats, vocabStats: PathVocabStats): SkillId {
-  if (kanaStats.seion.ratio < 0.7) return "kana-seion"
-  if (kanaStats.dakuon.ratio < 0.35) return "kana-dakuon"
-  if (kanaStats.yoon.ratio < 0.35) return "kana-yoon"
-  if (kanaStats.special.ratio < 0.5) return "kana-sokuon"
-  if (vocabStats.survival.ratio < 0.25) return "vocab-survival"
+  if (clampRatio(kanaStats.seion.ratio) < 0.7) return "kana-seion"
+  if (clampRatio(kanaStats.dakuon.ratio) < 0.35) return "kana-dakuon"
+  if (clampRatio(kanaStats.yoon.ratio) < 0.35) return "kana-yoon"
+  if (clampRatio(kanaStats.special.ratio) < 0.5) return "kana-sokuon"
+  if (clampRatio(vocabStats.survival.ratio) < 0.25) return "vocab-survival"
   return "particles-basic"
 }
 
@@ -85,17 +112,19 @@ export function isSkillUnlocked(
   if (!node?.prerequisites?.length) return true
 
   return node.prerequisites.every((prerequisite) => {
-    if (prerequisite === "kana-seion") return kanaStats.seion.ratio >= 0.4
-    if (prerequisite === "kana-sokuon") return kanaStats.special.ratio >= 0.2
+    if (prerequisite === "kana-seion") return clampRatio(kanaStats.seion.ratio) >= 0.4
+    if (prerequisite === "kana-sokuon") return clampRatio(kanaStats.special.ratio) >= 0.2
     if (prerequisite === "particles-basic") return true
-    if (prerequisite === "vocab-survival") return vocabStats.survival.ratio >= 0.1
+    if (prerequisite === "vocab-survival") return clampRatio(vocabStats.survival.ratio) >= 0.1
     return true
   })
 }
 
 function statusFromStat(stat: PathProgressStat, doneRatio: number, emptyBadge: string): SkillStatusResult {
-  if (stat.ratio >= doneRatio) return { status: "done", badge: `已掌握 ${ratioText(stat.done, stat.total)}` }
-  if (stat.done > 0) return { status: "in-progress", badge: `进度 ${ratioText(stat.done, stat.total)}` }
+  const progressRatio = clampRatio(stat.ratio)
+  const done = safeDone(stat.done, safeCount(stat.total))
+  if (progressRatio >= doneRatio) return { status: "done", badge: `已掌握 ${ratioText(done, stat.total)}` }
+  if (done > 0) return { status: "in-progress", badge: `进度 ${ratioText(done, stat.total)}` }
   return { status: "available", badge: emptyBadge }
 }
 
@@ -124,7 +153,7 @@ export function getPathMasterySummary(items: ItemProgressMap): PathMasterySummar
 
   return {
     avg: Math.round(values.reduce((acc, item) => acc + averageMastery(item), 0) / values.length),
-    attempts: values.reduce((acc, item) => acc + item.attempts, 0),
-    production: Math.round(values.reduce((acc, item) => acc + item.production, 0) / values.length),
+    attempts: values.reduce((acc, item) => acc + safeCount(item.attempts), 0),
+    production: Math.round(values.reduce((acc, item) => acc + safeScore(item.production), 0) / values.length),
   }
 }

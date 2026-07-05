@@ -76,6 +76,19 @@ test("path page model soft-locks skills and formats progress badges", () => {
     status: "done",
     badge: "\u5df2\u638c\u63e1 303/505",
   })
+  assert.equal(model.ratioText(Number.POSITIVE_INFINITY, Number.NaN), "0/0")
+  assert.equal(model.ratioText(12, 10), "10/10")
+  assert.deepEqual(
+    model.getSkillStatus("kana-seion", kanaStats({ seion: { done: 999, total: 50, ratio: Number.NaN } }), vocabStats()),
+    {
+      status: "in-progress",
+      badge: "\u8fdb\u5ea6 50/50",
+    }
+  )
+  assert.equal(
+    model.isSkillUnlocked("listen-kana", kanaStats({ seion: { done: 50, total: 50, ratio: Number.POSITIVE_INFINITY } }), vocabStats()),
+    false
+  )
 })
 
 test("path page model summarizes five-dimension mastery", () => {
@@ -107,6 +120,35 @@ test("path page model summarizes five-dimension mastery", () => {
   })
 
   assert.deepEqual(summary, { avg: 44, attempts: 5, production: 53 })
+  assert.deepEqual(
+    model.getPathMasterySummary({
+      broken: {
+        itemId: "broken",
+        itemType: "kana",
+        recognition: Number.NaN,
+        listening: 100,
+        meaning: 100,
+        recall: 100,
+        production: Number.POSITIVE_INFINITY,
+        attempts: Number.NaN,
+        correct: 0,
+        updatedAt: 1,
+      },
+      clamped: {
+        itemId: "clamped",
+        itemType: "vocab",
+        recognition: 100,
+        listening: 100,
+        meaning: 100,
+        recall: 100,
+        production: 120,
+        attempts: 2.9,
+        correct: 2,
+        updatedAt: 2,
+      },
+    }),
+    { avg: 80, attempts: 2, production: 50 }
+  )
   assert.deepEqual(model.getPathMasterySummary({}), { avg: 0, attempts: 0, production: 0 })
 })
 

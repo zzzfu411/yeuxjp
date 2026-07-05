@@ -32,7 +32,7 @@ test("LessonRunner restores answered practice state from persisted results", () 
   assert.match(source, /buildLessonRunnerViewModel\(\{/)
   assert.match(source, /answered,/)
   assert.match(session, /countCorrectLessonAnswers/)
-  assert.match(session, /Object\.values\(answered\)\.filter\(Boolean\)\.length/)
+  assert.match(session, /const correctCount = countCorrectLessonAnswers\(answered\)/)
 })
 
 test("LessonRunner saves step position through the shared learning progress facade", () => {

@@ -49,12 +49,23 @@ export function countPracticeSteps(steps: LessonStep[]) {
   return steps.filter((step): step is LessonPracticeStep => "itemId" in step).length
 }
 
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+}
+
+function nonNegativeInteger(value: unknown) {
+  return Math.max(0, Math.floor(finiteNumber(value, 0)))
+}
+
 export function calculateLessonCompletionScore(correct: number, practiceSteps: number) {
-  return practiceSteps ? Math.round((correct / practiceSteps) * 100) : 100
+  const total = nonNegativeInteger(practiceSteps)
+  if (total <= 0) return 100
+  const correctCount = Math.min(nonNegativeInteger(correct), total)
+  return Math.round((correctCount / total) * 100)
 }
 
 export function countCorrectLessonAnswers(answered: Record<string, boolean>) {
-  return Object.values(answered).filter(Boolean).length
+  return Object.values(answered).filter((value) => value === true).length
 }
 
 export function calculateLessonStepProgress(stepIndex: number, stepCount: number) {

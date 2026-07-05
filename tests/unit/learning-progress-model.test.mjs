@@ -386,6 +386,21 @@ test("learning progress helpers merge maps, normalize step indexes, and average 
     }),
     40
   )
+  assert.equal(
+    model.averageMastery({
+      itemId: "broken",
+      itemType: "kana",
+      recognition: Number.NaN,
+      listening: Number.POSITIVE_INFINITY,
+      meaning: 50,
+      recall: -10,
+      production: 10,
+      attempts: 1,
+      correct: 1,
+      updatedAt: 1,
+    }),
+    12
+  )
 })
 
 test("learning progress model builds study dates and calculates current streak", () => {
