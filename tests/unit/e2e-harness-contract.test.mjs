@@ -97,10 +97,10 @@ test("HTTP smoke reuses the shared E2E server harness", () => {
   assert.doesNotMatch(smoke, /waitForServer/)
 })
 
-test("root check command includes the browser-free HTTP smoke gate", () => {
+test("root check command forwards to the app quality gate", () => {
   if (!rootPackage) return
 
-  assert.match(rootPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
+  assert.match(rootPackage, /"check": "npm run check --prefix web"/)
   assert.match(rootPackage, /"check:release": "npm run check:release --prefix web"/)
 })
 
@@ -110,6 +110,7 @@ test("root package remains a dependency-free forwarding entrypoint", () => {
   assert.deepEqual(rootPackageJson.dependencies ?? {}, {})
   assert.deepEqual(rootPackageJson.devDependencies ?? {}, {})
   assert.equal(rootPackageJson.scripts["validate:data"], "npm run validate:data --prefix web")
+  assert.equal(rootPackageJson.scripts.check, "npm run check --prefix web")
   assert.equal(rootPackageJson.scripts["check:release"], "npm run check:release --prefix web")
   assert.equal(rootPackageJson.scripts["e2e"], "npm run e2e --prefix web")
   assert.equal(rootPackageJson.scripts["e2e:install"], "npm run e2e:install --prefix web")

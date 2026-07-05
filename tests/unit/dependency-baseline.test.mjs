@@ -28,6 +28,13 @@ test("wrapper package and lock remain dependency-free forwarding metadata when p
   assert.deepEqual(rootLock.packages?.[""]?.devDependencies ?? {}, {})
 })
 
+test("wrapper package quality gates forward directly to the web app", () => {
+  if (!rootPackage) return
+
+  assert.equal(rootPackage.scripts.check, "npm run check --prefix web")
+  assert.equal(rootPackage.scripts["check:release"], "npm run check:release --prefix web")
+})
+
 test("web package dependency declarations match the package lock root entry", () => {
   const lockedRoot = webLock.packages?.[""]
 
