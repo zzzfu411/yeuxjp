@@ -74,6 +74,10 @@ export function enrollMissingReviewItems(ids: readonly string[], enroll: (id: st
   return ok
 }
 
+function finiteCount(value: number) {
+  return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0
+}
+
 export function buildReviewDashboardModel({
   masteredIds,
   learnedIds,
@@ -140,22 +144,24 @@ export function buildReviewDashboardModel({
 }
 
 export function formatReviewDueCount(n: number) {
-  if (n <= 0) return "0"
-  if (n < 1000) return String(n)
-  return `${Math.floor(n / 100) / 10}k`
+  const count = finiteCount(n)
+  if (count <= 0) return "0"
+  if (count < 1000) return String(count)
+  return `${Math.floor(count / 100) / 10}k`
 }
 
 export function formatReviewNextDueAt(value: number | null, now: number = Date.now()) {
-  if (!value) return "暂无排程"
+  if (value === null || !Number.isFinite(value)) return "\u6682\u65e0\u6392\u7a0b"
+  if (!Number.isFinite(now)) return "\u6682\u65e0\u6392\u7a0b"
 
   const diff = value - now
-  if (diff <= 0) return "现在"
+  if (diff <= 0) return "\u73b0\u5728"
 
   const minute = 60 * 1000
   const hour = 60 * minute
   const day = 24 * hour
 
-  if (diff < hour) return `${Math.ceil(diff / minute)} 分钟后`
-  if (diff < day) return `${Math.ceil(diff / hour)} 小时后`
-  return `${Math.ceil(diff / day)} 天后`
+  if (diff < hour) return `${Math.ceil(diff / minute)} \u5206\u949f\u540e`
+  if (diff < day) return `${Math.ceil(diff / hour)} \u5c0f\u65f6\u540e`
+  return `${Math.ceil(diff / day)} \u5929\u540e`
 }
