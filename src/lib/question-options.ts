@@ -1,8 +1,14 @@
-function safeRandomIndex(random: () => number, size: number) {
+export function safeRandomIndex(random: () => number, size: number) {
+  if (!Number.isFinite(size) || size <= 0) return -1
   const value = random()
   const safeValue = typeof value === "number" && Number.isFinite(value) ? value : 0
   const clamped = Math.max(0, Math.min(1 - Number.EPSILON, safeValue))
-  return Math.floor(clamped * size)
+  return Math.floor(clamped * Math.floor(size))
+}
+
+export function pickRandomListItem<T>(items: readonly T[], random: () => number = Math.random) {
+  const index = safeRandomIndex(random, items.length)
+  return index >= 0 ? items[index] ?? null : null
 }
 
 function normalizeOptionCount(value: unknown) {

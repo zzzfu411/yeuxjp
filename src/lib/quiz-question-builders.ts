@@ -1,6 +1,6 @@
 import type { Kana } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
-import { pickUniqueQuestionOptions, shuffleList } from "@/lib/question-options"
+import { pickRandomListItem, pickUniqueQuestionOptions, shuffleList } from "@/lib/question-options"
 import { LONG_VOWEL_MINIMAL_PAIRS, PARTICLE_QUESTIONS, SOKUON_MINIMAL_PAIRS } from "@/lib/quiz-data"
 import type { QuizMode } from "@/lib/quiz-types"
 import type { Question } from "@/lib/questions"
@@ -10,7 +10,7 @@ type RandomFn = () => number
 type MinimalPair = { plain: string; special: string }
 
 function randomItem<T>(items: readonly T[], random: RandomFn) {
-  return items[Math.floor(random() * items.length)]
+  return pickRandomListItem(items, random) ?? items[0]!
 }
 
 export function generateKanaQuizQuestion({

@@ -452,3 +452,42 @@ test("learning progress model builds study dates and calculates current streak",
   assert.equal(model.calculateStudyStreak(dates, new Date(today)), 3)
   assert.equal(model.calculateStudyStreak(new Set(["2026-06-11"]), new Date(today)), 0)
 })
+
+test("learning progress study date helpers ignore invalid dates without losing epoch dates", () => {
+  const dates = model.buildStudyDates(
+    {
+      epochLesson: {
+        lessonId: "epochLesson",
+        status: "completed",
+        startedAt: 0,
+        completedAt: 0,
+      },
+      invalidLesson: {
+        lessonId: "invalidLesson",
+        status: "completed",
+        startedAt: 1,
+        completedAt: Number.NaN,
+      },
+    },
+    [
+      {
+        itemId: "bad",
+        itemType: "kana",
+        mode: "recognition",
+        correct: true,
+        createdAt: Number.POSITIVE_INFINITY,
+      },
+      {
+        itemId: "ok",
+        itemType: "kana",
+        mode: "recognition",
+        correct: true,
+        createdAt: Date.UTC(2026, 0, 2),
+      },
+    ]
+  )
+
+  assert.deepEqual(Array.from(dates).sort(), ["1970-01-01", "2026-01-02"])
+  assert.equal(model.todayKey(new Date(Number.NaN)), "")
+  assert.equal(model.calculateStudyStreak(new Set([""]), new Date(Number.NaN)), 0)
+})

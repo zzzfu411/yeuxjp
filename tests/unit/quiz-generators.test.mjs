@@ -33,6 +33,33 @@ test("kana quiz generators return shared Question objects", () => {
   assert.equal(question.options.length, 4)
 })
 
+test("quiz generators tolerate invalid injected random values", () => {
+  const base = quiz.getKanaPool("seion")
+  const kanaQuestion = quiz.generateQuizQuestion({
+    mode: "hiragana-romaji",
+    kanaBasePool: base,
+    kanaTargetPool: base,
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    random: () => Number.POSITIVE_INFINITY,
+  })
+  const vocabQuestion = quiz.generateQuizQuestion({
+    mode: "meaning-vocab",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    random: () => Number.NaN,
+  })
+
+  assert.equal(kanaQuestion.itemType, "kana")
+  assert.equal(kanaQuestion.correctAnswer, "a")
+  assert.equal(kanaQuestion.options.length, 4)
+  assert.equal(vocabQuestion.itemType, "vocab")
+  assert.equal(vocabQuestion.correctAnswer, "v1")
+  assert.equal(vocabQuestion.options.length, 4)
+})
+
 test("kana quiz generators require enough unique options", () => {
   const base = quiz.getKanaPool("seion").slice(0, 3)
   const question = quiz.generateQuizQuestion({

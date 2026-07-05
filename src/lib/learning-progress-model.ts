@@ -237,25 +237,36 @@ export function updateItemProgressForPractice(previous: unknown, result: Practic
 }
 
 export function todayKey(date = new Date()) {
+  if (!Number.isFinite(date.getTime())) return ""
   return date.toISOString().slice(0, 10)
+}
+
+function timestampTodayKey(value: unknown) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null
+  const key = todayKey(new Date(value))
+  return key || null
 }
 
 export function buildStudyDates(lessons: LessonProgressMap, results: readonly PracticeResult[]) {
   const dates = new Set<string>()
   for (const lesson of Object.values(lessons)) {
-    if (lesson.completedAt) dates.add(todayKey(new Date(lesson.completedAt)))
+    const key = timestampTodayKey(lesson.completedAt)
+    if (key) dates.add(key)
   }
   for (const result of results) {
-    dates.add(todayKey(new Date(result.createdAt)))
+    const key = timestampTodayKey(result.createdAt)
+    if (key) dates.add(key)
   }
   return dates
 }
 
 export function calculateStudyStreak(studyDates: ReadonlySet<string>, today: Date = new Date()) {
+  if (!Number.isFinite(today.getTime())) return 0
   let count = 0
   const cursor = new Date(today)
   for (;;) {
-    if (!studyDates.has(todayKey(cursor))) break
+    const key = todayKey(cursor)
+    if (!key || !studyDates.has(key)) break
     count += 1
     cursor.setDate(cursor.getDate() - 1)
   }

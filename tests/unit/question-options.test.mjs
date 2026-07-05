@@ -19,6 +19,12 @@ test("pickUniqueQuestionOptions returns a shuffled target plus unique distractor
 test("question option shuffling tolerates invalid random values", () => {
   const source = ["a", "b", "c", "d"]
 
+  assert.equal(options.safeRandomIndex(() => 0, 4), 0)
+  assert.equal(options.safeRandomIndex(() => 1, 4), 3)
+  assert.equal(options.safeRandomIndex(() => Number.NaN, 4), 0)
+  assert.equal(options.safeRandomIndex(() => 0, Number.NaN), -1)
+  assert.equal(options.pickRandomListItem(source, () => Number.POSITIVE_INFINITY), "a")
+  assert.equal(options.pickRandomListItem([], () => 0), null)
   assert.deepEqual(new Set(options.shuffleList(source, () => Number.NaN)), new Set(source))
   assert.deepEqual(new Set(options.shuffleList(source, () => Number.POSITIVE_INFINITY)), new Set(source))
   assert.deepEqual(new Set(options.shuffleList(source, () => -1)), new Set(source))
