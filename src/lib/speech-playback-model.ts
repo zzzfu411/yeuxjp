@@ -6,12 +6,16 @@ export function normalizeSpeechSequenceTexts(texts: readonly (string | null | un
   return texts.map((text) => text?.trim()).filter(Boolean) as string[]
 }
 
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+}
+
 export function normalizeSpeechGapMs(value: unknown) {
-  return typeof value === "number" ? Math.max(0, value) : 0
+  return Math.max(0, finiteNumber(value, 0))
 }
 
 export function normalizeSpeechRepeat(value: unknown) {
-  const count = typeof value === "number" ? Math.floor(value) : 1
+  const count = Math.floor(finiteNumber(value, 1))
   return Math.max(1, Math.min(5, count))
 }
 

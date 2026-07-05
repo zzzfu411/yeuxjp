@@ -47,6 +47,27 @@ test("wrong question results become mistake notebook input with stable options",
   ])
 })
 
+test("question results replace non-finite answer timestamps", () => {
+  const originalDateNow = Date.now
+  Date.now = () => 222
+  try {
+    const result = questions.makeQuestionResult(
+      {
+        type: "quiz:kana",
+        correctAnswer: "a",
+        options: [{ value: "a", display: "a" }],
+      },
+      "a",
+      Number.NaN
+    )
+
+    assert.equal(result.correct, true)
+    assert.equal(result.answeredAt, 222)
+  } finally {
+    Date.now = originalDateNow
+  }
+})
+
 test("mistake notebook options are de-duplicated with answer normalization", () => {
   const result = questions.makeQuestionResult(
     {

@@ -48,6 +48,20 @@ export const ANIMCJK_SPEEDS = [
 
 export type AnimCjkSpeedValue = (typeof ANIMCJK_SPEEDS)[number]["value"]
 
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+}
+
+function positiveNumber(value: unknown, fallback: number) {
+  const number = typeof value === "string" ? Number(value) : value
+  const finite = finiteNumber(number, fallback)
+  return finite > 0 ? finite : fallback
+}
+
+function strokeCountNumber(value: unknown) {
+  return Math.max(0, Math.floor(finiteNumber(value, 0)))
+}
+
 export function normalizeKanaChar(char: string) {
   return SMALL_KANA_MAP[char] ?? char
 }
@@ -84,7 +98,7 @@ export function parseAnimCJK(rawSvg: string): ParsedAnimCjkSvg {
     const delayMatch = attrs.match(/--d\s*:\s*([0-9.]+)s/i)
     const key = delayMatch ? `d:${delayMatch[1]}` : `u:${unnamedBucket++}`
     const lengthMatch = attrs.match(/\bpathLength="([0-9.]+)"/i)
-    const strokeLength = lengthMatch ? Number(lengthMatch[1]) : 3333
+    const strokeLength = lengthMatch ? positiveNumber(lengthMatch[1], 3333) : 3333
 
     let strokeIdx = groupByDelay.get(key)
     const isFirstInGroup = strokeIdx === undefined
@@ -99,8 +113,12 @@ export function parseAnimCJK(rawSvg: string): ParsedAnimCjkSvg {
       const dMatch = attrs.match(/\bd="([^"]+)"/)
       const moveTo = dMatch?.[1].match(/M\s*(-?[\d.]+)[,\s]+(-?[\d.]+)/i)
       if (moveTo) {
-        startX = parseFloat(moveTo[1])
-        startY = parseFloat(moveTo[2])
+        const x = Number.parseFloat(moveTo[1])
+        const y = Number.parseFloat(moveTo[2])
+        if (Number.isFinite(x) && Number.isFinite(y)) {
+          startX = x
+          startY = y
+        }
       }
     }
 
@@ -140,13 +158,14 @@ export function sanitizeAnimCjkSvg(rawSvg: string) {
 }
 
 export function generateActiveStrokeCss(strokeCount: number, scopeId: string): string {
-  if (strokeCount <= 0) return ""
+  const totalStrokes = strokeCountNumber(strokeCount)
+  if (totalStrokes <= 0) return ""
 
   const rules: string[] = []
   const selector = (active: number, stroke: number) =>
     `.kana-glyph-svg[data-stroke-scope="${scopeId}"][data-active-stroke="${active}"] svg.acjk path[data-stroke-index="${stroke}"]`
 
-  for (let active = 1; active <= strokeCount; active++) {
+  for (let active = 1; active <= totalStrokes; active++) {
     if (active > 1) {
       const finished = Array.from({ length: active - 1 }, (_, i) => selector(active, i + 1)).join(",")
       rules.push(`${finished}{stroke-dashoffset:0;stroke:hsl(var(--foreground));}`)
@@ -154,13 +173,13 @@ export function generateActiveStrokeCss(strokeCount: number, scopeId: string): s
     rules.push(`${selector(active, active)}{stroke-dashoffset:0;stroke:hsl(var(--primary));}`)
   }
 
-  const allDone = Array.from({ length: strokeCount }, (_, i) => selector(strokeCount + 1, i + 1)).join(",")
+  const allDone = Array.from({ length: totalStrokes }, (_, i) => selector(totalStrokes + 1, i + 1)).join(",")
   rules.push(`${allDone}{stroke-dashoffset:0;stroke:hsl(var(--foreground));}`)
   return rules.join("\n")
 }
 
 export function getAnimCjkTotalStrokes(svgs: Pick<ParsedAnimCjkSvg, "strokeCount">[]) {
-  return svgs.reduce((total, svg) => total + svg.strokeCount, 0)
+  return svgs.reduce((total, svg) => total + strokeCountNumber(svg.strokeCount), 0)
 }
 
 export function getAnimCjkStrokeOffsets(svgs: Pick<ParsedAnimCjkSvg, "strokeCount">[]) {
@@ -168,7 +187,7 @@ export function getAnimCjkStrokeOffsets(svgs: Pick<ParsedAnimCjkSvg, "strokeCoun
   let total = 0
   for (const svg of svgs) {
     offsets.push(total)
-    total += svg.strokeCount
+    total += strokeCountNumber(svg.strokeCount)
   }
   return offsets
 }
@@ -182,7 +201,9 @@ export function getAnimCjkLocalActiveStroke({
   strokeCount: number
   offset: number
 }) {
-  return Math.max(0, Math.min(strokeCount + 1, activeStroke - offset))
+  const totalStrokes = strokeCountNumber(strokeCount)
+  const localStroke = finiteNumber(activeStroke, 0) - finiteNumber(offset, 0)
+  return Math.max(0, Math.min(totalStrokes + 1, localStroke))
 }
 
 export function getAnimCjkTimelineEvents({
@@ -194,22 +215,25 @@ export function getAnimCjkTimelineEvents({
   totalStrokes: number
   speed: AnimCjkSpeedValue
 }) {
-  if (totalStrokes <= 0 || startFrom > totalStrokes) return []
+  const safeTotalStrokes = strokeCountNumber(totalStrokes)
+  const safeStartFrom = Math.max(1, Math.floor(finiteNumber(startFrom, 1)))
+  const safeSpeed = positiveNumber(speed, 1)
+  if (safeTotalStrokes <= 0 || safeStartFrom > safeTotalStrokes) return []
 
-  const baseMs = 800 * speed
-  const initialDelay = startFrom === 1 ? 150 : 0
+  const baseMs = 800 * safeSpeed
+  const initialDelay = safeStartFrom === 1 ? 150 : 0
   const events: Array<{ stroke: number; delayMs: number }> = []
 
-  for (let stroke = startFrom; stroke <= totalStrokes; stroke++) {
+  for (let stroke = safeStartFrom; stroke <= safeTotalStrokes; stroke++) {
     events.push({
       stroke,
-      delayMs: initialDelay + (stroke - startFrom) * baseMs,
+      delayMs: initialDelay + (stroke - safeStartFrom) * baseMs,
     })
   }
 
   events.push({
-    stroke: totalStrokes + 1,
-    delayMs: initialDelay + (totalStrokes - startFrom + 1) * baseMs,
+    stroke: safeTotalStrokes + 1,
+    delayMs: initialDelay + (safeTotalStrokes - safeStartFrom + 1) * baseMs,
   })
 
   return events
@@ -222,10 +246,12 @@ export function getAnimCjkPlaybackStartStroke({
   activeStroke: number
   totalStrokes: number
 }) {
-  if (totalStrokes <= 0) return null
-  if (activeStroke > totalStrokes) return null
-  if (activeStroke >= totalStrokes) return totalStrokes
-  return Math.max(1, activeStroke + 1)
+  const safeTotalStrokes = strokeCountNumber(totalStrokes)
+  const safeActiveStroke = Math.floor(finiteNumber(activeStroke, 0))
+  if (safeTotalStrokes <= 0) return null
+  if (safeActiveStroke > safeTotalStrokes) return null
+  if (safeActiveStroke >= safeTotalStrokes) return safeTotalStrokes
+  return Math.max(1, safeActiveStroke + 1)
 }
 
 export function getNextAnimCjkSpeed(current: AnimCjkSpeedValue) {

@@ -47,12 +47,16 @@ export function isQuestionAnswerCorrect(question: Pick<Question, "correctAnswer"
   return accepted.map(normalizeAnswer).includes(normalized)
 }
 
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+}
+
 export function makeQuestionResult(question: Question, selectedAnswer: string, now: number = Date.now()): QuestionResult {
   return {
     question,
     selectedAnswer,
     correct: isQuestionAnswerCorrect(question, selectedAnswer),
-    answeredAt: now,
+    answeredAt: finiteNumber(now, Date.now()),
   }
 }
 
