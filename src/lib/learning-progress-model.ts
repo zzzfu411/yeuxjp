@@ -70,7 +70,20 @@ export function clampScore(value: number) {
   return Math.max(0, Math.min(100, Math.round(value)))
 }
 
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+}
+
+function finiteNumberOrUndefined(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined
+}
+
+function nonNegativeInteger(value: unknown, fallback = 0) {
+  return Math.max(0, Math.floor(finiteNumber(value, fallback)))
+}
+
 export function createItemProgress(itemId: string, itemType: PracticeItemType, now = Date.now()): ItemProgress {
+  const updatedAt = finiteNumber(now, Date.now())
   return {
     itemId,
     itemType,
@@ -81,7 +94,7 @@ export function createItemProgress(itemId: string, itemType: PracticeItemType, n
     production: 0,
     attempts: 0,
     correct: 0,
-    updatedAt: now,
+    updatedAt,
   }
 }
 
@@ -107,8 +120,8 @@ export function normalizeProfile(input: unknown, now = Date.now()): UserProfile 
     minutesPerDay,
     kanaLevel,
     romajiMode,
-    createdAt: typeof obj.createdAt === "number" ? obj.createdAt : now,
-    updatedAt: typeof obj.updatedAt === "number" ? obj.updatedAt : now,
+    createdAt: finiteNumber(obj.createdAt, now),
+    updatedAt: finiteNumber(obj.updatedAt, now),
   }
 }
 
@@ -123,8 +136,8 @@ export function normalizeLessonProgressMap(input: unknown, now = Date.now()): Le
     const normalized: LessonProgress = {
       lessonId: obj.lessonId,
       status: obj.status === "completed" ? "completed" : "started",
-      startedAt: typeof obj.startedAt === "number" ? obj.startedAt : now,
-      completedAt: typeof obj.completedAt === "number" ? obj.completedAt : undefined,
+      startedAt: finiteNumber(obj.startedAt, now),
+      completedAt: finiteNumberOrUndefined(obj.completedAt),
       score: typeof obj.score === "number" ? clampScore(obj.score) : undefined,
     }
     if (typeof obj.currentStepIndex === "number" && Number.isFinite(obj.currentStepIndex)) {
@@ -157,9 +170,9 @@ export function normalizeItemProgressMap(input: unknown, now = Date.now()): Item
       meaning: clampScore(obj.meaning ?? 0),
       recall: clampScore(obj.recall ?? 0),
       production: clampScore(obj.production ?? 0),
-      attempts: typeof obj.attempts === "number" ? Math.max(0, Math.floor(obj.attempts)) : 0,
-      correct: typeof obj.correct === "number" ? Math.max(0, Math.floor(obj.correct)) : 0,
-      updatedAt: typeof obj.updatedAt === "number" ? obj.updatedAt : now,
+      attempts: nonNegativeInteger(obj.attempts),
+      correct: nonNegativeInteger(obj.correct),
+      updatedAt: finiteNumber(obj.updatedAt, now),
     }
   }
   return out
@@ -185,8 +198,8 @@ export function normalizePracticeResults(input: unknown, now = Date.now()): Prac
       mode: item.mode,
       correct: item.correct,
       answer: typeof item.answer === "string" ? item.answer : undefined,
-      durationMs: typeof item.durationMs === "number" ? item.durationMs : undefined,
-      createdAt: typeof item.createdAt === "number" ? item.createdAt : now,
+      durationMs: finiteNumberOrUndefined(item.durationMs),
+      createdAt: finiteNumber(item.createdAt, now),
     })
   }
 
@@ -194,13 +207,15 @@ export function normalizePracticeResults(input: unknown, now = Date.now()): Prac
 }
 
 export function appendPracticeResult(previous: unknown, result: Omit<PracticeResult, "createdAt">, createdAt = Date.now()) {
-  const nextResult: PracticeResult = { ...result, createdAt }
-  return [...normalizePracticeResults(previous, createdAt), nextResult].slice(-PRACTICE_RESULT_LIMIT)
+  const safeCreatedAt = finiteNumber(createdAt, Date.now())
+  const nextResult: PracticeResult = { ...result, createdAt: safeCreatedAt }
+  return [...normalizePracticeResults(previous, safeCreatedAt), nextResult].slice(-PRACTICE_RESULT_LIMIT)
 }
 
 export function updateItemProgressForPractice(previous: unknown, result: PracticeResult) {
-  const base = normalizeItemProgressMap(previous, result.createdAt)
-  const current = base[result.itemId] ?? createItemProgress(result.itemId, result.itemType, result.createdAt)
+  const updatedAt = finiteNumber(result.createdAt, Date.now())
+  const base = normalizeItemProgressMap(previous, updatedAt)
+  const current = base[result.itemId] ?? createItemProgress(result.itemId, result.itemType, updatedAt)
   const delta = result.correct ? 18 : -10
   const nextScore = clampScore(current[result.mode] + delta)
 
@@ -212,7 +227,7 @@ export function updateItemProgressForPractice(previous: unknown, result: Practic
       [result.mode]: nextScore,
       attempts: current.attempts + 1,
       correct: current.correct + (result.correct ? 1 : 0),
-      updatedAt: result.createdAt,
+      updatedAt,
     },
   } satisfies ItemProgressMap
 }

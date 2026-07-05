@@ -29,6 +29,30 @@ test("profile normalization clamps preferences and preserves timestamps", () => 
   assert.equal(model.normalizeProfile({ minutesPerDay: 2 }, 30).minutesPerDay, 5)
 })
 
+test("profile normalization replaces non-finite timestamps", () => {
+  assert.deepEqual(
+    model.normalizeProfile(
+      {
+        goal: "travel",
+        minutesPerDay: 12,
+        kanaLevel: "some",
+        romajiMode: "always",
+        createdAt: Number.NaN,
+        updatedAt: Number.POSITIVE_INFINITY,
+      },
+      42
+    ),
+    {
+      goal: "travel",
+      minutesPerDay: 12,
+      kanaLevel: "some",
+      romajiMode: "always",
+      createdAt: 42,
+      updatedAt: 42,
+    }
+  )
+})
+
 test("lesson progress normalization keeps resume fields compatible", () => {
   const normalized = model.normalizeLessonProgressMap(
     {
@@ -63,6 +87,33 @@ test("lesson progress normalization keeps resume fields compatible", () => {
       currentStepIndex: 2,
       lastStepId: "recognize-a",
       updatedAt: 3,
+    },
+  })
+})
+
+test("lesson progress normalization replaces non-finite persisted values", () => {
+  const normalized = model.normalizeLessonProgressMap(
+    {
+      "day-1": {
+        lessonId: "day-1",
+        status: "completed",
+        startedAt: Number.POSITIVE_INFINITY,
+        completedAt: Number.NaN,
+        score: Number.NEGATIVE_INFINITY,
+        currentStepIndex: Number.POSITIVE_INFINITY,
+        updatedAt: Number.NaN,
+      },
+    },
+    77
+  )
+
+  assert.deepEqual(normalized, {
+    "day-1": {
+      lessonId: "day-1",
+      status: "completed",
+      startedAt: 77,
+      completedAt: undefined,
+      score: 0,
     },
   })
 })
@@ -127,6 +178,38 @@ test("item progress normalization clamps mastery and counters", () => {
   assert.equal(normalized.bad, undefined)
 })
 
+test("item progress normalization replaces non-finite counters and timestamps", () => {
+  const normalized = model.normalizeItemProgressMap(
+    {
+      a: {
+        itemType: "vocab",
+        recognition: Number.POSITIVE_INFINITY,
+        listening: 12,
+        meaning: Number.NaN,
+        recall: 5,
+        production: 9,
+        attempts: Number.POSITIVE_INFINITY,
+        correct: Number.NaN,
+        updatedAt: Number.NEGATIVE_INFINITY,
+      },
+    },
+    88
+  )
+
+  assert.deepEqual(normalized.a, {
+    itemId: "a",
+    itemType: "vocab",
+    recognition: 0,
+    listening: 12,
+    meaning: 0,
+    recall: 5,
+    production: 9,
+    attempts: 0,
+    correct: 0,
+    updatedAt: 88,
+  })
+})
+
 test("practice result normalization filters bad rows and keeps only recent history", () => {
   const raw = Array.from({ length: 305 }, (_, index) => ({
     itemId: `item-${index}`,
@@ -176,6 +259,36 @@ test("practice result normalization rejects unknown modes and item types", () =>
     "recall",
     "recognition",
     "updatedAt",
+  ])
+})
+
+test("practice result normalization replaces non-finite timing fields", () => {
+  const normalized = model.normalizePracticeResults(
+    [
+      {
+        itemId: "ka",
+        itemType: "kana",
+        mode: "recognition",
+        correct: true,
+        durationMs: Number.NaN,
+        createdAt: Number.POSITIVE_INFINITY,
+      },
+    ],
+    123
+  )
+
+  assert.deepEqual(normalized, [
+    {
+      lessonId: undefined,
+      lessonStepId: undefined,
+      itemId: "ka",
+      itemType: "kana",
+      mode: "recognition",
+      correct: true,
+      answer: undefined,
+      durationMs: undefined,
+      createdAt: 123,
+    },
   ])
 })
 

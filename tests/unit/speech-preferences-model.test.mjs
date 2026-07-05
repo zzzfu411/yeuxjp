@@ -37,6 +37,20 @@ test("speech preference model falls back for invalid stored values", () => {
       gapMs: 0,
     }
   )
+  assert.deepEqual(
+    model.normalizeSpeechPreferences({
+      rate: Number.NaN,
+      repeat: 2,
+      autoPlay: false,
+      gapMs: Number.POSITIVE_INFINITY,
+    }),
+    {
+      rate: model.DEFAULT_SPEECH_PREFERENCES.rate,
+      repeat: 2,
+      autoPlay: false,
+      gapMs: model.DEFAULT_SPEECH_PREFERENCES.gapMs,
+    }
+  )
 })
 
 test("speech preference patch merging preserves current values and clamps changed ones", () => {
@@ -55,4 +69,21 @@ test("speech preference patch merging preserves current values and clamps change
     autoPlay: false,
     gapMs: 2000,
   })
+
+  assert.deepEqual(model.mergeSpeechPreferencesPatch(current, { rate: Number.NaN, gapMs: Number.NEGATIVE_INFINITY }), {
+    rate: 0.85,
+    repeat: 2,
+    autoPlay: false,
+    gapMs: 400,
+  })
+
+  assert.deepEqual(
+    model.mergeSpeechPreferencesPatch({ rate: Number.NaN, repeat: 2, autoPlay: false, gapMs: Number.POSITIVE_INFINITY }, {}),
+    {
+      rate: model.DEFAULT_SPEECH_PREFERENCES.rate,
+      repeat: 2,
+      autoPlay: false,
+      gapMs: model.DEFAULT_SPEECH_PREFERENCES.gapMs,
+    }
+  )
 })

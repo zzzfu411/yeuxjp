@@ -16,13 +16,19 @@ function clampRepeat(value: unknown, fallback: 1 | 2 | 3 = DEFAULT_SPEECH_PREFER
   return value === 1 || value === 2 || value === 3 ? value : fallback
 }
 
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback
+}
+
 function clampRate(value: unknown, fallback = DEFAULT_SPEECH_PREFERENCES.rate) {
-  const rate = typeof value === "number" ? value : fallback
+  const safeFallback = finiteNumber(fallback, DEFAULT_SPEECH_PREFERENCES.rate)
+  const rate = finiteNumber(value, safeFallback)
   return Math.max(0.6, Math.min(1.2, rate))
 }
 
 function clampGapMs(value: unknown, fallback = DEFAULT_SPEECH_PREFERENCES.gapMs) {
-  const gapMs = typeof value === "number" ? value : fallback
+  const safeFallback = finiteNumber(fallback, DEFAULT_SPEECH_PREFERENCES.gapMs)
+  const gapMs = finiteNumber(value, safeFallback)
   return Math.max(0, Math.min(2000, gapMs))
 }
 
