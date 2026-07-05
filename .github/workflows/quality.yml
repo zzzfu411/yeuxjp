@@ -70,7 +70,7 @@ jobs:
 
           git diff --name-only "$base" "$head" > changed-files.txt
 
-          if grep -E '^(public/(sw\.js|manifest\.webmanifest|offline\.html|apple-touch-icon\.png|favicon\.ico|icons/|brand/|assets/|animcjk/)|src/app/layout\.tsx|src/components/pwa-register\.tsx|src/lib/pwa-navigation\.ts|tests/e2e/pwa-offline\.mjs|tests/e2e/harness\.mjs|package\.json|package-lock\.json)$' changed-files.txt > /dev/null; then
+          if grep -E '^(public/(sw\.js|manifest\.webmanifest|offline\.html|apple-touch-icon\.png|favicon\.ico|icons/|brand/|assets/|animcjk/)|src/app/(layout\.tsx|page\.tsx|learn/|kana/|vocabulary/|quiz/|semantics/|pragmatics/)|src/components/(home|lesson|kana|vocabulary|quiz|reference)/|src/components/pwa-register\.tsx|src/lib/pwa-navigation\.ts|src/data/(lessons\.ts|kana-data\.ts|vocabulary/|semantics-data\.ts|pragmatics-data\.ts)|tests/e2e/pwa-offline\.mjs|tests/e2e/harness\.mjs|package\.json|package-lock\.json)$' changed-files.txt > /dev/null; then
             echo "pwa=true" >> "$GITHUB_OUTPUT"
           else
             echo "pwa=false" >> "$GITHUB_OUTPUT"
@@ -107,7 +107,7 @@ jobs:
 
           git diff --name-only "$base" "$head" > changed-files.txt
 
-          if grep -E '^(src/app/(page\.tsx|path/|learn/|kana/|vocabulary/|quiz/|review/)|src/components/(home|path|learning|lesson|practice|kana|vocabulary|quiz|review)/|src/lib/(animcjk|answer-option-feedback|kana|learning|lesson|mistake|question-options|questions|quiz|review|srs|verb-conjugation|vocab)|src/data/(lessons\.ts|kana-data\.ts|vocabulary/)|tests/e2e/(browser\.mjs|browser-.*\.mjs|harness\.mjs)|package\.json|package-lock\.json)$' changed-files.txt > /dev/null; then
+          if grep -E '^(src/app/(page\.tsx|path/|learn/|kana/|vocabulary/|quiz/|review/|grammar/|semantics/|pragmatics/)|src/components/(home|path|learning|lesson|practice|kana|vocabulary|quiz|review|reference|ui)/|src/components/pwa-register\.tsx|src/lib/(animcjk|answer-option-feedback|kana|keyboard-shortcuts|learning|lesson|mistake|pwa-navigation|question-options|questions|quiz|review|srs|use-indexed-modal-navigation|verb-conjugation|vocab)|src/data/(lessons\.ts|kana-data\.ts|vocabulary/|grammar-data\.ts|semantics-data\.ts|pragmatics-data\.ts)|tests/e2e/(browser\.mjs|browser-.*\.mjs|harness\.mjs)|package\.json|package-lock\.json)$' changed-files.txt > /dev/null; then
             echo "browser=true" >> "$GITHUB_OUTPUT"
           else
             echo "browser=false" >> "$GITHUB_OUTPUT"
