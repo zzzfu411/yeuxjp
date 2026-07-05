@@ -57,6 +57,7 @@ test("browser E2E entry delegates click flows to flow helpers", () => {
   const helperNames = [
     "verifyLessonFlow",
     "verifyInitialReviewEmptyState",
+    "verifyConfirmDialogKeyboardFlow",
     "verifyVocabularyLoadRetryFlow",
     "verifyKanaAndVocabularyFlow",
     "verifyReferenceKeyboardFlow",
@@ -325,6 +326,28 @@ test("browser E2E verifies modal accessible names and tab focus trapping", () =>
   assert.match(e2e, /activeIndex,\s*0/)
   assert.match(e2e, /kana detail modal/)
   assert.match(e2e, /vocabulary focus modal/)
+})
+
+test("browser E2E verifies destructive confirm dialogs support keyboard cancel and focus return", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /verifyConfirmDialogKeyboardFlow/)
+  assert.match(e2e, /const trigger = page\.getByTestId\("kana-clear-progress"\)/)
+  assert.match(e2e, /trigger\.focus\(\)/)
+  assert.match(e2e, /trigger\.click\(\)/)
+  assert.match(e2e, /getByRole\("dialog"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /document\.activeElement\?\.getAttribute\("role"\) === "dialog"/)
+  assert.match(e2e, /labelledBy/)
+  assert.match(e2e, /describedBy/)
+  assert.match(e2e, /keyboard\.press\("Shift\+Tab"\)/)
+  assert.match(e2e, /keyboard\.press\("Tab"\)/)
+  assert.match(e2e, /keyboard\.press\("Escape"\)/)
+  assert.match(e2e, /getByRole\("dialog"\)\.waitFor\(\{ state: "hidden" \}\)/)
+  assert.match(e2e, /document\.activeElement\?\.getAttribute\("data-testid"\) === "kana-clear-progress"/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.KANA_MASTERED/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_KANA/)
+  assert.match(e2e, /confirm dialog Escape should cancel without clearing kana progress/)
+  assert.match(e2e, /confirm dialog Escape should preserve kana SRS state/)
 })
 
 test("browser E2E verifies reference modal keyboard navigation respects focused controls", () => {

@@ -1,4 +1,5 @@
 export { verifyLessonFlow } from "./browser-flow-lesson.mjs"
+export { verifyConfirmDialogKeyboardFlow } from "./browser-flow-confirm-dialog.mjs"
 export { verifyKanaAndVocabularyFlow } from "./browser-flow-content.mjs"
 export { verifyProfileSaveFailureFlow } from "./browser-flow-profile-save.mjs"
 export { verifyQuizAndMistakeFlow } from "./browser-flow-quiz.mjs"

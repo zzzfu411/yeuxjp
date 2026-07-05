@@ -7,6 +7,7 @@ import {
   startProductionServer,
 } from "./harness.mjs"
 import {
+  verifyConfirmDialogKeyboardFlow,
   verifyDueReviewFlow,
   verifyInitialReviewEmptyState,
   verifyKanaAndVocabularyFlow,
@@ -56,6 +57,7 @@ try {
 
   await verifyLessonFlow(page, baseUrl)
   await verifyInitialReviewEmptyState(page, baseUrl)
+  await verifyConfirmDialogKeyboardFlow(page, baseUrl)
   await verifyVocabularyLoadRetryFlow(page, baseUrl)
   await verifyKanaAndVocabularyFlow(page, baseUrl)
   await verifyReferenceKeyboardFlow(page, baseUrl)
