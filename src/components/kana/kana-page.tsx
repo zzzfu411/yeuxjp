@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useState, Suspense } from "react"
-import { useKanaProgress } from "@/lib/kana-progress"
+import { useLearningStatus } from "@/lib/learning-status"
 import { GlossaryTerm } from "@/components/ui/glossary"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
@@ -25,7 +25,11 @@ function KanaPageContent() {
   } = useKanaPageControls()
   const [saveError, setSaveError] = useState(false)
   const [confirmClearOpen, setConfirmClearOpen] = useState(false)
-  const { isMastered, toggleMastered, clearMastered } = useKanaProgress()
+  const {
+    isKanaMastered: isMastered,
+    toggleKanaMastered: toggleMastered,
+    clearKanaMastered: clearMastered,
+  } = useLearningStatus()
 
   const {
     activeProgress,

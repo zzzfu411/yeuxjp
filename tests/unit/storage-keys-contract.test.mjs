@@ -75,6 +75,25 @@ test("runtime source imports STORAGE_KEYS instead of hard-coding versioned local
   }
 })
 
+test("runtime source writes managed learning storage only through the managed helper", () => {
+  const allowedDirectWriteFiles = new Set([
+    path.normalize(path.join(root, "src", "lib", "managed-learning-storage.ts")),
+  ])
+  const directStorageWrite = /(?:window\.)?localStorage\.(?:setItem|removeItem|clear)\s*\(/g
+
+  for (const absPath of listSourceFiles(path.join(root, "src"))) {
+    if (allowedDirectWriteFiles.has(path.normalize(absPath))) continue
+
+    const source = fs.readFileSync(absPath, "utf8")
+    const matches = source.match(directStorageWrite) ?? []
+    assert.deepEqual(
+      matches,
+      [],
+      `${path.relative(root, absPath)} should write localStorage through managed-learning-storage helpers`
+    )
+  }
+})
+
 test("tests centralize versioned learning storage key strings", () => {
   const allowedFiles = new Set([
     path.normalize(path.join(root, "tests", "e2e", "storage-keys.mjs")),

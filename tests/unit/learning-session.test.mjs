@@ -13,6 +13,19 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
+function listSourceFiles(dir) {
+  const files = []
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const absPath = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...listSourceFiles(absPath))
+      continue
+    }
+    if (/\.(ts|tsx)$/.test(entry.name)) files.push(absPath)
+  }
+  return files
+}
+
 function installLocalStorage() {
   const store = new Map()
   globalThis.window = {
@@ -197,4 +210,25 @@ test("recordQuestionPractice public entrypoint is wrapped in a managed storage t
   assert.match(source, /return runLearningStorageTransaction\(\(\) => recordQuestionPracticeWithoutTransaction\(\{/)
   assert.match(source, /export function recordQuestionPracticeWithoutTransaction\(/)
   assert.match(source, /recordPracticeResultWithoutTransaction\(progress, \{/)
+})
+
+test("recordQuestionPracticeWithoutTransaction stays limited to explicit transaction callers", () => {
+  const allowedImporters = new Set([
+    path.normalize(path.join(root, "src", "components", "review", "use-review-answer-recorder.ts")),
+  ])
+  const unsafeImport = /import\s+\{[^}]*\brecordQuestionPracticeWithoutTransaction\b[^}]*\}\s+from\s+["']@\/lib\/learning-session["']/m
+
+  for (const absPath of listSourceFiles(path.join(root, "src"))) {
+    const normalized = path.normalize(absPath)
+    const source = fs.readFileSync(absPath, "utf8")
+    if (!unsafeImport.test(source)) continue
+    assert.ok(
+      allowedImporters.has(normalized),
+      `${path.relative(root, absPath)} should call recordQuestionPractice instead of the non-transaction helper`
+    )
+  }
+
+  const reviewRecorder = read("src/components/review/use-review-answer-recorder.ts")
+  assert.match(reviewRecorder, /runLearningStorageTransaction\(\(\) => \{/)
+  assert.match(reviewRecorder, /recordQuestionPracticeWithoutTransaction\(\{/)
 })

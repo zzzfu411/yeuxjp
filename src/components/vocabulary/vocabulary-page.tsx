@@ -3,7 +3,7 @@
 import { useMemo, useState, useCallback, Suspense } from "react"
 import type { VocabLevel } from "@/data/vocabulary/types"
 import { speakJapanese } from "@/lib/speech"
-import { useVocabProgress } from "@/lib/vocab-progress"
+import { useLearningStatus } from "@/lib/learning-status"
 import {
   filterVocabularyItems,
   getVocabularyCategories,
@@ -30,7 +30,11 @@ function VocabularyPageContent() {
   const [saveError, setSaveError] = useState(false)
   const [confirmClearOpen, setConfirmClearOpen] = useState(false)
 
-  const { isLearnedId, toggleLearnedId, clearLearned } = useVocabProgress()
+  const {
+    isVocabLearned: isLearnedId,
+    toggleVocabLearned: toggleLearnedId,
+    clearVocabLearned: clearLearned,
+  } = useLearningStatus()
   const {
     currentLevel,
     activeCategory,
