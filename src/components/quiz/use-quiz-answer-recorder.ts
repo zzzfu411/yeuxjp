@@ -3,10 +3,10 @@
 import { useCallback } from "react"
 import type { Dispatch, SetStateAction } from "react"
 import type { useLearningProgress } from "@/lib/learning-progress"
-import { recordQuestionPractice } from "@/lib/learning-session"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
-import { makeQuestionResult, type Question } from "@/lib/questions"
-import { recordQuizAnswer, type QuizStats } from "@/lib/quiz-session"
+import type { Question } from "@/lib/questions"
+import { recordQuizQuestionPractice } from "@/lib/quiz-answer-recording"
+import type { QuizStats } from "@/lib/quiz-session"
 
 type LearningProgressApi = ReturnType<typeof useLearningProgress>
 type MistakeNotebookApi = ReturnType<typeof useMistakeNotebook>
@@ -21,10 +21,12 @@ export function useQuizAnswerRecorder({
   setQuizStats: Dispatch<SetStateAction<QuizStats>>
 }) {
   return useCallback((question: Question, selectedAnswer: string) => {
-    const result = makeQuestionResult(question, selectedAnswer)
-    if (!recordQuestionPractice({ progress, notebook, result })) return null
-
-    setQuizStats((prev) => recordQuizAnswer(prev, result.correct))
-    return result
+    return recordQuizQuestionPractice({
+      progress,
+      notebook,
+      question,
+      selectedAnswer,
+      updateStats: setQuizStats,
+    })
   }, [notebook, progress, setQuizStats])
 }

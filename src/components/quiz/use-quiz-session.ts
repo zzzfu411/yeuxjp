@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningStatus } from "@/lib/learning-status"
 import type { Question } from "@/lib/questions"
-import { createQuizStats } from "@/lib/quiz-session"
+import { canStartQuizAnswerSubmission, createQuizStats, resolveQuizAnswerSubmission } from "@/lib/quiz-session"
 import { useQuizAudio } from "@/components/quiz/use-quiz-audio"
 import { useQuizAnswerRecorder } from "@/components/quiz/use-quiz-answer-recorder"
 import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
@@ -124,18 +124,19 @@ export function useQuizSession(mode: QuizMode) {
   }, [generateQuestion])
 
   const handleSelect = useCallback((val: string) => {
-    if (selectedOption || answerPendingRef.current) return
+    if (!canStartQuizAnswerSubmission({
+      selectedOption,
+      answerPending: answerPendingRef.current,
+      hasQuestion: Boolean(currentQuestion),
+    })) return
     if (!currentQuestion) return
     answerPendingRef.current = true
 
     const result = recordAnswer(currentQuestion, val)
-    if (!result) {
-      answerPendingRef.current = false
-      setSaveError(true)
-      return
-    }
-    setSaveError(false)
-    setSelectedOption(val)
+    const submission = resolveQuizAnswerSubmission(val, Boolean(result))
+    answerPendingRef.current = submission.answerPending
+    setSaveError(submission.saveError)
+    setSelectedOption(submission.selectedOption)
   }, [currentQuestion, recordAnswer, selectedOption])
 
   return {
