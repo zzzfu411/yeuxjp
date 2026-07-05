@@ -8,6 +8,26 @@ const root = path.resolve(import.meta.dirname, "..", "..")
 const stats = await loadTsModule("src/data/vocabulary/stats.ts")
 const loader = await loadTsModule("src/data/vocabulary/loader.ts")
 
+function listSourceFiles(relativeDir) {
+  const absoluteDir = path.join(root, relativeDir)
+  const entries = fs.readdirSync(absoluteDir, { withFileTypes: true })
+  const files = []
+
+  for (const entry of entries) {
+    const relativePath = path.join(relativeDir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...listSourceFiles(relativePath))
+      continue
+    }
+
+    if (/\.(?:ts|tsx)$/.test(entry.name)) {
+      files.push(relativePath)
+    }
+  }
+
+  return files
+}
+
 test("vocabulary level counts stay aligned with the real data files", async () => {
   for (const level of ["survival", "daily", "fluent"]) {
     const data = await loader.loadVocabularyLevel(level)
@@ -79,6 +99,24 @@ test("home and review dashboard surfaces do not import eager vocabulary datasets
     const source = fs.readFileSync(path.join(root, file), "utf8")
     for (const pattern of forbidden) {
       assert.doesNotMatch(source, pattern, `${file} should not eagerly import full vocabulary data`)
+    }
+  }
+})
+
+test("runtime app, component, and lib modules do not eagerly import vocabulary chunks", () => {
+  const scannedFiles = ["src/app", "src/components", "src/lib"].flatMap(listSourceFiles)
+  const forbidden = [
+    /@\/data\/vocabulary\/(?:survival|daily|fluent)/,
+    /(?:\.\.?\/)+data\/vocabulary\/(?:survival|daily|fluent)/,
+    /\bvocabByLevel\b/,
+    /\bvocabData\b/,
+    /\b(?:survivalVocab|dailyVocab|fluentVocab)\b/,
+  ]
+
+  for (const file of scannedFiles) {
+    const source = fs.readFileSync(path.join(root, file), "utf8")
+    for (const pattern of forbidden) {
+      assert.doesNotMatch(source, pattern, `${file} should use the dynamic vocabulary loader instead of eager chunks`)
     }
   }
 })
