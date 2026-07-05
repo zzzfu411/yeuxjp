@@ -125,6 +125,14 @@ async function cacheNavigationResponse(cache, request, requestUrl, response) {
   }
 }
 
+async function matchNavigationFallback(cache, staticCache, request, requestUrl) {
+  const cached = await matchCachedNavigation(cache, request, requestUrl);
+  if (cached) return cached;
+  const staticCached = await matchCachedNavigation(staticCache, request, requestUrl);
+  if (staticCached) return staticCached;
+  return staticCache.match(OFFLINE_FALLBACK_URL);
+}
+
 async function networkFirstNavigation(request) {
   const cache = await caches.open(NAVIGATION_CACHE_NAME);
   const staticCache = await caches.open(STATIC_CACHE_NAME);
@@ -135,13 +143,13 @@ async function networkFirstNavigation(request) {
     if (response.ok && response.type === "basic") {
       await cacheNavigationResponse(cache, request, requestUrl, response);
     }
+    if (response.status >= 500) {
+      const fallback = await matchNavigationFallback(cache, staticCache, request, requestUrl);
+      if (fallback) return fallback;
+    }
     return response;
   } catch {
-    const cached = await matchCachedNavigation(cache, request, requestUrl);
-    if (cached) return cached;
-    const staticCached = await matchCachedNavigation(staticCache, request, requestUrl);
-    if (staticCached) return staticCached;
-    return staticCache.match(OFFLINE_FALLBACK_URL);
+    return matchNavigationFallback(cache, staticCache, request, requestUrl);
   }
 }
 

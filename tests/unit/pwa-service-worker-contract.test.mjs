@@ -122,10 +122,13 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /return new URL\(requestUrl\.pathname, self\.location\.origin\)\.href/)
   assert.match(sw, /async function matchCachedNavigation\(cache, request, requestUrl\)/)
   assert.match(sw, /cache\.match\(canonicalUrl\)/)
+  assert.match(sw, /async function matchNavigationFallback\(cache, staticCache, request, requestUrl\)/)
   assert.match(sw, /const cached = await matchCachedNavigation\(cache, request, requestUrl\)/)
   assert.match(sw, /const staticCached = await matchCachedNavigation\(staticCache, request, requestUrl\)/)
   assert.match(sw, /if \(staticCached\) return staticCached/)
   assert.match(sw, /staticCache\.match\(OFFLINE_FALLBACK_URL\)/)
+  assert.match(sw, /response\.status >= 500/)
+  assert.match(sw, /const fallback = await matchNavigationFallback\(cache, staticCache, request, requestUrl\)/)
   assert.match(sw, /function isCacheableStaticAsset\(request, requestUrl\)/)
   assert.match(sw, /async function refreshStaticAssetCache\(request, requestUrl\)/)
   assert.match(sw, /fetch\(request, \{ cache: "no-cache" \}\)/)
@@ -409,6 +412,81 @@ test("service worker navigation fallback canonicalizes query URLs before offline
   assert.equal(
     await navigate("https://example.test/unvisited?x=1"),
     "offline fallback"
+  )
+})
+
+test("service worker navigation fallback serves cached pages for server errors but preserves 404s", async () => {
+  let fetchHandler = null
+  let responseMode = "server-error"
+  const navigationEntries = new Map([
+    ["https://example.test/learn/day-1-a-row-hello", new Response("cached lesson page", { status: 200 })],
+  ])
+  const staticEntries = new Map([
+    ["https://example.test/offline.html", new Response("offline fallback", { status: 200 })],
+  ])
+  const sandbox = {
+    caches: {
+      async open(name) {
+        return {
+          async match(request) {
+            const url = typeof request === "string" ? request : request.url
+            const absoluteUrl = url.startsWith("/") ? `https://example.test${url}` : url
+            if (name === "yasashi-navigation-v6") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
+            if (name === "yasashi-static-v6") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
+            return null
+          },
+          async put() {},
+        }
+      },
+    },
+    async fetch() {
+      if (responseMode === "server-error") return new Response("server unavailable", { status: 503 })
+      return new Response("not found", { status: 404 })
+    },
+    self: {
+      location: { origin: "https://example.test" },
+      addEventListener(type, handler) {
+        if (type === "fetch") fetchHandler = handler
+      },
+      skipWaiting() {},
+      clients: { claim() {} },
+    },
+    URL,
+    Response,
+    Promise,
+  }
+  sandbox.globalThis = sandbox
+
+  vm.runInNewContext(sw, sandbox)
+  assert.equal(typeof fetchHandler, "function")
+
+  async function navigate(url) {
+    let responded = null
+    fetchHandler({
+      request: {
+        method: "GET",
+        mode: "navigate",
+        destination: "document",
+        url,
+      },
+      respondWith(promise) {
+        responded = promise
+      },
+      waitUntil() {},
+    })
+
+    return (await responded).text()
+  }
+
+  assert.equal(
+    await navigate("https://example.test/learn/day-1-a-row-hello?from=home"),
+    "cached lesson page"
+  )
+
+  responseMode = "not-found"
+  assert.equal(
+    await navigate("https://example.test/learn/day-1-a-row-hello?from=home"),
+    "not found"
   )
 })
 
