@@ -126,12 +126,22 @@ export function buildLessonRunnerViewModel({
 
 export function getLessonAnsweredFromResults(lessonId: string, steps: LessonStep[], results: PracticeResult[]) {
   const practiceStepIds = new Set(countPracticeSteps(steps) ? steps.filter((step) => "itemId" in step).map((step) => step.id) : [])
+  const latestByStep = new Map<string, { correct: boolean; createdAt: number }>()
   const answered: Record<string, boolean> = {}
 
   for (const result of results) {
     if (result.lessonId !== lessonId) continue
     if (!result.lessonStepId || !practiceStepIds.has(result.lessonStepId)) continue
-    answered[result.lessonStepId] = result.correct
+    const createdAt = finiteNumber(result.createdAt, 0)
+    const existing = latestByStep.get(result.lessonStepId)
+    if (existing && createdAt < existing.createdAt) {
+      continue
+    }
+    latestByStep.set(result.lessonStepId, { correct: result.correct, createdAt })
+  }
+
+  for (const [stepId, result] of latestByStep) {
+    answered[stepId] = result.correct
   }
 
   return answered
