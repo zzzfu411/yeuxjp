@@ -59,55 +59,63 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value)
 }
 
+function safeTimestamp(value: unknown, fallback: number = Date.now()) {
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  if (Number.isFinite(fallback)) return fallback
+  return 0
+}
+
 function normalizeSrsMapForBackup(input: unknown, isAllowedId: (id: string) => boolean = () => true, now: number = Date.now()) {
+  const safeNow = safeTimestamp(now)
   if (!isPlainObject(input)) return null
   const out: Record<string, ReturnType<typeof normalizeSrsState>> = {}
   for (const [id, value] of Object.entries(input)) {
     const itemId = id.trim()
     if (!itemId || !isPlainObject(value)) return null
     if (!isAllowedId(itemId)) continue
-    out[itemId] = normalizeSrsState(value, now)
+    out[itemId] = normalizeSrsState(value, safeNow)
   }
   return out
 }
 
 function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, now: number = Date.now()): string | null {
+  const safeNow = safeTimestamp(now)
   const parsed = parseStoredJson(rawValue)
   if (!parsed.ok) return null
 
   switch (key) {
     case STORAGE_KEYS.USER_PROFILE: {
       if (!isPlainObject(parsed.value)) return null
-      const profile = normalizeProfile(parsed.value, now)
+      const profile = normalizeProfile(parsed.value, safeNow)
       return profile ? JSON.stringify(profile) : null
     }
     case STORAGE_KEYS.LESSON_PROGRESS: {
       if (!isPlainObject(parsed.value)) return null
-      return JSON.stringify(normalizeLessonProgressMap(parsed.value, now))
+      return JSON.stringify(normalizeLessonProgressMap(parsed.value, safeNow))
     }
     case STORAGE_KEYS.ITEM_PROGRESS: {
       if (!isPlainObject(parsed.value)) return null
-      return JSON.stringify(normalizeItemProgressMap(parsed.value, now))
+      return JSON.stringify(normalizeItemProgressMap(parsed.value, safeNow))
     }
     case STORAGE_KEYS.PRACTICE_RESULTS: {
       if (!Array.isArray(parsed.value)) return null
-      return JSON.stringify(normalizePracticeResults(parsed.value, now))
+      return JSON.stringify(normalizePracticeResults(parsed.value, safeNow))
     }
     case STORAGE_KEYS.SRS_MISTAKES: {
-      const map = normalizeSrsMapForBackup(parsed.value, undefined, now)
+      const map = normalizeSrsMapForBackup(parsed.value, undefined, safeNow)
       return map ? JSON.stringify(map) : null
     }
     case STORAGE_KEYS.SRS_KANA: {
-      const map = normalizeSrsMapForBackup(parsed.value, isReviewableKanaId, now)
+      const map = normalizeSrsMapForBackup(parsed.value, isReviewableKanaId, safeNow)
       return map ? JSON.stringify(map) : null
     }
     case STORAGE_KEYS.SRS_VOCAB: {
-      const map = normalizeSrsMapForBackup(parsed.value, isKnownVocabularyId, now)
+      const map = normalizeSrsMapForBackup(parsed.value, isKnownVocabularyId, safeNow)
       return map ? JSON.stringify(map) : null
     }
     case STORAGE_KEYS.MISTAKES: {
       if (!Array.isArray(parsed.value)) return null
-      return JSON.stringify(normalizeMistakeList(parsed.value, now))
+      return JSON.stringify(normalizeMistakeList(parsed.value, safeNow))
     }
     case STORAGE_KEYS.KANA_MASTERED: {
       if (!Array.isArray(parsed.value)) return null
@@ -124,21 +132,23 @@ function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, now: num
 }
 
 function filterOrphanMistakeSrsEntries(entries: LearningBackup["entries"], now: number = Date.now()) {
+  const safeNow = safeTimestamp(now)
   const mistakesEntry = entries[STORAGE_KEYS.MISTAKES]
   const mistakeSrsEntry = entries[STORAGE_KEYS.SRS_MISTAKES]
   if (typeof mistakeSrsEntry !== "string") {
     return true
   }
 
-  const mistakes = typeof mistakesEntry === "string" ? normalizeMistakeList(JSON.parse(mistakesEntry), now) : []
+  const mistakes = typeof mistakesEntry === "string" ? normalizeMistakeList(JSON.parse(mistakesEntry), safeNow) : []
   const mistakeIds = new Set(mistakes.map((item) => item.id))
-  const mistakeSrs = normalizeSrsMapForBackup(JSON.parse(mistakeSrsEntry), (id) => mistakeIds.has(id), now)
+  const mistakeSrs = normalizeSrsMapForBackup(JSON.parse(mistakeSrsEntry), (id) => mistakeIds.has(id), safeNow)
   if (mistakeSrs === null) return false
   entries[STORAGE_KEYS.SRS_MISTAKES] = JSON.stringify(mistakeSrs)
   return true
 }
 
 function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = Date.now()): LearningBackup | null {
+  const safeNow = safeTimestamp(now)
   if (backup.version !== LEARNING_BACKUP_VERSION) return null
   if (typeof backup.exportedAt !== "number" || !Number.isFinite(backup.exportedAt)) return null
   if (!backup.entries || typeof backup.entries !== "object") return null
@@ -147,12 +157,12 @@ function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = 
   for (const [key, value] of Object.entries(backup.entries)) {
     if (!BACKUP_KEY_SET.has(key)) continue
     if (typeof value !== "string") continue
-    const normalized = normalizeBackupEntry(key as LearningBackupKey, value, now)
+    const normalized = normalizeBackupEntry(key as LearningBackupKey, value, safeNow)
     if (normalized === null) return null
     entries[key as LearningBackupKey] = normalized
   }
 
-  if (!filterOrphanMistakeSrsEntries(entries, now)) return null
+  if (!filterOrphanMistakeSrsEntries(entries, safeNow)) return null
 
   return {
     version: LEARNING_BACKUP_VERSION,
@@ -262,10 +272,12 @@ export function runLearningStorageTransaction(commit: () => boolean) {
 }
 
 export function createLearningBackup(now: number = Date.now()): LearningBackup {
-  return tryCreateLearningBackup(now) ?? { version: LEARNING_BACKUP_VERSION, exportedAt: now, entries: {} }
+  const exportedAt = safeTimestamp(now)
+  return tryCreateLearningBackup(exportedAt) ?? { version: LEARNING_BACKUP_VERSION, exportedAt, entries: {} }
 }
 
 export function tryCreateLearningBackup(now: number = Date.now()): LearningBackup | null {
+  const exportedAt = safeTimestamp(now)
   const entries: LearningBackup["entries"] = {}
 
   if (typeof window !== "undefined") {
@@ -273,18 +285,18 @@ export function tryCreateLearningBackup(now: number = Date.now()): LearningBacku
       for (const key of BACKUP_KEYS) {
         const value = window.localStorage.getItem(key)
         if (value === null) continue
-        const normalized = normalizeBackupEntry(key, value, now)
+        const normalized = normalizeBackupEntry(key, value, exportedAt)
         if (normalized === null) return null
         entries[key] = normalized
       }
-      if (!filterOrphanMistakeSrsEntries(entries, now)) return null
+      if (!filterOrphanMistakeSrsEntries(entries, exportedAt)) return null
     } catch {
       return null
     }
   }
 
   notifyLearningStore({ action: "backup", keys: Object.keys(entries) })
-  return { version: LEARNING_BACKUP_VERSION, exportedAt: now, entries }
+  return { version: LEARNING_BACKUP_VERSION, exportedAt, entries }
 }
 
 export function restoreLearningBackup(backup: LearningBackup) {

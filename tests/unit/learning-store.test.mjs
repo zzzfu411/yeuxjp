@@ -103,6 +103,41 @@ test("safe learning backup creation fails instead of exporting partial data when
   })
 })
 
+test("learning backup creation replaces non-finite export timestamps", () => {
+  const originalDateNow = Date.now
+  Date.now = () => 456
+  try {
+    const { map } = installWindow()
+    map.set(storage.STORAGE_KEYS.USER_PROFILE, '{"goal":"balanced"}')
+
+    const backup = store.tryCreateLearningBackup(Number.NaN)
+    assert.ok(backup)
+    assert.equal(backup.exportedAt, 456)
+    assert.equal(JSON.parse(backup.entries[storage.STORAGE_KEYS.USER_PROFILE]).createdAt, 456)
+
+    const fallback = store.createLearningBackup(Number.POSITIVE_INFINITY)
+    assert.equal(fallback.exportedAt, 456)
+    assert.equal(JSON.parse(fallback.entries[storage.STORAGE_KEYS.USER_PROFILE]).updatedAt, 456)
+  } finally {
+    Date.now = originalDateNow
+  }
+})
+
+test("learning backup creation stays finite when the system clock is invalid", () => {
+  const originalDateNow = Date.now
+  Date.now = () => Number.NaN
+  try {
+    const { map } = installWindow()
+    map.set(storage.STORAGE_KEYS.SRS_KANA, '{"a":{"box":1}}')
+
+    const backup = store.createLearningBackup(Number.NaN)
+    assert.equal(backup.exportedAt, 0)
+    assert.equal(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA]).a.createdAt, 0)
+  } finally {
+    Date.now = originalDateNow
+  }
+})
+
 test("learning backup export normalizes active vocabulary indexes", () => {
   const { map } = installWindow()
   map.set(storage.STORAGE_KEYS.VOCAB_LEARNED, JSON.stringify(["sur-g-1", "sur-g-999", "day-v-1", "sur-g-1"]))
