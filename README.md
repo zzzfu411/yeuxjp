@@ -51,9 +51,11 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 ## Implemented Features
 
 - Kana charts for hiragana/katakana, seion, dakuon, handakuon, yoon, and sokuon.
+- Kana page presentation is split into focused hero, set-hint, and section components while the page runner keeps URL controls, progress writes, and confirmation state.
 - AnimCJK stroke-order animation loaded from `web/public/animcjk/kana`.
 - Vocabulary cards grouped by level and category, with search, learned-state tracking, and TTS.
 - Grammar, semantics, and pragmatics reference pages.
+- Grammar reference keeps its static page shell server-rendered, with level selection, search, speech controls, and modal navigation isolated in a client component.
 - Quiz modes for kana recognition, audio recognition, sokuon/long-vowel contrast, particles, verb conjugation, and vocabulary meaning.
 - Local SRS review for kana, vocabulary, and mistakes, with today queue priority of mistakes first and due-time sorting for kana/vocabulary.
 - A 14-day starter path with practice steps, step feedback, local progress, SRS enrollment for correct kana/vocab practice, and automatic mistake notebook capture for wrong answers.
