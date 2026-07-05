@@ -115,6 +115,9 @@ export function mistakeToQuestion(item: MistakeItem): Question {
   return {
     type: item.type,
     mistakeId: item.id,
+    itemId: item.itemId,
+    itemType: item.itemType,
+    mode: item.mode,
     questionText: item.questionText,
     questionAudio: item.questionAudio,
     correctAnswer: item.correctAnswer,

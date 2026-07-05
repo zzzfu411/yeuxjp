@@ -39,6 +39,9 @@ test("wrong question results become mistake notebook input with stable options",
 
   assert.equal(result.correct, false)
   assert.equal(input.type, "review:vocab")
+  assert.equal(input.itemId, "vocab-1")
+  assert.equal(input.itemType, "vocab")
+  assert.equal(input.mode, "meaning")
   assert.equal(input.correctAnswer, "water")
   assert.equal(input.wrongAnswer, "tea")
   assert.deepEqual(input.options, [

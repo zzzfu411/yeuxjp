@@ -63,6 +63,9 @@ test("mistakeToQuestion preserves answers and de-duplicates options", () => {
   const question = review.mistakeToQuestion({
     id: "m1",
     type: "particle",
+    itemId: "particle-wa",
+    itemType: "grammar",
+    mode: "recognition",
     questionText: "わたし＿学生です",
     correctAnswer: "は",
     correctDisplay: "は",
@@ -75,15 +78,33 @@ test("mistakeToQuestion preserves answers and de-duplicates options", () => {
     lastWrongAt: 1,
   })
 
-  assert.equal(question.itemId, undefined)
-  assert.equal(question.itemType, undefined)
-  assert.equal(question.mode, undefined)
+  assert.equal(question.itemId, "particle-wa")
+  assert.equal(question.itemType, "grammar")
+  assert.equal(question.mode, "recognition")
   assert.equal(question.mistakeId, "m1")
   assert.equal(question.correctAnswer, "は")
   assert.deepEqual(question.options, [
     { value: "は", display: "は" },
     { value: "が", display: "が" },
   ])
+})
+
+test("mistakeToQuestion keeps legacy mistakes compatible without progress metadata", () => {
+  const question = review.mistakeToQuestion({
+    id: "legacy",
+    type: "legacy-mistake",
+    questionText: "prompt",
+    correctAnswer: "right",
+    options: [{ value: "right", display: "right" }],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  })
+
+  assert.equal(question.itemId, undefined)
+  assert.equal(question.itemType, undefined)
+  assert.equal(question.mode, undefined)
+  assert.equal(question.mistakeId, "legacy")
 })
 
 test("mistakeToQuestion de-duplicates legacy mistake options by normalized answers", () => {

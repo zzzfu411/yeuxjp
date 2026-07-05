@@ -1,3 +1,5 @@
+import type { PracticeItemType, PracticeMode } from "@/lib/learning-progress-model"
+
 export type MistakeOption = { value: string; display: string }
 
 export type MistakeMeta = {
@@ -10,6 +12,9 @@ export type MistakeItem = {
   type: string
   questionText?: string
   questionAudio?: string
+  itemId?: string
+  itemType?: PracticeItemType
+  mode?: PracticeMode
   correctAnswer: string
   acceptedAnswers?: string[]
   correctDisplay?: string
@@ -26,6 +31,9 @@ export type RecordMistakeInput = {
   type: string
   questionText?: string
   questionAudio?: string
+  itemId?: string
+  itemType?: PracticeItemType
+  mode?: PracticeMode
   correctAnswer: string
   acceptedAnswers?: string[]
   correctDisplay?: string
@@ -54,6 +62,21 @@ function safeTimestamp(value: unknown, fallback: number) {
 
 function safeCount(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? Math.max(1, Math.floor(value)) : 1
+}
+
+const PRACTICE_ITEM_TYPES = new Set<PracticeItemType>(["kana", "vocab", "grammar", "sentence", "lesson"])
+const PRACTICE_MODES = new Set<PracticeMode>(["recognition", "listening", "meaning", "recall", "production"])
+
+function normalizeMistakeProgressMetadata(input: Record<string, unknown>) {
+  if (typeof input.itemId !== "string" || !input.itemId.trim()) return null
+  if (typeof input.itemType !== "string" || !PRACTICE_ITEM_TYPES.has(input.itemType as PracticeItemType)) return null
+  if (typeof input.mode !== "string" || !PRACTICE_MODES.has(input.mode as PracticeMode)) return null
+
+  return {
+    itemId: input.itemId,
+    itemType: input.itemType as PracticeItemType,
+    mode: input.mode as PracticeMode,
+  }
 }
 
 export function buildMistakeId(input: MistakeIdentityInput) {
@@ -141,6 +164,7 @@ export function normalizeMistakeList(input: unknown, now: number = Date.now()): 
       type: item.type,
       questionText: stringOrUndefined(item.questionText),
       questionAudio: stringOrUndefined(item.questionAudio),
+      ...normalizeMistakeProgressMetadata(item),
       correctAnswer: item.correctAnswer,
       acceptedAnswers: normalizeAcceptedMistakeAnswers(item.acceptedAnswers),
       correctDisplay: stringOrUndefined(item.correctDisplay),
@@ -167,12 +191,16 @@ export function upsertWrongMistake(previous: readonly MistakeItem[], input: Reco
   const id = input.id ?? buildMistakeId(input)
   const index = previous.findIndex((item) => item.id === id)
   const base = index >= 0 ? previous[index] : null
+  const progressMetadata =
+    normalizeMistakeProgressMetadata(input as Record<string, unknown>) ??
+    (base ? normalizeMistakeProgressMetadata(base as unknown as Record<string, unknown>) : null)
 
   const updated: MistakeItem = {
     id,
     type: input.type,
     questionText: input.questionText,
     questionAudio: input.questionAudio,
+    ...(progressMetadata ?? {}),
     correctAnswer: input.correctAnswer,
     acceptedAnswers: normalizeAcceptedMistakeAnswers(input.acceptedAnswers) ?? base?.acceptedAnswers,
     correctDisplay: input.correctDisplay,

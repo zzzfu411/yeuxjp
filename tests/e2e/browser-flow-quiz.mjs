@@ -64,6 +64,17 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
     reviewedMistakeSrs?.["e2e-mistake:kana-a"]?.box > 1,
     "correct mistake review should advance mistake SRS without deleting notebook history"
   )
+  const correctMistakeReviewPractice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+  assert.ok(
+    Array.isArray(correctMistakeReviewPractice) &&
+      correctMistakeReviewPractice.some((item) =>
+        item.itemId === "a" &&
+        item.itemType === "kana" &&
+        item.mode === "recognition" &&
+        item.correct === true
+      ),
+    "correct mistake review should write original item practice history"
+  )
 
   await seedDueMistakeReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
@@ -88,6 +99,17 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
     wrongReviewedMistakeSrs?.["e2e-mistake:kana-a"]?.wrong,
     3,
     "wrong mistake review should grade mistake SRS exactly once"
+  )
+  const wrongMistakeReviewPractice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+  assert.ok(
+    Array.isArray(wrongMistakeReviewPractice) &&
+      wrongMistakeReviewPractice.some((item) =>
+        item.itemId === "a" &&
+        item.itemType === "kana" &&
+        item.mode === "recognition" &&
+        item.correct === false
+      ),
+    "wrong mistake review should write failed original item practice history"
   )
 
   const mistakeId = "e2e-mistake:kana-a"

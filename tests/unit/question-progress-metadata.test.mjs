@@ -51,13 +51,16 @@ test("all public quiz modes expose progress metadata for learning-session writes
   }
 })
 
-test("review question builders expose progress metadata except mistake history replay", () => {
+test("review question builders expose progress metadata and mistake replay restores stored metadata", () => {
   const kanaQuestion = review.makeKanaReviewQuestion("a", () => 0)
   const vocabQuestion = review.makeVocabReviewQuestion("v1", vocab, () => 0)
   const mistakeQuestion = review.mistakeToQuestion({
     id: "m1",
     type: "legacy-mistake",
     questionText: "prompt",
+    itemId: "a",
+    itemType: "kana",
+    mode: "recognition",
     correctAnswer: "right",
     options: [{ value: "right", display: "right" }],
     wrongCount: 1,
@@ -75,8 +78,24 @@ test("review question builders expose progress metadata except mistake history r
   assert.equal(vocabQuestion.itemType, "vocab")
   assert.equal(vocabQuestion.mode, "meaning")
 
-  assert.equal(mistakeQuestion.itemId, undefined)
-  assert.equal(mistakeQuestion.itemType, undefined)
-  assert.equal(mistakeQuestion.mode, undefined)
+  assertProgressMetadata(mistakeQuestion, "mistake review")
+  assert.equal(mistakeQuestion.itemId, "a")
+  assert.equal(mistakeQuestion.itemType, "kana")
+  assert.equal(mistakeQuestion.mode, "recognition")
   assert.equal(mistakeQuestion.mistakeId, "m1")
+
+  const legacyMistakeQuestion = review.mistakeToQuestion({
+    id: "legacy",
+    type: "legacy-mistake",
+    questionText: "prompt",
+    correctAnswer: "right",
+    options: [{ value: "right", display: "right" }],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  })
+
+  assert.equal(legacyMistakeQuestion.itemId, undefined)
+  assert.equal(legacyMistakeQuestion.itemType, undefined)
+  assert.equal(legacyMistakeQuestion.mode, undefined)
 })

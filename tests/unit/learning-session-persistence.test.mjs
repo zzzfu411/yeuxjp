@@ -5,6 +5,8 @@ import { loadTsModule } from "./load-ts-module.mjs"
 const session = await loadTsModule("src/lib/learning-session.ts")
 const progressModel = await loadTsModule("src/lib/learning-progress-model.ts")
 const learningStorage = await loadTsModule("src/lib/learning-storage.ts")
+const questions = await loadTsModule("src/lib/questions.ts")
+const review = await loadTsModule("src/lib/review-questions.ts")
 const storage = await loadTsModule("src/lib/storage-keys.ts")
 
 function installLocalStorage({ failKeys = new Set() } = {}) {
@@ -102,4 +104,73 @@ test("successful correct practice records progress and enrolls review", () => {
   assert.equal(JSON.parse(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS)).length, 1)
   assert.ok(JSON.parse(map.get(storage.STORAGE_KEYS.ITEM_PROGRESS))["sur-g-1"])
   assert.ok(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_VOCAB))["sur-g-1"])
+})
+
+test("mistake review questions with progress metadata write original item practice", () => {
+  const { map } = installLocalStorage()
+  const question = review.mistakeToQuestion({
+    id: "m1",
+    type: "hiragana-romaji",
+    questionText: "あ",
+    itemId: "a",
+    itemType: "kana",
+    mode: "recognition",
+    correctAnswer: "a",
+    options: [
+      { value: "a", display: "a" },
+      { value: "i", display: "i" },
+    ],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  })
+
+  assert.equal(session.recordQuestionPractice({
+    progress: createProgressApi(),
+    result: questions.makeQuestionResult(question, "a", 123),
+    enrollReviewOnCorrect: false,
+  }), true)
+
+  const practice = JSON.parse(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS))
+  const itemProgress = JSON.parse(map.get(storage.STORAGE_KEYS.ITEM_PROGRESS))
+  assert.deepEqual(practice.map((item) => ({
+    itemId: item.itemId,
+    itemType: item.itemType,
+    mode: item.mode,
+    correct: item.correct,
+    answer: item.answer,
+  })), [
+    {
+      itemId: "a",
+      itemType: "kana",
+      mode: "recognition",
+      correct: true,
+      answer: "a",
+    },
+  ])
+  assert.ok(itemProgress.a)
+  assert.equal(map.has(storage.STORAGE_KEYS.SRS_KANA), false)
+})
+
+test("legacy mistake review questions without progress metadata stay compatible", () => {
+  const { map } = installLocalStorage()
+  const question = review.mistakeToQuestion({
+    id: "legacy",
+    type: "legacy-mistake",
+    questionText: "prompt",
+    correctAnswer: "right",
+    options: [{ value: "right", display: "right" }],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  })
+
+  assert.equal(session.recordQuestionPractice({
+    progress: createProgressApi(),
+    result: questions.makeQuestionResult(question, "right", 123),
+    enrollReviewOnCorrect: false,
+  }), true)
+
+  assert.equal(map.has(storage.STORAGE_KEYS.PRACTICE_RESULTS), false)
+  assert.equal(map.has(storage.STORAGE_KEYS.ITEM_PROGRESS), false)
 })

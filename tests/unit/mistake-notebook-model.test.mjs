@@ -35,6 +35,9 @@ test("mistake notebook model normalizes persisted mistakes safely", () => {
       {
         id: "newer",
         type: "quiz:kana",
+        itemId: "ka",
+        itemType: "kana",
+        mode: "recognition",
         correctAnswer: "ka",
         wrongCount: 2.9,
         createdAt: 2,
@@ -59,6 +62,9 @@ test("mistake notebook model normalizes persisted mistakes safely", () => {
   assert.equal(list[0].wrongCount, 3)
   assert.equal(list[1].wrongCount, 2)
   assert.equal(list[1].createdAt, 2)
+  assert.equal(list[1].itemId, "ka")
+  assert.equal(list[1].itemType, "kana")
+  assert.equal(list[1].mode, "recognition")
 })
 
 test("mistake notebook timestamps stay finite when inputs and system clock are invalid", () => {
@@ -103,6 +109,9 @@ test("mistake notebook model upserts wrong answers without dropping history", ()
     {
       type: "quiz:kana",
       questionText: "あ",
+      itemId: "a",
+      itemType: "kana",
+      mode: "recognition",
       correctAnswer: "a",
       wrongAnswer: "ka",
       options: [
@@ -132,6 +141,9 @@ test("mistake notebook model upserts wrong answers without dropping history", ()
   assert.equal(second[0].createdAt, 100)
   assert.equal(second[0].lastWrongAt, 200)
   assert.equal(second[0].lastWrongAnswer, "sa")
+  assert.equal(second[0].itemId, "a")
+  assert.equal(second[0].itemType, "kana")
+  assert.equal(second[0].mode, "recognition")
   assert.deepEqual(second[0].options, [{ value: "sa", display: "sa" }])
 })
 
