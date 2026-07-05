@@ -3,13 +3,94 @@ import assert from "node:assert/strict"
 import { readJsonStorage } from "./harness.mjs"
 import {
   assertQuizModeRecordsPractice,
+  clickFirstQuizOptionAndReadPractice,
   openQuizMode,
+  openQuizModeWithLearningState,
+  quizVocabIdsByLevel,
   seedDueMistakeReviewState,
   seedMissingThenDueMistakeReviewState,
   seionHiraganaToRomaji,
   seionRomaji,
 } from "./browser-fixtures.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
+
+async function clickQuizScopeAndWaitForQuestionRefresh(page, testId) {
+  await page.evaluate(() => {
+    Math.random = () => 0
+  })
+  await page.getByTestId(testId).click()
+  await page.waitForFunction((scopeTestId) => {
+    return document.querySelector(`[data-testid="${scopeTestId}"]`)?.getAttribute("aria-pressed") === "true"
+  }, testId)
+  await page.locator('[data-testid^="quiz-answer-option-"]').first().waitFor({ state: "visible" })
+  await page.waitForTimeout(50)
+}
+
+async function latestPracticeItem(page) {
+  const practice = await clickFirstQuizOptionAndReadPractice(page)
+  assert.ok(Array.isArray(practice), "quiz answer should record practice history")
+  const latest = practice.at(-1)
+  assert.ok(latest, "quiz practice history should contain the latest answer")
+  return latest
+}
+
+async function verifyQuizScopeControls(page, baseUrl) {
+  await openQuizMode(page, baseUrl, "hiragana-romaji")
+  assert.equal(await page.getByTestId("quiz-kana-scope-seion").getAttribute("aria-pressed"), "true")
+  const seionPractice = await latestPracticeItem(page)
+  assert.equal(seionPractice.itemType, "kana")
+  assert.ok(seionRomaji.includes(seionPractice.itemId), "seion kana scope should draw from canonical seion kana")
+
+  await openQuizModeWithLearningState(page, baseUrl, "hiragana-romaji", { masteredKana: seionRomaji })
+  await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-kana-scope-all")
+  assert.equal(await page.getByTestId("quiz-kana-scope-all").getAttribute("aria-pressed"), "true")
+  await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-only-unmastered-kana")
+  assert.equal(await page.getByTestId("quiz-only-unmastered-kana").getAttribute("aria-pressed"), "true")
+  const allUnmasteredPractice = await latestPracticeItem(page)
+  assert.equal(allUnmasteredPractice.itemType, "kana")
+  assert.ok(
+    !seionRomaji.includes(allUnmasteredPractice.itemId),
+    "all kana scope with seion mastered should draw from non-seion kana"
+  )
+
+  await openQuizMode(page, baseUrl, "meaning-vocab")
+  assert.equal(await page.getByTestId("quiz-vocab-scope-survival").getAttribute("aria-pressed"), "true")
+  const survivalPractice = await latestPracticeItem(page)
+  assert.equal(survivalPractice.itemType, "vocab")
+  assert.ok(survivalPractice.itemId.startsWith("sur-"), "survival vocabulary scope should draw survival ids")
+
+  await openQuizMode(page, baseUrl, "meaning-vocab")
+  await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-vocab-scope-daily")
+  assert.equal(await page.getByTestId("quiz-vocab-scope-daily").getAttribute("aria-pressed"), "true")
+  const dailyPractice = await latestPracticeItem(page)
+  assert.equal(dailyPractice.itemType, "vocab")
+  assert.ok(dailyPractice.itemId.startsWith("day-"), "daily vocabulary scope should draw daily ids")
+
+  await openQuizMode(page, baseUrl, "meaning-vocab")
+  await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-vocab-scope-fluent")
+  assert.equal(await page.getByTestId("quiz-vocab-scope-fluent").getAttribute("aria-pressed"), "true")
+  const fluentPractice = await latestPracticeItem(page)
+  assert.equal(fluentPractice.itemType, "vocab")
+  assert.ok(fluentPractice.itemId.startsWith("flu-"), "fluent vocabulary scope should draw fluent ids")
+
+  const [onlyUnlearnedTarget] = quizVocabIdsByLevel.fluent
+  const learnedExceptTarget = [
+    ...quizVocabIdsByLevel.survival,
+    ...quizVocabIdsByLevel.daily,
+    ...quizVocabIdsByLevel.fluent.filter((id) => id !== onlyUnlearnedTarget),
+  ]
+  await openQuizModeWithLearningState(page, baseUrl, "meaning-vocab", { learnedVocab: learnedExceptTarget })
+  await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-vocab-scope-all")
+  assert.equal(await page.getByTestId("quiz-vocab-scope-all").getAttribute("aria-pressed"), "true")
+  await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-only-unlearned-vocab")
+  assert.equal(await page.getByTestId("quiz-only-unlearned-vocab").getAttribute("aria-pressed"), "true")
+  const onlyUnlearnedPractice = await latestPracticeItem(page)
+  assert.equal(
+    onlyUnlearnedPractice.itemId,
+    onlyUnlearnedTarget,
+    "all vocabulary scope with one unlearned item should draw the remaining unlearned vocabulary id"
+  )
+}
 
 export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   await openQuizMode(page, baseUrl, "hiragana-romaji")
@@ -185,6 +266,8 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
     itemType: "vocab",
     practiceMode: "meaning",
   })
+
+  await verifyQuizScopeControls(page, baseUrl)
 
   await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
   await page.evaluate(({ masteredIds, key }) => {

@@ -299,6 +299,33 @@ test("browser E2E verifies every public quiz mode records practice", () => {
   assert.match(e2e, /"meaning-vocab"[\s\S]*"vocab"[\s\S]*"meaning"/)
 })
 
+test("browser E2E verifies quiz scope controls change real question pools", () => {
+  const e2e = readBrowserE2ESources()
+  const fixtures = readBrowserFixtures()
+
+  assert.match(e2e, /verifyQuizScopeControls/)
+  assert.match(fixtures, /export const quizVocabIdsByLevel/)
+  assert.match(fixtures, /readVocabularyIds\("survival\.ts"\)/)
+  assert.match(fixtures, /export async function openQuizModeWithLearningState/)
+  assert.match(e2e, /getByTestId\("quiz-kana-scope-seion"\)/)
+  assert.match(e2e, /getByTestId\("quiz-kana-scope-all"\)/)
+  assert.match(e2e, /getByTestId\("quiz-only-unmastered-kana"\)/)
+  assert.match(e2e, /getByTestId\("quiz-vocab-scope-survival"\)/)
+  assert.match(e2e, /getByTestId\("quiz-vocab-scope-daily"\)/)
+  assert.match(e2e, /getByTestId\("quiz-vocab-scope-fluent"\)/)
+  assert.match(e2e, /getByTestId\("quiz-vocab-scope-all"\)/)
+  assert.match(e2e, /getByTestId\("quiz-only-unlearned-vocab"\)/)
+  assert.match(e2e, /getAttribute\("aria-pressed"\), "true"/)
+  assert.match(e2e, /seionRomaji\.includes\(seionPractice\.itemId\)/)
+  assert.match(e2e, /!seionRomaji\.includes\(allUnmasteredPractice\.itemId\)/)
+  assert.match(e2e, /survivalPractice\.itemId\.startsWith\("sur-"\)/)
+  assert.match(e2e, /dailyPractice\.itemId\.startsWith\("day-"\)/)
+  assert.match(e2e, /fluentPractice\.itemId\.startsWith\("flu-"\)/)
+  assert.match(e2e, /learnedExceptTarget/)
+  assert.match(e2e, /onlyUnlearnedPractice\.itemId/)
+  assert.match(e2e, /all vocabulary scope with one unlearned item should draw the remaining unlearned vocabulary id/)
+})
+
 test("browser E2E verifies mastered kana filters show the quiz empty state", () => {
   const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()

@@ -1,7 +1,20 @@
 import assert from "node:assert/strict"
+import fs from "node:fs"
+import path from "node:path"
 
-import { readJsonStorage } from "./harness.mjs"
+import { appDir, readJsonStorage } from "./harness.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
+
+function readVocabularyIds(fileName) {
+  const source = fs.readFileSync(path.join(appDir, "src/data/vocabulary", fileName), "utf8")
+  return Array.from(source.matchAll(/id:\s*["']([^"']+)["']/g), (match) => match[1])
+}
+
+export const quizVocabIdsByLevel = {
+  survival: readVocabularyIds("survival.ts"),
+  daily: readVocabularyIds("daily.ts"),
+  fluent: readVocabularyIds("fluent.ts"),
+}
 
 export async function resetQuizLearningState(page) {
   await page.evaluate((storageKeys) => {
@@ -15,11 +28,7 @@ export async function resetQuizLearningState(page) {
   }, E2E_STORAGE_KEYS)
 }
 
-export async function openQuizMode(page, baseUrl, mode) {
-  await page.goto(baseUrl, { waitUntil: "networkidle" })
-  await resetQuizLearningState(page)
-  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
-
+async function clickQuizMode(page, mode) {
   if (mode === "hiragana-romaji") await page.getByTestId("quiz-mode-hiragana-romaji").click()
   else if (mode === "audio-kana") await page.getByTestId("quiz-mode-audio-kana").click()
   else if (mode === "particle") await page.getByTestId("quiz-mode-particle").click()
@@ -31,6 +40,31 @@ export async function openQuizMode(page, baseUrl, mode) {
 
   await page.getByTestId("quiz-score").waitFor({ state: "visible" })
   await page.locator('[data-testid^="quiz-answer-option-"]').first().waitFor({ state: "visible" })
+}
+
+export async function openQuizMode(page, baseUrl, mode) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await resetQuizLearningState(page)
+  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+  await clickQuizMode(page, mode)
+}
+
+export async function openQuizModeWithLearningState(page, baseUrl, mode, {
+  masteredKana = [],
+  learnedVocab = [],
+} = {}) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await resetQuizLearningState(page)
+  await page.evaluate(({ storageKeys, masteredKanaIds, learnedVocabIds }) => {
+    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(masteredKanaIds))
+    localStorage.setItem(storageKeys.VOCAB_LEARNED, JSON.stringify(learnedVocabIds))
+  }, {
+    storageKeys: E2E_STORAGE_KEYS,
+    masteredKanaIds: masteredKana,
+    learnedVocabIds: learnedVocab,
+  })
+  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+  await clickQuizMode(page, mode)
 }
 
 export async function clickFirstQuizOptionAndReadPractice(page) {

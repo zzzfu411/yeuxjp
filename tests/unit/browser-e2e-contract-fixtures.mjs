@@ -330,9 +330,44 @@ export const requiredSelectors = [
     pattern: /data-testid="quiz-question-text"/,
   },
   {
+    testId: "quiz-kana-scope-seion",
+    source: "src/components/quiz/quiz-scope-controls.tsx",
+    pattern: /data-testid="quiz-kana-scope-seion"/,
+  },
+  {
+    testId: "quiz-kana-scope-all",
+    source: "src/components/quiz/quiz-scope-controls.tsx",
+    pattern: /data-testid="quiz-kana-scope-all"/,
+  },
+  {
     testId: "quiz-only-unmastered-kana",
     source: "src/components/quiz/quiz-scope-controls.tsx",
     pattern: /data-testid="quiz-only-unmastered-kana"/,
+  },
+  {
+    testId: "quiz-vocab-scope-survival",
+    source: "src/components/quiz/quiz-scope-controls.tsx",
+    pattern: /data-testid=\{`quiz-vocab-scope-\$\{scope\}`\}/,
+  },
+  {
+    testId: "quiz-vocab-scope-daily",
+    source: "src/components/quiz/quiz-scope-controls.tsx",
+    pattern: /data-testid=\{`quiz-vocab-scope-\$\{scope\}`\}/,
+  },
+  {
+    testId: "quiz-vocab-scope-fluent",
+    source: "src/components/quiz/quiz-scope-controls.tsx",
+    pattern: /data-testid=\{`quiz-vocab-scope-\$\{scope\}`\}/,
+  },
+  {
+    testId: "quiz-vocab-scope-all",
+    source: "src/components/quiz/quiz-scope-controls.tsx",
+    pattern: /data-testid=\{`quiz-vocab-scope-\$\{scope\}`\}/,
+  },
+  {
+    testId: "quiz-only-unlearned-vocab",
+    source: "src/components/quiz/quiz-scope-controls.tsx",
+    pattern: /data-testid="quiz-only-unlearned-vocab"/,
   },
   {
     testId: "quiz-empty-state",

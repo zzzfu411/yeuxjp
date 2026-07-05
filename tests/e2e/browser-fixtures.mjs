@@ -10,5 +10,7 @@ export {
   assertQuizModeRecordsPractice,
   clickFirstQuizOptionAndReadPractice,
   openQuizMode,
+  openQuizModeWithLearningState,
+  quizVocabIdsByLevel,
   resetQuizLearningState,
 } from "./browser-fixture-quiz.mjs"
