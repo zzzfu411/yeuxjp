@@ -9,34 +9,11 @@ const vocabularyLevelLoaders: Record<VocabLevel, () => Promise<Vocabulary[]>> = 
 
 const vocabularyLevelPromises = new Map<VocabLevel, Promise<Vocabulary[]>>()
 
-type VocabularyLoadFailureWindow = Window & {
-  __yasashiE2EVocabularyLoadFailures?: Partial<Record<VocabLevel, number>>
-}
-
-function consumeE2EVocabularyLoadFailure(level: VocabLevel) {
-  if (typeof window === "undefined") return null
-  if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") return null
-
-  const failures = (window as VocabularyLoadFailureWindow).__yasashiE2EVocabularyLoadFailures
-  if (!failures) return null
-
-  const remaining = failures?.[level] ?? 0
-  if (remaining <= 0) return null
-
-  failures[level] = remaining - 1
-  return new Error(`E2E simulated vocabulary load failure: ${level}`)
-}
-
 export function loadVocabularyLevel(level: VocabLevel): Promise<Vocabulary[]> {
   const cached = vocabularyLevelPromises.get(level)
   if (cached) return cached
 
-  const promise = Promise.resolve()
-    .then(() => {
-      const simulatedFailure = consumeE2EVocabularyLoadFailure(level)
-      if (simulatedFailure) throw simulatedFailure
-      return vocabularyLevelLoaders[level]()
-    })
+  const promise = vocabularyLevelLoaders[level]()
     .catch((error) => {
       vocabularyLevelPromises.delete(level)
       throw error

@@ -20,6 +20,7 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
     viewport: { width: 390, height: 844 },
     isMobile: true,
     hasTouch: true,
+    serviceWorkers: "block",
   })
   issueCollector?.attachContext(mobileContext)
   try {

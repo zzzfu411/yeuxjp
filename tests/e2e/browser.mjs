@@ -59,7 +59,11 @@ try {
     label: "Browser E2E",
     allowRequestFailure: isExpectedBrowserRequestAbort,
   })
-  context = await browser.newContext({ acceptDownloads: true, viewport: { width: 1280, height: 900 } })
+  context = await browser.newContext({
+    acceptDownloads: true,
+    viewport: { width: 1280, height: 900 },
+    serviceWorkers: "block",
+  })
   issueCollector.attachContext(context)
   const page = await context.newPage()
   issueCollector.attachPage(page)
