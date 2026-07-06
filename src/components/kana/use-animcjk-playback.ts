@@ -26,11 +26,26 @@ export function useAnimCjkPlayback({
   const [playToken, setPlayToken] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [activeStroke, setActiveStroke] = useState<number>(0)
+  const activeStrokeRef = useRef(0)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const clearTimers = useCallback(() => {
     for (const timer of timersRef.current) clearTimeout(timer)
     timersRef.current = []
+  }, [])
+
+  const updateActiveStroke = useCallback((next: number | ((current: number) => number)) => {
+    if (typeof next === "function") {
+      setActiveStroke((current) => {
+        const resolved = next(current)
+        activeStrokeRef.current = resolved
+        return resolved
+      })
+      return
+    }
+
+    activeStrokeRef.current = next
+    setActiveStroke(next)
   }, [])
 
   const scheduleTimeline = useCallback(
@@ -39,54 +54,56 @@ export function useAnimCjkPlayback({
       if (!totalStrokes) return
 
       for (const event of getAnimCjkTimelineEvents({ startFrom, totalStrokes, speed })) {
-        const timer = setTimeout(() => setActiveStroke(event.stroke), event.delayMs)
+        const timer = setTimeout(() => updateActiveStroke(event.stroke), event.delayMs)
         timersRef.current.push(timer)
       }
     },
-    [clearTimers, speed, totalStrokes]
+    [clearTimers, speed, totalStrokes, updateActiveStroke]
   )
 
   useEffect(() => {
     if (!ready || !totalStrokes) return
     if (isPaused) return
 
-    const startFrom = getAnimCjkPlaybackStartStroke({ activeStroke, totalStrokes })
+    const startFrom = getAnimCjkPlaybackStartStroke({ activeStroke: activeStrokeRef.current, totalStrokes })
     if (startFrom === null) return
 
     scheduleTimeline(startFrom)
     return () => clearTimers()
-    // activeStroke advances from the scheduled timeline; including it would restart the same timeline on every tick.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playToken, speed, isPaused, ready, totalStrokes])
+  }, [clearTimers, isPaused, playToken, ready, scheduleTimeline, totalStrokes])
 
   useEffect(() => {
     if (!ready || !autoPlay) return
 
-    setActiveStroke(0)
-    setIsPaused(false)
-    setPlayToken((value) => value + 1)
-  }, [autoPlay, cacheKey, ready])
+    const timer = setTimeout(() => {
+      updateActiveStroke(0)
+      setIsPaused(false)
+      setPlayToken((value) => value + 1)
+    }, 0)
+
+    return () => clearTimeout(timer)
+  }, [autoPlay, cacheKey, ready, updateActiveStroke])
 
   useEffect(() => () => clearTimers(), [clearTimers])
 
   const handleReplay = useCallback(() => {
     clearTimers()
-    setActiveStroke(0)
+    updateActiveStroke(0)
     setIsPaused(false)
     setPlayToken((value) => value + 1)
-  }, [clearTimers])
+  }, [clearTimers, updateActiveStroke])
 
   const handlePrev = useCallback(() => {
     clearTimers()
-    setActiveStroke((value) => Math.max(0, value - 1))
+    updateActiveStroke((value) => Math.max(0, value - 1))
     setIsPaused(true)
-  }, [clearTimers])
+  }, [clearTimers, updateActiveStroke])
 
   const handleNext = useCallback(() => {
     clearTimers()
-    setActiveStroke((value) => Math.min(totalStrokes, value + 1))
+    updateActiveStroke((value) => Math.min(totalStrokes, value + 1))
     setIsPaused(true)
-  }, [clearTimers, totalStrokes])
+  }, [clearTimers, totalStrokes, updateActiveStroke])
 
   const handleTogglePause = useCallback(() => {
     if (activeStroke > totalStrokes) {
