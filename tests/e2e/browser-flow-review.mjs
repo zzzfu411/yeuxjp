@@ -77,6 +77,48 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   await page.getByTestId("review-due-state").waitFor({ state: "visible" })
   await page.getByTestId("review-start-today").click()
 
+  await page.getByTestId("review-answer-i").click()
+  await page.waitForFunction((storageKeys) => {
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    const item = Array.isArray(mistakes) ? mistakes.find((mistake) => mistake.id === "e2e-mistake:kana-a") : null
+    return item?.wrongCount === 3 &&
+      srs?.["e2e-mistake:kana-a"]?.wrong === 3 &&
+      srs?.["e2e-mistake:kana-a"]?.box === 0 &&
+      Array.isArray(practice) &&
+      practice.some((entry) =>
+        entry.itemId === "a" &&
+        entry.itemType === "kana" &&
+        entry.mode === "recognition" &&
+        entry.correct === false
+      )
+  }, E2E_STORAGE_KEYS)
+  const mixedWrongMistakes = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
+  const mixedWrongMistake = Array.isArray(mixedWrongMistakes)
+    ? mixedWrongMistakes.find((item) => item.id === "e2e-mistake:kana-a")
+    : null
+  assert.equal(mixedWrongMistake?.wrongCount, 3, "mixed today wrong mistake answer should increment notebook count once")
+  const mixedWrongMistakeSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_MISTAKES)
+  assert.equal(
+    mixedWrongMistakeSrs?.["e2e-mistake:kana-a"]?.wrong,
+    3,
+    "mixed today wrong mistake answer should grade mistake SRS exactly once"
+  )
+  assert.equal(
+    mixedWrongMistakeSrs?.["e2e-mistake:kana-a"]?.box,
+    0,
+    "mixed today wrong mistake answer should keep the mistake due for another pass"
+  )
+  await page.getByTestId("review-next").click()
+  assert.match(await page.getByTestId("review-remaining").innerText(), /3\b/)
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
+
+  await seedMixedReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-due-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-start-today").click()
+
   await page.getByTestId("review-answer-a").click()
   await page.waitForFunction((storageKeys) => {
     const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
