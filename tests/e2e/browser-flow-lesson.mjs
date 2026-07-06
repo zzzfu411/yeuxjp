@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 
-import { readJsonStorage } from "./harness.mjs"
+import { rapidClick, readJsonStorage } from "./harness.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 async function verifyLessonGeneratedReviewQueue(page, baseUrl) {
@@ -93,7 +93,7 @@ export async function verifyLessonFlow(page, baseUrl) {
     return progress?.["day-1-a-row-hello"]?.lastStepId === "recognize-a"
   }, E2E_STORAGE_KEYS.LESSON_PROGRESS)
   await page.getByTestId("lesson-answer-a").waitFor({ state: "visible" })
-  await page.getByTestId("lesson-answer-a").click()
+  await rapidClick(page.getByTestId("lesson-answer-a"))
   assert.ok(await page.getByTestId("lesson-next").isEnabled())
 
   const lessonPractice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
@@ -111,6 +111,15 @@ export async function verifyLessonFlow(page, baseUrl) {
   const itemProgress = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
   assert.equal(itemProgress?.a?.itemType, "kana", "lesson answer should update item progress")
   assert.equal(itemProgress?.a?.attempts, 1, "lesson answer should increment item attempts")
+  assert.equal(
+    lessonPractice.filter((item) =>
+      item.lessonId === "day-1-a-row-hello" &&
+      item.lessonStepId === "recognize-a" &&
+      item.itemId === "a"
+    ).length,
+    1,
+    "rapid lesson answer clicks should write one practice result"
+  )
   assert.equal(itemProgress?.a?.correct, 1, "lesson answer should increment correct count")
   const kanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
   assert.ok(kanaSrs?.a?.dueAt, "correct kana lesson answer should enroll SRS")

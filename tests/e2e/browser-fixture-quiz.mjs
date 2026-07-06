@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import fs from "node:fs"
 import path from "node:path"
 
-import { appDir, readJsonStorage } from "./harness.mjs"
+import { appDir, rapidClick, readJsonStorage } from "./harness.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 function readVocabularyIds(fileName) {
@@ -68,12 +68,12 @@ export async function openQuizModeWithLearningState(page, baseUrl, mode, {
 }
 
 export async function clickFirstQuizOptionAndReadPractice(page) {
-  await page.locator('[data-testid^="quiz-answer-option-"]').first().click()
+  await rapidClick(page.locator('[data-testid^="quiz-answer-option-"]').first())
   await page.waitForFunction((key) => {
     const practice = JSON.parse(localStorage.getItem(key) ?? "[]")
     return Array.isArray(practice) && practice.length > 0
   }, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
-  assert.match(await page.getByTestId("quiz-score").innerText(), /\/1\b/)
+  assert.match(await page.getByTestId("quiz-score").innerText(), /\/1\b/, "rapid quiz answer clicks should score one attempt")
   return readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
 }
 

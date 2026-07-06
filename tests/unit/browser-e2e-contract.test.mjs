@@ -237,6 +237,22 @@ test("browser E2E verifies locked lesson previews stay read-only", () => {
   assert.match(e2e, /locked lesson preview should not enroll SRS/)
 })
 
+test("browser E2E verifies rapid answer clicks record once", () => {
+  const e2e = readBrowserE2ESources()
+  const harness = readE2EHarness()
+
+  assert.match(harness, /export async function rapidClick/)
+  assert.match(harness, /dispatchEvent\(new MouseEvent\("click"/)
+  assert.match(e2e, /import \{ rapidClick, readJsonStorage \} from "\.\/harness\.mjs"/)
+  assert.match(e2e, /rapidClick\(page\.getByTestId\("lesson-answer-a"\)\)/)
+  assert.match(e2e, /rapid lesson answer clicks should write one practice result/)
+  assert.match(e2e, /rapidClick\(page\.locator\('\[data-testid\^="quiz-answer-option-"\]'\)\.first\(\)\)/)
+  assert.match(e2e, /rapid quiz answer clicks should score one attempt/)
+  assert.match(e2e, /rapidClick\(page\.getByTestId\(wrongKanaOption\)\)/)
+  assert.match(e2e, /rapid review answer clicks should grade SRS once/)
+  assert.match(e2e, /rapid review answer clicks should write one failed practice result/)
+})
+
 test("browser E2E verifies wrong quiz answers enter the mistake notebook", () => {
   const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()

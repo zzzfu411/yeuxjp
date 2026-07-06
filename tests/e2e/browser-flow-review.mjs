@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 
-import { readJsonStorage } from "./harness.mjs"
+import { rapidClick, readJsonStorage } from "./harness.mjs"
 import { seedMixedReviewState, seedReviewState } from "./browser-fixtures.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
@@ -36,7 +36,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
     return option?.getAttribute("data-testid")
   })
   assert.ok(wrongKanaOption, "kana review should expose at least one wrong answer option")
-  await page.getByTestId(wrongKanaOption).click()
+  await rapidClick(page.getByTestId(wrongKanaOption))
   await page.waitForFunction((storageKeys) => {
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
     const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
@@ -56,6 +56,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   }, E2E_STORAGE_KEYS)
   const wrongKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
   assert.equal(wrongKanaSrs?.a?.box, 0, "wrong review answer should reset kana SRS to immediate review")
+  assert.equal(wrongKanaSrs?.a?.wrong, 1, "rapid review answer clicks should grade SRS once")
   assert.ok(wrongKanaSrs?.a?.wrong >= 1, "wrong review answer should increment SRS wrong count")
   assert.ok(wrongKanaSrs?.a?.dueAt <= Date.now(), "wrong review answer should keep the item due now")
   const wrongReviewPractice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
@@ -68,6 +69,18 @@ export async function verifyDueReviewFlow(page, baseUrl) {
         item.correct === false
       ),
     "wrong review answer should write failed practice history"
+  )
+  assert.equal(
+    Array.isArray(wrongReviewPractice)
+      ? wrongReviewPractice.filter((item) =>
+        item.itemId === "a" &&
+        item.itemType === "kana" &&
+        item.mode === "recognition" &&
+        item.correct === false
+      ).length
+      : 0,
+    1,
+    "rapid review answer clicks should write one failed practice result"
   )
   await page.getByTestId("review-next").click()
   assert.match(await page.getByTestId("review-remaining").innerText(), /1\b/)

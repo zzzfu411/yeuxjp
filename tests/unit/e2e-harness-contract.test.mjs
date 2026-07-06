@@ -178,6 +178,8 @@ test("E2E harness owns server lifecycle and storage helpers", () => {
   assert.doesNotMatch(runBuildIfNeededBody, /E2E_BASE_URL/)
   assert.match(harness, /controller\.spawn\(process\.execPath, \[nextCli, "start", "--hostname", "127\.0\.0\.1", "--port"/)
   assert.match(harness, /export async function readJsonStorage/)
+  assert.match(harness, /export async function rapidClick/)
+  assert.match(harness, /dispatchEvent\(new MouseEvent\("click"/)
   assert.match(buildScript, /withBuildLock/)
   assert.match(buildScript, /nextCli/)
   assert.match(buildLock, /export async function acquireBuildLock/)

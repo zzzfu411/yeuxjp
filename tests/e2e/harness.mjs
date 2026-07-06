@@ -318,3 +318,11 @@ export async function readJsonStorage(page, key) {
     return raw ? JSON.parse(raw) : null
   }, key)
 }
+
+export async function rapidClick(locator, count = 2) {
+  await locator.evaluate((element, repeat) => {
+    for (let index = 0; index < repeat; index += 1) {
+      element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }))
+    }
+  }, count)
+}
