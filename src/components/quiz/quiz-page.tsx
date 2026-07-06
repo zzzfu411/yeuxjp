@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense, useEffect, useRef, useState } from "react"
+import dynamic from "next/dynamic"
 import { useSearchParams } from "next/navigation"
 import {
   Ear,
@@ -12,12 +13,23 @@ import {
 import { GlossaryButton } from "@/components/ui/glossary"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { NextStepCard } from "@/components/learning/next-step-card"
-import { QuizRunner } from "@/components/quiz/quiz-runner"
 import { QUIZ_MODE_OPTIONS, type QuizModeIcon } from "@/lib/quiz-mode-options"
 import {
   parseQuizMode,
   type QuizMode,
-} from "@/lib/quiz-generators"
+} from "@/lib/quiz-types"
+
+const QuizRunner = dynamic(
+  () => import("@/components/quiz/quiz-runner").then((mod) => mod.QuizRunner),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex justify-center py-20 text-muted-foreground">
+        Loading quiz...
+      </div>
+    ),
+  }
+)
 
 function QuizPageContent() {
   const searchParams = useSearchParams()
