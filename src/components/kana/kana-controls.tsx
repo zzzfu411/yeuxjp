@@ -52,6 +52,7 @@ export function KanaControls({
         <button
           type="button"
           aria-pressed={mode === "hiragana"}
+          data-testid="kana-mode-hiragana"
           onClick={() => onModeChange("hiragana")}
           className={cn(
             "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-8",
@@ -65,6 +66,7 @@ export function KanaControls({
         <button
           type="button"
           aria-pressed={mode === "katakana"}
+          data-testid="kana-mode-katakana"
           onClick={() => onModeChange("katakana")}
           className={cn(
             "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-8",
@@ -84,6 +86,7 @@ export function KanaControls({
               key={set.id}
               type="button"
               aria-pressed={kanaSet === set.id}
+              data-testid={`kana-set-${set.id}`}
               onClick={() => onKanaSetChange(set.id)}
               className={cn(
                 "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-6",
@@ -105,6 +108,7 @@ export function KanaControls({
           <button
             type="button"
             aria-pressed={showRomaji}
+            data-testid="kana-romaji-toggle"
             onClick={onToggleRomaji}
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
@@ -118,6 +122,7 @@ export function KanaControls({
           <button
             type="button"
             aria-pressed={onlyUnmastered}
+            data-testid="kana-only-unmastered-toggle"
             onClick={onToggleOnlyUnmastered}
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",

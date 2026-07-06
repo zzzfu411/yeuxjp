@@ -148,8 +148,54 @@ async function verifyKanaStrokeControls(page) {
   }, speedBefore)
 }
 
+async function waitForVisibleImagesToSettle(page) {
+  await page.waitForFunction(() => {
+    const visibleImages = Array.from(document.images).filter((image) => {
+      const rect = image.getBoundingClientRect()
+      const style = window.getComputedStyle(image)
+      return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden"
+    })
+
+    return visibleImages.every((image) => image.complete)
+  })
+}
+
+async function verifyKanaFilterControls(page) {
+  const katakanaA = String.fromCodePoint(0x30a2)
+
+  await page.getByTestId("kana-mode-katakana").click()
+  assert.equal(await page.getByTestId("kana-mode-katakana").getAttribute("aria-pressed"), "true")
+  assert.ok(
+    (await page.getByTestId("kana-card-a").getAttribute("aria-label"))?.includes(katakanaA),
+    "katakana mode should show katakana glyphs on kana cards"
+  )
+  await page.getByTestId("kana-mode-hiragana").click()
+  assert.equal(await page.getByTestId("kana-mode-hiragana").getAttribute("aria-pressed"), "true")
+
+  await page.getByTestId("kana-set-yoon").click()
+  assert.equal(await page.getByTestId("kana-set-yoon").getAttribute("aria-pressed"), "true")
+  await page.getByTestId("kana-card-kya").waitFor({ state: "visible" })
+  await page.getByTestId("kana-card-a").waitFor({ state: "hidden" })
+  await waitForVisibleImagesToSettle(page)
+
+  await page.getByTestId("kana-set-special").click()
+  assert.equal(await page.getByTestId("kana-set-special").getAttribute("aria-pressed"), "true")
+  await page.getByTestId("kana-card-sokuon").waitFor({ state: "visible" })
+  await waitForVisibleImagesToSettle(page)
+
+  await page.getByTestId("kana-set-seion").click()
+  assert.equal(await page.getByTestId("kana-set-seion").getAttribute("aria-pressed"), "true")
+  await page.getByTestId("kana-card-ka").getByText("ka", { exact: true }).waitFor({ state: "visible" })
+  await page.getByTestId("kana-romaji-toggle").click()
+  assert.equal(await page.getByTestId("kana-romaji-toggle").getAttribute("aria-pressed"), "false")
+  await page.getByTestId("kana-card-ka").getByText("ka", { exact: true }).waitFor({ state: "hidden" })
+  await page.getByTestId("kana-romaji-toggle").click()
+  assert.equal(await page.getByTestId("kana-romaji-toggle").getAttribute("aria-pressed"), "true")
+}
+
 export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
+  await verifyKanaFilterControls(page)
   await page.getByTestId("kana-card-a").click()
   await verifyDialogHasAccessibleName(page, "kana detail modal")
   await verifyDialogTabTrap(page)
@@ -167,6 +213,13 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   const masteredKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
   assert.ok(masteredKanaSrs?.a?.dueAt, "kana mastery toggle should enroll kana a for SRS review")
   await page.keyboard.press("Escape")
+  await page.getByTestId("kana-only-unmastered-toggle").click()
+  assert.equal(await page.getByTestId("kana-only-unmastered-toggle").getAttribute("aria-pressed"), "true")
+  await page.getByTestId("kana-card-a").waitFor({ state: "hidden" })
+  await page.getByTestId("kana-card-i").waitFor({ state: "visible" })
+  await page.getByTestId("kana-only-unmastered-toggle").click()
+  assert.equal(await page.getByTestId("kana-only-unmastered-toggle").getAttribute("aria-pressed"), "false")
+  await page.getByTestId("kana-card-a").waitFor({ state: "visible" })
   await page.getByTestId("kana-clear-progress").click()
   await page.getByTestId("kana-clear-progress-dialog-cancel").click()
   assert.ok(

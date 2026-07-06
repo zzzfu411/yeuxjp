@@ -351,6 +351,29 @@ test("browser E2E verifies mastered kana filters show the quiz empty state", () 
   assert.match(e2e, /getByTestId\("quiz-empty-state"\)\.waitFor\(\{ state: "visible" \}\)/)
 })
 
+test("browser E2E verifies kana page filters and romaji controls", () => {
+  const e2e = readBrowserE2ESources()
+
+  assert.match(e2e, /async function verifyKanaFilterControls/)
+  assert.match(e2e, /async function waitForVisibleImagesToSettle/)
+  assert.match(e2e, /visibleImages\.every\(\(image\) => image\.complete\)/)
+  assert.match(e2e, /getByTestId\("kana-mode-katakana"\)\.click\(\)/)
+  assert.match(e2e, /String\.fromCodePoint\(0x30a2\)/)
+  assert.match(e2e, /katakana mode should show katakana glyphs on kana cards/)
+  assert.match(e2e, /getByTestId\("kana-mode-hiragana"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("kana-set-yoon"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("kana-card-kya"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /getByTestId\("kana-card-a"\)\.waitFor\(\{ state: "hidden" \}\)/)
+  assert.match(e2e, /getByTestId\("kana-set-special"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("kana-card-sokuon"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /await waitForVisibleImagesToSettle\(page\)/)
+  assert.match(e2e, /getByTestId\("kana-set-seion"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("kana-romaji-toggle"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("kana-card-ka"\)\.getByText\("ka", \{ exact: true \}\)\.waitFor\(\{ state: "hidden" \}\)/)
+  assert.match(e2e, /getByTestId\("kana-only-unmastered-toggle"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("kana-card-i"\)\.waitFor\(\{ state: "visible" \}\)/)
+})
+
 test("browser E2E verifies kana and vocabulary reset confirmations", () => {
   const e2e = readBrowserE2ESources()
 

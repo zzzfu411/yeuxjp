@@ -200,6 +200,61 @@ export const requiredSelectors = [
     pattern: /data-testid=\{`kana-card-\$\{kana\.romaji\}`\}/,
   },
   {
+    testId: "kana-card-i",
+    source: "src/components/kana/kana-card.tsx",
+    pattern: /data-testid=\{`kana-card-\$\{kana\.romaji\}`\}/,
+  },
+  {
+    testId: "kana-card-ka",
+    source: "src/components/kana/kana-card.tsx",
+    pattern: /data-testid=\{`kana-card-\$\{kana\.romaji\}`\}/,
+  },
+  {
+    testId: "kana-card-kya",
+    source: "src/components/kana/kana-card.tsx",
+    pattern: /data-testid=\{`kana-card-\$\{kana\.romaji\}`\}/,
+  },
+  {
+    testId: "kana-card-sokuon",
+    source: "src/components/kana/kana-card.tsx",
+    pattern: /data-testid=\{`kana-card-\$\{kana\.romaji\}`\}/,
+  },
+  {
+    testId: "kana-mode-hiragana",
+    source: "src/components/kana/kana-controls.tsx",
+    pattern: /data-testid="kana-mode-hiragana"/,
+  },
+  {
+    testId: "kana-mode-katakana",
+    source: "src/components/kana/kana-controls.tsx",
+    pattern: /data-testid="kana-mode-katakana"/,
+  },
+  {
+    testId: "kana-set-seion",
+    source: "src/components/kana/kana-controls.tsx",
+    pattern: /data-testid=\{`kana-set-\$\{set\.id\}`\}/,
+  },
+  {
+    testId: "kana-set-yoon",
+    source: "src/components/kana/kana-controls.tsx",
+    pattern: /data-testid=\{`kana-set-\$\{set\.id\}`\}/,
+  },
+  {
+    testId: "kana-set-special",
+    source: "src/components/kana/kana-controls.tsx",
+    pattern: /data-testid=\{`kana-set-\$\{set\.id\}`\}/,
+  },
+  {
+    testId: "kana-romaji-toggle",
+    source: "src/components/kana/kana-controls.tsx",
+    pattern: /data-testid="kana-romaji-toggle"/,
+  },
+  {
+    testId: "kana-only-unmastered-toggle",
+    source: "src/components/kana/kana-controls.tsx",
+    pattern: /data-testid="kana-only-unmastered-toggle"/,
+  },
+  {
     testId: "kana-stroke-toggle",
     source: "src/components/kana/kana-detail-modal.tsx",
     pattern: /data-testid="kana-stroke-toggle"/,
