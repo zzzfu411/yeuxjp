@@ -3,15 +3,15 @@
 import { useCallback, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import type { VocabLevel } from "@/data/vocabulary/types"
+import { DEFAULT_VOCABULARY_LEVEL, isVocabLevel } from "@/data/vocabulary/levels"
 
 function parseVocabularyLevel(value: string | null): VocabLevel | null {
-  if (value === "survival" || value === "daily" || value === "fluent") return value
-  return null
+  return isVocabLevel(value) ? value : null
 }
 
 export function useVocabularyPageControls() {
   const searchParams = useSearchParams()
-  const [currentLevel, setCurrentLevel] = useState<VocabLevel>("survival")
+  const [currentLevel, setCurrentLevel] = useState<VocabLevel>(DEFAULT_VOCABULARY_LEVEL)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [onlyUnlearned, setOnlyUnlearned] = useState(false)

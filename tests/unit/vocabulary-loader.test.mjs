@@ -6,6 +6,7 @@ import { loadTsModule } from "./load-ts-module.mjs"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
 const loader = await loadTsModule("src/data/vocabulary/loader.ts")
+const levels = await loadTsModule("src/data/vocabulary/levels.ts")
 
 test("vocabulary loader returns the requested level only", async () => {
   const survival = await loader.loadVocabularyLevel("survival")
@@ -37,13 +38,18 @@ test("vocabulary loader evicts failed level loads before retry", () => {
 })
 
 test("vocabulary scope all combines every level", async () => {
-  const survival = await loader.loadVocabularyLevel("survival")
-  const daily = await loader.loadVocabularyLevel("daily")
-  const fluent = await loader.loadVocabularyLevel("fluent")
+  const levelData = await Promise.all(levels.VOCABULARY_LEVEL_IDS.map(loader.loadVocabularyLevel))
   const all = await loader.loadVocabularyScope("all")
 
-  assert.equal(all.length, survival.length + daily.length + fluent.length)
-  assert.deepEqual(new Set(all.map((item) => item.level)), new Set(["survival", "daily", "fluent"]))
+  assert.equal(all.length, levelData.flat().length)
+  assert.deepEqual(new Set(all.map((item) => item.level)), new Set(levels.VOCABULARY_LEVEL_IDS))
+})
+
+test("vocabulary scope all follows the shared level registry", () => {
+  const source = fs.readFileSync(path.join(root, "src/data/vocabulary/loader.ts"), "utf8")
+
+  assert.match(source, /VOCABULARY_LEVEL_IDS\.map\(loadVocabularyLevel\)/)
+  assert.doesNotMatch(source, /loadVocabularyLevel\("survival"\)[\s\S]*loadVocabularyLevel\("daily"\)[\s\S]*loadVocabularyLevel\("fluent"\)/)
 })
 
 test("vocabulary loader returns only requested ids while preserving order", async () => {

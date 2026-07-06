@@ -1,11 +1,8 @@
 import type { VocabLevel } from "./types"
 import { getKnownVocabularyLevelForId } from "./id-registry"
+import { mapVocabularyLevels, vocabLevelCounts } from "./levels"
 
-export const vocabLevelCounts = {
-  survival: 505,
-  daily: 240,
-  fluent: 195,
-} satisfies Record<VocabLevel, number>
+export { vocabLevelCounts } from "./levels"
 
 export type VocabLevelStat = {
   total: number
@@ -18,22 +15,14 @@ export function getVocabLevelForId(id: string): VocabLevel | null {
 }
 
 export function summarizeLearnedVocabIds(learnedIds: Iterable<string>): Record<VocabLevel, VocabLevelStat> {
-  const doneByLevel = {
-    survival: 0,
-    daily: 0,
-    fluent: 0,
-  } satisfies Record<VocabLevel, number>
+  const doneByLevel = mapVocabularyLevels(() => 0)
 
   for (const id of learnedIds) {
     const level = getVocabLevelForId(id)
     if (level) doneByLevel[level] += 1
   }
 
-  return {
-    survival: makeStat(doneByLevel.survival, vocabLevelCounts.survival),
-    daily: makeStat(doneByLevel.daily, vocabLevelCounts.daily),
-    fluent: makeStat(doneByLevel.fluent, vocabLevelCounts.fluent),
-  }
+  return mapVocabularyLevels((level) => makeStat(doneByLevel[level], vocabLevelCounts[level]))
 }
 
 function makeStat(done: number, total: number): VocabLevelStat {

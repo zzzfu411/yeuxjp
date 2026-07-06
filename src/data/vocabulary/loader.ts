@@ -1,4 +1,5 @@
 import type { VocabLevel, Vocabulary } from "./types"
+import { VOCABULARY_LEVEL_IDS } from "./levels"
 import { getVocabLevelForId } from "./stats"
 
 const vocabularyLevelLoaders: Record<VocabLevel, () => Promise<Vocabulary[]>> = {
@@ -24,12 +25,8 @@ export function loadVocabularyLevel(level: VocabLevel): Promise<Vocabulary[]> {
 
 export async function loadVocabularyScope(scope: VocabLevel | "all"): Promise<Vocabulary[]> {
   if (scope !== "all") return loadVocabularyLevel(scope)
-  const [survival, daily, fluent] = await Promise.all([
-    loadVocabularyLevel("survival"),
-    loadVocabularyLevel("daily"),
-    loadVocabularyLevel("fluent"),
-  ])
-  return [...survival, ...daily, ...fluent]
+  const chunks = await Promise.all(VOCABULARY_LEVEL_IDS.map(loadVocabularyLevel))
+  return chunks.flat()
 }
 
 export async function loadVocabularyForIds(ids: readonly string[]): Promise<Vocabulary[]> {

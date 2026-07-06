@@ -1,11 +1,13 @@
+import type { VocabLevel } from "./levels";
+
+export type { VocabLevel } from "./levels";
+
 export type VocabCategory = 
   | "greetings" | "verbs" | "adjectives" | "people" 
   | "food" | "time" | "nature" | "daily" 
   | "body" | "directions" | "transport" | "colors" 
   | "numbers" | "furniture" | "city" | "grammar_words"
   | "business" | "emotion" | "abstract" | "society" | "culture"; // New categories for higher levels
-
-export type VocabLevel = "survival" | "daily" | "fluent";
 
 export type JLPTLevel = "N5" | "N4" | "N3" | "N2" | "N1";
 

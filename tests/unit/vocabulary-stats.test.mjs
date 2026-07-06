@@ -7,6 +7,7 @@ import { loadTsModule } from "./load-ts-module.mjs"
 const root = path.resolve(import.meta.dirname, "..", "..")
 const stats = await loadTsModule("src/data/vocabulary/stats.ts")
 const loader = await loadTsModule("src/data/vocabulary/loader.ts")
+const levels = await loadTsModule("src/data/vocabulary/levels.ts")
 
 function listSourceFiles(relativeDir) {
   const absoluteDir = path.join(root, relativeDir)
@@ -29,7 +30,7 @@ function listSourceFiles(relativeDir) {
 }
 
 test("vocabulary level counts stay aligned with the real data files", async () => {
-  for (const level of ["survival", "daily", "fluent"]) {
+  for (const level of levels.VOCABULARY_LEVEL_IDS) {
     const data = await loader.loadVocabularyLevel(level)
     assert.equal(stats.vocabLevelCounts[level], data.length)
   }
@@ -58,6 +59,16 @@ test("learned vocabulary ids are summarized by stable level prefixes", () => {
   assert.equal(summary.fluent.done, 1)
   assert.equal(summary.survival.total, stats.vocabLevelCounts.survival)
   assert.equal(summary.survival.ratio, 2 / stats.vocabLevelCounts.survival)
+})
+
+test("vocabulary stats build counts and summaries from the shared level registry", () => {
+  const source = fs.readFileSync(path.join(root, "src/data/vocabulary/stats.ts"), "utf8")
+
+  assert.match(source, /mapVocabularyLevels/)
+  assert.match(source, /vocabLevelCounts/)
+  assert.doesNotMatch(source, /survival:\s*505/)
+  assert.doesNotMatch(source, /daily:\s*240/)
+  assert.doesNotMatch(source, /fluent:\s*195/)
 })
 
 test("recommendation surfaces do not import the aggregated vocabulary dataset", () => {

@@ -1,11 +1,12 @@
 import type { VocabLevel } from "@/data/vocabulary/types"
+import { VOCABULARY_LEVEL_METADATA } from "@/data/vocabulary/levels"
 import type { VocabularyLevelOption } from "@/components/vocabulary/vocabulary-toolbar"
 
-export const VOCABULARY_LEVELS: readonly VocabularyLevelOption[] = [
-  { id: "survival", label: "生存级 (N5)", desc: "购物、问路、自我介绍" },
-  { id: "daily", label: "日常级 (N4-N3)", desc: "生活交流、动漫理解" },
-  { id: "fluent", label: "流利级 (N2-N1)", desc: "商务、新闻、深层文化" },
-] satisfies readonly { id: VocabLevel; label: string; desc: string }[]
+export const VOCABULARY_LEVELS = VOCABULARY_LEVEL_METADATA.map(({ id, label, desc }) => ({
+  id,
+  label,
+  desc,
+})) satisfies readonly VocabularyLevelOption[]
 
 export const VOCABULARY_CATEGORY_NAMES: Readonly<Record<string, string>> = {
   greetings: "寒暄 (Greetings)",
