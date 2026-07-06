@@ -28,20 +28,14 @@ test("learning status combines legacy marks with practiced kana and vocabulary p
       ka: item({
         itemId: "ka",
         itemType: "kana",
-        recognition: 80,
-        listening: 40,
-        recall: 40,
-        production: 40,
-        attempts: 4,
+        recognition: 54,
+        attempts: 3,
       }),
       "sur-v-1": item({
         itemId: "sur-v-1",
         itemType: "vocab",
-        recognition: 40,
-        meaning: 80,
-        recall: 40,
-        production: 40,
-        attempts: 4,
+        meaning: 54,
+        attempts: 3,
       }),
       grammar: item({
         itemId: "grammar",
@@ -58,8 +52,34 @@ test("learning status combines legacy marks with practiced kana and vocabulary p
 
 test("learning status ignores unpracticed or below-threshold item progress", () => {
   assert.equal(model.isItemLearnedFromProgress(item({ attempts: 0, recognition: 100 })), false)
-  assert.equal(model.isItemLearnedFromProgress(item({ attempts: 1, recognition: 30, listening: 30, meaning: 30, recall: 30, production: 30 })), false)
-  assert.equal(model.isItemLearnedFromProgress(item({ attempts: 1, recognition: 40, listening: 40, meaning: 40, recall: 40, production: 40 })), true)
+  assert.equal(model.isItemLearnedFromProgress(item({ itemType: "kana", attempts: 1, recognition: 39 })), false)
+  assert.equal(model.isItemLearnedFromProgress(item({ itemType: "vocab", attempts: 1, meaning: 39 })), false)
+  assert.equal(model.isItemLearnedFromProgress(item({ itemType: "grammar", attempts: 1, recognition: 39, listening: 39, meaning: 39, recall: 39, production: 39 })), false)
+  assert.equal(model.isItemLearnedFromProgress(item({ itemType: "grammar", attempts: 1, recognition: 40, listening: 40, meaning: 40, recall: 40, production: 40 })), true)
+})
+
+test("learning status uses item-type relevant mastery modes", () => {
+  assert.equal(
+    model.isItemLearnedFromProgress(item({ itemType: "vocab", attempts: 3, meaning: 54 })),
+    true,
+    "vocabulary meaning practice should count as learned without averaging unrelated modes"
+  )
+  assert.equal(
+    model.isItemLearnedFromProgress(item({ itemType: "vocab", attempts: 3, recall: 54 })),
+    true,
+    "vocabulary recall practice should count as learned without averaging unrelated modes"
+  )
+  assert.equal(
+    model.isItemLearnedFromProgress(item({ itemType: "kana", attempts: 3, recognition: 54 })),
+    true,
+    "kana recognition practice should count as mastered without averaging unrelated modes"
+  )
+  assert.equal(
+    model.isItemLearnedFromProgress(item({ itemType: "kana", attempts: 3, listening: 54 })),
+    true,
+    "kana listening practice should count as mastered without averaging unrelated modes"
+  )
+  assert.equal(model.learningStatusMasteryScore(item({ itemType: "kana", recognition: Number.NaN, listening: 50 })), 50)
 })
 
 test("learning status ignores stale vocabulary ids from legacy marks and practiced progress", () => {
@@ -70,11 +90,8 @@ test("learning status ignores stale vocabulary ids from legacy marks and practic
       "sur-v-1": item({
         itemId: "sur-v-1",
         itemType: "vocab",
-        recognition: 40,
-        meaning: 80,
-        recall: 40,
-        production: 40,
-        attempts: 4,
+        meaning: 54,
+        attempts: 3,
       }),
       "flu-tech-999": item({
         itemId: "flu-tech-999",
@@ -99,11 +116,8 @@ test("learning status ignores non-reviewable kana ids from legacy marks and prac
       ka: item({
         itemId: "ka",
         itemType: "kana",
-        recognition: 80,
-        listening: 40,
-        recall: 40,
-        production: 40,
-        attempts: 4,
+        recognition: 54,
+        attempts: 3,
       }),
       "longvowel:obaasan": item({
         itemId: "longvowel:obaasan",
