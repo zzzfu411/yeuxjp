@@ -30,14 +30,14 @@ export function KanaStrokeControls({
 
   return (
     <div className="flex items-center justify-between gap-2 px-1">
-      <div className="text-[11px] font-mono text-muted-foreground tabular-nums select-none">
+      <div className="text-[11px] font-mono text-muted-foreground tabular-nums select-none" data-testid="kana-stroke-progress">
         {Math.min(activeStroke, totalStrokes)} / {totalStrokes}
       </div>
       <div className="flex items-center gap-1">
-        <ControlBtn onClick={onPrev} disabled={activeStroke === 0} aria-label="上一笔">
+        <ControlBtn onClick={onPrev} disabled={activeStroke === 0} aria-label="上一笔" data-testid="kana-stroke-prev">
           <SkipBack className="w-3.5 h-3.5" />
         </ControlBtn>
-        <ControlBtn onClick={onTogglePause} aria-label={isPaused || isFinished ? "播放" : "暂停"}>
+        <ControlBtn onClick={onTogglePause} aria-label={isPaused || isFinished ? "播放" : "暂停"} data-testid="kana-stroke-play-toggle">
           {isFinished ? (
             <RotateCcw className="w-3.5 h-3.5" />
           ) : isPaused ? (
@@ -46,13 +46,13 @@ export function KanaStrokeControls({
             <Pause className="w-3.5 h-3.5" />
           )}
         </ControlBtn>
-        <ControlBtn onClick={onNext} disabled={activeStroke >= totalStrokes} aria-label="下一笔">
+        <ControlBtn onClick={onNext} disabled={activeStroke >= totalStrokes} aria-label="下一笔" data-testid="kana-stroke-next">
           <SkipForward className="w-3.5 h-3.5" />
         </ControlBtn>
-        <ControlBtn onClick={onReplay} aria-label="重播">
+        <ControlBtn onClick={onReplay} aria-label="重播" data-testid="kana-stroke-replay">
           <RotateCcw className="w-3.5 h-3.5" />
         </ControlBtn>
-        <ControlBtn onClick={onCycleSpeed} aria-label={`速度：${speedLabel}`}>
+        <ControlBtn onClick={onCycleSpeed} aria-label={`速度：${speedLabel}`} data-testid="kana-stroke-speed">
           <Gauge className="w-3.5 h-3.5" />
           <span className="text-[10px] font-mono ml-0.5">{speedLabel}</span>
         </ControlBtn>

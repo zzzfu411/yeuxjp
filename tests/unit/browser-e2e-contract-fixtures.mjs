@@ -210,6 +210,36 @@ export const requiredSelectors = [
     pattern: /data-testid=\{label \? "kana-stroke-board" : undefined\}/,
   },
   {
+    testId: "kana-stroke-progress",
+    source: "src/components/kana/kana-stroke-controls.tsx",
+    pattern: /data-testid="kana-stroke-progress"/,
+  },
+  {
+    testId: "kana-stroke-prev",
+    source: "src/components/kana/kana-stroke-controls.tsx",
+    pattern: /data-testid="kana-stroke-prev"/,
+  },
+  {
+    testId: "kana-stroke-play-toggle",
+    source: "src/components/kana/kana-stroke-controls.tsx",
+    pattern: /data-testid="kana-stroke-play-toggle"/,
+  },
+  {
+    testId: "kana-stroke-next",
+    source: "src/components/kana/kana-stroke-controls.tsx",
+    pattern: /data-testid="kana-stroke-next"/,
+  },
+  {
+    testId: "kana-stroke-replay",
+    source: "src/components/kana/kana-stroke-controls.tsx",
+    pattern: /data-testid="kana-stroke-replay"/,
+  },
+  {
+    testId: "kana-stroke-speed",
+    source: "src/components/kana/kana-stroke-controls.tsx",
+    pattern: /data-testid="kana-stroke-speed"/,
+  },
+  {
     testId: "kana-mastery-toggle",
     source: "src/components/kana/kana-detail-modal.tsx",
     pattern: /data-testid="kana-mastery-toggle"/,

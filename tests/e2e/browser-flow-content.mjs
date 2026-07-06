@@ -93,6 +93,61 @@ async function verifyKanaStrokeBoardRendered(page) {
   })
 }
 
+async function readKanaStrokePlaybackState(page) {
+  return page.evaluate(() => {
+    const boardElement = document.querySelector('[data-testid="kana-stroke-board"]')
+    const progressElement = boardElement?.querySelector("[data-active-stroke]")
+    const activeStroke = Number(progressElement?.getAttribute("data-active-stroke") ?? "0")
+    const progressText = document.querySelector('[data-testid="kana-stroke-progress"]')?.textContent?.trim() ?? ""
+    const speedText = document.querySelector('[data-testid="kana-stroke-speed"]')?.textContent?.trim() ?? ""
+
+    return { activeStroke, progressText, speedText }
+  })
+}
+
+async function verifyKanaStrokeControls(page) {
+  await page.getByTestId("kana-stroke-progress").waitFor({ state: "visible" })
+  await page.getByTestId("kana-stroke-replay").click()
+  await page.getByTestId("kana-stroke-play-toggle").click()
+  await page.waitForFunction(() => {
+    const boardElement = document.querySelector('[data-testid="kana-stroke-board"]')
+    const progressElement = boardElement?.querySelector("[data-active-stroke]")
+    const activeStroke = Number(progressElement?.getAttribute("data-active-stroke") ?? "0")
+    return Number.isFinite(activeStroke) && activeStroke <= 1
+  })
+
+  const paused = await readKanaStrokePlaybackState(page)
+  assert.ok(paused.progressText.includes("/"), "kana stroke progress should report current and total strokes")
+  assert.ok(paused.speedText.length > 0, "kana stroke speed button should show the current speed label")
+  await page.waitForTimeout(700)
+  const stillPaused = await readKanaStrokePlaybackState(page)
+  assert.equal(stillPaused.activeStroke, paused.activeStroke, "paused kana stroke playback should not advance")
+
+  await page.getByTestId("kana-stroke-next").click()
+  await page.waitForFunction((previous) => {
+    const boardElement = document.querySelector('[data-testid="kana-stroke-board"]')
+    const progressElement = boardElement?.querySelector("[data-active-stroke]")
+    const activeStroke = Number(progressElement?.getAttribute("data-active-stroke") ?? "0")
+    return Number.isFinite(activeStroke) && activeStroke > previous
+  }, paused.activeStroke)
+  const afterNext = await readKanaStrokePlaybackState(page)
+
+  await page.getByTestId("kana-stroke-prev").click()
+  await page.waitForFunction((previous) => {
+    const boardElement = document.querySelector('[data-testid="kana-stroke-board"]')
+    const progressElement = boardElement?.querySelector("[data-active-stroke]")
+    const activeStroke = Number(progressElement?.getAttribute("data-active-stroke") ?? "0")
+    return Number.isFinite(activeStroke) && activeStroke < previous
+  }, afterNext.activeStroke)
+
+  const speedBefore = (await readKanaStrokePlaybackState(page)).speedText
+  await page.getByTestId("kana-stroke-speed").click()
+  await page.waitForFunction((before) => {
+    const speedText = document.querySelector('[data-testid="kana-stroke-speed"]')?.textContent?.trim() ?? ""
+    return speedText.length > 0 && speedText !== before
+  }, speedBefore)
+}
+
 export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").click()
@@ -100,6 +155,7 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await verifyDialogTabTrap(page)
   await page.getByTestId("kana-stroke-toggle").click()
   await verifyKanaStrokeBoardRendered(page)
+  await verifyKanaStrokeControls(page)
   await page.getByTestId("kana-mastery-toggle").click()
   await page.waitForFunction((storageKeys) => {
     const mastered = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERED) ?? "[]")
