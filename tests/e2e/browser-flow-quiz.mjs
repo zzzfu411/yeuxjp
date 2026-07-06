@@ -4,9 +4,11 @@ import { readJsonStorage } from "./harness.mjs"
 import {
   assertQuizModeRecordsPractice,
   clickFirstQuizOptionAndReadPractice,
+  clickQuizOptionExceptValueAndReadPractice,
   clickQuizOptionByValueAndReadPractice,
   getVocabularyIdForPrompt,
   openQuizMode,
+  openQuizModeWithFixedRandom,
   openQuizModeWithLearningState,
   quizVocabIdsByLevel,
   seedDueMistakeReviewState,
@@ -37,7 +39,7 @@ async function latestPracticeItem(page) {
 }
 
 async function verifyQuizGeneratedVocabularyReviewQueue(page, baseUrl) {
-  await openQuizMode(page, baseUrl, "meaning-vocab")
+  await openQuizModeWithFixedRandom(page, baseUrl, "meaning-vocab")
   await page.getByTestId("quiz-question-text").waitFor({ state: "visible" })
   const prompt = (await page.getByTestId("quiz-question-text").innerText()).trim()
   const vocabId = getVocabularyIdForPrompt(prompt)
@@ -102,6 +104,87 @@ async function verifyQuizGeneratedVocabularyReviewQueue(page, baseUrl) {
     reviewedVocabSrs?.[vocabId]?.right >= 1,
     "reviewing quiz-generated vocabulary SRS should increment right count"
   )
+}
+
+async function verifyVocabularyQuizMistakeReviewFlow(page, baseUrl) {
+  await openQuizModeWithFixedRandom(page, baseUrl, "meaning-vocab")
+  await page.getByTestId("quiz-question-text").waitFor({ state: "visible" })
+  const prompt = (await page.getByTestId("quiz-question-text").innerText()).trim()
+  const vocabId = getVocabularyIdForPrompt(prompt)
+  assert.ok(vocabId, `meaning vocabulary quiz prompt should map back to a known vocabulary id, got ${prompt}`)
+
+  const { wrongValue, practice } = await clickQuizOptionExceptValueAndReadPractice(page, vocabId)
+  const latest = practice.at(-1)
+  assert.ok(latest, "wrong meaning vocabulary quiz answer should write practice history")
+  assert.equal(latest.itemId, vocabId, "wrong meaning vocabulary quiz answer should record the prompted vocabulary id")
+  assert.equal(latest.itemType, "vocab", "wrong meaning vocabulary quiz answer should record vocab item type")
+  assert.equal(latest.mode, "meaning", "wrong meaning vocabulary quiz answer should record meaning mode")
+  assert.equal(latest.correct, false, "wrong meaning vocabulary quiz answer should be marked wrong")
+  assert.equal(latest.answer, wrongValue, "wrong meaning vocabulary quiz answer should record the selected vocabulary id")
+
+  await page.waitForFunction(({ storageKeys, id, answer }) => {
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    const mistakeSrs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")
+    const item = Array.isArray(mistakes)
+      ? mistakes.find((mistake) =>
+        mistake.type === "meaning-vocab" &&
+        mistake.itemId === id &&
+        mistake.itemType === "vocab" &&
+        mistake.mode === "meaning" &&
+        mistake.correctAnswer === id &&
+        mistake.lastWrongAnswer === answer &&
+        mistake.wrongCount >= 1
+      )
+      : null
+    return !!item && mistakeSrs?.[item.id]?.dueAt <= Date.now()
+  }, { storageKeys: E2E_STORAGE_KEYS, id: vocabId, answer: wrongValue })
+  const mistakes = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
+  const recordedMistake = Array.isArray(mistakes)
+    ? mistakes.find((item) =>
+      item.type === "meaning-vocab" &&
+      item.itemId === vocabId &&
+      item.correctAnswer === vocabId &&
+      item.lastWrongAnswer === wrongValue
+    )
+    : null
+  assert.ok(recordedMistake, "wrong meaning vocabulary quiz answer should enter the mistake notebook")
+  assert.equal(recordedMistake.itemType, "vocab", "vocabulary quiz mistakes should preserve vocab item type")
+  assert.equal(recordedMistake.mode, "meaning", "vocabulary quiz mistakes should preserve meaning mode")
+
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-due-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-start-mistakes").click()
+  await page.getByTestId("mistake-review-session").waitFor({ state: "visible" })
+  await page.getByTestId(`review-answer-${vocabId}`).waitFor({ state: "visible" })
+  await page.getByTestId(`review-answer-${vocabId}`).click()
+  await page.waitForFunction(({ storageKeys, id, mistakeId }) => {
+    const mistakeSrs = JSON.parse(localStorage.getItem(storageKeys.SRS_MISTAKES) ?? "{}")
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    const mistake = Array.isArray(mistakes) ? mistakes.find((item) => item.id === mistakeId) : null
+    return mistake?.wrongCount === 1 &&
+      mistakeSrs?.[mistakeId]?.box >= 1 &&
+      mistakeSrs?.[mistakeId]?.right >= 1 &&
+      mistakeSrs?.[mistakeId]?.dueAt > Date.now() &&
+      Array.isArray(practice) &&
+      practice.some((item) =>
+        item.lessonId === undefined &&
+        item.itemId === id &&
+        item.itemType === "vocab" &&
+        item.mode === "meaning" &&
+        item.correct === true
+      )
+  }, { storageKeys: E2E_STORAGE_KEYS, id: vocabId, mistakeId: recordedMistake.id })
+  const reviewedMistakeSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_MISTAKES)
+  assert.ok(
+    reviewedMistakeSrs?.[recordedMistake.id]?.right >= 1,
+    "correct vocabulary mistake review should grade mistake SRS"
+  )
+  const retainedMistakes = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
+  const retainedMistake = Array.isArray(retainedMistakes)
+    ? retainedMistakes.find((item) => item.id === recordedMistake.id)
+    : null
+  assert.equal(retainedMistake?.wrongCount, 1, "correct vocabulary mistake review should retain notebook history")
 }
 
 async function verifyQuizScopeControls(page, baseUrl) {
@@ -337,6 +420,7 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
     practiceMode: "meaning",
   })
   await verifyQuizGeneratedVocabularyReviewQueue(page, baseUrl)
+  await verifyVocabularyQuizMistakeReviewFlow(page, baseUrl)
 
   await verifyQuizScopeControls(page, baseUrl)
 

@@ -331,9 +331,12 @@ test("browser E2E verifies quiz-generated vocabulary SRS enters review", () => {
   const fixtures = readBrowserFixtures()
 
   assert.match(e2e, /async function verifyQuizGeneratedVocabularyReviewQueue/)
+  assert.match(fixtures, /export async function openQuizModeWithFixedRandom\(page, baseUrl, mode/)
+  assert.match(fixtures, /Math\.random = \(\) => value/)
   assert.match(fixtures, /export function getVocabularyIdForPrompt\(prompt\)/)
   assert.match(fixtures, /export async function clickQuizOptionByValueAndReadPractice\(page, value\)/)
   assert.match(fixtures, /data-answer-value="\$\{value\}"/)
+  assert.match(e2e, /openQuizModeWithFixedRandom\(page, baseUrl, "meaning-vocab"\)/)
   assert.match(e2e, /getVocabularyIdForPrompt\(prompt\)/)
   assert.match(e2e, /clickQuizOptionByValueAndReadPractice\(page, vocabId\)/)
   assert.match(e2e, /E2E_STORAGE_KEYS\.ITEM_PROGRESS/)
@@ -349,6 +352,30 @@ test("browser E2E verifies quiz-generated vocabulary SRS enters review", () => {
   assert.match(e2e, /item\.lessonId === undefined/)
   assert.match(e2e, /reviewing quiz-generated vocabulary SRS should advance vocab box/)
   assert.match(e2e, /reviewing quiz-generated vocabulary SRS should increment right count/)
+})
+
+test("browser E2E verifies vocabulary quiz mistakes replay original vocab practice", () => {
+  const e2e = readBrowserE2ESources()
+  const fixtures = readBrowserFixtures()
+
+  assert.match(e2e, /async function verifyVocabularyQuizMistakeReviewFlow/)
+  assert.match(fixtures, /export async function clickQuizOptionExceptValueAndReadPractice\(page, value\)/)
+  assert.match(fixtures, /querySelectorAll\("\[data-answer-value\]"\)/)
+  assert.match(fixtures, /clickQuizOptionByValueAndReadPractice\(page, wrongValue\)/)
+  assert.match(e2e, /wrong meaning vocabulary quiz answer should enter the mistake notebook/)
+  assert.match(e2e, /mistake\.type === "meaning-vocab"/)
+  assert.match(e2e, /mistake\.itemType === "vocab"/)
+  assert.match(e2e, /mistake\.mode === "meaning"/)
+  assert.match(e2e, /mistake\.lastWrongAnswer === answer/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_MISTAKES/)
+  assert.match(e2e, /getByTestId\("review-start-mistakes"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("mistake-review-session"\)/)
+  assert.match(e2e, /getByTestId\(`review-answer-\$\{vocabId\}`\)/)
+  assert.match(e2e, /item\.lessonId === undefined/)
+  assert.match(e2e, /item\.itemType === "vocab"/)
+  assert.match(e2e, /item\.mode === "meaning"/)
+  assert.match(e2e, /correct vocabulary mistake review should grade mistake SRS/)
+  assert.match(e2e, /correct vocabulary mistake review should retain notebook history/)
 })
 
 test("browser E2E verifies quiz scope controls change real question pools", () => {

@@ -71,6 +71,16 @@ export async function openQuizMode(page, baseUrl, mode) {
   await clickQuizMode(page, mode)
 }
 
+export async function openQuizModeWithFixedRandom(page, baseUrl, mode, randomValue = 0) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await resetQuizLearningState(page)
+  await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+  await page.evaluate((value) => {
+    Math.random = () => value
+  }, randomValue)
+  await clickQuizMode(page, mode)
+}
+
 export async function openQuizModeWithLearningState(page, baseUrl, mode, {
   masteredKana = [],
   learnedVocab = [],
@@ -109,6 +119,17 @@ export async function clickQuizOptionByValueAndReadPractice(page, value) {
   }, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
   assert.match(await page.getByTestId("quiz-score").innerText(), /\/1\b/)
   return readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+}
+
+export async function clickQuizOptionExceptValueAndReadPractice(page, value) {
+  const wrongValue = await page.evaluate((correctValue) => {
+    return Array.from(document.querySelectorAll("[data-answer-value]"))
+      .map((button) => button.getAttribute("data-answer-value"))
+      .find((optionValue) => optionValue && optionValue !== correctValue) ?? null
+  }, value)
+  assert.ok(wrongValue, `quiz should expose at least one answer option other than ${value}`)
+  const practice = await clickQuizOptionByValueAndReadPractice(page, wrongValue)
+  return { wrongValue, practice }
 }
 
 export async function assertQuizModeRecordsPractice(page, baseUrl, { mode, itemType, practiceMode }) {
