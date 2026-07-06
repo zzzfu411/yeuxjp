@@ -1,10 +1,15 @@
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import type { ReviewDeck, TodayReviewItem } from "@/lib/review-questions"
 
 export type ReviewStats = {
   correct: number
   wrong: number
   repeated: number
 }
+
+export type ReviewSession =
+  | { deck: ReviewDeck; ids: string[] }
+  | { deck: "today"; items: TodayReviewItem[] }
 
 const REVIEW_SESSION_SOURCE_KEYS = new Set<string>([
   STORAGE_KEYS.KANA_MASTERED,

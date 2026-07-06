@@ -12,7 +12,9 @@ function read(relPath) {
 test("review runner delegates vocab deck sessions to VocabReviewSession", () => {
   const runner = read("src/components/review/review-runner.tsx")
 
-  assert.match(runner, /from "@\/components\/review\/vocab-review-session"/)
+  assert.match(runner, /import dynamic from "next\/dynamic"/)
+  assert.match(runner, /import\("@\/components\/review\/vocab-review-session"\)/)
+  assert.match(runner, /const VocabReviewSession = dynamic\(/)
   assert.match(runner, /<VocabReviewSession ids=\{ids\}/)
   assert.doesNotMatch(runner, /function VocabReviewSession/)
   assert.doesNotMatch(runner, /makeVocabReviewQuestion\(item\.id, vocabulary\.data\)/)

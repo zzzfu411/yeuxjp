@@ -12,7 +12,9 @@ function read(relPath) {
 test("review runner delegates today deck sessions to TodayReviewSession", () => {
   const runner = read("src/components/review/review-runner.tsx")
 
-  assert.match(runner, /from "@\/components\/review\/today-review-session"/)
+  assert.match(runner, /import dynamic from "next\/dynamic"/)
+  assert.match(runner, /import\("@\/components\/review\/today-review-session"\)/)
+  assert.match(runner, /const TodayReviewSession = dynamic\(/)
   assert.match(runner, /<TodayReviewSession/)
   assert.match(runner, /kanaSrs=\{kanaSrs\}/)
   assert.match(runner, /vocabSrs=\{vocabSrs\}/)

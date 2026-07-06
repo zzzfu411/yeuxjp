@@ -12,7 +12,9 @@ function read(relPath) {
 test("review runner delegates kana deck sessions to KanaReviewSession", () => {
   const runner = read("src/components/review/review-runner.tsx")
 
-  assert.match(runner, /from "@\/components\/review\/kana-review-session"/)
+  assert.match(runner, /import dynamic from "next\/dynamic"/)
+  assert.match(runner, /import\("@\/components\/review\/kana-review-session"\)/)
+  assert.match(runner, /const KanaReviewSession = dynamic\(/)
   assert.match(runner, /<KanaReviewSession ids=\{ids\}/)
   assert.doesNotMatch(runner, /function KanaReviewSession/)
   assert.doesNotMatch(runner, /makeKanaReviewQuestion\(item\.romaji\)/)

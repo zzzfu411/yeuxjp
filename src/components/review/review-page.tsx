@@ -1,17 +1,30 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import dynamic from "next/dynamic"
 import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-notebook"
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
-import { ReviewRunner, type ReviewSession } from "@/components/review/review-runner"
 import { ReviewDashboard } from "@/components/review/review-dashboard"
 import { buildReviewDashboardModel, enrollMissingReviewItems } from "@/lib/review-dashboard-model"
 import { useLearningStatus } from "@/lib/learning-status"
 import { runLearningStorageTransaction } from "@/lib/learning-store"
+import type { ReviewSession } from "@/lib/review-session"
 
 const KANA_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_KANA
 const VOCAB_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_VOCAB
+
+const ReviewRunner = dynamic(
+  () => import("@/components/review/review-runner").then((mod) => mod.ReviewRunner),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex justify-center py-20 text-muted-foreground">
+        Loading review...
+      </div>
+    ),
+  }
+)
 
 export function ReviewPage() {
   const learning = useLearningStatus()

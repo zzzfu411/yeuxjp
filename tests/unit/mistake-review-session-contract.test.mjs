@@ -12,7 +12,9 @@ function read(relPath) {
 test("review runner delegates mistake deck sessions to MistakeReviewSession", () => {
   const runner = read("src/components/review/review-runner.tsx")
 
-  assert.match(runner, /from "@\/components\/review\/mistake-review-session"/)
+  assert.match(runner, /import dynamic from "next\/dynamic"/)
+  assert.match(runner, /import\("@\/components\/review\/mistake-review-session"\)/)
+  assert.match(runner, /const MistakeReviewSession = dynamic\(/)
   assert.match(runner, /<MistakeReviewSession ids=\{ids\}/)
   assert.doesNotMatch(runner, /function MistakeReviewSession/)
   assert.doesNotMatch(runner, /notebook\.remove\(item\.id\)/)

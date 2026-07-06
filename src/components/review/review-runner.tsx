@@ -1,24 +1,45 @@
 "use client"
 
-import { TodayReviewSession } from "@/components/review/today-review-session"
-import { KanaReviewSession } from "@/components/review/kana-review-session"
-import { VocabReviewSession } from "@/components/review/vocab-review-session"
-import { MistakeReviewSession } from "@/components/review/mistake-review-session"
+import dynamic from "next/dynamic"
 import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-notebook"
 import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { useLearningProgress } from "@/lib/learning-progress"
-import {
-  type ReviewDeck,
-  type TodayReviewItem,
-} from "@/lib/review-questions"
+import type { ReviewSession } from "@/lib/review-session"
+import type { TodayReviewItem } from "@/lib/review-questions"
+
+export type { ReviewSession } from "@/lib/review-session"
 
 const KANA_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_KANA
 const VOCAB_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_VOCAB
 
-export type ReviewSession =
-  | { deck: ReviewDeck; ids: string[] }
-  | { deck: "today"; items: TodayReviewItem[] }
+function ReviewSessionLoading() {
+  return (
+    <div className="container py-20 px-4 mx-auto max-w-lg text-center text-muted-foreground">
+      Loading review...
+    </div>
+  )
+}
+
+const TodayReviewSession = dynamic(
+  () => import("@/components/review/today-review-session").then((mod) => mod.TodayReviewSession),
+  { ssr: false, loading: ReviewSessionLoading }
+)
+
+const KanaReviewSession = dynamic(
+  () => import("@/components/review/kana-review-session").then((mod) => mod.KanaReviewSession),
+  { ssr: false, loading: ReviewSessionLoading }
+)
+
+const VocabReviewSession = dynamic(
+  () => import("@/components/review/vocab-review-session").then((mod) => mod.VocabReviewSession),
+  { ssr: false, loading: ReviewSessionLoading }
+)
+
+const MistakeReviewSession = dynamic(
+  () => import("@/components/review/mistake-review-session").then((mod) => mod.MistakeReviewSession),
+  { ssr: false, loading: ReviewSessionLoading }
+)
 
 export function ReviewRunner({
   session,

@@ -86,6 +86,7 @@ export async function verifyPracticeSaveFailureFlow(page, baseUrl) {
   await seedReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("review-start-today").click()
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
   await failPracticeResultWrites(page)
   await page.getByTestId("review-answer-a").click()
   await page.getByTestId("practice-save-error").waitFor({ state: "visible" })
@@ -100,6 +101,7 @@ export async function verifyPracticeSaveFailureFlow(page, baseUrl) {
   await seedReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("review-start-today").click()
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
   const beforeSrsFailure = {
     practice: await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS),
     mistakes: await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES),

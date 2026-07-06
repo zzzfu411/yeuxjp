@@ -29,7 +29,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   await page.getByTestId("review-due-state").waitFor({ state: "visible" })
   await page.getByTestId("review-today-due").waitFor({ state: "visible" })
   await page.getByTestId("review-start-today").click()
-  assert.ok(await page.getByTestId("review-remaining").isVisible())
+  await page.getByTestId("review-remaining").waitFor({ state: "visible" })
   const wrongKanaOption = await page.evaluate(() => {
     const option = Array.from(document.querySelectorAll('[data-testid^="review-answer-"]'))
       .find((button) => button.getAttribute("data-testid") !== "review-answer-a")
