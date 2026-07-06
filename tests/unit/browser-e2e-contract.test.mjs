@@ -326,6 +326,31 @@ test("browser E2E verifies every public quiz mode records practice", () => {
   assert.match(e2e, /"meaning-vocab"[\s\S]*"vocab"[\s\S]*"meaning"/)
 })
 
+test("browser E2E verifies quiz-generated vocabulary SRS enters review", () => {
+  const e2e = readBrowserE2ESources()
+  const fixtures = readBrowserFixtures()
+
+  assert.match(e2e, /async function verifyQuizGeneratedVocabularyReviewQueue/)
+  assert.match(fixtures, /export function getVocabularyIdForPrompt\(prompt\)/)
+  assert.match(fixtures, /export async function clickQuizOptionByValueAndReadPractice\(page, value\)/)
+  assert.match(fixtures, /data-answer-value="\$\{value\}"/)
+  assert.match(e2e, /getVocabularyIdForPrompt\(prompt\)/)
+  assert.match(e2e, /clickQuizOptionByValueAndReadPractice\(page, vocabId\)/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.ITEM_PROGRESS/)
+  assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_VOCAB/)
+  assert.match(e2e, /quiz-generated vocabulary SRS should have a future due date before review/)
+  assert.match(e2e, /getByTestId\("review-scheduled-empty-state"\)/)
+  assert.match(e2e, /getByTestId\("review-today-empty"\)/)
+  assert.match(e2e, /quiz-generated vocabulary SRS should be scheduled before it is due/)
+  assert.match(e2e, /srs\[id\]\.dueAt = Date\.now\(\) - 1/)
+  assert.match(e2e, /getByTestId\("review-due-state"\)/)
+  assert.match(e2e, /getByTestId\("review-start-vocab"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\(`review-answer-\$\{vocabId\}`\)/)
+  assert.match(e2e, /item\.lessonId === undefined/)
+  assert.match(e2e, /reviewing quiz-generated vocabulary SRS should advance vocab box/)
+  assert.match(e2e, /reviewing quiz-generated vocabulary SRS should increment right count/)
+})
+
 test("browser E2E verifies quiz scope controls change real question pools", () => {
   const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()

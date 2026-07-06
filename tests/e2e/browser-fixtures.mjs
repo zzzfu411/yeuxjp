@@ -9,6 +9,8 @@ export {
 export {
   assertQuizModeRecordsPractice,
   clickFirstQuizOptionAndReadPractice,
+  clickQuizOptionByValueAndReadPractice,
+  getVocabularyIdForPrompt,
   openQuizMode,
   openQuizModeWithLearningState,
   quizVocabIdsByLevel,

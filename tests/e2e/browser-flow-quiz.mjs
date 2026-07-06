@@ -4,6 +4,8 @@ import { readJsonStorage } from "./harness.mjs"
 import {
   assertQuizModeRecordsPractice,
   clickFirstQuizOptionAndReadPractice,
+  clickQuizOptionByValueAndReadPractice,
+  getVocabularyIdForPrompt,
   openQuizMode,
   openQuizModeWithLearningState,
   quizVocabIdsByLevel,
@@ -32,6 +34,74 @@ async function latestPracticeItem(page) {
   const latest = practice.at(-1)
   assert.ok(latest, "quiz practice history should contain the latest answer")
   return latest
+}
+
+async function verifyQuizGeneratedVocabularyReviewQueue(page, baseUrl) {
+  await openQuizMode(page, baseUrl, "meaning-vocab")
+  await page.getByTestId("quiz-question-text").waitFor({ state: "visible" })
+  const prompt = (await page.getByTestId("quiz-question-text").innerText()).trim()
+  const vocabId = getVocabularyIdForPrompt(prompt)
+  assert.ok(vocabId, `meaning vocabulary quiz prompt should map back to a known vocabulary id, got ${prompt}`)
+
+  const practice = await clickQuizOptionByValueAndReadPractice(page, vocabId)
+  const latest = practice.at(-1)
+  assert.ok(latest, "correct meaning vocabulary quiz answer should write practice history")
+  assert.equal(latest.itemId, vocabId, "correct meaning vocabulary quiz answer should record the prompted vocabulary id")
+  assert.equal(latest.itemType, "vocab", "correct meaning vocabulary quiz answer should record vocab item type")
+  assert.equal(latest.mode, "meaning", "correct meaning vocabulary quiz answer should record meaning mode")
+  assert.equal(latest.correct, true, "correct meaning vocabulary quiz answer should be marked correct")
+
+  const itemProgress = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
+  assert.equal(itemProgress?.[vocabId]?.attempts, 1, "correct meaning vocabulary quiz answer should update item attempts")
+  const scheduledVocabSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_VOCAB)
+  assert.ok(
+    scheduledVocabSrs?.[vocabId]?.dueAt > Date.now(),
+    "quiz-generated vocabulary SRS should have a future due date before review"
+  )
+
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-scheduled-empty-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-empty").waitFor({ state: "visible" })
+  assert.equal(
+    await page.getByTestId("review-start-vocab").isDisabled(),
+    true,
+    "quiz-generated vocabulary SRS should be scheduled before it is due"
+  )
+
+  await page.evaluate(({ storageKeys, id }) => {
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_VOCAB) ?? "{}")
+    if (!srs[id]) throw new Error(`Expected quiz-generated vocabulary SRS for ${id}`)
+    srs[id].dueAt = Date.now() - 1
+    localStorage.setItem(storageKeys.SRS_VOCAB, JSON.stringify(srs))
+  }, { storageKeys: E2E_STORAGE_KEYS, id: vocabId })
+
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-due-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-due").waitFor({ state: "visible" })
+  await page.getByTestId("review-start-vocab").click()
+  await page.getByTestId(`review-answer-${vocabId}`).waitFor({ state: "visible" })
+  await page.getByTestId(`review-answer-${vocabId}`).click()
+  await page.waitForFunction(({ storageKeys, id }) => {
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_VOCAB) ?? "{}")
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    return srs?.[id]?.box > 1 &&
+      srs?.[id]?.right >= 1 &&
+      srs?.[id]?.dueAt > Date.now() &&
+      Array.isArray(practice) &&
+      practice.some((item) =>
+        item.lessonId === undefined &&
+        item.itemId === id &&
+        item.itemType === "vocab" &&
+        item.mode === "meaning" &&
+        item.correct === true
+      )
+  }, { storageKeys: E2E_STORAGE_KEYS, id: vocabId })
+  const reviewedVocabSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_VOCAB)
+  assert.ok(reviewedVocabSrs?.[vocabId]?.box > 1, "reviewing quiz-generated vocabulary SRS should advance vocab box")
+  assert.ok(
+    reviewedVocabSrs?.[vocabId]?.right >= 1,
+    "reviewing quiz-generated vocabulary SRS should increment right count"
+  )
 }
 
 async function verifyQuizScopeControls(page, baseUrl) {
@@ -266,6 +336,7 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
     itemType: "vocab",
     practiceMode: "meaning",
   })
+  await verifyQuizGeneratedVocabularyReviewQueue(page, baseUrl)
 
   await verifyQuizScopeControls(page, baseUrl)
 

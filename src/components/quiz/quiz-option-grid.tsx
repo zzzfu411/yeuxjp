@@ -40,6 +40,7 @@ export function QuizOptionGrid({
             aria-pressed={selectedOption === option.value}
             onClick={() => onSelect(option.value)}
             disabled={selectedOption != null}
+            data-answer-value={option.value}
             data-testid={`quiz-answer-option-${index}`}
           >
             {option.display}

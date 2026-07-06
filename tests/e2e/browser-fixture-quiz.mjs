@@ -5,15 +5,37 @@ import path from "node:path"
 import { appDir, rapidClick, readJsonStorage } from "./harness.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
+function readVocabularySource(fileName) {
+  return fs.readFileSync(path.join(appDir, "src/data/vocabulary", fileName), "utf8")
+}
+
 function readVocabularyIds(fileName) {
-  const source = fs.readFileSync(path.join(appDir, "src/data/vocabulary", fileName), "utf8")
+  const source = readVocabularySource(fileName)
   return Array.from(source.matchAll(/id:\s*["']([^"']+)["']/g), (match) => match[1])
+}
+
+function readVocabularyPromptEntries(fileName) {
+  const source = readVocabularySource(fileName)
+  return Array.from(
+    source.matchAll(/\bid:\s*["']([^"']+)["'][^\n]*\bkana:\s*["']([^"']+)["']/g),
+    (match) => ({ id: match[1], prompt: match[2] })
+  )
 }
 
 export const quizVocabIdsByLevel = {
   survival: readVocabularyIds("survival.ts"),
   daily: readVocabularyIds("daily.ts"),
   fluent: readVocabularyIds("fluent.ts"),
+}
+
+const quizVocabIdsByPrompt = new Map(
+  ["survival.ts", "daily.ts", "fluent.ts"]
+    .flatMap(readVocabularyPromptEntries)
+    .map((entry) => [entry.prompt, entry.id])
+)
+
+export function getVocabularyIdForPrompt(prompt) {
+  return quizVocabIdsByPrompt.get(prompt) ?? null
 }
 
 export async function resetQuizLearningState(page) {
@@ -74,6 +96,18 @@ export async function clickFirstQuizOptionAndReadPractice(page) {
     return Array.isArray(practice) && practice.length > 0
   }, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
   assert.match(await page.getByTestId("quiz-score").innerText(), /\/1\b/, "rapid quiz answer clicks should score one attempt")
+  return readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+}
+
+export async function clickQuizOptionByValueAndReadPractice(page, value) {
+  const option = page.locator(`[data-answer-value="${value}"]`)
+  await option.waitFor({ state: "visible" })
+  await rapidClick(option)
+  await page.waitForFunction((key) => {
+    const practice = JSON.parse(localStorage.getItem(key) ?? "[]")
+    return Array.isArray(practice) && practice.length > 0
+  }, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+  assert.match(await page.getByTestId("quiz-score").innerText(), /\/1\b/)
   return readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
 }
 
