@@ -3,6 +3,55 @@ import assert from "node:assert/strict"
 import { readJsonStorage } from "./harness.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
+async function verifyLessonGeneratedReviewQueue(page, baseUrl) {
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-scheduled-empty-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-empty").waitFor({ state: "visible" })
+  assert.equal(
+    await page.getByTestId("review-start-kana").isDisabled(),
+    true,
+    "lesson-generated SRS should be scheduled before it is due"
+  )
+  const scheduledKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
+  assert.ok(
+    scheduledKanaSrs?.a?.dueAt > Date.now(),
+    "lesson-generated kana SRS should have a future due date before review"
+  )
+
+  await page.evaluate((storageKeys) => {
+    const now = Date.now()
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
+    if (!srs.a) throw new Error("Expected lesson-generated kana SRS for a")
+    srs.a.dueAt = now - 1
+    localStorage.setItem(storageKeys.SRS_KANA, JSON.stringify(srs))
+  }, E2E_STORAGE_KEYS)
+
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-due-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-due").waitFor({ state: "visible" })
+  await page.getByTestId("review-start-kana").click()
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
+  await page.getByTestId("review-answer-a").click()
+  await page.waitForFunction((storageKeys) => {
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    return srs?.a?.box > 1 &&
+      srs?.a?.right >= 1 &&
+      srs?.a?.dueAt > Date.now() &&
+      Array.isArray(practice) &&
+      practice.some((item) =>
+        item.itemId === "a" &&
+        item.itemType === "kana" &&
+        item.mode === "recognition" &&
+        item.correct === true &&
+        item.lessonId === undefined
+      )
+  }, E2E_STORAGE_KEYS)
+  const reviewedKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
+  assert.ok(reviewedKanaSrs?.a?.box > 1, "reviewing lesson-generated SRS should advance kana box")
+  assert.ok(reviewedKanaSrs?.a?.right >= 1, "reviewing lesson-generated SRS should increment right count")
+}
+
 export async function verifyLessonFlow(page, baseUrl) {
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   await page.evaluate(() => localStorage.clear())
@@ -98,6 +147,7 @@ export async function verifyLessonFlow(page, baseUrl) {
     "/learn/day-2-ka-row-thanks",
     "path next step should recommend the next unlocked lesson after completing day 1"
   )
+  await verifyLessonGeneratedReviewQueue(page, baseUrl)
 
   await page.evaluate(() => localStorage.clear())
   await page.goto(`${baseUrl}/learn/day-2-ka-row-thanks`, { waitUntil: "networkidle" })

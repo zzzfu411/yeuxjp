@@ -211,6 +211,16 @@ test("browser E2E verifies lesson progress writes after a real answer", () => {
   assert.match(e2e, /page\.goto\(`\$\{baseUrl\}\/path`/)
   assert.match(e2e, /getByTestId\("path-next-learning"\)\.getAttribute\("href"\)/)
   assert.match(e2e, /path next step should recommend the next unlocked lesson after completing day 1/)
+  assert.match(e2e, /async function verifyLessonGeneratedReviewQueue/)
+  assert.match(e2e, /getByTestId\("review-scheduled-empty-state"\)/)
+  assert.match(e2e, /lesson-generated SRS should be scheduled before it is due/)
+  assert.match(e2e, /lesson-generated kana SRS should have a future due date before review/)
+  assert.match(e2e, /srs\.a\.dueAt = now - 1/)
+  assert.match(e2e, /getByTestId\("review-due-state"\)/)
+  assert.match(e2e, /getByTestId\("review-start-kana"\)\.click\(\)/)
+  assert.match(e2e, /getByTestId\("review-answer-a"\)\.click\(\)/)
+  assert.match(e2e, /reviewing lesson-generated SRS should advance kana box/)
+  assert.match(e2e, /reviewing lesson-generated SRS should increment right count/)
 })
 
 test("browser E2E verifies locked lesson previews stay read-only", () => {

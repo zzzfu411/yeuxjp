@@ -455,6 +455,11 @@ export const requiredSelectors = [
     pattern: /"review-due-state"/,
   },
   {
+    testId: "review-scheduled-empty-state",
+    source: "src/components/review/review-banners.tsx",
+    pattern: /"review-scheduled-empty-state"/,
+  },
+  {
     testId: "review-today-due",
     source: "src/components/review/review-banners.tsx",
     pattern: /data-testid=\{todayQueueLength \? "review-today-due" : "review-today-empty"\}/,
