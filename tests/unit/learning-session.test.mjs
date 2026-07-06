@@ -165,6 +165,83 @@ test("recordQuestionPractice returns false when progress recording fails before 
   assert.equal(mistakeRecorded, false)
 })
 
+test("recordQuestionPractice refuses progress-backed questions without progress metadata", () => {
+  installLocalStorage()
+  let practiceRecorded = false
+  let mistakeRecorded = false
+  const progress = {
+    recordPractice: () => {
+      practiceRecorded = true
+      return true
+    },
+  }
+  const notebook = {
+    recordWrong: () => {
+      mistakeRecorded = true
+      return true
+    },
+  }
+
+  const ok = session.recordQuestionPractice({
+    progress,
+    notebook,
+    result: {
+      question: {
+        type: "custom-quiz",
+        questionText: "prompt",
+        correctAnswer: "right",
+        options: [{ value: "right", display: "right" }],
+      },
+      selectedAnswer: "wrong",
+      correct: false,
+      answeredAt: 123,
+    },
+  })
+
+  assert.equal(ok, false)
+  assert.equal(practiceRecorded, false)
+  assert.equal(mistakeRecorded, false)
+})
+
+test("recordQuestionPractice keeps legacy mistake review questions compatible without progress metadata", () => {
+  installLocalStorage()
+  let practiceRecorded = false
+  let mistakeRecorded = false
+  const progress = {
+    recordPractice: () => {
+      practiceRecorded = true
+      return false
+    },
+  }
+  const notebook = {
+    recordWrong: () => {
+      mistakeRecorded = true
+      return true
+    },
+  }
+
+  const ok = session.recordQuestionPractice({
+    progress,
+    notebook,
+    result: {
+      question: {
+        type: "legacy-mistake",
+        mistakeId: "legacy",
+        questionText: "prompt",
+        correctAnswer: "right",
+        options: [{ value: "right", display: "right" }],
+      },
+      selectedAnswer: "wrong",
+      correct: false,
+      answeredAt: 123,
+    },
+  })
+
+  assert.equal(ok, true)
+  assert.equal(practiceRecorded, false)
+  assert.equal(mistakeRecorded, true)
+})
+
 test("recordQuestionPractice rolls back managed storage when a later notebook write fails", () => {
   const store = installLocalStorage()
   store.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "[]")
@@ -204,6 +281,7 @@ test("recordQuestionPractice public entrypoint is wrapped in a managed storage t
   assert.match(source, /runLearningStorageTransaction/)
   assert.match(source, /function recordPracticeResultWithoutTransaction\(/)
   assert.match(source, /export function canEnrollReviewItem\(/)
+  assert.match(source, /export function isRecordableQuestion\(/)
   assert.match(source, /export function recordPracticeResult\(/)
   assert.match(source, /return runLearningStorageTransaction\(\(\) => recordPracticeResultWithoutTransaction\(progress, result\)\)/)
   assert.match(source, /export function recordQuestionPractice\(/)

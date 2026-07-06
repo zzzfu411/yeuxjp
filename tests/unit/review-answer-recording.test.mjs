@@ -59,6 +59,32 @@ test("review answer recording refuses to commit when the queued SRS item is gone
   assert.deepEqual(calls, ["recordAnswer", "canRecord"])
 })
 
+test("review answer recording fails when question progress metadata is missing", () => {
+  installLocalStorage()
+  const calls = []
+
+  const recorded = recording.recordReviewQuestionPractice({
+    question: {
+      type: "review:custom",
+      questionText: "Prompt",
+      correctAnswer: "right",
+      options: [{ value: "right", display: "right" }],
+    },
+    selectedAnswer: "wrong",
+    progress: { recordPractice: () => calls.push("progress") && true },
+    notebook: { recordWrong: () => calls.push("notebook") && true },
+    canRecord: () => calls.push("canRecord") && true,
+    grade: () => calls.push("grade") && true,
+    recordAnswer: (_answer, _correct, beforeCommit) => {
+      calls.push("recordAnswer")
+      return beforeCommit()
+    },
+  })
+
+  assert.equal(recorded, false)
+  assert.deepEqual(calls, ["recordAnswer", "canRecord"])
+})
+
 test("review answer recording rolls back progress and mistakes when SRS grading fails", () => {
   const store = installLocalStorage()
   store.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "[]")

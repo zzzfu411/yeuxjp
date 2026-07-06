@@ -8,7 +8,7 @@ import { isReviewableKanaId } from "@/lib/review-visibility"
 import type { PracticeResult } from "@/lib/learning-progress"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
-import type { QuestionResult } from "@/lib/questions"
+import type { Question, QuestionResult } from "@/lib/questions"
 import { questionToMistakeInput } from "@/lib/questions"
 
 type LearningProgressApi = ReturnType<typeof useLearningProgress>
@@ -59,6 +59,20 @@ export function recordMistakeIfWrong(notebook: MistakeNotebookApi, result: Quest
   return notebook.recordWrong(input)
 }
 
+export type RecordableQuestion = Question & {
+  itemId: string
+  itemType: PracticeResult["itemType"]
+  mode: PracticeResult["mode"]
+}
+
+export function isRecordableQuestion(question: Question): question is RecordableQuestion {
+  return !!question.itemId && !!question.itemType && !!question.mode
+}
+
+function canSkipProgressForLegacyMistakeReview(question: Question) {
+  return !!question.mistakeId && !isRecordableQuestion(question)
+}
+
 export function recordQuestionPractice({
   progress,
   notebook,
@@ -101,7 +115,8 @@ export function recordQuestionPracticeWithoutTransaction({
 }) {
   const { question } = result
 
-  if (progress && question.itemId && question.itemType && question.mode) {
+  if (progress && !canSkipProgressForLegacyMistakeReview(question)) {
+    if (!isRecordableQuestion(question)) return false
     if (!recordPracticeResultWithoutTransaction(progress, {
       lessonId,
       lessonStepId,

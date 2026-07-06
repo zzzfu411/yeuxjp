@@ -54,6 +54,31 @@ test("quiz answer recording does not update stats when practice persistence fail
   assert.deepEqual(notebookCalls, [])
 })
 
+test("quiz answer recording fails when question progress metadata is missing", () => {
+  installLocalStorage()
+  const statsUpdates = []
+  const notebookCalls = []
+  const progressCalls = []
+
+  const result = recording.recordQuizQuestionPractice({
+    question: {
+      type: "custom",
+      questionText: "Choose",
+      correctAnswer: "right",
+      options: [{ value: "right", display: "right" }],
+    },
+    selectedAnswer: "wrong",
+    progress: { recordPractice: () => progressCalls.push("practice") && true },
+    notebook: { recordWrong: () => notebookCalls.push("wrong") && true },
+    updateStats: (updater) => statsUpdates.push(updater),
+  })
+
+  assert.equal(result, null)
+  assert.deepEqual(progressCalls, [])
+  assert.deepEqual(notebookCalls, [])
+  assert.deepEqual(statsUpdates, [])
+})
+
 test("quiz answer recording updates stats only after practice writes succeed", () => {
   installLocalStorage()
   let stats = session.createQuizStats()
