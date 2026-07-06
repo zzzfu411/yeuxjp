@@ -111,6 +111,8 @@ async function tryCachePut(cache, request, response) {
 
 function isCacheableStaticAsset(request, requestUrl) {
   const isAnimCjkSvg = requestUrl.pathname.startsWith("/animcjk/") && requestUrl.pathname.endsWith(".svg");
+  if (STATIC_ASSET_PATHS.has(requestUrl.pathname)) return true;
+
   const isAllowedPath = CACHEABLE_STATIC_EXACT_PATHS.has(requestUrl.pathname) ||
     CACHEABLE_STATIC_PATH_PREFIXES.some((prefix) => requestUrl.pathname.startsWith(prefix)) ||
     isAnimCjkSvg;

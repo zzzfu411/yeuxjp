@@ -129,7 +129,7 @@ export function normalizeLearningBackup(backup: Partial<LearningBackup>, now: nu
   const safeNow = safeLearningBackupTimestamp(now)
   if (backup.version !== LEARNING_BACKUP_VERSION) return null
   if (typeof backup.exportedAt !== "number" || !Number.isFinite(backup.exportedAt)) return null
-  if (!backup.entries || typeof backup.entries !== "object") return null
+  if (!isPlainObject(backup.entries)) return null
 
   const entries: LearningBackup["entries"] = {}
   for (const [key, value] of Object.entries(backup.entries)) {

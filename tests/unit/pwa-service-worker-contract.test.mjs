@@ -146,6 +146,7 @@ test("service worker caches static assets and visited navigation pages without l
   assert.match(sw, /response\.status >= 500/)
   assert.match(sw, /const fallback = await matchNavigationFallback\(cache, staticCache, request, requestUrl\)/)
   assert.match(sw, /function isCacheableStaticAsset\(request, requestUrl\)/)
+  assert.match(sw, /if \(STATIC_ASSET_PATHS\.has\(requestUrl\.pathname\)\) return true/)
   assert.match(sw, /const CACHEABLE_STATIC_PATH_PREFIXES = \[/)
   assert.match(sw, /"\/_next\/static\/"/)
   assert.match(sw, /"\/_next\/image"/)
@@ -708,8 +709,8 @@ test("service worker serves cached static assets while refreshing them in the ba
   fetchHandler({
     request: {
       method: "GET",
-      mode: "no-cors",
-      destination: "image",
+      mode: "cors",
+      destination: "",
       url: "https://example.test/icons/icon-192.png",
     },
     respondWith(promise) {
@@ -825,6 +826,13 @@ test("PWA offline E2E verifies visited-page cache, fallback, and local state pre
   assert.match(pwaE2e, /name\.startsWith\("yasashi-static-"\)/)
   assert.match(pwaE2e, /\/_next\/static\//)
   assert.match(pwaE2e, /service worker static cache should contain Next static assets/)
+  assert.match(pwaE2e, /async function assertPwaInstallAssets\(page, phase\)/)
+  assert.match(pwaE2e, /\/manifest\.webmanifest/)
+  assert.match(pwaE2e, /manifest\.json\.display, "standalone"/)
+  assert.match(pwaE2e, /manifest\.json\.icons/)
+  assert.match(pwaE2e, /fetch\(src\)/)
+  assert.match(pwaE2e, /online PWA install asset/)
+  assert.match(pwaE2e, /offline PWA install asset/)
   assert.match(pwaE2e, /\/kana/)
   assert.match(pwaE2e, /kana-card-a/)
   assert.match(pwaE2e, /\/vocabulary/)

@@ -615,7 +615,11 @@ function validateNoMojibakeMarkers() {
     "璇硶", // mojibake-ok detector fixture
     "鎼滅储", // mojibake-ok detector fixture
     "閬撳満", // mojibake-ok detector fixture
+    "姝ｅ父", // mojibake-ok detector fixture
+    "鎱?", // mojibake-ok detector fixture
+    "蹇?", // mojibake-ok detector fixture
   ]
+  const replacementCharPattern = /\uFFFD/
   const replacementPattern = /\?{4,}/
   const failures = []
 
@@ -626,6 +630,7 @@ function validateNoMojibakeMarkers() {
       if (line.includes("mojibake-ok")) return
       if (markerPattern.test(line)) failures.push(`${relPath}:${index + 1}`)
       if (markerFragments.some((marker) => line.includes(marker))) failures.push(`${relPath}:${index + 1}`)
+      if (replacementCharPattern.test(line)) failures.push(`${relPath}:${index + 1}`)
       if (replacementPattern.test(line)) failures.push(`${relPath}:${index + 1}`)
     })
   }

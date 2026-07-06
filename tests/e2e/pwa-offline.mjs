@@ -87,6 +87,46 @@ async function assertServiceWorkerStaticCache(page) {
   assert.ok(cacheState.nextStaticUrls.length > 0, "service worker static cache should contain Next static assets")
 }
 
+async function assertPwaInstallAssets(page, phase) {
+  const manifest = await page.evaluate(async () => {
+    const response = await fetch("/manifest.webmanifest")
+    return {
+      ok: response.ok,
+      status: response.status,
+      contentType: response.headers.get("content-type") ?? "",
+      json: await response.json(),
+    }
+  })
+
+  assert.equal(manifest.ok, true, `${phase} manifest should be readable`)
+  assert.match(manifest.contentType, /json|manifest/i, `${phase} manifest should have a JSON-like content type`)
+  assert.equal(manifest.json.start_url, "/", `${phase} manifest should keep the app start URL`)
+  assert.equal(manifest.json.scope, "/", `${phase} manifest should keep the app scope`)
+  assert.equal(manifest.json.display, "standalone", `${phase} manifest should remain installable`)
+  assert.ok(Array.isArray(manifest.json.icons) && manifest.json.icons.length >= 2, `${phase} manifest should declare install icons`)
+
+  for (const icon of manifest.json.icons) {
+    assert.equal(typeof icon.src, "string", `${phase} manifest icon should declare a src`)
+    assert.equal(typeof icon.sizes, "string", `${phase} manifest icon ${icon.src} should declare sizes`)
+    assert.equal(typeof icon.type, "string", `${phase} manifest icon ${icon.src} should declare a MIME type`)
+
+    const asset = await page.evaluate(async (src) => {
+      const response = await fetch(src)
+      const bytes = await response.arrayBuffer()
+      return {
+        ok: response.ok,
+        status: response.status,
+        contentType: response.headers.get("content-type") ?? "",
+        byteLength: bytes.byteLength,
+      }
+    }, icon.src)
+
+    assert.equal(asset.ok, true, `${phase} manifest icon ${icon.src} should be readable`)
+    assert.match(asset.contentType, /^image\//i, `${phase} manifest icon ${icon.src} should have an image content type`)
+    assert.ok(asset.byteLength > 0, `${phase} manifest icon ${icon.src} should not be empty`)
+  }
+}
+
 async function assertLocatorIncludes(locator, expected, message) {
   const text = await locator.innerText()
   assert.ok(text.includes(expected), `${message}; got ${JSON.stringify(text)}`)
@@ -175,6 +215,7 @@ try {
   await page.reload({ waitUntil: "networkidle" })
   await waitForServiceWorker(page)
   await assertServiceWorkerStaticCache(page)
+  await assertPwaInstallAssets(page, "online PWA install asset")
 
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").waitFor({ state: "visible", timeout: 10_000 })
@@ -236,6 +277,7 @@ try {
 
   allowOfflineResourceFailures = true
   await context.setOffline(true)
+  await assertPwaInstallAssets(page, "offline PWA install asset")
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" })
   assert.ok(await page.getByTestId("home-start-learning").isVisible(), "offline static cache should serve the app home page")
   await assertBodyExcludes(page, OFFLINE_FALLBACK_TEXT, "offline home should render the cached app shell instead of fallback copy")

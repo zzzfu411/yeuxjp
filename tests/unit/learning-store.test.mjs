@@ -526,6 +526,7 @@ test("parseLearningBackup rejects invalid JSON and wrong versions", () => {
   assert.equal(store.parseLearningBackup("not json"), null)
   assert.equal(store.parseLearningBackup(JSON.stringify({ version: 999, exportedAt: 1, entries: {} })), null)
   assert.equal(store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: null, entries: {} })), null)
+  assert.equal(store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: 1, entries: [] })), null)
   assert.deepEqual(
     store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: 1, entries: {} })),
     { version: store.LEARNING_BACKUP_VERSION, exportedAt: 1, entries: {} }
