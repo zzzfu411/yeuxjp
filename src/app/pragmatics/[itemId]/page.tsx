@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { pragmaticsData } from "@/data/pragmatics-data"
-import { getPragmaticsIndex, PragmaticsReferencePage } from "@/components/reference/pragmatics-reference-page"
+import { PragmaticsReferenceDetailPage } from "@/components/reference/pragmatics-reference-detail-page"
+import { getReferenceIndex } from "@/lib/reference-routes"
 
 interface PragmaticsItemPageProps {
   params: Promise<{ itemId: string }>
@@ -12,7 +13,7 @@ export function generateStaticParams() {
 
 export default async function PragmaticsItemPage({ params }: PragmaticsItemPageProps) {
   const { itemId } = await params
-  if (getPragmaticsIndex(itemId) === null) notFound()
+  if (getReferenceIndex(pragmaticsData, itemId) === null) notFound()
 
-  return <PragmaticsReferencePage selectedItemId={itemId} />
+  return <PragmaticsReferenceDetailPage selectedItemId={itemId} />
 }

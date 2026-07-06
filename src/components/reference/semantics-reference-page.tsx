@@ -4,15 +4,14 @@ import { ArrowRightLeft, BrainCircuit, Lightbulb } from "lucide-react"
 import { semanticsData } from "@/data/semantics-data"
 import { SemanticsFocusModal } from "@/components/reference/semantics-focus-modal"
 import { ReferenceQueryRedirect } from "@/components/reference/reference-query-redirect"
+import { getReferenceIndex, getReferenceNavigation, makeReferenceItemHref } from "@/lib/reference-routes"
 
 export function getSemanticsIndex(itemId: string | undefined) {
-  if (!itemId) return null
-  const index = semanticsData.findIndex((point) => point.id === itemId)
-  return index >= 0 ? index : null
+  return getReferenceIndex(semanticsData, itemId)
 }
 
 export function semanticsItemHref(index: number) {
-  return `/semantics/${encodeURIComponent(semanticsData[index].id)}`
+  return makeReferenceItemHref("/semantics", semanticsData[index].id)
 }
 
 interface SemanticsReferencePageProps {
@@ -25,15 +24,11 @@ export function SemanticsReferencePage({
   enableQueryRedirect = false,
 }: SemanticsReferencePageProps) {
   const selectedIndex = getSemanticsIndex(selectedItemId)
-  const selectedPoint = selectedIndex === null ? null : semanticsData[selectedIndex]
-  const prevHref =
-    selectedIndex === null
-      ? "/semantics"
-      : semanticsItemHref((selectedIndex - 1 + semanticsData.length) % semanticsData.length)
-  const nextHref =
-    selectedIndex === null
-      ? "/semantics"
-      : semanticsItemHref((selectedIndex + 1) % semanticsData.length)
+  const { selectedItem: selectedPoint, prevHref, nextHref } = getReferenceNavigation(
+    semanticsData,
+    "/semantics",
+    selectedIndex
+  )
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-12 max-w-4xl mb-20">

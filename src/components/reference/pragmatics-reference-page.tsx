@@ -4,15 +4,14 @@ import { MessageCircle, Users } from "lucide-react"
 import { pragmaticsData } from "@/data/pragmatics-data"
 import { PragmaticsFocusModal } from "@/components/reference/pragmatics-focus-modal"
 import { ReferenceQueryRedirect } from "@/components/reference/reference-query-redirect"
+import { getReferenceIndex, getReferenceNavigation, makeReferenceItemHref } from "@/lib/reference-routes"
 
 export function getPragmaticsIndex(itemId: string | undefined) {
-  if (!itemId) return null
-  const index = pragmaticsData.findIndex((scenario) => scenario.id === itemId)
-  return index >= 0 ? index : null
+  return getReferenceIndex(pragmaticsData, itemId)
 }
 
 export function pragmaticsItemHref(index: number) {
-  return `/pragmatics/${encodeURIComponent(pragmaticsData[index].id)}`
+  return makeReferenceItemHref("/pragmatics", pragmaticsData[index].id)
 }
 
 interface PragmaticsReferencePageProps {
@@ -25,15 +24,11 @@ export function PragmaticsReferencePage({
   enableQueryRedirect = false,
 }: PragmaticsReferencePageProps) {
   const selectedIndex = getPragmaticsIndex(selectedItemId)
-  const selectedScenario = selectedIndex === null ? null : pragmaticsData[selectedIndex]
-  const prevHref =
-    selectedIndex === null
-      ? "/pragmatics"
-      : pragmaticsItemHref((selectedIndex - 1 + pragmaticsData.length) % pragmaticsData.length)
-  const nextHref =
-    selectedIndex === null
-      ? "/pragmatics"
-      : pragmaticsItemHref((selectedIndex + 1) % pragmaticsData.length)
+  const { selectedItem: selectedScenario, prevHref, nextHref } = getReferenceNavigation(
+    pragmaticsData,
+    "/pragmatics",
+    selectedIndex
+  )
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-12 max-w-4xl mb-20">

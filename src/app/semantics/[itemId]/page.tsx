@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { semanticsData } from "@/data/semantics-data"
-import { getSemanticsIndex, SemanticsReferencePage } from "@/components/reference/semantics-reference-page"
+import { SemanticsReferenceDetailPage } from "@/components/reference/semantics-reference-detail-page"
+import { getReferenceIndex } from "@/lib/reference-routes"
 
 interface SemanticsItemPageProps {
   params: Promise<{ itemId: string }>
@@ -12,7 +13,7 @@ export function generateStaticParams() {
 
 export default async function SemanticsItemPage({ params }: SemanticsItemPageProps) {
   const { itemId } = await params
-  if (getSemanticsIndex(itemId) === null) notFound()
+  if (getReferenceIndex(semanticsData, itemId) === null) notFound()
 
-  return <SemanticsReferencePage selectedItemId={itemId} />
+  return <SemanticsReferenceDetailPage selectedItemId={itemId} />
 }

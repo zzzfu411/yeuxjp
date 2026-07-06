@@ -153,9 +153,10 @@ test("semantics and pragmatics reference pages keep static lists in server compo
     assert.match(pageSource, /enableQueryRedirect/, page)
 
     assert.doesNotMatch(shellSource, /"use client"/, shell)
-    assert.match(shellSource, new RegExp(`${data}\\.findIndex`), shell)
-    assert.match(shellSource, new RegExp(`${route}/\\$\\{encodeURIComponent`), shell)
-    assert.match(shellSource, /selectedIndex === null \? null/, shell)
+    assert.match(shellSource, new RegExp(`getReferenceIndex\\(${data}, itemId\\)`), shell)
+    assert.match(shellSource, new RegExp(`makeReferenceItemHref\\("${route}", ${data}\\[index\\]\\.id\\)`), shell)
+    assert.match(shellSource, new RegExp(`getReferenceNavigation\\(\\s*${data}`), shell)
+    assert.match(shellSource, new RegExp(`${data}\\.map`), shell)
     assert.match(shellSource, /closeHref="/, shell)
     assert.match(shellSource, /prevHref=\{prevHref\}/, shell)
     assert.match(shellSource, /nextHref=\{nextHref\}/, shell)
@@ -200,27 +201,63 @@ test("semantics and pragmatics reference detail routes are statically generated"
     {
       source: "src/app/semantics/[itemId]/page.tsx",
       data: "semanticsData",
-      shell: "SemanticsReferencePage",
-      guard: "getSemanticsIndex",
+      detail: "SemanticsReferenceDetailPage",
     },
     {
       source: "src/app/pragmatics/[itemId]/page.tsx",
       data: "pragmaticsData",
-      shell: "PragmaticsReferencePage",
-      guard: "getPragmaticsIndex",
+      detail: "PragmaticsReferenceDetailPage",
     },
   ]
 
-  for (const { source: relPath, data, shell, guard } of routes) {
+  for (const { source: relPath, data, detail } of routes) {
     const source = read(relPath)
 
     assert.doesNotMatch(source, /"use client"/, relPath)
     assert.match(source, /export function generateStaticParams\(\)/, relPath)
     assert.match(source, new RegExp(`${data}\\.map`), relPath)
     assert.match(source, /params: Promise<\{ itemId: string \}>/, relPath)
-    assert.match(source, new RegExp(`${guard}\\(itemId\\) === null`), relPath)
+    assert.match(source, /from "@\/lib\/reference-routes"/, relPath)
+    assert.match(source, new RegExp(`getReferenceIndex\\(${data}, itemId\\) === null`), relPath)
     assert.match(source, /notFound\(\)/, relPath)
-    assert.match(source, new RegExp(`<${shell} selectedItemId=\\{itemId\\}`), relPath)
+    assert.match(source, new RegExp(`<${detail} selectedItemId=\\{itemId\\}`), relPath)
+    assert.doesNotMatch(source, /ReferencePage selectedItemId=\{itemId\}/, relPath)
+  }
+})
+
+test("semantics and pragmatics detail pages avoid rendering full reference lists", () => {
+  const pages = [
+    {
+      source: "src/components/reference/semantics-reference-detail-page.tsx",
+      data: "semanticsData",
+      modal: "SemanticsFocusModal",
+      title: "Nuance Lab",
+    },
+    {
+      source: "src/components/reference/pragmatics-reference-detail-page.tsx",
+      data: "pragmaticsData",
+      modal: "PragmaticsFocusModal",
+      title: "Context Dojo",
+    },
+  ]
+
+  for (const { source: relPath, data, modal, title } of pages) {
+    const source = read(relPath)
+
+    assert.doesNotMatch(source, /"use client"/, relPath)
+    assert.match(source, new RegExp(`import \\{ ${data} \\}`), relPath)
+    assert.match(source, /from "@\/lib\/reference-routes"/, relPath)
+    assert.match(source, new RegExp(`getReferenceIndex\\(${data}, selectedItemId\\)`), relPath)
+    assert.match(source, new RegExp(`getReferenceNavigation\\(\\s*${data}`), relPath)
+    assert.match(source, new RegExp(`<${modal}`), relPath)
+    assert.match(source, /selectedPosition=\{selectedIndex \+ 1\}/, relPath)
+    assert.match(source, new RegExp(`total=\\{${data}\\.length\\}`), relPath)
+    assert.match(source, /closeHref="/, relPath)
+    assert.match(source, /className="sr-only"/, relPath)
+    assert.match(source, new RegExp(title), relPath)
+    assert.doesNotMatch(source, new RegExp(`${data}\\.map`), relPath)
+    assert.doesNotMatch(source, /ReferenceQueryRedirect/, relPath)
+    assert.doesNotMatch(source, /enableQueryRedirect/, relPath)
   }
 })
 
