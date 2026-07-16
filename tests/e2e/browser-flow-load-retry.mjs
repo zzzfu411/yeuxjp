@@ -1,15 +1,7 @@
-import fs from "node:fs"
-import path from "node:path"
-import { fileURLToPath } from "node:url"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 import { seedMixedReviewState } from "./browser-fixtures.mjs"
 
 const FLUENT_REVIEW_ID = "flu-abs-1"
-const appDir = fileURLToPath(new URL("../..", import.meta.url))
-const vocabularyChunkRoots = [
-  path.join(appDir, ".next", "static", "chunks"),
-  path.join(appDir, ".next", "dev", "static", "chunks"),
-]
 const VOCABULARY_CHUNK_MARKERS = {
   survival: ["survivalVocab", "sur-g-1"],
   daily: ["dailyVocab", "day-v-1"],
@@ -18,16 +10,6 @@ const VOCABULARY_CHUNK_MARKERS = {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
-
-function listJavaScriptFiles(root) {
-  if (!fs.existsSync(root)) return []
-
-  return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
-    const fullPath = path.join(root, entry.name)
-    if (entry.isDirectory()) return listJavaScriptFiles(fullPath)
-    return entry.isFile() && entry.name.endsWith(".js") ? [fullPath] : []
-  })
 }
 
 function findExpressionEnd(source, startIndex) {
@@ -69,11 +51,20 @@ function findExpressionEnd(source, startIndex) {
 }
 
 function makeTransientFailingVocabularyChunk(source, exportName, level) {
-  const exportCallPattern = new RegExp(`([\\w$]+)\\.s\\(\\["${escapeRegExp(exportName)}",0,`)
-  const match = exportCallPattern.exec(source)
-  if (!match || match.index == null) {
+  const rewritten =
+    rewriteMinifiedVocabularyChunk(source, exportName, level) ??
+    rewriteDevVocabularyChunk(source, exportName, level)
+  if (!rewritten) {
     throw new Error(`Could not find ${exportName} export call in vocabulary chunk`)
   }
+  return rewritten
+}
+
+// Production chunks inline the dataset: X.s(["name",0,[...]])
+function rewriteMinifiedVocabularyChunk(source, exportName, level) {
+  const exportCallPattern = new RegExp(`([\\w$]+)\\.s\\(\\["${escapeRegExp(exportName)}",0,`)
+  const match = exportCallPattern.exec(source)
+  if (!match || match.index == null) return null
 
   const runtimeName = match[1]
   const dataStart = match.index + match[0].length
@@ -99,30 +90,54 @@ function makeTransientFailingVocabularyChunk(source, exportName, level) {
   return `${source.slice(0, match.index)}${replacement}${source.slice(dataEnd + 2)}`
 }
 
-function findVocabularyChunkRoute(level) {
+// Turbopack dev chunks register a lazy getter for a module-level binding:
+// __turbopack_context__.s([ "name", ()=>name ]); const name = [...]
+// Wrapping the getter keeps module evaluation successful, so the first export
+// access rejects the loader promise while the retry import recovers.
+function rewriteDevVocabularyChunk(source, exportName, level) {
+  const exportCallPattern = new RegExp(
+    `\\.s\\(\\[\\s*"${escapeRegExp(exportName)}"\\s*,\\s*\\(\\)\\s*=>\\s*([\\w$]+)\\s*,?\\s*\\]\\)`
+  )
+  const match = exportCallPattern.exec(source)
+  if (!match || match.index == null) return null
+
+  const binding = match[1]
+  const failingGetter = [
+    "(()=>{let first=true;return ()=>{",
+    "if(first){first=false;",
+    `throw new Error("E2E transient vocabulary load failure: ${level}");`,
+    "}",
+    `return ${binding};`,
+    "};})()",
+  ].join("")
+  const replacement = `.s(["${exportName}", ${failingGetter}])`
+
+  return `${source.slice(0, match.index)}${replacement}${source.slice(match.index + match[0].length)}`
+}
+
+const VOCABULARY_CHUNK_ROUTE_PATTERN = /\/_next\/static\/chunks\/.+\.js(?:\?.*)?$/
+
+// Intercept every chunk request and inspect the real response body instead of
+// guessing which on-disk chunk file the browser will ask for: Turbopack dev
+// emits multiple chunk files containing the same module, so a path-based
+// route can silently miss and the transient failure never happens.
+async function failNextVocabularyLoad(page, level) {
   const marker = VOCABULARY_CHUNK_MARKERS[level]
   if (!marker) throw new Error(`Unknown vocabulary level for load failure: ${level}`)
 
-  for (const root of vocabularyChunkRoots) {
-    for (const filePath of listJavaScriptFiles(root)) {
-      const source = fs.readFileSync(filePath, "utf8")
-      if (!marker.every((item) => source.includes(item))) continue
-
-      const relativePath = path.relative(root, filePath).split(path.sep).join("/")
-      return {
-        exportName: marker[0],
-        filePath,
-        routePattern: new RegExp(`${escapeRegExp(`/_next/static/chunks/${relativePath}`)}(?:\\?.*)?$`),
-      }
-    }
-  }
-
-  throw new Error(`Could not find vocabulary chunk containing ${marker.join(", ")}`)
-}
-
-async function failNextVocabularyLoad(page, level) {
-  const { exportName, filePath, routePattern } = findVocabularyChunkRoute(level)
+  const exportName = marker[0]
   let failed = false
+
+  // Earlier flows in this shared browser context usually already loaded the
+  // chunk; disk-cache hits and 304 revalidations never expose a full response
+  // body to the interception route, so the transient failure would silently
+  // miss. Clear the HTTP cache so the next load is a real 200.
+  const cdp = await page.context().newCDPSession(page)
+  try {
+    await cdp.send("Network.clearBrowserCache")
+  } finally {
+    await cdp.detach()
+  }
 
   const handler = async (route) => {
     if (failed) {
@@ -130,17 +145,30 @@ async function failNextVocabularyLoad(page, level) {
       return
     }
 
+    const response = await route.fetch()
+    const body = await response.text()
+    if (!marker.every((item) => body.includes(item))) {
+      await route.fulfill({ response, body })
+      return
+    }
+
+    // Multiple chunk requests can be in flight while route.fetch() awaits.
+    // Re-check after the await so only the first matching response is claimed.
+    if (failed) {
+      await route.fulfill({ response, body })
+      return
+    }
+
     failed = true
-    const source = fs.readFileSync(filePath, "utf8")
     await route.fulfill({
       status: 200,
       contentType: "application/javascript; charset=utf-8",
-      body: makeTransientFailingVocabularyChunk(source, exportName, level),
+      body: makeTransientFailingVocabularyChunk(body, exportName, level),
     })
-    await page.unroute(routePattern, handler)
+    await page.unroute(VOCABULARY_CHUNK_ROUTE_PATTERN, handler)
   }
 
-  await page.route(routePattern, handler)
+  await page.route(VOCABULARY_CHUNK_ROUTE_PATTERN, handler)
 }
 
 async function seedFluentVocabularyReviewState(page, baseUrl) {
@@ -233,7 +261,7 @@ async function verifyTodayReviewVocabularyLoadRetry(page, baseUrl) {
       practice.some((item) =>
         item.itemId === "sur-g-1" &&
         item.itemType === "vocab" &&
-        item.mode === "meaning" &&
+        ["meaning", "recall", "listening"].includes(item.mode) &&
         item.correct === true
       )
   }, E2E_STORAGE_KEYS)

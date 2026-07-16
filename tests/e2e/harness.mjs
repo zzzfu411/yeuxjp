@@ -150,8 +150,14 @@ export function isExpectedBrowserRequestAbort(request) {
     request.method() === "GET" &&
     request.resourceType() === "script" &&
     requestUrl.pathname.startsWith("/_next/static/chunks/")
+  // Next.js dev servers inject their own dev-overlay font; navigating away
+  // mid-load aborts the request. Not part of the application shell.
+  const isNextDevFont =
+    request.method() === "GET" &&
+    request.resourceType() === "font" &&
+    requestUrl.pathname.startsWith("/__nextjs_font/")
 
-  return isNextRscPrefetch || isAnimCjkProbe || isNextStaticChunk
+  return isNextRscPrefetch || isAnimCjkProbe || isNextStaticChunk || isNextDevFont
 }
 
 export function createPageIssueCollector({

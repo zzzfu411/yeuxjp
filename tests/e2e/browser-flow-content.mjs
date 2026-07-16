@@ -79,9 +79,15 @@ async function verifyKanaStrokeBoardRendered(page) {
     const boardElement = document.querySelector('[data-testid="kana-stroke-board"]')
     const progressElement = boardElement?.querySelector("[data-active-stroke]")
     const activeStroke = Number(progressElement?.getAttribute("data-active-stroke"))
+    const strokePaths = Array.from(boardElement?.querySelectorAll("path[data-stroke-index]") ?? [])
+    const hasRenderableStrokeGeometry = strokePaths.length > 1 && strokePaths.every((path) => {
+      if (!(path instanceof SVGPathElement)) return false
+      if (path.parentElement?.namespaceURI !== "http://www.w3.org/2000/svg") return false
+      return path.getTotalLength() > 0
+    })
     return Boolean(
       boardElement?.querySelector("svg") &&
-      boardElement?.querySelector("[data-stroke-index]") &&
+      hasRenderableStrokeGeometry &&
       Number.isFinite(activeStroke)
     )
   })
@@ -236,10 +242,18 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").fill("みせ")
   await page.getByText("みせ").first().waitFor({ state: "visible" })
+  const vocabularyRomajiToggle = page.getByTestId("vocabulary-toggle-romaji")
+  assert.equal(await vocabularyRomajiToggle.getAttribute("aria-pressed"), "true")
+  await vocabularyRomajiToggle.click()
+  assert.equal(await vocabularyRomajiToggle.getAttribute("aria-pressed"), "false")
   assert.equal(await page.getByTestId("vocabulary-expand-sur-n-35").evaluate((element) => element.tabIndex), 0)
   assert.equal(await page.getByTestId("vocabulary-expand-back-sur-n-35").evaluate((element) => element.tabIndex), -1)
   await page.getByTestId("vocabulary-expand-sur-n-35").locator("xpath=ancestor::*[@role='button'][1]").press("Space")
   await page.getByTestId("vocabulary-expand-back-sur-n-35").waitFor({ state: "visible" })
+  await page.getByText("Mise", { exact: true }).waitFor({ state: "hidden" })
+  await vocabularyRomajiToggle.click()
+  assert.equal(await vocabularyRomajiToggle.getAttribute("aria-pressed"), "true")
+  await page.getByText("Mise", { exact: true }).waitFor({ state: "visible" })
   assert.equal(await page.getByTestId("vocabulary-expand-sur-n-35").evaluate((element) => element.tabIndex), -1)
   assert.equal(await page.getByTestId("vocabulary-expand-back-sur-n-35").evaluate((element) => element.tabIndex), 0)
   await page.getByTestId("vocabulary-expand-back-sur-n-35").press("Space")

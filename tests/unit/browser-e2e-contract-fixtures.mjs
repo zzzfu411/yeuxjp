@@ -320,6 +320,11 @@ export const requiredSelectors = [
     pattern: /data-testid="vocabulary-search"/,
   },
   {
+    testId: "vocabulary-toggle-romaji",
+    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
+    pattern: /data-testid="vocabulary-toggle-romaji"/,
+  },
+  {
     testId: "vocabulary-expand-sur-n-35",
     source: "src/components/vocabulary/flashcard.tsx",
     pattern: /data-testid=\{`vocabulary-expand-\$\{vocab\.id\}`\}/,

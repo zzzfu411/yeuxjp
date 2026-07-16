@@ -172,7 +172,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
       practice.some((item) =>
         item.itemId === "sur-g-1" &&
         item.itemType === "vocab" &&
-        item.mode === "meaning" &&
+        ["meaning", "recall", "listening"].includes(item.mode) &&
         item.correct === true
       )
   }, E2E_STORAGE_KEYS)
@@ -199,7 +199,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
       reviewPractice.some((item) =>
         item.itemId === "sur-g-1" &&
         item.itemType === "vocab" &&
-        item.mode === "meaning" &&
+        ["meaning", "recall", "listening"].includes(item.mode) &&
         item.correct === true
       ),
     "mixed today review should write vocabulary practice history"
@@ -234,7 +234,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
       practice.some((item) =>
         item.itemId === "sur-g-1" &&
         item.itemType === "vocab" &&
-        item.mode === "meaning" &&
+        ["meaning", "recall", "listening"].includes(item.mode) &&
         item.correct === true
       )
   }, E2E_STORAGE_KEYS)
