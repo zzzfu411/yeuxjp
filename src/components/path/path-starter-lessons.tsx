@@ -16,7 +16,9 @@ export function PathStarterLessons({
     <div className="rounded-2xl border bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-xs font-semibold text-muted-foreground tracking-wider">Starter 14 课程</div>
+          <div className="text-xs font-semibold text-muted-foreground tracking-wider">
+            Starter {STARTER_LESSONS.length} 天课程
+          </div>
           <h2 className="mt-1 text-xl font-bold">从工具集合变成每日路线</h2>
         </div>
         <div className="text-sm font-semibold text-muted-foreground">
@@ -24,7 +26,7 @@ export function PathStarterLessons({
         </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        {STARTER_LESSONS.slice(0, 8).map((lesson) => {
+        {STARTER_LESSONS.map((lesson) => {
           const status = getLessonEntryStatus(lesson, completedLessonIds, activeLessonId)
           const done = status === "done"
           const active = status === "active"

@@ -1,6 +1,7 @@
 "use client"
 
 import type { Lesson } from "@/data/lessons"
+import { STARTER_LESSONS } from "@/data/lessons"
 import type { LessonProgress } from "@/lib/learning-progress-model"
 
 interface LessonProgressSidebarProps {
@@ -59,7 +60,7 @@ export function LessonProgressSidebar({
             已完成本课，上次分数 {savedProgress.score ?? completionScore}。
           </div>
         )}
-        <div className="sr-only">Starter 14 · Day {lessonPosition}/14</div>
+        <div className="sr-only">Starter · Day {lessonPosition}/{STARTER_LESSONS.length}</div>
       </div>
     </aside>
   )

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ArrowLeft, Sparkles, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { isPracticeStep, type Lesson, type LessonStep } from "@/data/lessons"
+import { isPracticeStep, STARTER_LESSONS, type Lesson, type LessonStep } from "@/data/lessons"
 import { speakJapaneseRepeated } from "@/lib/speech"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
@@ -103,7 +103,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
             </Link>
           </Button>
           <div className="text-xs font-semibold text-muted-foreground">
-            Starter 14 · Day {lessonPosition}/14 · {lesson.estimatedMinutes} 分钟
+            Starter · Day {lessonPosition}/{STARTER_LESSONS.length} · {lesson.estimatedMinutes} 分钟
           </div>
         </div>
 

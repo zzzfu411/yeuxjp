@@ -18,8 +18,8 @@ export function HomeStarterLessons({
     <div className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-xs font-semibold tracking-wider text-muted-foreground">Starter 14</div>
-          <h2 className="mt-1 text-2xl font-bold">14 天入门路线</h2>
+          <div className="text-xs font-semibold tracking-wider text-muted-foreground">Starter</div>
+          <h2 className="mt-1 text-2xl font-bold">{STARTER_LESSONS.length} 天入门路线</h2>
         </div>
         <Button asChild variant="outline" className="rounded-full">
           <Link href="/path">查看技能树</Link>

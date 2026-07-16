@@ -52,6 +52,24 @@ export function GrammarFocusModal({
                 <code className="text-3xl font-mono font-bold text-primary block">{point.structure}</code>
               </div>
 
+              {point.plainExplanation && (
+                <div className="bg-secondary/40 p-5 rounded-xl border">
+                  <div className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">白话理解</div>
+                  <p className="text-base leading-relaxed">{point.plainExplanation}</p>
+                </div>
+              )}
+
+              {point.pitfalls && point.pitfalls.length > 0 && (
+                <div className="bg-destructive/5 p-5 rounded-xl border border-destructive/20">
+                  <div className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">常见坑</div>
+                  <ul className="list-disc space-y-1.5 pl-5 text-base leading-relaxed">
+                    {point.pitfalls.map((pitfall, i) => (
+                      <li key={i}>{pitfall}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="h-px bg-border flex-1" />

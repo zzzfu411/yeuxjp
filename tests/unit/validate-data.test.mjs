@@ -178,6 +178,8 @@ test("data validation requires explicit vocabulary fields and matching levels", 
 
   assert.match(source, /const vocabLevelPrefixes = new Map/)
   assert.match(source, /requiredString\(block, file, id, "kana"\)/)
+  assert.match(source, /\\p\{Script=Han\}/)
+  assert.match(source, /kana must contain the reading, not kanji/)
   assert.match(source, /requiredString\(block, file, id, "romaji"\)/)
   assert.match(source, /requiredString\(block, file, id, "meaning"\)/)
   assert.match(source, /requiredString\(block, file, id, "category"\)/)

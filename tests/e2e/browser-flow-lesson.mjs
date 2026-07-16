@@ -264,10 +264,15 @@ export async function verifyLessonFlow(page, baseUrl) {
   }, E2E_STORAGE_KEYS)
   await page.goto(`${baseUrl}/learn/day-4-na-ha-ma-intro-sentence`, { waitUntil: "networkidle" })
   const ha = String.fromCodePoint(0x306f)
+  const ra = "ra"
   await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-next").click()
   await page.getByTestId(`lesson-answer-${ha}`).waitFor({ state: "visible" })
   await page.getByTestId(`lesson-answer-${ha}`).click()
+  await page.getByTestId("lesson-next").click()
+
+  await page.getByTestId(`lesson-answer-${ra}`).waitFor({ state: "visible" })
+  await page.getByTestId(`lesson-answer-${ra}`).click()
   await page.getByTestId("lesson-next").click()
 
   await page.getByTestId("lesson-sentence-chunk-1").click()

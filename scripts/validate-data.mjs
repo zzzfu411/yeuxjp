@@ -728,7 +728,10 @@ for (const { file, defaultLevel } of vocabFiles) {
 
   for (const block of objectBlocks(text).filter((b) => /id:\s*['"]/.test(b))) {
     const id = requiredString(block, file, "(unknown)", "id")
-    requiredString(block, file, id, "kana")
+    const kana = requiredString(block, file, id, "kana")
+    if (kana && /\p{Script=Han}/u.test(kana)) {
+      fail(`${file} ${id} kana must contain the reading, not kanji: ${kana}`)
+    }
     requiredString(block, file, id, "romaji")
     requiredString(block, file, id, "meaning")
     const category = requiredString(block, file, id, "category")
