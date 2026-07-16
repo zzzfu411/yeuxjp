@@ -40,9 +40,11 @@ function VocabularyPageContent() {
     activeCategory,
     searchQuery,
     onlyUnlearned,
+    showRomaji,
     handleLevelChange: setVocabularyLevel,
     handleSearchChange: setVocabularySearch,
     handleToggleOnlyUnlearned: toggleOnlyUnlearned,
+    handleToggleShowRomaji: toggleShowRomaji,
     scrollToCategory,
   } = useVocabularyPageControls()
   const vocabulary = useVocabularyLevelData(currentLevel)
@@ -153,6 +155,7 @@ function VocabularyPageContent() {
         currentLevel={currentLevel}
         searchQuery={searchQuery}
         onlyUnlearned={onlyUnlearned}
+        showRomaji={showRomaji}
         activeCategory={activeCategory}
         categories={categories}
         categoryNames={VOCABULARY_CATEGORY_NAMES}
@@ -160,6 +163,7 @@ function VocabularyPageContent() {
         onSearchChange={handleSearchChange}
         onLevelChange={handleLevelChange}
         onToggleOnlyUnlearned={handleToggleOnlyUnlearned}
+        onToggleShowRomaji={toggleShowRomaji}
         onClearLearned={handleClearLearned}
         onSelectCategory={scrollToCategory}
       />
@@ -180,6 +184,7 @@ function VocabularyPageContent() {
         items={currentData}
         loading={vocabulary.loading}
         error={vocabulary.error}
+        showRomaji={showRomaji}
         isLearnedId={isLearnedId}
         onRetry={vocabulary.retry}
         onExpand={(index) => {
@@ -196,6 +201,7 @@ function VocabularyPageContent() {
         total={currentData.length}
         flipped={isModalFlipped}
         learned={selectedVocab ? isLearnedId(selectedVocab.id) : false}
+        showRomaji={showRomaji}
         onClose={resetSelection}
         onFlip={() => setIsModalFlipped((prev) => !prev)}
         onNext={handleNext}

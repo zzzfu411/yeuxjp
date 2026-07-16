@@ -12,6 +12,7 @@ interface VocabularyCategoryListProps {
   items: Vocabulary[]
   loading: boolean
   error: string | null
+  showRomaji?: boolean
   isLearnedId: (id: string) => boolean
   onExpand: (index: number) => void
   onRetry: () => void
@@ -23,6 +24,7 @@ export function VocabularyCategoryList({
   items,
   loading,
   error,
+  showRomaji = true,
   isLearnedId,
   onExpand,
   onRetry,
@@ -48,6 +50,7 @@ export function VocabularyCategoryList({
                   key={vocab.id}
                   vocab={vocab}
                   learned={isLearnedId(vocab.id)}
+                  showRomaji={showRomaji}
                   onExpand={() => onExpand(findVocabularyIndex(items, vocab.id))}
                 />
               ))}

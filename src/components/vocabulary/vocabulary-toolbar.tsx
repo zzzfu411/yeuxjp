@@ -17,6 +17,7 @@ export interface VocabularyToolbarProps {
   currentLevel: VocabLevel
   searchQuery: string
   onlyUnlearned: boolean
+  showRomaji: boolean
   activeCategory: string | null
   categories: readonly string[]
   categoryNames: Record<string, string>
@@ -27,6 +28,7 @@ export interface VocabularyToolbarProps {
   onSearchChange: (value: string) => void
   onLevelChange: (level: VocabLevel) => void
   onToggleOnlyUnlearned: () => void
+  onToggleShowRomaji: () => void
   onClearLearned: () => void
   onSelectCategory: (category: string) => void
 }
@@ -36,6 +38,7 @@ export function VocabularyToolbar({
   currentLevel,
   searchQuery,
   onlyUnlearned,
+  showRomaji,
   activeCategory,
   categories,
   categoryNames,
@@ -43,6 +46,7 @@ export function VocabularyToolbar({
   onSearchChange,
   onLevelChange,
   onToggleOnlyUnlearned,
+  onToggleShowRomaji,
   onClearLearned,
   onSelectCategory,
 }: VocabularyToolbarProps) {
@@ -97,6 +101,21 @@ export function VocabularyToolbar({
             )}
           >
             {onlyUnlearned ? "显示全部" : "只看未掌握"}
+          </button>
+
+          <button
+            type="button"
+            aria-pressed={showRomaji}
+            aria-label="显示罗马音"
+            onClick={onToggleShowRomaji}
+            data-testid="vocabulary-toggle-romaji"
+            title="熟悉假名后建议隐藏罗马音，训练直接读假名"
+            className={cn(
+              "rounded-full border bg-background px-4 py-2 transition-colors hover:bg-secondary/60",
+              showRomaji && "border-primary/40 bg-primary/5"
+            )}
+          >
+            罗马音：{showRomaji ? "显示" : "隐藏"}
           </button>
 
           <button

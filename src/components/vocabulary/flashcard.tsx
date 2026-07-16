@@ -11,10 +11,12 @@ interface FlashcardProps {
   vocab: Vocabulary
   onExpand?: () => void
   learned?: boolean
+  showRomaji?: boolean
 }
 
-export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) {
+export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
+  const example = vocab.exampleSentences?.[0]
 
   const handlePlay = (e?: React.MouseEvent) => {
     e?.stopPropagation()
@@ -89,8 +91,14 @@ export function Flashcard({ vocab, onExpand, learned = false }: FlashcardProps) 
           aria-hidden={!isFlipped}
         >
           <div className="text-2xl font-bold text-primary mb-2">{vocab.meaning}</div>
-          <div className="text-lg text-muted-foreground font-medium mb-6">{vocab.romaji}</div>
-          
+          {showRomaji && <div className="text-lg text-muted-foreground font-medium mb-2">{vocab.romaji}</div>}
+          {example && (
+            <div className="mb-3 px-2 space-y-0.5">
+              <div className="text-sm text-foreground/90 leading-snug">{example.japanese}</div>
+              <div className="text-xs text-muted-foreground leading-snug">{example.meaning}</div>
+            </div>
+          )}
+
           <div className="flex gap-4">
             <Button
               size="icon"

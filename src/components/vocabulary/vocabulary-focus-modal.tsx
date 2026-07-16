@@ -11,6 +11,7 @@ export function VocabularyFocusModal({
   total,
   flipped,
   learned,
+  showRomaji = true,
   onClose,
   onFlip,
   onNext,
@@ -23,6 +24,7 @@ export function VocabularyFocusModal({
   total: number
   flipped: boolean
   learned: boolean
+  showRomaji?: boolean
   onClose: () => void
   onFlip: () => void
   onNext: () => void
@@ -59,31 +61,40 @@ export function VocabularyFocusModal({
           <div
             role="button"
             tabIndex={0}
-            className="group relative flex-1 cursor-pointer bg-gradient-to-b from-card to-secondary/10 text-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="group relative min-h-0 flex-1 cursor-pointer overflow-y-auto overscroll-contain bg-gradient-to-b from-card to-secondary/10 text-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={onFlip}
             onKeyDown={handleCardKeyDown}
             aria-pressed={flipped}
             data-testid="vocabulary-focus-card"
           >
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+            <div className="flex min-h-full flex-col items-center justify-center p-6 text-center sm:p-8">
               {!flipped ? (
                 <div className="animate-in fade-in zoom-in duration-200 space-y-6">
                   <div className="space-y-2">
                     <h2 className="text-6xl sm:text-7xl font-bold text-foreground tracking-tight">{vocab.kanji || vocab.kana}</h2>
                     {vocab.kanji && <p className="text-2xl text-muted-foreground/80 font-medium">{vocab.kana}</p>}
                   </div>
-                  <div className="absolute bottom-8 left-0 right-0 flex justify-center opacity-50 group-hover:opacity-100 transition-opacity">
+                  <div className="mt-8 flex justify-center opacity-50 transition-opacity group-hover:opacity-100">
                     <div className="bg-background/80 backdrop-blur px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm flex items-center gap-2 border">
                       <RotateCw className="w-3 h-3" /> 点击或按空格翻面
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="animate-in fade-in zoom-in duration-200 space-y-8 w-full max-w-sm">
+                <div className="animate-in fade-in zoom-in duration-200 space-y-6 w-full max-w-sm">
                   <div className="space-y-1">
                     <p className="text-4xl font-bold text-primary">{vocab.meaning}</p>
-                    <p className="text-xl text-muted-foreground font-serif italic">{vocab.romaji}</p>
+                    {showRomaji && <p className="text-xl text-muted-foreground font-serif italic">{vocab.romaji}</p>}
                   </div>
+                  {vocab.exampleSentences?.[0] && (
+                    <div className="rounded-xl border bg-background/70 px-4 py-3 text-left space-y-1">
+                      <p className="text-base text-foreground leading-relaxed">{vocab.exampleSentences[0].japanese}</p>
+                      {showRomaji && vocab.exampleSentences[0].romaji && (
+                        <p className="text-xs text-muted-foreground font-serif italic">{vocab.exampleSentences[0].romaji}</p>
+                      )}
+                      <p className="text-sm text-muted-foreground">{vocab.exampleSentences[0].meaning}</p>
+                    </div>
+                  )}
                   <div className="pt-2">
                     <Button
                       size="lg"

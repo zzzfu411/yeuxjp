@@ -15,6 +15,7 @@ export function useVocabularyPageControls() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [onlyUnlearned, setOnlyUnlearned] = useState(false)
+  const [showRomaji, setShowRomaji] = useState(true)
 
   const urlLevel = searchParams.get("level")
 
@@ -46,6 +47,10 @@ export function useVocabularyPageControls() {
     setOnlyUnlearned((value) => !value)
   }, [])
 
+  const handleToggleShowRomaji = useCallback(() => {
+    setShowRomaji((value) => !value)
+  }, [])
+
   const scrollToCategory = useCallback((category: string) => {
     setActiveCategory(category)
     const element = document.getElementById(`cat-${category}`)
@@ -66,9 +71,11 @@ export function useVocabularyPageControls() {
     activeCategory,
     searchQuery,
     onlyUnlearned,
+    showRomaji,
     handleLevelChange,
     handleSearchChange,
     handleToggleOnlyUnlearned,
+    handleToggleShowRomaji,
     scrollToCategory,
   }
 }
