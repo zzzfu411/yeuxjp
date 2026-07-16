@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ArrowRight, BookOpenCheck, CalendarDays, Flame, Headphones, Route, Sparkles, Target } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { OnboardingPanel } from "@/components/home/onboarding-panel"
@@ -14,15 +14,39 @@ import { useSrsDeck } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { MISTAKE_SRS_STORAGE_KEY, useMistakeNotebook } from "@/lib/mistake-notebook"
 import { buildHomePageModel } from "@/lib/home-page-model"
+import { countTodayPracticeResults, getDailyPracticeTarget, millisecondsUntilNextLocalDay } from "@/lib/daily-goal"
+import { STARTER_LESSONS } from "@/data/lessons"
 
 export function HomePage() {
   const { profile, saveProfile } = useLearningProfile()
   const [profileSaveError, setProfileSaveError] = useState(false)
+  const [currentLocalDay, setCurrentLocalDay] = useState(() => new Date())
   const { learning, recommendedSkill } = useLearningRecommendation()
   const kanaSrs = useSrsDeck(STORAGE_KEYS.SRS_KANA)
   const vocabSrs = useSrsDeck(STORAGE_KEYS.SRS_VOCAB)
   const mistakeSrs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
   const mistakes = useMistakeNotebook()
+
+  useEffect(() => {
+    let midnightTimer: ReturnType<typeof setTimeout>
+    const scheduleMidnightRefresh = () => {
+      const now = new Date()
+      midnightTimer = setTimeout(() => {
+        setCurrentLocalDay(new Date())
+        scheduleMidnightRefresh()
+      }, millisecondsUntilNextLocalDay(now))
+    }
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") setCurrentLocalDay(new Date())
+    }
+
+    scheduleMidnightRefresh()
+    document.addEventListener("visibilitychange", refreshWhenVisible)
+    return () => {
+      clearTimeout(midnightTimer)
+      document.removeEventListener("visibilitychange", refreshWhenVisible)
+    }
+  }, [])
 
   const homeModel = useMemo(() => {
     return buildHomePageModel({
@@ -48,6 +72,12 @@ export function HomePage() {
     vocabSrs.dueIds,
   ])
   const { totalDue, nextLesson, learningEntry, completedCount, weakest } = homeModel
+  const todayPracticeCount = useMemo(
+    () => countTodayPracticeResults(learning.results, currentLocalDay),
+    [currentLocalDay, learning.results]
+  )
+  const dailyTarget = getDailyPracticeTarget(profile?.minutesPerDay)
+  const dailyGoalDone = todayPracticeCount >= dailyTarget
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_15%_0%,hsl(var(--primary)/0.22),transparent_32rem),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted)/0.28))]">
@@ -101,12 +131,20 @@ export function HomePage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-xs font-semibold tracking-wider text-muted-foreground">今日计划</div>
-                    <div className="mt-1 text-xl font-bold">{profile.minutesPerDay} 分钟学习</div>
+                    <div className="text-xs font-semibold tracking-wider text-muted-foreground">今日目标 · {profile.minutesPerDay} 分钟</div>
+                    <div className="mt-1 text-xl font-bold">
+                      {dailyGoalDone ? "今日目标已完成！" : `已练 ${todayPracticeCount}/${dailyTarget} 题`}
+                    </div>
                   </div>
                   <div className="rounded-2xl border bg-primary/10 p-3">
                     <Target className="h-5 w-5" />
                   </div>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuemin={0} aria-valuemax={dailyTarget} aria-valuenow={Math.min(todayPracticeCount, dailyTarget)} aria-label="今日练习进度">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${Math.min(100, Math.round((todayPracticeCount / dailyTarget) * 100))}%` }}
+                  />
                 </div>
                 <div className="rounded-2xl border bg-background/70 p-4">
                   <div className="text-sm font-semibold">下一课</div>
@@ -114,7 +152,7 @@ export function HomePage() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{learningEntry.subtitle}</p>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  <MiniStat icon={<BookOpenCheck className="h-4 w-4" />} label="已完成" value={`${completedCount}/14`} />
+                  <MiniStat icon={<BookOpenCheck className="h-4 w-4" />} label="已完成" value={`${completedCount}/${STARTER_LESSONS.length}`} />
                   <MiniStat icon={<Flame className="h-4 w-4" />} label="连续" value={`${learning.streak} 天`} />
                   <MiniStat icon={<Headphones className="h-4 w-4" />} label="到期" value={`${totalDue}`} />
                 </div>

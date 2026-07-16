@@ -532,3 +532,11 @@ test("learning progress study date helpers ignore invalid dates without losing e
   assert.equal(model.todayKey(new Date(Number.NaN)), "")
   assert.equal(model.calculateStudyStreak(new Set([""]), new Date(Number.NaN)), 0)
 })
+
+test("todayKey follows the learner's local calendar day", () => {
+  const beforeMidnight = new Date(2026, 6, 17, 23, 59, 59)
+  const afterMidnight = new Date(2026, 6, 18, 0, 0, 1)
+
+  assert.equal(model.todayKey(beforeMidnight), "2026-07-17")
+  assert.equal(model.todayKey(afterMidnight), "2026-07-18")
+})
