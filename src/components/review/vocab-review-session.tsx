@@ -14,7 +14,8 @@ import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
-import { makeVocabReviewQuestion } from "@/lib/review-questions"
+import { getVocabReviewPromptModel, makeVocabReviewQuestion, pickVocabReviewDirection } from "@/lib/review-questions"
+import { createSeededRandom } from "@/lib/seeded-random"
 
 export function VocabReviewSession({
   ids,
@@ -31,13 +32,24 @@ export function VocabReviewSession({
 }) {
   const vocabulary = useVocabularyReviewPool(ids, ids.length > 0)
   const [saveError, setSaveError] = useState(false)
+  // One random seed per session keeps direction/options deterministic when
+  // memo inputs regain new references mid-session.
+  const [reviewSeed] = useState(() => `vocab-review-${Math.random().toString(36).slice(2)}`)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
   const { dropCurrent } = review
 
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
-  const question = useMemo(() => (item ? makeVocabReviewQuestion(item, vocabulary.data) : null), [item, vocabulary.data])
+  const direction = useMemo(
+    () => (item ? pickVocabReviewDirection(createSeededRandom(`${reviewSeed}:direction:${item.id}`)) : "meaning"),
+    [item, reviewSeed]
+  )
+  const question = useMemo(
+    () => (item ? makeVocabReviewQuestion(item, vocabulary.data, createSeededRandom(`${reviewSeed}:question:${item.id}`), direction) : null),
+    [direction, item, reviewSeed, vocabulary.data]
+  )
+  const promptModel = item ? getVocabReviewPromptModel(item, direction) : null
   const missingReviewEntry = !!currentId && !item
   const insufficientQuestionOptions = !!item && !question
 
@@ -49,7 +61,7 @@ export function VocabReviewSession({
   }, [currentId, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
-    autoPlayText: item?.kana,
+    autoPlayText: promptModel?.autoPlayAudio ? promptModel.audio : undefined,
     autoPlayKey: item?.id,
   })
 
@@ -103,7 +115,7 @@ export function VocabReviewSession({
     )
   }
 
-  if (!item || !question) {
+  if (!item || !question || !promptModel) {
     return null
   }
 
@@ -124,7 +136,13 @@ export function VocabReviewSession({
     >
 
       <ReviewPromptCard minHeightClassName="min-h-[240px]">
-        <VocabReviewPrompt display={item.kanji ?? item.kana} kana={item.kana} onPlay={playAudio} />
+        <VocabReviewPrompt
+          display={promptModel.display}
+          sub={promptModel.sub}
+          hint={promptModel.hint}
+          audio={promptModel.audio}
+          onPlay={playAudio}
+        />
       </ReviewPromptCard>
 
       <ReviewOptionGrid

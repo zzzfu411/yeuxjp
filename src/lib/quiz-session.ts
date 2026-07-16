@@ -1,3 +1,5 @@
+import type { Question } from "@/lib/questions"
+
 export type QuizStats = {
   score: number
   total: number
@@ -45,4 +47,31 @@ export function resolveQuizAnswerSubmission(selectedAnswer: string, saved: boole
     saveError: false,
     selectedOption: selectedAnswer,
   }
+}
+
+export function getQuizQuestionKey(question: Pick<Question, "type" | "questionText" | "correctAnswer">) {
+  return `${question.type}:${question.questionText ?? ""}:${question.correctAnswer}`
+}
+
+export function pickFreshQuizQuestion(
+  generate: () => Question | null,
+  lastQuestionKey: string | null,
+  maxAttempts = 3
+): Question | null {
+  let question = generate()
+  let attempts = 1
+
+  while (
+    question &&
+    lastQuestionKey !== null &&
+    getQuizQuestionKey(question) === lastQuestionKey &&
+    attempts < maxAttempts
+  ) {
+    const retry = generate()
+    if (!retry) break
+    question = retry
+    attempts += 1
+  }
+
+  return question
 }

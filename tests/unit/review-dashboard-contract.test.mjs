@@ -42,7 +42,7 @@ test("review page delegates dashboard surfaces while keeping SRS/session wiring"
   assert.doesNotMatch(page, /mistakeSrs\.grade\(id, "again"\)/)
   assert.match(page, /const removeMistake = \(id: string\) => setReviewSaveError\(!mistakes\.remove\(id\)\)/)
   assert.match(page, /const clearMistakes = \(\) => setReviewSaveError\(!mistakes\.clear\(\)\)/)
-  assert.match(page, /startSession\(\{ deck: "today", items: dashboard\.todayQueue \}\)/)
+  assert.match(page, /deck: "today",\s+items: dashboard\.todayQueue,\s+remainingDueAfterBatch: Math\.max\(0, dashboard\.totalDue - dashboard\.todayQueue\.length\),/)
   assert.match(page, /startSession\(\{ deck: "kana", ids: dashboard\.reviewableKanaDueIds \}\)/)
   assert.match(page, /startSession\(\{ deck: "vocab", ids: dashboard\.vocabDueIds \}\)/)
   assert.match(page, /startSession\(\{ deck: "mistakes", ids: dashboard\.dueMistakeIds \}\)/)

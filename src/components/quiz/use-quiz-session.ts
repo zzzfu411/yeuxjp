@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningStatus } from "@/lib/learning-status"
 import type { Question } from "@/lib/questions"
-import { canStartQuizAnswerSubmission, createQuizStats, resolveQuizAnswerSubmission } from "@/lib/quiz-session"
+import { canStartQuizAnswerSubmission, createQuizStats, getQuizQuestionKey, pickFreshQuizQuestion, resolveQuizAnswerSubmission } from "@/lib/quiz-session"
 import { useQuizAudio } from "@/components/quiz/use-quiz-audio"
 import { useQuizAnswerRecorder } from "@/components/quiz/use-quiz-answer-recorder"
 import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
@@ -25,6 +25,7 @@ import {
 
 export function useQuizSession(mode: QuizMode) {
   const answerPendingRef = useRef(false)
+  const lastQuestionKeyRef = useRef<string | null>(null)
   const mistakes = useMistakeNotebook()
   const learning = useLearningStatus()
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
@@ -82,15 +83,20 @@ export function useQuizSession(mode: QuizMode) {
       return
     }
 
-    const q = generateQuizQuestion({
-      mode,
-      kanaBasePool,
-      kanaTargetPool,
-      vocabBasePool,
-      vocabTargetPool,
-    })
+    const q = pickFreshQuizQuestion(
+      () =>
+        generateQuizQuestion({
+          mode,
+          kanaBasePool,
+          kanaTargetPool,
+          vocabBasePool,
+          vocabTargetPool,
+        }),
+      lastQuestionKeyRef.current
+    )
 
     if (q) {
+      lastQuestionKeyRef.current = getQuizQuestionKey(q)
       setCurrentQuestion(q)
       setSelectedOption(null)
       answerPendingRef.current = false

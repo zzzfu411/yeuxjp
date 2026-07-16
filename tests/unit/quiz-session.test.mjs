@@ -53,3 +53,78 @@ test("quiz answer submission state preserves retryability after save failures", 
     selectedOption: "a",
   })
 })
+
+function makeQuizQuestion(overrides = {}) {
+  return {
+    type: "kana",
+    itemId: "a",
+    itemType: "kana",
+    mode: "recognition",
+    questionText: "あ",
+    correctAnswer: "a",
+    options: [
+      { value: "a", display: "a" },
+      { value: "i", display: "i" },
+    ],
+    ...overrides,
+  }
+}
+
+test("quiz question keys identify repeated prompts", () => {
+  const question = makeQuizQuestion()
+
+  assert.equal(session.getQuizQuestionKey(question), "kana:あ:a")
+  assert.equal(session.getQuizQuestionKey(makeQuizQuestion({ questionText: undefined })), "kana::a")
+  assert.notEqual(
+    session.getQuizQuestionKey(question),
+    session.getQuizQuestionKey(makeQuizQuestion({ correctAnswer: "i" }))
+  )
+})
+
+test("pickFreshQuizQuestion retries when the generator repeats the previous question", () => {
+  const repeated = makeQuizQuestion()
+  const fresh = makeQuizQuestion({ questionText: "い", correctAnswer: "i" })
+  const generated = [repeated, repeated, fresh]
+  let calls = 0
+
+  const question = session.pickFreshQuizQuestion(() => generated[calls++], session.getQuizQuestionKey(repeated))
+
+  assert.equal(calls, 3)
+  assert.equal(question, fresh)
+})
+
+test("pickFreshQuizQuestion keeps a repeated question when the pool cannot offer another", () => {
+  const repeated = makeQuizQuestion()
+  let calls = 0
+
+  const question = session.pickFreshQuizQuestion(
+    () => {
+      calls += 1
+      return repeated
+    },
+    session.getQuizQuestionKey(repeated)
+  )
+
+  assert.equal(calls, 3)
+  assert.equal(question, repeated)
+})
+
+test("pickFreshQuizQuestion accepts the first question without a previous key", () => {
+  const first = makeQuizQuestion()
+  let calls = 0
+
+  const question = session.pickFreshQuizQuestion(
+    () => {
+      calls += 1
+      return first
+    },
+    null
+  )
+
+  assert.equal(calls, 1)
+  assert.equal(question, first)
+})
+
+test("pickFreshQuizQuestion returns null when the generator has no questions", () => {
+  assert.equal(session.pickFreshQuizQuestion(() => null, null), null)
+})

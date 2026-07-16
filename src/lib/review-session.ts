@@ -9,7 +9,7 @@ export type ReviewStats = {
 
 export type ReviewSession =
   | { deck: ReviewDeck; ids: string[] }
-  | { deck: "today"; items: TodayReviewItem[] }
+  | { deck: "today"; items: TodayReviewItem[]; remainingDueAfterBatch: number }
 
 const REVIEW_SESSION_SOURCE_KEYS = new Set<string>([
   STORAGE_KEYS.KANA_MASTERED,

@@ -32,7 +32,9 @@ test("review sessions reuse shared kana and vocab review question builders", () 
   const source = reviewSessionSources()
 
   assert.match(source, /makeKanaReviewQuestion\(item\.romaji\)/)
-  assert.match(source, /makeVocabReviewQuestion\(item, vocabulary\.data\)/)
+  assert.match(source, /makeVocabReviewQuestion\(item, vocabulary\.data, createSeededRandom\(/)
+  assert.match(source, /pickVocabReviewDirection\(createSeededRandom\(/)
+  assert.match(source, /getVocabReviewPromptModel\(item, direction\)/)
   assert.doesNotMatch(source, /makeVocabReviewQuestion\(item\.id, vocabulary\.data\)/)
   assert.doesNotMatch(source, /const question: Question =/)
   assert.doesNotMatch(source, /options: options\.map/)
@@ -61,18 +63,18 @@ test("useReviewAnswerRecorder owns question result and learning record writes", 
 
 test("review sessions require existing SRS records before grading queued items", () => {
   const source = reviewSessionSources()
+  const todayAdapter = read("src/lib/today-review-session.ts")
 
   assert.match(source, /canRecord: useCallback/)
   assert.match(source, /srs\.has\(item\.romaji\)/)
   assert.match(source, /srs\.has\(item\.id\)/)
-  assert.match(source, /kanaSrs\.has\(current\.id\)/)
-  assert.match(source, /vocabSrs\.has\(current\.id\)/)
-  assert.match(source, /mistakeSrs\.has\(current\.id\)/)
+  assert.match(source, /canRecordTodayReviewItem\(current/)
   assert.match(source, /srs\.gradeExisting\(item\.romaji/)
   assert.match(source, /srs\.gradeExisting\(item\.id/)
-  assert.match(source, /kanaSrs\.gradeExisting\(current\.id/)
-  assert.match(source, /vocabSrs\.gradeExisting\(current\.id/)
-  assert.match(source, /mistakeSrs\.gradeExisting\(current\.id/)
+  assert.match(source, /gradeTodayReviewItem\(current, result/)
+  assert.match(todayAdapter, /decks\[current\.deck\]\.has\(current\.id\)/)
+  assert.match(todayAdapter, /decks\[current\.deck\]\.gradeExisting\(current\.id/)
+  assert.match(todayAdapter, /decks\.mistakes\.gradeExisting\(current\.id, "good"\)/)
 })
 
 test("useReviewSessionState supports a before-commit guard for persisted answer writes", () => {

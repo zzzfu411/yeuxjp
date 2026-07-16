@@ -27,11 +27,13 @@ function ReviewAudioButton({
 export function MixedReviewPrompt({
   prompt,
   sub,
+  hint,
   audio,
   onPlay,
 }: {
   prompt: string
   sub?: string
+  hint?: string
   audio?: string
   onPlay: (text: string) => void
 }) {
@@ -41,6 +43,7 @@ export function MixedReviewPrompt({
       <div className="mt-6 text-center space-y-2 px-6">
         <div className="text-4xl font-bold leading-snug break-words">{prompt}</div>
         {sub ? <div className="text-sm text-muted-foreground">{sub}</div> : null}
+        {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
       </div>
     </>
   )
@@ -70,21 +73,25 @@ export function KanaReviewPrompt({
 
 export function VocabReviewPrompt({
   display,
-  kana,
+  sub,
+  hint,
+  audio,
   onPlay,
 }: {
   display: string
-  kana: string
+  sub?: string
+  hint: string
+  audio?: string
   onPlay: (text: string) => void
 }) {
   return (
     <>
-      <ReviewAudioButton text={kana} onPlay={onPlay} />
+      {audio ? <ReviewAudioButton text={audio} onPlay={onPlay} /> : null}
 
-      <div className="mt-6 text-center space-y-2">
-        <div className="text-6xl font-bold leading-none">{display}</div>
-        {display !== kana ? <div className="text-xl text-muted-foreground">{kana}</div> : null}
-        <div className="text-xs text-muted-foreground">选择正确的中文意思</div>
+      <div className="mt-6 text-center space-y-2 px-6">
+        <div className="text-6xl font-bold leading-tight break-words">{display}</div>
+        {sub ? <div className="text-xl text-muted-foreground">{sub}</div> : null}
+        <div className="text-xs text-muted-foreground">{hint}</div>
       </div>
     </>
   )

@@ -112,7 +112,11 @@ export function ReviewPage() {
         onClear: clearMistakes,
         onRemove: removeMistake,
       }}
-      onStartToday={() => startSession({ deck: "today", items: dashboard.todayQueue })}
+      onStartToday={() => startSession({
+        deck: "today",
+        items: dashboard.todayQueue,
+        remainingDueAfterBatch: Math.max(0, dashboard.totalDue - dashboard.todayQueue.length),
+      })}
     />
   )
 }

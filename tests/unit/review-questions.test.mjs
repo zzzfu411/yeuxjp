@@ -196,3 +196,139 @@ test("mistake review questions accept stored alternate answers", () => {
   assert.deepEqual(question.acceptedAnswers, ["hi"])
   assert.equal(questions.makeQuestionResult(question, "hi", 1).correct, true)
 })
+
+function makeDueSrsEntry(dueAt) {
+  return { dueAt, box: 1, createdAt: 1, right: 0, wrong: 0 }
+}
+
+test("today review queue is capped at the shared daily limit", () => {
+  const vocabDueIds = Array.from({ length: 60 }, (_, index) => `sur-x-${index + 1}`)
+  const vocabSrsMap = Object.fromEntries(vocabDueIds.map((id, index) => [id, makeDueSrsEntry(index + 1)]))
+
+  const queue = review.buildTodayReviewQueue({
+    dueMistakeIds: [],
+    kanaDueIds: [],
+    kanaSrsMap: {},
+    vocabDueIds,
+    vocabSrsMap,
+  })
+
+  assert.equal(review.TODAY_REVIEW_QUEUE_LIMIT, 30)
+  assert.equal(queue.length, review.TODAY_REVIEW_QUEUE_LIMIT)
+  assert.deepEqual(queue[0], { deck: "vocab", id: "sur-x-1" })
+  assert.deepEqual(queue[queue.length - 1], { deck: "vocab", id: "sur-x-30" })
+})
+
+test("today review queue cap keeps mistakes first and accepts a custom limit", () => {
+  const vocabDueIds = ["v-late", "v-early"]
+  const queue = review.buildTodayReviewQueue({
+    dueMistakeIds: ["m1", "m2"],
+    kanaDueIds: [],
+    kanaSrsMap: {},
+    vocabDueIds,
+    vocabSrsMap: {
+      "v-late": makeDueSrsEntry(20),
+      "v-early": makeDueSrsEntry(10),
+    },
+    limit: 3,
+  })
+
+  assert.deepEqual(queue, [
+    { deck: "mistakes", id: "m1" },
+    { deck: "mistakes", id: "m2" },
+    { deck: "vocab", id: "v-early" },
+  ])
+})
+
+test("today review queue falls back to the default limit for invalid limits", () => {
+  const vocabDueIds = Array.from({ length: 40 }, (_, index) => `sur-y-${index + 1}`)
+  const vocabSrsMap = Object.fromEntries(vocabDueIds.map((id, index) => [id, makeDueSrsEntry(index + 1)]))
+
+  for (const limit of [0, -5, Number.NaN, Number.POSITIVE_INFINITY]) {
+    const queue = review.buildTodayReviewQueue({
+      dueMistakeIds: [],
+      kanaDueIds: [],
+      kanaSrsMap: {},
+      vocabDueIds,
+      vocabSrsMap,
+      limit,
+    })
+    assert.equal(queue.length, review.TODAY_REVIEW_QUEUE_LIMIT)
+  }
+})
+
+const directionVocabPool = [
+  { id: "v1", kanji: "水", kana: "みず", romaji: "mizu", meaning: "水", category: "food", level: "survival" },
+  { id: "v2", kana: "ちゃ", romaji: "cha", meaning: "茶", category: "food", level: "survival" },
+  { id: "v3", kanji: "ご飯", kana: "ごはん", romaji: "gohan", meaning: "饭", category: "food", level: "survival" },
+  { id: "v4", kana: "パン", romaji: "pan", meaning: "面包", category: "food", level: "survival" },
+]
+
+test("vocabulary recall review questions prompt with meaning and answer in Japanese", () => {
+  const question = review.makeVocabReviewQuestion("v3", directionVocabPool, () => 0, "recall")
+
+  assert.equal(question.mode, "recall")
+  assert.equal(question.questionText, "饭")
+  assert.equal(question.questionAudio, undefined)
+  assert.equal(question.correctAnswer, "v3")
+  assert.equal(question.correctDisplay, "ご飯（ごはん）")
+  assert.ok(question.options.every((option) => /（|[ぁ-んァ-ン]/.test(option.display)))
+})
+
+test("vocabulary listening review questions auto play audio without revealing the word", () => {
+  const question = review.makeVocabReviewQuestion("v1", directionVocabPool, () => 0, "listening")
+
+  assert.equal(question.mode, "listening")
+  assert.equal(question.questionAudio, "みず")
+  assert.equal(question.autoPlayAudio, true)
+  assert.ok(!question.questionText.includes("みず"))
+  assert.ok(!question.questionText.includes("水"))
+  assert.equal(question.correctAnswer, "v1")
+  assert.ok(question.options.every((option) => option.display === directionVocabPool.find((v) => v.id === option.value)?.meaning))
+})
+
+test("vocabulary review options stay unique by the text learners can see", () => {
+  const duplicatePool = [
+    { id: "train-daily", kanji: "電車", kana: "でんしゃ", romaji: "densha", meaning: "电车", category: "daily", level: "survival" },
+    { id: "train-transport", kanji: "電車", kana: "でんしゃ", romaji: "densha", meaning: "电车", category: "transport", level: "survival" },
+    { id: "bus", kana: "バス", romaji: "basu", meaning: "巴士", category: "transport", level: "survival" },
+    { id: "taxi", kana: "タクシー", romaji: "takushii", meaning: "出租车", category: "transport", level: "survival" },
+    { id: "bike", kanji: "自転車", kana: "じてんしゃ", romaji: "jitensha", meaning: "自行车", category: "transport", level: "survival" },
+  ]
+
+  for (const direction of ["meaning", "recall", "listening"]) {
+    const question = review.makeVocabReviewQuestion("train-daily", duplicatePool, () => 0, direction)
+    assert.equal(question.options.length, 4)
+    assert.equal(new Set(question.options.map((option) => option.display)).size, question.options.length)
+    assert.equal(question.options.filter((option) => option.display.includes("电车") || option.display.includes("電車")).length, 1)
+  }
+})
+
+test("vocabulary review prompt models hide answer-revealing audio and text per direction", () => {
+  const item = directionVocabPool[0]
+
+  const meaning = review.getVocabReviewPromptModel(item, "meaning")
+  assert.equal(meaning.display, "水")
+  assert.equal(meaning.sub, "みず")
+  assert.equal(meaning.audio, "みず")
+  assert.equal(meaning.autoPlayAudio, true)
+
+  const recall = review.getVocabReviewPromptModel(item, "recall")
+  assert.equal(recall.display, "水")
+  assert.equal(recall.audio, undefined)
+  assert.equal(recall.autoPlayAudio, false)
+
+  const listening = review.getVocabReviewPromptModel(item, "listening")
+  assert.ok(!listening.display.includes("水"))
+  assert.ok(!listening.display.includes("みず"))
+  assert.equal(listening.audio, "みず")
+  assert.equal(listening.autoPlayAudio, true)
+})
+
+test("pickVocabReviewDirection tolerates degenerate random sources", () => {
+  assert.equal(review.pickVocabReviewDirection(() => 0), "meaning")
+  assert.equal(review.pickVocabReviewDirection(() => 0.5), "recall")
+  assert.equal(review.pickVocabReviewDirection(() => 0.99), "listening")
+  assert.equal(review.pickVocabReviewDirection(() => 1), "listening")
+  assert.equal(review.pickVocabReviewDirection(() => -1), "meaning")
+})

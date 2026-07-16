@@ -11,28 +11,22 @@ import { useReviewSessionState } from "@/components/review/use-review-session-st
 import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
-import { kanaData } from "@/data/kana-data"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
-import type { Question, QuestionResult } from "@/lib/questions"
+import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
+import type { TodayReviewItem } from "@/lib/review-questions"
 import {
-  makeKanaReviewQuestion,
-  makeVocabReviewQuestion,
-  mistakeToQuestion,
-  type TodayReviewItem,
-} from "@/lib/review-questions"
-
-type TodayReviewData = {
-  deckLabel: string
-  prompt: string
-  sub?: string
-  audio?: string
-  question: Question
-}
+  canRecordTodayReviewItem,
+  getTodayReviewBatchCompletionTitle,
+  getTodayReviewItemKey,
+  gradeTodayReviewItem,
+  resolveTodayReviewItemData,
+} from "@/lib/today-review-session"
 
 export function TodayReviewSession({
   items,
+  remainingDueAfterBatch,
   onExit,
   notebook,
   learning,
@@ -41,6 +35,7 @@ export function TodayReviewSession({
   mistakeSrs,
 }: {
   items: TodayReviewItem[]
+  remainingDueAfterBatch: number
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
   learning: ReturnType<typeof useLearningProgress>
@@ -52,71 +47,24 @@ export function TodayReviewSession({
   const vocabulary = useVocabularyReviewPool(vocabIds, vocabIds.length > 0)
 
   const [saveErrorKey, setSaveErrorKey] = useState<string | null>(null)
+  // One random seed per session: item randomness (direction, distractors) must
+  // stay stable when the resolve memo recomputes after an answer mutates the
+  // mistake notebook or vocabulary pool references.
+  const [reviewSeed] = useState(() => `today-${Math.random().toString(36).slice(2)}`)
   const review = useReviewSessionState(items)
   const current = review.currentItem
   const selected = review.selectedAnswer
   const { dropCurrent } = review
-  const currentKey = current ? `${current.deck}:${current.id}` : null
+  const currentKey = getTodayReviewItemKey(current)
   const saveError = !!currentKey && saveErrorKey === currentKey
-  const kanaItem = useMemo(() => {
-    if (current?.deck !== "kana") return null
-    return kanaData.find((k) => k.romaji === current.id) ?? null
-  }, [current])
-  const vocabItem = useMemo(() => {
-    if (current?.deck !== "vocab") return null
-    return vocabulary.data.find((v) => v.id === current.id) ?? null
-  }, [current, vocabulary.data])
-  const kanaQuestion = useMemo(() => (kanaItem ? makeKanaReviewQuestion(kanaItem.romaji) : null), [kanaItem])
-  const vocabQuestion = useMemo(
-    () => (vocabItem ? makeVocabReviewQuestion(vocabItem, vocabulary.data) : null),
-    [vocabItem, vocabulary.data]
-  )
-  const mistakeItem = useMemo(() => {
-    if (current?.deck !== "mistakes") return null
-    return notebook.byId.get(current.id) ?? null
-  }, [current, notebook.byId])
-  const missingReviewEntry =
-    !!current &&
-    ((current.deck === "kana" && !kanaItem) ||
-      (current.deck === "vocab" && !vocabItem) ||
-      (current.deck === "mistakes" && !mistakeItem))
-  const insufficientQuestionOptions =
-    !!current &&
-    ((current.deck === "kana" && !!kanaItem && !kanaQuestion) ||
-      (current.deck === "vocab" && !!vocabItem && !vocabQuestion))
-
-  const data: TodayReviewData | null = useMemo(() => {
-    if (!current) return null
-    if (current.deck === "kana") {
-      if (!kanaItem || !kanaQuestion) return null
-      return {
-        deckLabel: "假名",
-        prompt: kanaItem.hiragana,
-        sub: kanaItem.katakana,
-        audio: kanaItem.hiragana,
-        question: kanaQuestion,
-      }
-    }
-    if (current.deck === "vocab") {
-      if (!vocabItem || !vocabQuestion) return null
-      return {
-        deckLabel: "词汇",
-        prompt: vocabItem.kanji ?? vocabItem.kana,
-        sub: vocabItem.kanji ? vocabItem.kana : undefined,
-        audio: vocabItem.kana,
-        question: vocabQuestion,
-      }
-    }
-
-    if (!mistakeItem) return null
-    return {
-      deckLabel: "错题",
-      prompt: mistakeItem.questionText ?? mistakeItem.questionAudio ?? "（无题干）",
-      sub: mistakeItem.type,
-      audio: mistakeItem.questionAudio,
-      question: mistakeToQuestion(mistakeItem),
-    }
-  }, [current, kanaItem, kanaQuestion, mistakeItem, vocabItem, vocabQuestion])
+  const { data, missingReviewEntry, insufficientQuestionOptions } = useMemo(() => {
+    return resolveTodayReviewItemData({
+      current,
+      vocabulary: vocabulary.data,
+      mistakes: notebook.byId,
+      seed: reviewSeed,
+    })
+  }, [current, notebook.byId, reviewSeed, vocabulary.data])
 
   useEffect(() => {
     if (!current) return
@@ -127,7 +75,7 @@ export function TodayReviewSession({
   }, [current, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
-    autoPlayText: data?.audio,
+    autoPlayText: data?.autoPlayAudio ? data.audio : undefined,
     autoPlayKey: current?.id,
     autoPlayDelayMs: 350,
   })
@@ -137,28 +85,19 @@ export function TodayReviewSession({
     notebook,
     recordAnswer: review.recordAnswer,
     canRecord: useCallback(() => {
-      if (!current) return false
-      if (current.deck === "kana") return kanaSrs.has(current.id)
-      if (current.deck === "vocab") return vocabSrs.has(current.id)
-      if (current.deck === "mistakes") return mistakeSrs.has(current.id)
-      return false
+      return canRecordTodayReviewItem(current, { kana: kanaSrs, vocab: vocabSrs, mistakes: mistakeSrs })
     }, [current, kanaSrs, mistakeSrs, vocabSrs]),
     grade: useCallback((result: QuestionResult) => {
-      if (!current) return false
-      if (current.deck === "kana") return kanaSrs.gradeExisting(current.id, result.correct ? "good" : "again")
-      if (current.deck === "vocab") return vocabSrs.gradeExisting(current.id, result.correct ? "good" : "again")
-      if (current.deck === "mistakes") {
-        if (!result.correct) return true
-        return mistakeSrs.gradeExisting(current.id, "good")
-      }
-      return false
+      return gradeTodayReviewItem(current, result, { kana: kanaSrs, vocab: vocabSrs, mistakes: mistakeSrs })
     }, [current, kanaSrs, mistakeSrs, vocabSrs]),
   })
 
   if (review.isComplete) {
     return (
       <ReviewDone
-        title={review.isInvalidated ? "学习数据已更新，请重新开始复习" : "今日复习完成"}
+        title={review.isInvalidated
+          ? "学习数据已更新，请重新开始复习"
+          : getTodayReviewBatchCompletionTitle(remainingDueAfterBatch)}
         onExit={onExit}
         stats={review.isInvalidated ? undefined : review.completionStats}
       />
@@ -220,7 +159,7 @@ export function TodayReviewSession({
       </div>
 
       <ReviewPromptCard minHeightClassName="min-h-[240px]">
-        <MixedReviewPrompt prompt={data.prompt} sub={data.sub} audio={data.audio} onPlay={playAudio} />
+        <MixedReviewPrompt prompt={data.prompt} sub={data.sub} hint={data.hint} audio={data.audio} onPlay={playAudio} />
       </ReviewPromptCard>
 
       <ReviewOptionGrid

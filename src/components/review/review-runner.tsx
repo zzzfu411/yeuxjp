@@ -50,7 +50,16 @@ export function ReviewRunner({
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
 }) {
-  if (session.deck === "today") return <TodayReview items={session.items} onExit={onExit} notebook={notebook} />
+  if (session.deck === "today") {
+    return (
+      <TodayReview
+        items={session.items}
+        remainingDueAfterBatch={session.remainingDueAfterBatch}
+        onExit={onExit}
+        notebook={notebook}
+      />
+    )
+  }
   if (session.deck === "kana") return <KanaReview ids={session.ids} onExit={onExit} notebook={notebook} />
   if (session.deck === "vocab") return <VocabReview ids={session.ids} onExit={onExit} notebook={notebook} />
   return <MistakeReview ids={session.ids} onExit={onExit} notebook={notebook} />
@@ -58,10 +67,12 @@ export function ReviewRunner({
 
 function TodayReview({
   items,
+  remainingDueAfterBatch,
   onExit,
   notebook,
 }: {
   items: TodayReviewItem[]
+  remainingDueAfterBatch: number
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
 }) {
@@ -72,6 +83,7 @@ function TodayReview({
   return (
     <TodayReviewSession
       items={items}
+      remainingDueAfterBatch={remainingDueAfterBatch}
       onExit={onExit}
       notebook={notebook}
       learning={learning}
