@@ -33,6 +33,28 @@ test("parseAnimCJK groups subpaths with the same delay into one logical stroke",
   assert.doesNotMatch(parsed.html, /<script|<style/)
 })
 
+test("parseAnimCJK keeps every rewritten stroke path self-closing so innerHTML renders all strokes", () => {
+  const raw = `
+    <svg class="acjk" viewBox="0 0 1024 1024">
+      <path clip-path="url(#c1)" d="M 10,20 L 30,40" pathLength="100" style="--d:1s;" />
+      <path clip-path="url(#c2)" d="M 50,60 L 70,80" pathLength="200" style="--d:2s;" />
+      <path clip-path="url(#c3)" d="M 90,10 L 20,30" pathLength="300" style="--d:3s;" />
+    </svg>
+  `
+
+  const parsed = animcjk.parseAnimCJK(raw)
+  const strokePaths = parsed.html.match(/<path\b[^>]*data-stroke-index="\d+"[^>]*>/g) ?? []
+
+  assert.equal(strokePaths.length, 3)
+  for (const strokePath of strokePaths) {
+    assert.match(
+      strokePath,
+      /\/>$/,
+      `stroke path must stay self-closing, otherwise SVG foreign content parsing nests later strokes as unrendered children: ${strokePath}`
+    )
+  }
+})
+
 test("parseAnimCJK falls back when SVG numeric attributes are malformed", () => {
   const raw = `
     <svg class="acjk">

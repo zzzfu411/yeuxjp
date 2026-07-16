@@ -131,7 +131,7 @@ export function SpeechSettingsBar({
 
   const rateOptions: { label: string; value: number }[] = [
     { label: "很慢", value: 0.75 },
-    { label: "较慢", value: 0.85 },
+    { label: "较慢", value: 0.9 },
     { label: "正常", value: 1.0 },
   ]
 

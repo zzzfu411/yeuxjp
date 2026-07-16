@@ -73,10 +73,18 @@ export function useAnimCjkPlayback({
   }, [clearTimers, isPaused, playToken, ready, scheduleTimeline, totalStrokes])
 
   useEffect(() => {
-    if (!ready || !autoPlay) return
+    if (!ready) return
 
     const timer = setTimeout(() => {
+      // Always restart from stroke 0 when the glyph changes; a stale
+      // activeStrokeRef from the previous character would otherwise make the
+      // next playback resume mid-glyph. autoPlay only controls whether the
+      // timeline starts immediately.
       updateActiveStroke(0)
+      if (!autoPlay) {
+        setIsPaused(true)
+        return
+      }
       setIsPaused(false)
       setPlayToken((value) => value + 1)
     }, 0)

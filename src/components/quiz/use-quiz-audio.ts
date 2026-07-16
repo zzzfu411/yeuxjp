@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect } from "react"
 import { useSpeechPreferences } from "@/components/ui/speech-preferences"
-import { speakJapaneseRepeated } from "@/lib/speech"
+import { cancelJapaneseSpeech, speakJapaneseRepeated } from "@/lib/speech"
 
 export function useQuizAudio({
   autoPlayText,
@@ -22,6 +22,10 @@ export function useQuizAudio({
     const gapMs = speech?.prefs.gapMs ?? 250
     speakJapaneseRepeated(text, { repeat, gapMs })
   }, [speech?.prefs.gapMs, speech?.prefs.repeat])
+
+  // Manual playback must also stop when the question changes or unmounts,
+  // including when autoplay is disabled and no autoplay timer exists.
+  useEffect(() => () => cancelJapaneseSpeech(), [autoPlayKey])
 
   useEffect(() => {
     if (!autoPlayText || !autoPlayEnabled) return

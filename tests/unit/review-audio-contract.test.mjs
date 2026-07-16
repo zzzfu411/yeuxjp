@@ -37,4 +37,5 @@ test("useReviewAudio owns repeated speech, autoplay timing, and per-item replay 
   assert.match(source, /setTimeout\(\(\) => playAudio\(autoPlayText\), autoPlayDelayMs\)/)
   assert.match(source, /clearTimeout\(timer\)/)
   assert.match(source, /autoPlayKey/)
+  assert.match(source, /useEffect\(\(\) => \(\) => cancelJapaneseSpeech\(\), \[autoPlayKey\]\)/)
 })

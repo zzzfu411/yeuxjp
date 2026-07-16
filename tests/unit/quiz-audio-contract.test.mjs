@@ -33,4 +33,5 @@ test("useQuizAudio owns repeated speech, autoplay timing, and cleanup", () => {
   assert.match(source, /autoPlayEnabled/)
   assert.match(source, /setTimeout\(\(\) => playAudio\(autoPlayText\), autoPlayDelayMs\)/)
   assert.match(source, /clearTimeout\(timer\)/)
+  assert.match(source, /useEffect\(\(\) => \(\) => cancelJapaneseSpeech\(\), \[autoPlayKey\]\)/)
 })

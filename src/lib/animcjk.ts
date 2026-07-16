@@ -134,7 +134,11 @@ export function parseAnimCJK(rawSvg: string): ParsedAnimCjkSvg {
       .replace(/\s*\/\s*$/g, "")
       .replace(/\s+/g, " ")
       .trim()
-    return `<path ${cleaned} clip-path="${clip}" data-stroke-index="${info.index}" style="--stroke-len:${info.length};--stroke-off:${info.length + 2};">`
+    // Keep the rewritten stroke path self-closing: the parsed markup is
+    // injected through innerHTML, and inside SVG foreign content a
+    // non-self-closed <path> swallows every following stroke as an invalid
+    // (unrendered) child, leaving only the first stroke visible.
+    return `<path ${cleaned} clip-path="${clip}" data-stroke-index="${info.index}" style="--stroke-len:${info.length};--stroke-off:${info.length + 2};"/>`
   })
 
   const starts: ParsedStroke[] = []

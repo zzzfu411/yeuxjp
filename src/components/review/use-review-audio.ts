@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect } from "react"
 import { useSpeechPreferences } from "@/components/ui/speech-preferences"
-import { speakJapaneseRepeated } from "@/lib/speech"
+import { cancelJapaneseSpeech, speakJapaneseRepeated } from "@/lib/speech"
 
 export function useReviewAudio({
   autoPlayText,
@@ -20,6 +20,10 @@ export function useReviewAudio({
     const gapMs = speech?.prefs.gapMs ?? 250
     speakJapaneseRepeated(text, { repeat, gapMs })
   }, [speech?.prefs.gapMs, speech?.prefs.repeat])
+
+  // Manual playback must also stop when the prompt changes or unmounts,
+  // including when autoplay is disabled and no autoplay timer exists.
+  useEffect(() => () => cancelJapaneseSpeech(), [autoPlayKey])
 
   useEffect(() => {
     if (!autoPlayText) return

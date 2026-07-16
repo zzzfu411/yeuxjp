@@ -54,6 +54,24 @@ export function isSpeechSupported() {
   )
 }
 
+// Sequence playback chains utterances through onend callbacks and gap timers.
+// speechSynthesis.cancel() clears the utterance queue but cannot clear a
+// pending gap timer, so an interrupted sequence would otherwise "revive" and
+// speak its remaining repeats over the next prompt. Every new playback (or
+// explicit cancel) bumps the generation; stale chains check it and stop.
+let speechGeneration = 0
+
+function nextSpeechGeneration() {
+  speechGeneration += 1
+  return speechGeneration
+}
+
+export function cancelJapaneseSpeech() {
+  nextSpeechGeneration()
+  if (!isSpeechSupported()) return
+  window.speechSynthesis.cancel()
+}
+
 function applyUtteranceDefaults(utterance: SpeechSynthesisUtterance, options: SpeakOptions) {
   utterance.lang = options.lang ?? speechDefaults.lang ?? "ja-JP"
 
@@ -72,7 +90,10 @@ export function speakJapanese(text: string, options: SpeakOptions = {}) {
   if (!text?.trim()) return null
 
   const synth = window.speechSynthesis
-  if (options.cancel !== false) synth.cancel()
+  if (options.cancel !== false) {
+    nextSpeechGeneration()
+    synth.cancel()
+  }
 
   const utterance = new SpeechSynthesisUtterance(text)
   applyUtteranceDefaults(utterance, options)
@@ -101,6 +122,7 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
 
   const synth = window.speechSynthesis
   if (options.cancel !== false) synth.cancel()
+  const generation = nextSpeechGeneration()
 
   const voices = synth.getVoices?.() ?? []
   const voice = pickJapaneseVoice(voices)
@@ -110,6 +132,8 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
   let first: SpeechSynthesisUtterance | null = null
 
   const speakNext = () => {
+    if (generation !== speechGeneration) return
+
     const current = cleaned[index]
     if (!current) {
       options.onEnd?.()
@@ -124,11 +148,14 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
     if (index === 0 && options.onStart) utterance.onstart = options.onStart
 
     utterance.onerror = (event) => {
+      if (generation !== speechGeneration) return
       options.onError?.(event)
       options.onEnd?.()
     }
 
     utterance.onend = () => {
+      if (generation !== speechGeneration) return
+
       index += 1
       if (index >= cleaned.length) {
         options.onEnd?.()
