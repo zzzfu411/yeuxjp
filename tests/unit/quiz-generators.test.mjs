@@ -28,6 +28,7 @@ test("kana quiz generators return shared Question objects", () => {
   })
 
   assert.equal(question.itemType, "kana")
+  assert.equal(question.itemId, "hiragana:a")
   assert.equal(question.mode, "recognition")
   assert.equal(question.correctAnswer, "a")
   assert.equal(question.options.length, 4)
@@ -85,6 +86,38 @@ test("kana unmastered filter stays empty when every item is mastered", () => {
     quiz.filterUnmasteredKana(base, () => true, false),
     base
   )
+})
+
+test("kana unmastered filter checks hiragana progress IDs", () => {
+  const base = quiz.getKanaPool("seion").slice(0, 2)
+  const checkedIds = []
+
+  const filtered = quiz.filterUnmasteredKana(
+    base,
+    (id) => {
+      checkedIds.push(id)
+      return id === "hiragana:a"
+    },
+    true
+  )
+
+  assert.deepEqual(checkedIds, ["hiragana:a", "hiragana:i"])
+  assert.deepEqual(filtered.map((item) => item.romaji), ["i"])
+})
+
+test("audio kana questions use hiragana progress IDs", () => {
+  const base = quiz.getKanaPool("seion")
+  const question = quiz.generateQuizQuestion({
+    mode: "audio-kana",
+    kanaBasePool: base,
+    kanaTargetPool: base,
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    random: () => 0,
+  })
+
+  assert.equal(question.itemId, "hiragana:a")
+  assert.equal(question.mode, "listening")
 })
 
 test("vocabulary quiz generators return meaning questions", () => {

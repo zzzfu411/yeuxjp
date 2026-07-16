@@ -51,6 +51,7 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 ## Implemented Features
 
 - Kana charts for hiragana/katakana, seion, dakuon, handakuon, yoon, and sokuon.
+- Hiragana and katakana mastery are tracked independently with script-aware IDs such as `hiragana:a` and `katakana:a`. Existing localStorage keys are unchanged; legacy bare romaji IDs are read as the previously shared state for both scripts so existing progress is not lost.
 - Kana page presentation is split into focused hero, set-hint, and section components while the page runner keeps URL controls, progress writes, and confirmation state.
 - AnimCJK stroke-order animation loaded from `web/public/animcjk/kana`.
 - Vocabulary cards grouped by level and category, with search, learned-state tracking, and TTS.
@@ -64,7 +65,7 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 - N5 grammar points include plain-language explanations and common-pitfall notes rendered in the grammar focus modal, with polite-form example sentences that match the starter course style.
 - The home page turns the onboarding minutes-per-day preference into a daily practice target with a progress bar based on today's recorded practice.
 - Shared learning-session helpers in `web/src/lib/learning-session.ts` and shared question helpers in `web/src/lib/questions.ts`.
-- Learning backup/restore/reset helpers in `web/src/lib/learning-store.ts`; storage keys remain compatible with existing localStorage data.
+- Learning backup/restore/reset helpers in `web/src/lib/learning-store.ts`; storage keys remain compatible with existing localStorage data. New exports use backup schema v2, while v1 backups remain importable and are normalized to script-aware kana state.
 - Learning backup export/import normalizes active kana/vocabulary indexes and SRS maps, removes stale vocabulary ids, non-reviewable kana ids, and mistake SRS entries that no longer have notebook records, while preserving practice history.
 - Practice writes use the shared learning-store transaction helper so progress history, item mastery, SRS enrollment, and mistake notebook writes do not leave partial managed state after failures; learning-store replacement events are broadcast across tabs so active review sessions stop before writing against replaced data.
 - Quiz and review routes use shared runner components plus pure question builders, so the route files stay focused on URL/session entry state.
@@ -79,6 +80,7 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 - Add grammar to `web/src/data/grammar-data.ts`.
 - Add lesson steps to `web/src/data/lessons.ts` and run `npm run validate:data`.
 - Practice steps should include stable `itemId`, `itemType`, and `mode` fields so progress/SRS/mistake recording can identify the learned item.
+- Reviewable kana practice uses `hiragana:<romaji>` or `katakana:<romaji>` item IDs. Phonology exercises that represent a whole word, such as `sokuon:きって`, keep their scoped custom IDs and do not enroll the single-kana SRS deck.
 - Do not recreate `web/src/data/vocab-data.ts`, `kanaHira.json`, or `kanaKata.json`; validation fails if those legacy sources return.
 
 ## Assets And Licenses

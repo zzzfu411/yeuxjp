@@ -13,8 +13,8 @@ import {
   quizVocabIdsByLevel,
   seedDueMistakeReviewState,
   seedMissingThenDueMistakeReviewState,
+  seionHiraganaIds,
   seionHiraganaToRomaji,
-  seionRomaji,
 } from "./browser-fixtures.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
@@ -192,9 +192,9 @@ async function verifyQuizScopeControls(page, baseUrl) {
   assert.equal(await page.getByTestId("quiz-kana-scope-seion").getAttribute("aria-pressed"), "true")
   const seionPractice = await latestPracticeItem(page)
   assert.equal(seionPractice.itemType, "kana")
-  assert.ok(seionRomaji.includes(seionPractice.itemId), "seion kana scope should draw from canonical seion kana")
+  assert.ok(seionHiraganaIds.includes(seionPractice.itemId), "seion kana scope should draw from canonical seion kana")
 
-  await openQuizModeWithLearningState(page, baseUrl, "hiragana-romaji", { masteredKana: seionRomaji })
+  await openQuizModeWithLearningState(page, baseUrl, "hiragana-romaji", { masteredKana: seionHiraganaIds })
   await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-kana-scope-all")
   assert.equal(await page.getByTestId("quiz-kana-scope-all").getAttribute("aria-pressed"), "true")
   await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-only-unmastered-kana")
@@ -202,7 +202,7 @@ async function verifyQuizScopeControls(page, baseUrl) {
   const allUnmasteredPractice = await latestPracticeItem(page)
   assert.equal(allUnmasteredPractice.itemType, "kana")
   assert.ok(
-    !seionRomaji.includes(allUnmasteredPractice.itemId),
+    !seionHiraganaIds.includes(allUnmasteredPractice.itemId),
     "all kana scope with seion mastered should draw from non-seion kana"
   )
 
@@ -303,7 +303,7 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   assert.ok(
     Array.isArray(correctMistakeReviewPractice) &&
       correctMistakeReviewPractice.some((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === true
@@ -339,7 +339,7 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   assert.ok(
     Array.isArray(wrongMistakeReviewPractice) &&
       wrongMistakeReviewPractice.some((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === false
@@ -428,7 +428,7 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   await page.evaluate(({ masteredIds, key }) => {
     localStorage.clear()
     localStorage.setItem(key, JSON.stringify(masteredIds))
-  }, { masteredIds: seionRomaji, key: E2E_STORAGE_KEYS.KANA_MASTERED })
+  }, { masteredIds: seionHiraganaIds, key: E2E_STORAGE_KEYS.KANA_MASTERED })
   await page.getByTestId("quiz-mode-hiragana-romaji").click()
   await page.getByTestId("quiz-only-unmastered-kana").click()
   await page.getByTestId("quiz-empty-state").waitFor({ state: "visible" })

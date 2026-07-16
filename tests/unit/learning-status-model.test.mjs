@@ -46,7 +46,9 @@ test("learning status combines legacy marks with practiced kana and vocabulary p
     },
   })
 
-  assert.deepEqual([...status.masteredKanaIds].sort(), ["a", "ka"])
+  assert.deepEqual([...status.masteredKanaIds].sort(), [
+    "hiragana:a", "hiragana:ka", "katakana:a", "katakana:ka",
+  ])
   assert.deepEqual([...status.learnedVocabIds].sort(), ["sur-g-1", "sur-v-1"])
 })
 
@@ -131,5 +133,20 @@ test("learning status ignores non-reviewable kana ids from legacy marks and prac
     },
   })
 
-  assert.deepEqual([...status.masteredKanaIds].sort(), ["a", "ka"])
+  assert.deepEqual([...status.masteredKanaIds].sort(), [
+    "hiragana:a", "hiragana:ka", "katakana:a", "katakana:ka",
+  ])
+})
+
+test("new script-aware progress does not master the matching kana in the other script", () => {
+  const status = model.buildLearningStatusModel({
+    masteredKanaIds: [],
+    learnedVocabIds: [],
+    items: {
+      "hiragana:a": item({ itemId: "hiragana:a", recognition: 54, attempts: 3 }),
+    },
+  })
+
+  assert.equal(status.masteredKanaIds.has("hiragana:a"), true)
+  assert.equal(status.masteredKanaIds.has("katakana:a"), false)
 })

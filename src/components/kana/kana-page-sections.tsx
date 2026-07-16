@@ -4,14 +4,15 @@ import type { KanaSet } from "@/lib/kana-page-model"
 import { KanaLearningSection } from "@/components/kana/kana-learning-section"
 import type { KanaMode } from "@/components/kana/kana-controls"
 import type { KanaPageData } from "@/components/kana/use-kana-page-data"
+import type { KanaId } from "@/lib/kana-id"
 
 interface KanaPageSectionsProps {
   kanaSet: KanaSet
   pageData: KanaPageData
   mode: KanaMode
   showRomaji: boolean
-  isMastered: (romaji: string) => boolean
-  onToggleMastered: (romaji: string) => void
+  isMastered: (id: KanaId) => boolean
+  onToggleMastered: (id: KanaId) => void
 }
 
 export function KanaPageSections({

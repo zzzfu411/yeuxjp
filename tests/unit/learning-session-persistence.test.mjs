@@ -63,7 +63,7 @@ test("practice recording failure prevents review enrollment", () => {
   const { map } = installLocalStorage({ failKeys: new Set([storage.STORAGE_KEYS.ITEM_PROGRESS]) })
 
   assert.equal(session.recordPracticeResult(createProgressApi(), {
-    itemId: "a",
+    itemId: "hiragana:a",
     itemType: "kana",
     mode: "recognition",
     correct: true,
@@ -78,7 +78,7 @@ test("review enrollment failure rolls back direct practice recording", () => {
   const { map } = installLocalStorage({ failKeys: new Set([storage.STORAGE_KEYS.SRS_KANA]) })
 
   assert.equal(session.recordPracticeResult(createProgressApi(), {
-    itemId: "a",
+    itemId: "hiragana:a",
     itemType: "kana",
     mode: "recognition",
     correct: true,
@@ -112,7 +112,7 @@ test("mistake review questions with progress metadata write original item practi
     id: "m1",
     type: "hiragana-romaji",
     questionText: "あ",
-    itemId: "a",
+    itemId: "hiragana:a",
     itemType: "kana",
     mode: "recognition",
     correctAnswer: "a",
@@ -141,14 +141,14 @@ test("mistake review questions with progress metadata write original item practi
     answer: item.answer,
   })), [
     {
-      itemId: "a",
+      itemId: "hiragana:a",
       itemType: "kana",
       mode: "recognition",
       correct: true,
       answer: "a",
     },
   ])
-  assert.ok(itemProgress.a)
+  assert.ok(itemProgress["hiragana:a"])
   assert.equal(map.has(storage.STORAGE_KEYS.SRS_KANA), false)
 })
 

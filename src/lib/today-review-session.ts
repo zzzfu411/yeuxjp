@@ -1,4 +1,4 @@
-import { kanaData } from "@/data/kana-data"
+import { getKanaById } from "@/lib/kana-id"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
 import type { Question, QuestionResult } from "@/lib/questions"
@@ -75,18 +75,20 @@ export function resolveTodayReviewItemData({
   if (!current) return emptyResolution()
 
   if (current.deck === "kana") {
-    const kanaItem = kanaData.find((item) => item.romaji === current.id)
-    if (!kanaItem) return emptyResolution({ missingReviewEntry: true })
+    const parsedKana = getKanaById(current.id)
+    if (!parsedKana) return emptyResolution({ missingReviewEntry: true })
+    const kanaItem = parsedKana.kana
+    const glyph = kanaItem[parsedKana.script]
 
-    const question = makeKanaReviewQuestion(kanaItem.romaji, createSeededRandom(`${seed}:kana:${current.id}`))
+    const question = makeKanaReviewQuestion(parsedKana.id, createSeededRandom(`${seed}:kana:${current.id}`))
     if (!question) return emptyResolution({ insufficientQuestionOptions: true })
 
     return {
       data: {
         deckLabel: "\u5047\u540d",
-        prompt: kanaItem.hiragana,
-        sub: kanaItem.katakana,
-        audio: kanaItem.hiragana,
+        prompt: glyph,
+        sub: parsedKana.script === "hiragana" ? "平假名" : "片假名",
+        audio: glyph,
         autoPlayAudio: true,
         question,
       },

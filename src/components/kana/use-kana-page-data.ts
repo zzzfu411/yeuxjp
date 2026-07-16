@@ -1,7 +1,8 @@
 "use client"
 
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { kanaData } from "@/data/kana-data"
+import { makeKanaId, type KanaId, type KanaScript } from "@/lib/kana-id"
 import {
   filterKanaByProgress,
   getKanaProgress,
@@ -11,7 +12,7 @@ import {
   type KanaSet,
 } from "@/lib/kana-page-model"
 
-type IsKanaMastered = (romaji: string) => boolean
+type IsKanaMastered = (id: KanaId) => boolean
 
 export interface KanaPageData {
   activeProgress: {
@@ -32,7 +33,20 @@ export interface KanaPageData {
   visibleSeionDakuon: typeof kanaData
 }
 
-export function useKanaPageData(kanaSet: KanaSet, onlyUnmastered: boolean, isMastered: IsKanaMastered): KanaPageData {
+export function useKanaPageData(
+  kanaSet: KanaSet,
+  mode: KanaScript,
+  onlyUnmastered: boolean,
+  isMastered: IsKanaMastered
+): KanaPageData {
+  const isModeMastered = useCallback(
+    (romaji: string) => {
+      const id = makeKanaId(mode, romaji)
+      return id ? isMastered(id) : false
+    },
+    [isMastered, mode]
+  )
+
   const seion = useMemo(() => getKanaSetData(kanaData, "seion"), [])
   const dakuonHandakuon = useMemo(() => getKanaSetData(kanaData, "dakuon"), [])
   const yoon = useMemo(() => getKanaSetData(kanaData, "yoon"), [])
@@ -43,28 +57,28 @@ export function useKanaPageData(kanaSet: KanaSet, onlyUnmastered: boolean, isMas
   )
 
   const visibleSeion = useMemo(
-    () => filterKanaByProgress(seion, onlyUnmastered, isMastered),
-    [isMastered, onlyUnmastered, seion]
+    () => filterKanaByProgress(seion, onlyUnmastered, isModeMastered),
+    [isModeMastered, onlyUnmastered, seion]
   )
   const visibleDakuonHandakuon = useMemo(
-    () => filterKanaByProgress(dakuonHandakuon, onlyUnmastered, isMastered),
-    [dakuonHandakuon, isMastered, onlyUnmastered]
+    () => filterKanaByProgress(dakuonHandakuon, onlyUnmastered, isModeMastered),
+    [dakuonHandakuon, isModeMastered, onlyUnmastered]
   )
   const visibleYoon = useMemo(
-    () => filterKanaByProgress(yoon, onlyUnmastered, isMastered),
-    [isMastered, onlyUnmastered, yoon]
+    () => filterKanaByProgress(yoon, onlyUnmastered, isModeMastered),
+    [isModeMastered, onlyUnmastered, yoon]
   )
   const visibleSpecial = useMemo(
-    () => filterKanaByProgress(special, onlyUnmastered, isMastered),
-    [isMastered, onlyUnmastered, special]
+    () => filterKanaByProgress(special, onlyUnmastered, isModeMastered),
+    [isModeMastered, onlyUnmastered, special]
   )
   const visibleSeionDakuon = useMemo(
-    () => filterKanaByProgress(seionDakuon, onlyUnmastered, isMastered),
-    [isMastered, onlyUnmastered, seionDakuon]
+    () => filterKanaByProgress(seionDakuon, onlyUnmastered, isModeMastered),
+    [isModeMastered, onlyUnmastered, seionDakuon]
   )
 
   const activeData = useMemo(() => getKanaSetData(kanaData, kanaSet), [kanaSet])
-  const activeProgress = useMemo(() => getKanaProgress(activeData, isMastered), [activeData, isMastered])
+  const activeProgress = useMemo(() => getKanaProgress(activeData, isModeMastered), [activeData, isModeMastered])
 
   const rows = useMemo(
     () => ({

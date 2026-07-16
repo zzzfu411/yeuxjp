@@ -12,6 +12,7 @@ import { useKanaPageControls } from "@/components/kana/use-kana-page-controls"
 import { useKanaPageData } from "@/components/kana/use-kana-page-data"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog"
+import type { KanaId } from "@/lib/kana-id"
 
 function KanaPageContent() {
   const {
@@ -32,7 +33,7 @@ function KanaPageContent() {
     clearKanaMastered: clearMastered,
   } = useLearningStatus()
 
-  const pageData = useKanaPageData(kanaSet, onlyUnmastered, isMastered)
+  const pageData = useKanaPageData(kanaSet, mode, onlyUnmastered, isMastered)
 
   const handleClearMastered = useCallback(() => {
     setConfirmClearOpen(true)
@@ -49,8 +50,8 @@ function KanaPageContent() {
   }, [])
 
   const handleToggleMastered = useCallback(
-    (romaji: string) => {
-      const saved = toggleMastered(romaji)
+    (id: KanaId) => {
+      const saved = toggleMastered(id)
       setSaveError(!saved)
     },
     [toggleMastered]

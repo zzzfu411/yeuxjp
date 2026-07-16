@@ -14,15 +14,15 @@ async function verifyLessonGeneratedReviewQueue(page, baseUrl) {
   )
   const scheduledKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
   assert.ok(
-    scheduledKanaSrs?.a?.dueAt > Date.now(),
+    scheduledKanaSrs?.["hiragana:a"]?.dueAt > Date.now(),
     "lesson-generated kana SRS should have a future due date before review"
   )
 
   await page.evaluate((storageKeys) => {
     const now = Date.now()
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
-    if (!srs.a) throw new Error("Expected lesson-generated kana SRS for a")
-    srs.a.dueAt = now - 1
+    if (!srs["hiragana:a"]) throw new Error("Expected lesson-generated kana SRS for hiragana:a")
+    srs["hiragana:a"].dueAt = now - 1
     localStorage.setItem(storageKeys.SRS_KANA, JSON.stringify(srs))
   }, E2E_STORAGE_KEYS)
 
@@ -35,12 +35,12 @@ async function verifyLessonGeneratedReviewQueue(page, baseUrl) {
   await page.waitForFunction((storageKeys) => {
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
     const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
-    return srs?.a?.box > 1 &&
-      srs?.a?.right >= 1 &&
-      srs?.a?.dueAt > Date.now() &&
+    return srs?.["hiragana:a"]?.box > 1 &&
+      srs?.["hiragana:a"]?.right >= 1 &&
+      srs?.["hiragana:a"]?.dueAt > Date.now() &&
       Array.isArray(practice) &&
       practice.some((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === true &&
@@ -48,8 +48,8 @@ async function verifyLessonGeneratedReviewQueue(page, baseUrl) {
       )
   }, E2E_STORAGE_KEYS)
   const reviewedKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
-  assert.ok(reviewedKanaSrs?.a?.box > 1, "reviewing lesson-generated SRS should advance kana box")
-  assert.ok(reviewedKanaSrs?.a?.right >= 1, "reviewing lesson-generated SRS should increment right count")
+  assert.ok(reviewedKanaSrs?.["hiragana:a"]?.box > 1, "reviewing lesson-generated SRS should advance kana box")
+  assert.ok(reviewedKanaSrs?.["hiragana:a"]?.right >= 1, "reviewing lesson-generated SRS should increment right count")
 }
 
 export async function verifyLessonFlow(page, baseUrl) {
@@ -101,7 +101,7 @@ export async function verifyLessonFlow(page, baseUrl) {
   assert.ok(
     lessonPractice.some((item) =>
       item.lessonId === "day-1-a-row-hello" &&
-      item.itemId === "a" &&
+      item.itemId === "hiragana:a" &&
       item.itemType === "kana" &&
       item.mode === "recognition" &&
       item.correct === true
@@ -109,20 +109,20 @@ export async function verifyLessonFlow(page, baseUrl) {
     "lesson answer should record the kana recognition result"
   )
   const itemProgress = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
-  assert.equal(itemProgress?.a?.itemType, "kana", "lesson answer should update item progress")
-  assert.equal(itemProgress?.a?.attempts, 1, "lesson answer should increment item attempts")
+  assert.equal(itemProgress?.["hiragana:a"]?.itemType, "kana", "lesson answer should update item progress")
+  assert.equal(itemProgress?.["hiragana:a"]?.attempts, 1, "lesson answer should increment item attempts")
   assert.equal(
     lessonPractice.filter((item) =>
       item.lessonId === "day-1-a-row-hello" &&
       item.lessonStepId === "recognize-a" &&
-      item.itemId === "a"
+      item.itemId === "hiragana:a"
     ).length,
     1,
     "rapid lesson answer clicks should write one practice result"
   )
-  assert.equal(itemProgress?.a?.correct, 1, "lesson answer should increment correct count")
+  assert.equal(itemProgress?.["hiragana:a"]?.correct, 1, "lesson answer should increment correct count")
   const kanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
-  assert.ok(kanaSrs?.a?.dueAt, "correct kana lesson answer should enroll SRS")
+  assert.ok(kanaSrs?.["hiragana:a"]?.dueAt, "correct kana lesson answer should enroll SRS")
   await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-answer-お").waitFor({ state: "visible" })
   await page.getByTestId("lesson-answer-お").click()
@@ -194,7 +194,7 @@ export async function verifyLessonFlow(page, baseUrl) {
       practice.some((item) =>
         item.lessonId === "day-1-a-row-hello" &&
         item.lessonStepId === "recognize-a" &&
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === false &&
@@ -214,7 +214,7 @@ export async function verifyLessonFlow(page, baseUrl) {
       wrongLessonPractice.some((item) =>
         item.lessonId === "day-1-a-row-hello" &&
         item.lessonStepId === "recognize-a" &&
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.correct === false &&
         item.answer === "i"
       ),
@@ -298,12 +298,12 @@ export async function verifyLessonFlow(page, baseUrl) {
       practice.some((item) =>
         item.lessonId === "day-4-na-ha-ma-intro-sentence" &&
         item.lessonStepId === "dictation-ha" &&
-        item.itemId === "ha" &&
+        item.itemId === "hiragana:ha" &&
         item.itemType === "kana" &&
         item.mode === "listening" &&
         item.correct === true
       ) &&
-      !!kanaSrs?.ha?.dueAt
+      !!kanaSrs?.["hiragana:ha"]?.dueAt
   }, E2E_STORAGE_KEYS)
   const day4Practice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
   assert.ok(
@@ -321,7 +321,7 @@ export async function verifyLessonFlow(page, baseUrl) {
     Array.isArray(day4Practice) &&
       day4Practice.some((item) =>
         item.lessonStepId === "dictation-ha" &&
-        item.itemId === "ha" &&
+        item.itemId === "hiragana:ha" &&
         item.itemType === "kana" &&
         item.mode === "listening" &&
         item.correct === true
@@ -329,7 +329,7 @@ export async function verifyLessonFlow(page, baseUrl) {
     "dictation lesson step should write kana listening practice"
   )
   const day4KanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
-  assert.ok(day4KanaSrs?.ha?.dueAt, "correct dictation lesson answer should enroll kana ha for SRS")
+  assert.ok(day4KanaSrs?.["hiragana:ha"]?.dueAt, "correct dictation lesson answer should enroll kana ha for SRS")
 
   await page.evaluate(() => localStorage.clear())
 }

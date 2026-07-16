@@ -1,11 +1,13 @@
 import {
   averageMastery,
   clampScore,
+  normalizeItemProgressMap,
   type ItemProgress,
   type ItemProgressMap,
   type PracticeMode,
 } from "@/lib/learning-progress-model"
 import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
+import { normalizeKanaIdList } from "@/lib/kana-id"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 
 export const LEARNING_STATUS_MASTERY_THRESHOLD = 40
@@ -46,10 +48,10 @@ export function buildLearningStatusModel({
   items: ItemProgressMap
   threshold?: number
 }): LearningStatusModel {
-  const masteredKana = new Set([...masteredKanaIds].filter(isReviewableKanaId))
+  const masteredKana = new Set(normalizeKanaIdList(masteredKanaIds))
   const learnedVocab = new Set(filterKnownVocabularyIds(learnedVocabIds))
 
-  for (const item of Object.values(items)) {
+  for (const item of Object.values(normalizeItemProgressMap(items))) {
     if (!isItemLearnedFromProgress(item, threshold)) continue
     if (item.itemType === "kana" && isReviewableKanaId(item.itemId)) masteredKana.add(item.itemId)
     if (item.itemType === "vocab" && isKnownVocabularyId(item.itemId)) learnedVocab.add(item.itemId)

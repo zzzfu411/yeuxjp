@@ -62,7 +62,7 @@ test("mistake notebook model normalizes persisted mistakes safely", () => {
   assert.equal(list[0].wrongCount, 3)
   assert.equal(list[1].wrongCount, 2)
   assert.equal(list[1].createdAt, 2)
-  assert.equal(list[1].itemId, "ka")
+  assert.equal(list[1].itemId, "hiragana:ka")
   assert.equal(list[1].itemType, "kana")
   assert.equal(list[1].mode, "recognition")
 })
@@ -141,10 +141,28 @@ test("mistake notebook model upserts wrong answers without dropping history", ()
   assert.equal(second[0].createdAt, 100)
   assert.equal(second[0].lastWrongAt, 200)
   assert.equal(second[0].lastWrongAnswer, "sa")
-  assert.equal(second[0].itemId, "a")
+  assert.equal(second[0].itemId, "hiragana:a")
   assert.equal(second[0].itemType, "kana")
   assert.equal(second[0].mode, "recognition")
   assert.deepEqual(second[0].options, [{ value: "sa", display: "sa" }])
+})
+
+test("legacy kana mistakes infer katakana from their visible prompt", () => {
+  const [mistake] = model.normalizeMistakeList([
+    {
+      id: "katakana-a",
+      type: "lesson:multipleChoice",
+      questionText: "ア 的读音是？",
+      itemId: "a",
+      itemType: "kana",
+      mode: "recognition",
+      correctAnswer: "a",
+      wrongCount: 1,
+      createdAt: 1,
+      lastWrongAt: 1,
+    },
+  ])
+  assert.equal(mistake.itemId, "katakana:a")
 })
 
 test("mistake notebook model removes by id without mutating missing lists", () => {

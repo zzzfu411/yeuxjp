@@ -50,21 +50,21 @@ export function MixedReviewPrompt({
 }
 
 export function KanaReviewPrompt({
-  hiragana,
-  katakana,
+  glyph,
+  script,
   onPlay,
 }: {
-  hiragana: string
-  katakana: string
+  glyph: string
+  script: "hiragana" | "katakana"
   onPlay: (text: string) => void
 }) {
   return (
     <>
-      <ReviewAudioButton text={hiragana} onPlay={onPlay} />
+      <ReviewAudioButton text={glyph} onPlay={onPlay} />
 
       <div className="mt-6 text-center">
-        <div className="text-7xl font-bold leading-none">{hiragana}</div>
-        <div className="mt-2 text-xl text-muted-foreground">{katakana}</div>
+        <div className="text-7xl font-bold leading-none">{glyph}</div>
+        <div className="mt-2 text-sm text-muted-foreground">{script === "hiragana" ? "平假名" : "片假名"}</div>
         <div className="mt-3 text-xs text-muted-foreground">选择正确的罗马音</div>
       </div>
     </>

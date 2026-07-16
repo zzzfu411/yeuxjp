@@ -1,4 +1,5 @@
 import type { Kana } from "@/data/kana-data"
+import { KANA_SCRIPTS, makeKanaId } from "@/lib/kana-id"
 import type { VocabLevelStat } from "@/data/vocabulary/stats"
 import { SKILL_TREE, type SkillId, type SkillNode } from "@/lib/skill-tree"
 import { averageMastery, type ItemProgressMap } from "@/lib/learning-progress-model"
@@ -74,10 +75,17 @@ function makeStat(done: number, total: number): PathProgressStat {
   return { total: safeTotal, done: safeCompleted, ratio: ratio(safeCompleted, safeTotal) }
 }
 
-export function getKanaSkillStats(data: readonly Kana[], isMastered: (romaji: string) => boolean): PathKanaStats {
+export function getKanaSkillStats(data: readonly Kana[], isMastered: (id: string) => boolean): PathKanaStats {
   const stat = (list: readonly Kana[]) => {
-    const total = list.length
-    const done = list.reduce((acc, item) => acc + (isMastered(item.romaji) ? 1 : 0), 0)
+    const total = list.length * KANA_SCRIPTS.length
+    const done = list.reduce(
+      (count, item) =>
+        count + KANA_SCRIPTS.reduce((scriptCount, script) => {
+          const id = makeKanaId(script, item.romaji)
+          return scriptCount + (id && isMastered(id) ? 1 : 0)
+        }, 0),
+      0
+    )
     return makeStat(done, total)
   }
 

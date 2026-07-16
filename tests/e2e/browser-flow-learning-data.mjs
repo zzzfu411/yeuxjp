@@ -35,7 +35,7 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   const backupPath = await download.path()
   assert.ok(backupPath, "learning data export should create a downloadable backup file")
   const exportedBackup = JSON.parse(await fs.readFile(backupPath, "utf8"))
-  assert.equal(exportedBackup.version, 1, "learning data export should use the current backup version")
+  assert.equal(exportedBackup.version, 2, "learning data export should use the current backup version")
   assertManagedLearningSnapshot(
     exportedBackup.entries,
     seededLearningBackupSnapshot,
@@ -67,11 +67,11 @@ export async function verifyLearningDataFlow(page, baseUrl) {
     name: "malformed-yasashi-backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify({
-      version: 1,
+      version: 2,
       exportedAt: Date.now(),
       entries: {
         [E2E_STORAGE_KEYS.KANA_MASTERED]: "{}",
-        [E2E_STORAGE_KEYS.SRS_KANA]: JSON.stringify({ a: "bad" }),
+        [E2E_STORAGE_KEYS.SRS_KANA]: JSON.stringify({ "hiragana:a": "bad" }),
       },
     })),
   })
@@ -86,10 +86,37 @@ export async function verifyLearningDataFlow(page, baseUrl) {
 
   const staleBackup = {
     ...exportedBackup,
+    version: 1,
     exportedAt: Date.now(),
     entries: {
       ...exportedBackup.entries,
       [E2E_STORAGE_KEYS.KANA_MASTERED]: JSON.stringify(["a", "sokuon:kitte", "ka", "a"]),
+      [E2E_STORAGE_KEYS.ITEM_PROGRESS]: JSON.stringify({
+        a: {
+          itemId: "a",
+          itemType: "kana",
+          recognition: 42,
+          listening: 0,
+          meaning: 0,
+          recall: 0,
+          production: 0,
+          attempts: 3,
+          correct: 2,
+          updatedAt: 2,
+        },
+        "sokuon:kitte": {
+          itemId: "sokuon:kitte",
+          itemType: "kana",
+          recognition: 0,
+          listening: 36,
+          meaning: 0,
+          recall: 0,
+          production: 0,
+          attempts: 2,
+          correct: 2,
+          updatedAt: 2,
+        },
+      }),
       [E2E_STORAGE_KEYS.VOCAB_LEARNED]: JSON.stringify(["sur-n-35", "sur-g-999", "day-v-1", "sur-n-35"]),
       [E2E_STORAGE_KEYS.SRS_KANA]: JSON.stringify({
         a: { box: 2, dueAt: 1, createdAt: 2, right: 1, wrong: 0 },
@@ -115,9 +142,18 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   const normalizedStaleSnapshot = await readManagedLearningBackupSnapshot(page)
   assert.deepEqual(
     JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.KANA_MASTERED]),
-    ["a", "ka"],
-    "valid backup import should remove non-reviewable kana from mastered progress"
+    ["hiragana:a", "katakana:a", "hiragana:ka", "katakana:ka"],
+    "v1 backup import should expand bare mastered kana into both scripts"
   )
+  const normalizedLegacyItemProgress = JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.ITEM_PROGRESS])
+  assert.deepEqual(
+    Object.keys(normalizedLegacyItemProgress),
+    ["hiragana:a", "katakana:a", "sokuon:kitte"],
+    "v1 backup import should expand bare item progress while preserving custom phonology ids"
+  )
+  assert.equal(normalizedLegacyItemProgress["hiragana:a"].recognition, 42)
+  assert.equal(normalizedLegacyItemProgress["katakana:a"].recognition, 42)
+  assert.equal(normalizedLegacyItemProgress["sokuon:kitte"].itemId, "sokuon:kitte")
   assert.deepEqual(
     JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.VOCAB_LEARNED]),
     ["sur-n-35", "day-v-1"],
@@ -125,8 +161,8 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   )
   assert.deepEqual(
     Object.keys(JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.SRS_KANA])),
-    ["a"],
-    "valid backup import should remove non-reviewable kana from SRS"
+    ["hiragana:a", "katakana:a"],
+    "v1 backup import should expand bare kana SRS into both scripts"
   )
   assert.deepEqual(
     Object.keys(JSON.parse(normalizedStaleSnapshot[E2E_STORAGE_KEYS.SRS_VOCAB])),

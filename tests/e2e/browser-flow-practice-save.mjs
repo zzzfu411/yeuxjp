@@ -93,8 +93,8 @@ export async function verifyPracticeSaveFailureFlow(page, baseUrl) {
   assert.match(await page.getByTestId("review-remaining").innerText(), /1\b/)
   assert.equal(await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS), null)
   const kanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
-  assert.equal(kanaSrs?.a?.box, 1)
-  assert.equal(kanaSrs?.a?.right, 0)
+  assert.equal(kanaSrs?.["hiragana:a"]?.box, 1)
+  assert.equal(kanaSrs?.["hiragana:a"]?.right, 0)
   assert.equal(await page.getByTestId("review-answer-a").isEnabled(), true)
   await restorePracticeResultWrites(page)
 
@@ -173,6 +173,6 @@ export async function verifyPracticeSaveFailureFlow(page, baseUrl) {
   assert.equal(await page.getByTestId("lesson-next").isDisabled(), true)
   assert.equal(await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS), null)
   assert.equal(await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS), null)
-  assert.equal((await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA))?.a, undefined)
+  assert.equal((await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA))?.["hiragana:a"], undefined)
   await restorePracticeResultWrites(page)
 }

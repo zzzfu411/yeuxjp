@@ -12,10 +12,10 @@ function stat(done, total) {
 }
 
 function kanaStats({
-  seion = stat(50, 50),
-  dakuon = stat(25, 25),
-  yoon = stat(30, 30),
-  special = stat(1, 1),
+  seion = stat(100, 100),
+  dakuon = stat(50, 50),
+  yoon = stat(60, 60),
+  special = stat(2, 2),
 } = {}) {
   return { seion, dakuon, yoon, special }
 }
@@ -34,25 +34,26 @@ test("path page model derives kana skill stats by learning group", () => {
     { romaji: "sokuon", hiragana: "sokuon", katakana: "SOKUON", type: "special" },
   ]
 
-  const stats = model.getKanaSkillStats(data, (romaji) => romaji === "a" || romaji === "pa" || romaji === "sokuon")
+  const mastered = new Set(["hiragana:a", "katakana:pa", "hiragana:sokuon"])
+  const stats = model.getKanaSkillStats(data, (id) => mastered.has(id))
 
-  assert.deepEqual(stats.seion, { total: 2, done: 1, ratio: 0.5 })
-  assert.deepEqual(stats.dakuon, { total: 2, done: 1, ratio: 0.5 })
-  assert.deepEqual(stats.yoon, { total: 1, done: 0, ratio: 0 })
-  assert.deepEqual(stats.special, { total: 1, done: 1, ratio: 1 })
+  assert.deepEqual(stats.seion, { total: 4, done: 1, ratio: 0.25 })
+  assert.deepEqual(stats.dakuon, { total: 4, done: 1, ratio: 0.25 })
+  assert.deepEqual(stats.yoon, { total: 2, done: 0, ratio: 0 })
+  assert.deepEqual(stats.special, { total: 2, done: 1, ratio: 0.5 })
 })
 
 test("path page model recommends the next skill from shared thresholds", () => {
-  assert.equal(model.getRecommendedSkillId(kanaStats({ seion: stat(34, 50) }), vocabStats()), "kana-seion")
-  assert.equal(model.getRecommendedSkillId(kanaStats({ dakuon: stat(8, 25) }), vocabStats()), "kana-dakuon")
-  assert.equal(model.getRecommendedSkillId(kanaStats({ yoon: stat(10, 30) }), vocabStats()), "kana-yoon")
-  assert.equal(model.getRecommendedSkillId(kanaStats({ special: stat(0, 1) }), vocabStats()), "kana-sokuon")
+  assert.equal(model.getRecommendedSkillId(kanaStats({ seion: stat(68, 100) }), vocabStats()), "kana-seion")
+  assert.equal(model.getRecommendedSkillId(kanaStats({ dakuon: stat(16, 50) }), vocabStats()), "kana-dakuon")
+  assert.equal(model.getRecommendedSkillId(kanaStats({ yoon: stat(20, 60) }), vocabStats()), "kana-yoon")
+  assert.equal(model.getRecommendedSkillId(kanaStats({ special: stat(0, 2) }), vocabStats()), "kana-sokuon")
   assert.equal(model.getRecommendedSkillId(kanaStats(), vocabStats({ survival: stat(120, 505) })), "vocab-survival")
   assert.equal(model.getRecommendedSkillId(kanaStats(), vocabStats()), "particles-basic")
 })
 
 test("path page model soft-locks skills and formats progress badges", () => {
-  const lockedKana = kanaStats({ seion: stat(10, 50), special: stat(0, 1) })
+  const lockedKana = kanaStats({ seion: stat(20, 100), special: stat(0, 2) })
   assert.equal(model.isSkillUnlocked("listen-kana", lockedKana, vocabStats()), false)
   assert.equal(model.isSkillUnlocked("kana-seion", lockedKana, vocabStats()), true)
   assert.deepEqual(model.getSkillStatus("listen-kana", lockedKana, vocabStats()), {
@@ -60,17 +61,17 @@ test("path page model soft-locks skills and formats progress badges", () => {
     badge: "\u5efa\u8bae\u7a0d\u540e",
   })
 
-  assert.deepEqual(model.getSkillStatus("kana-seion", kanaStats({ seion: stat(0, 50) }), vocabStats()), {
+  assert.deepEqual(model.getSkillStatus("kana-seion", kanaStats({ seion: stat(0, 100) }), vocabStats()), {
     status: "available",
     badge: "\u4ece\u8fd9\u91cc\u5f00\u59cb",
   })
-  assert.deepEqual(model.getSkillStatus("kana-seion", kanaStats({ seion: stat(20, 50) }), vocabStats()), {
+  assert.deepEqual(model.getSkillStatus("kana-seion", kanaStats({ seion: stat(40, 100) }), vocabStats()), {
     status: "in-progress",
-    badge: "\u8fdb\u5ea6 20/50",
+    badge: "\u8fdb\u5ea6 40/100",
   })
-  assert.deepEqual(model.getSkillStatus("kana-seion", kanaStats({ seion: stat(45, 50) }), vocabStats()), {
+  assert.deepEqual(model.getSkillStatus("kana-seion", kanaStats({ seion: stat(90, 100) }), vocabStats()), {
     status: "done",
-    badge: "\u5df2\u638c\u63e1 45/50",
+    badge: "\u5df2\u638c\u63e1 90/100",
   })
   assert.deepEqual(model.getSkillStatus("vocab-survival", kanaStats(), vocabStats({ survival: stat(303, 505) })), {
     status: "done",
@@ -79,14 +80,14 @@ test("path page model soft-locks skills and formats progress badges", () => {
   assert.equal(model.ratioText(Number.POSITIVE_INFINITY, Number.NaN), "0/0")
   assert.equal(model.ratioText(12, 10), "10/10")
   assert.deepEqual(
-    model.getSkillStatus("kana-seion", kanaStats({ seion: { done: 999, total: 50, ratio: Number.NaN } }), vocabStats()),
+    model.getSkillStatus("kana-seion", kanaStats({ seion: { done: 999, total: 100, ratio: Number.NaN } }), vocabStats()),
     {
       status: "in-progress",
-      badge: "\u8fdb\u5ea6 50/50",
+      badge: "\u8fdb\u5ea6 100/100",
     }
   )
   assert.equal(
-    model.isSkillUnlocked("listen-kana", kanaStats({ seion: { done: 50, total: 50, ratio: Number.POSITIVE_INFINITY } }), vocabStats()),
+    model.isSkillUnlocked("listen-kana", kanaStats({ seion: { done: 100, total: 100, ratio: Number.POSITIVE_INFINITY } }), vocabStats()),
     false
   )
 })

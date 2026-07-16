@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { warnInDevelopment } from "@/lib/dev-log"
+import { normalizeKanaIdList } from "@/lib/kana-id"
 import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
 import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressList, writeProgressList } from "@/lib/progress-list-storage"
 import { isReviewableKanaId } from "@/lib/review-visibility"
@@ -12,7 +13,10 @@ const STORAGE_LABEL = "kana-progress"
 
 export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
   const [mastered, setMastered] = useState<Set<string>>(() => new Set())
-  const readMastered = useCallback(() => readProgressList(storageKey, STORAGE_LABEL).filter(isReviewableKanaId), [storageKey])
+  const readMastered = useCallback(
+    () => normalizeKanaIdList(readProgressList(storageKey, STORAGE_LABEL)),
+    [storageKey]
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -53,24 +57,24 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
     }
   }, [readMastered, storageKey])
 
-  const isMastered = useCallback((romaji: string) => mastered.has(romaji), [mastered])
+  const isMastered = useCallback((id: string) => mastered.has(id), [mastered])
 
   const toggleMastered = useCallback(
-    (romaji: string) => {
-      if (!isReviewableKanaId(romaji)) return true
+    (id: string) => {
+      if (!isReviewableKanaId(id)) return true
 
       const base = new Set(readMastered())
       const next = new Set(base)
-      const wasMastered = next.has(romaji)
+      const wasMastered = next.has(id)
 
       if (wasMastered) {
-        next.delete(romaji)
+        next.delete(id)
       } else {
-        next.add(romaji)
+        next.add(id)
       }
 
       const saved = runLearningStorageTransaction(() => {
-        const srsSuccess = wasMastered ? removeSrs(KANA_SRS_STORAGE_KEY, romaji) : enrollSrs(KANA_SRS_STORAGE_KEY, romaji)
+        const srsSuccess = wasMastered ? removeSrs(KANA_SRS_STORAGE_KEY, id) : enrollSrs(KANA_SRS_STORAGE_KEY, id)
         return srsSuccess && writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
       })
 

@@ -3,6 +3,7 @@ import fs from "node:fs"
 import { spawnSync } from "node:child_process"
 import path from "node:path"
 import test from "node:test"
+import { pathToFileURL } from "node:url"
 
 const root = path.resolve(import.meta.dirname, "..", "..", "..")
 
@@ -55,6 +56,18 @@ test("data validation checks lesson practice metadata and references", () => {
   assert.match(source, /references missing grammar itemId/)
   assert.match(source, /answer is not present in options/)
   assert.match(source, /sentence itemId must start with sentence-/)
+})
+
+test("lesson kana validation rejects bare romaji while accepting canonical and custom phonology ids", async () => {
+  const validator = await import(pathToFileURL(path.join(root, "web/scripts/validate-data.mjs")).href)
+  const knownRomaji = new Set(["a", "sokuon"])
+
+  assert.equal(validator.classifyLessonKanaItemId("a", knownRomaji), "bare-romaji")
+  assert.equal(validator.classifyLessonKanaItemId("hiragana:a", knownRomaji), "canonical")
+  assert.equal(validator.classifyLessonKanaItemId("katakana:a", knownRomaji), "canonical")
+  assert.equal(validator.classifyLessonKanaItemId("hiragana:missing", knownRomaji), "unknown-canonical")
+  assert.equal(validator.classifyLessonKanaItemId("sokuon:きって", knownRomaji), "custom")
+  assert.equal(validator.classifyLessonKanaItemId("longvowel:おばあさん", knownRomaji), "custom")
 })
 
 test("data validation requires AnimCJK license files for distribution", () => {

@@ -40,15 +40,16 @@ test("review dashboard model filters visible due ids and builds the today queue"
   const state = (dueAt) => ({ dueAt, box: 1, createdAt: now - 1, right: 0, wrong: 0 })
 
   const dashboard = model.buildReviewDashboardModel({
-    masteredIds: new Set(["a", "ka", "ta"]),
+    masteredIds: new Set(["hiragana:a", "katakana:a", "katakana:ka", "hiragana:ta"]),
     learnedIds: new Set(["sur-g-1", "sur-g-2"]),
     mistakeIds: ["m1", "m2"],
     kanaSrsMap: {
-      a: state(now - 20),
-      ka: state(now - 10),
+      "hiragana:a": state(now - 20),
+      "katakana:a": state(now - 15),
+      "katakana:ka": state(now - 10),
       "sokuon:kitte": state(now - 100),
     },
-    kanaDueIds: ["sokuon:kitte", "ka", "a"],
+    kanaDueIds: ["sokuon:kitte", "katakana:ka", "katakana:a", "hiragana:a"],
     vocabSrsMap: {
       "sur-g-1": state(now - 30),
       "sur-g-999": state(now + 120_000),
@@ -64,22 +65,23 @@ test("review dashboard model filters visible due ids and builds the today queue"
   })
 
   assert.deepEqual(dashboard.dueMistakeIds, ["m2"])
-  assert.deepEqual(dashboard.reviewableKanaDueIds, ["ka", "a"])
-  assert.deepEqual(dashboard.kanaEnrollMissing, ["ta"])
+  assert.deepEqual(dashboard.reviewableKanaDueIds, ["katakana:ka", "katakana:a", "hiragana:a"])
+  assert.deepEqual(dashboard.kanaEnrollMissing, ["hiragana:ta"])
   assert.deepEqual(dashboard.vocabEnrollMissing, ["sur-g-2"])
   assert.deepEqual(dashboard.mistakeEnrollMissing, [])
   assert.deepEqual(dashboard.todayQueue, [
     { deck: "mistakes", id: "m2" },
     { deck: "vocab", id: "sur-g-1" },
-    { deck: "kana", id: "a" },
-    { deck: "kana", id: "ka" },
+    { deck: "kana", id: "hiragana:a" },
+    { deck: "kana", id: "katakana:a" },
+    { deck: "kana", id: "katakana:ka" },
   ])
-  assert.equal(dashboard.totalEnrolled, 5)
-  assert.equal(dashboard.totalDue, 4)
+  assert.equal(dashboard.totalEnrolled, 6)
+  assert.equal(dashboard.totalDue, 5)
   assert.equal(dashboard.isFirstTime, false)
   assert.equal(dashboard.nextDueAt, now + 60_000)
-  assert.deepEqual(dashboard.counts, { mistakesDue: 1, kanaDue: 2, vocabDue: 1 })
-  assert.deepEqual(dashboard.totals, { kana: 2, vocab: 1, mistakes: 2, mastered: 3, learned: 2 })
+  assert.deepEqual(dashboard.counts, { mistakesDue: 1, kanaDue: 3, vocabDue: 1 })
+  assert.deepEqual(dashboard.totals, { kana: 3, vocab: 1, mistakes: 2, mastered: 4, learned: 2 })
 })
 
 test("review dashboard model reports first-time state and empty next due schedule", () => {
@@ -169,8 +171,8 @@ test("review dashboard keeps SRS items that have practice progress before master
     masteredIds: [],
     learnedIds: [],
     items: {
-      a: {
-        itemId: "a",
+      "hiragana:a": {
+        itemId: "hiragana:a",
         itemType: "kana",
         recognition: 18,
         listening: 0,
@@ -195,8 +197,8 @@ test("review dashboard keeps SRS items that have practice progress before master
       },
     },
     mistakeIds: [],
-    kanaSrsMap: { a: state(now - 20) },
-    kanaDueIds: ["a"],
+    kanaSrsMap: { "hiragana:a": state(now - 20) },
+    kanaDueIds: ["hiragana:a"],
     vocabSrsMap: { "sur-g-1": state(now - 10) },
     vocabDueIds: ["sur-g-1"],
     mistakeSrsMap: {},
@@ -204,10 +206,10 @@ test("review dashboard keeps SRS items that have practice progress before master
     now,
   })
 
-  assert.deepEqual(dashboard.reviewableKanaDueIds, ["a"])
+  assert.deepEqual(dashboard.reviewableKanaDueIds, ["hiragana:a"])
   assert.deepEqual(dashboard.vocabDueIds, ["sur-g-1"])
   assert.deepEqual(dashboard.todayQueue, [
-    { deck: "kana", id: "a" },
+    { deck: "kana", id: "hiragana:a" },
     { deck: "vocab", id: "sur-g-1" },
   ])
   assert.equal(dashboard.counts.kanaDue, 1)
@@ -215,15 +217,27 @@ test("review dashboard keeps SRS items that have practice progress before master
   assert.equal(dashboard.totalDue, 2)
 })
 
-test("review dashboard offers enrollment for practiced items missing SRS records", () => {
+test("review dashboard offers independent enrollment for practiced hiragana and katakana", () => {
   const now = 1_700_000_000_000
 
   const dashboard = model.buildReviewDashboardModel({
     masteredIds: [],
     learnedIds: [],
     items: {
-      a: {
-        itemId: "a",
+      "hiragana:a": {
+        itemId: "hiragana:a",
+        itemType: "kana",
+        recognition: 18,
+        listening: 0,
+        meaning: 0,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: now,
+      },
+      "katakana:a": {
+        itemId: "katakana:a",
         itemType: "kana",
         recognition: 18,
         listening: 0,
@@ -257,7 +271,7 @@ test("review dashboard offers enrollment for practiced items missing SRS records
     now,
   })
 
-  assert.deepEqual(dashboard.kanaEnrollMissing, ["a"])
+  assert.deepEqual(dashboard.kanaEnrollMissing, ["hiragana:a", "katakana:a"])
   assert.deepEqual(dashboard.vocabEnrollMissing, ["sur-g-1"])
   assert.equal(dashboard.isFirstTime, false)
   assert.equal(dashboard.totalEnrolled, 0)
@@ -366,12 +380,12 @@ test("review dashboard ignores vocabulary ids that are no longer in the current 
 
 test("review enrollment helper attempts every missing item and reports any failure", () => {
   const attempted = []
-  const ok = model.enrollMissingReviewItems(["a", "ka", "sa"], (id) => {
+  const ok = model.enrollMissingReviewItems(["hiragana:a", "katakana:a", "hiragana:sa"], (id) => {
     attempted.push(id)
-    return id !== "ka"
+    return id !== "katakana:a"
   })
 
-  assert.deepEqual(attempted, ["a", "ka", "sa"])
+  assert.deepEqual(attempted, ["hiragana:a", "katakana:a", "hiragana:sa"])
   assert.equal(ok, false)
   assert.equal(model.enrollMissingReviewItems([], () => false), true)
 })

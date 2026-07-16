@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { KanaBanner, type KanaBannerKey } from "@/components/kana/kana-banner"
 import { KanaGrid } from "@/components/kana/kana-grid"
 import type { KanaMode } from "@/components/kana/kana-controls"
+import type { KanaId } from "@/lib/kana-id"
 
 interface KanaLearningSectionProps {
   banner?: KanaBannerKey
@@ -16,8 +17,8 @@ interface KanaLearningSectionProps {
   rows: readonly string[]
   columns: 3 | 5
   showRomaji: boolean
-  isMastered: (romaji: string) => boolean
-  onToggleMastered: (romaji: string) => void
+  isMastered: (id: KanaId) => boolean
+  onToggleMastered: (id: KanaId) => void
   className?: string
   copyClassName?: string
   descriptionClassName?: string

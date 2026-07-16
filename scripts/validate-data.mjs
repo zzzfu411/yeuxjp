@@ -362,7 +362,26 @@ function validateGlossaryData(text) {
   else fail("glossary data validation did not find any entries")
 }
 
-function validateLessonPracticeMetadata(lessonText, { kanaIdSet, vocabIdSet, grammarIdSet }) {
+export function classifyLessonKanaItemId(itemId, kanaRomajiSet) {
+  if (kanaRomajiSet.has(itemId)) return "bare-romaji"
+
+  const canonical = /^(hiragana|katakana):([^:]+)$/.exec(itemId)
+  if (canonical) return kanaRomajiSet.has(canonical[2]) ? "canonical" : "unknown-canonical"
+  if (/^(hiragana|katakana):/.test(itemId)) return "unknown-canonical"
+
+  return "custom"
+}
+
+function validateLessonKanaItemId(itemId, label, kanaRomajiSet) {
+  const classification = classifyLessonKanaItemId(itemId, kanaRomajiSet)
+  if (classification === "bare-romaji") {
+    fail(`${label} uses bare known romaji kana itemId: ${itemId}`)
+  } else if (classification === "unknown-canonical") {
+    fail(`${label} references missing kana itemId: ${itemId}`)
+  }
+}
+
+function validateLessonPracticeMetadata(lessonText, { kanaRomajiSet, vocabIdSet, grammarIdSet }) {
   const practiceTypes = new Set(["multipleChoice", "typing", "dictation", "sentenceBuild"])
   const itemTypes = new Set(["kana", "vocab", "grammar", "sentence"])
   const modes = new Set(["recognition", "listening", "meaning", "recall", "production"])
@@ -383,7 +402,7 @@ function validateLessonPracticeMetadata(lessonText, { kanaIdSet, vocabIdSet, gra
     if (itemType && !itemTypes.has(itemType)) fail(`lesson practice step ${stepId} has unknown itemType: ${itemType}`)
     if (mode && !modes.has(mode)) fail(`lesson practice step ${stepId} has unknown mode: ${mode}`)
 
-    if (itemId && itemType === "kana" && !kanaIdSet.has(itemId)) fail(`lesson practice step ${stepId} references missing kana itemId: ${itemId}`)
+    if (itemId && itemType === "kana") validateLessonKanaItemId(itemId, `lesson practice step ${stepId}`, kanaRomajiSet)
     if (itemId && itemType === "vocab" && !vocabIdSet.has(itemId)) fail(`lesson practice step ${stepId} references missing vocabulary itemId: ${itemId}`)
     if (itemId && itemType === "grammar" && !grammarIdSet.has(itemId)) fail(`lesson practice step ${stepId} references missing grammar itemId: ${itemId}`)
     if (itemId && itemType === "sentence" && !itemId.startsWith("sentence-")) fail(`lesson practice step ${stepId} sentence itemId must start with sentence-: ${itemId}`)
@@ -816,7 +835,7 @@ if (registryCoveredIds.size === vocabIdSet.size) {
   pass(`vocabulary id registry covers current ids (${registryCoveredIds.size})`)
 }
 
-const kanaIdSet = new Set(kanaRomaji)
+const kanaRomajiSet = new Set(kanaRomaji)
 
 let grammarIds = []
 const grammarText = read("src/data/grammar-data.ts")
@@ -843,7 +862,7 @@ const grammarIdSet = new Set(grammarIds)
 const lessonText = read("src/data/lessons.ts")
 const lessonIds = matches(lessonText, /id:\s*["'](day-\d+[^"']*)["']/g)
 unique("lesson id", lessonIds)
-validateLessonPracticeMetadata(lessonText, { kanaIdSet, vocabIdSet, grammarIdSet })
+validateLessonPracticeMetadata(lessonText, { kanaRomajiSet, vocabIdSet, grammarIdSet })
 
 const lessonIdSet = new Set(lessonIds)
 const prereqIds = matches(lessonText, /prerequisites:\s*\[([^\]]*)\]/g)
@@ -858,7 +877,7 @@ const lessonItemRefs = Array.from(
   (m) => ({ type: m[1], id: m[2] })
 )
 for (const ref of lessonItemRefs) {
-  if (ref.type === "kana" && !kanaIdSet.has(ref.id)) fail(`lesson references missing kana id: ${ref.id}`)
+  if (ref.type === "kana") validateLessonKanaItemId(ref.id, "lesson item reference", kanaRomajiSet)
   if (ref.type === "vocab" && !vocabIdSet.has(ref.id)) fail(`lesson references missing vocabulary id: ${ref.id}`)
   if (ref.type === "grammar" && !grammarIdSet.has(ref.id)) fail(`lesson references missing grammar id: ${ref.id}`)
 }

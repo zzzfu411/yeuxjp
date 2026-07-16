@@ -51,14 +51,14 @@ export async function verifyProgressSaveFailureFlow(page, baseUrl) {
   await page.getByTestId("kana-mastery-toggle").click()
   await page.getByTestId("practice-save-error").waitFor({ state: "visible" })
   assert.equal(await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED), null)
-  assert.equal((await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA))?.a, undefined)
+  assert.equal((await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA))?.["hiragana:a"], undefined)
   await restoreStorageWrites(page)
 
   await page.getByTestId("kana-mastery-toggle").click()
   await page.waitForFunction((storageKeys) => {
     const mastered = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERED) ?? "[]")
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
-    return Array.isArray(mastered) && mastered.includes("a") && !!srs?.a?.dueAt
+    return Array.isArray(mastered) && mastered.includes("hiragana:a") && !!srs?.["hiragana:a"]?.dueAt
   }, E2E_STORAGE_KEYS)
   await page.keyboard.press("Escape")
 
@@ -67,11 +67,11 @@ export async function verifyProgressSaveFailureFlow(page, baseUrl) {
   await page.getByTestId("kana-clear-progress-dialog-confirm").click()
   await page.getByTestId("practice-save-error").waitFor({ state: "visible" })
   assert.ok(
-    (await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)).includes("a"),
+    (await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)).includes("hiragana:a"),
     "failed kana progress clear should keep mastered kana"
   )
   assert.ok(
-    (await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA))?.a?.dueAt,
+    (await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA))?.["hiragana:a"]?.dueAt,
     "failed kana progress clear should restore kana SRS"
   )
   await restoreStorageWrites(page)

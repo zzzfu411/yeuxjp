@@ -1,4 +1,5 @@
 import type { PracticeItemType, PracticeMode } from "@/lib/learning-progress-model"
+import { inferKanaScriptFromText, normalizeKanaPracticeItemId } from "@/lib/kana-id"
 
 export type MistakeOption = { value: string; display: string }
 
@@ -72,9 +73,19 @@ function normalizeMistakeProgressMetadata(input: Record<string, unknown>) {
   if (typeof input.itemType !== "string" || !PRACTICE_ITEM_TYPES.has(input.itemType as PracticeItemType)) return null
   if (typeof input.mode !== "string" || !PRACTICE_MODES.has(input.mode as PracticeMode)) return null
 
+  const itemType = input.itemType as PracticeItemType
+  const itemId =
+    itemType === "kana"
+      ? normalizeKanaPracticeItemId(input.itemId, {
+          scriptHint: inferKanaScriptFromText(input.questionText, input.questionAudio, input.correctDisplay),
+          textHints: [input.questionText, input.questionAudio, input.correctDisplay],
+        })
+      : input.itemId
+  if (!itemId) return null
+
   return {
-    itemId: input.itemId,
-    itemType: input.itemType as PracticeItemType,
+    itemId,
+    itemType,
     mode: input.mode as PracticeMode,
   }
 }

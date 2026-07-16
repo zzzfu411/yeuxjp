@@ -5,10 +5,10 @@ export async function seedReviewState(page, baseUrl) {
   await page.evaluate((storageKeys) => {
     const now = Date.now()
     localStorage.clear()
-    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["a"]))
+    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["hiragana:a"]))
     localStorage.setItem(
       storageKeys.SRS_KANA,
-      JSON.stringify({ a: { box: 1, dueAt: now - 1, createdAt: now - 1000, right: 0, wrong: 0 } })
+      JSON.stringify({ "hiragana:a": { box: 1, dueAt: now - 1, createdAt: now - 1000, right: 0, wrong: 0 } })
     )
   }, E2E_STORAGE_KEYS)
 }
@@ -18,11 +18,11 @@ export async function seedMixedReviewState(page, baseUrl) {
   await page.evaluate((storageKeys) => {
     const now = Date.now()
     localStorage.clear()
-    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["a"]))
+    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["hiragana:a"]))
     localStorage.setItem(storageKeys.VOCAB_LEARNED, JSON.stringify(["sur-g-1"]))
     localStorage.setItem(
       storageKeys.SRS_KANA,
-      JSON.stringify({ a: { box: 1, dueAt: now - 3, createdAt: now - 3000, right: 0, wrong: 0 } })
+      JSON.stringify({ "hiragana:a": { box: 1, dueAt: now - 3, createdAt: now - 3000, right: 0, wrong: 0 } })
     )
     localStorage.setItem(
       storageKeys.SRS_VOCAB,
@@ -35,7 +35,7 @@ export async function seedMixedReviewState(page, baseUrl) {
           id: "e2e-mistake:kana-a",
           type: "hiragana-romaji",
           questionText: String.fromCodePoint(0x3042),
-          itemId: "a",
+          itemId: "hiragana:a",
           itemType: "kana",
           mode: "recognition",
           correctAnswer: "a",
@@ -72,7 +72,7 @@ export async function seedDueMistakeReviewState(page, baseUrl) {
           id: "e2e-mistake:kana-a",
           type: "hiragana-romaji",
           questionText: String.fromCodePoint(0x3042),
-          itemId: "a",
+          itemId: "hiragana:a",
           itemType: "kana",
           mode: "recognition",
           correctAnswer: "a",
@@ -109,7 +109,7 @@ export async function seedMissingThenDueMistakeReviewState(page, baseUrl) {
           id: "e2e-mistake:kana-a",
           type: "hiragana-romaji",
           questionText: String.fromCodePoint(0x3042),
-          itemId: "a",
+          itemId: "hiragana:a",
           itemType: "kana",
           mode: "recognition",
           correctAnswer: "a",

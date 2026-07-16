@@ -135,15 +135,18 @@ export async function clickQuizOptionExceptValueAndReadPractice(page, value) {
 export async function assertQuizModeRecordsPractice(page, baseUrl, { mode, itemType, practiceMode }) {
   await openQuizMode(page, baseUrl, mode)
   const practice = await clickFirstQuizOptionAndReadPractice(page)
+  const recordedPractice = Array.isArray(practice)
+    ? practice.find((item) => item.itemType === itemType && item.mode === practiceMode)
+    : null
   assert.ok(
-    Array.isArray(practice) &&
-      practice.some((item) => item.itemType === itemType && item.mode === practiceMode),
+    recordedPractice,
     `${mode} quiz should record ${itemType}/${practiceMode} practice`
   )
 
   const itemProgress = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
   assert.ok(
-    Object.values(itemProgress ?? {}).some((item) => item.itemType === itemType && item.attempts >= 1),
+    itemProgress?.[recordedPractice.itemId]?.itemId === recordedPractice.itemId &&
+      itemProgress[recordedPractice.itemId].attempts >= 1,
     `${mode} quiz should update item progress`
   )
 }

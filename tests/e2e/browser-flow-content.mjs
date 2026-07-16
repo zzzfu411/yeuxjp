@@ -212,24 +212,40 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.waitForFunction((storageKeys) => {
     const mastered = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERED) ?? "[]")
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
-    return Array.isArray(mastered) && mastered.includes("a") && !!srs?.a?.dueAt
+    return Array.isArray(mastered) && mastered.includes("hiragana:a") && !!srs?.["hiragana:a"]?.dueAt
   }, E2E_STORAGE_KEYS)
   const masteredKana = await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)
-  assert.ok(Array.isArray(masteredKana) && masteredKana.includes("a"), "kana mastery toggle should persist kana a")
+  assert.ok(
+    Array.isArray(masteredKana) && masteredKana.includes("hiragana:a"),
+    "kana mastery toggle should persist hiragana a"
+  )
+  assert.equal(masteredKana.includes("katakana:a"), false, "mastering hiragana a should not master katakana a")
   const masteredKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
-  assert.ok(masteredKanaSrs?.a?.dueAt, "kana mastery toggle should enroll kana a for SRS review")
+  assert.ok(masteredKanaSrs?.["hiragana:a"]?.dueAt, "kana mastery toggle should enroll hiragana a for SRS review")
+  assert.equal(masteredKanaSrs?.["katakana:a"], undefined, "mastering hiragana a should not enroll katakana a")
   await page.keyboard.press("Escape")
   await page.getByTestId("kana-only-unmastered-toggle").click()
   assert.equal(await page.getByTestId("kana-only-unmastered-toggle").getAttribute("aria-pressed"), "true")
   await page.getByTestId("kana-card-a").waitFor({ state: "hidden" })
   await page.getByTestId("kana-card-i").waitFor({ state: "visible" })
+  await page.getByTestId("kana-mode-katakana").click()
+  await page.getByTestId("kana-card-a").waitFor({ state: "visible" })
+  await page.getByTestId("kana-card-a").click()
+  assert.equal(
+    await page.getByTestId("kana-mastery-toggle").getAttribute("aria-pressed"),
+    "false",
+    "katakana a should remain unmastered after mastering hiragana a"
+  )
+  await page.keyboard.press("Escape")
+  await page.getByTestId("kana-mode-hiragana").click()
+  await page.getByTestId("kana-card-a").waitFor({ state: "hidden" })
   await page.getByTestId("kana-only-unmastered-toggle").click()
   assert.equal(await page.getByTestId("kana-only-unmastered-toggle").getAttribute("aria-pressed"), "false")
   await page.getByTestId("kana-card-a").waitFor({ state: "visible" })
   await page.getByTestId("kana-clear-progress").click()
   await page.getByTestId("kana-clear-progress-dialog-cancel").click()
   assert.ok(
-    (await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)).includes("a"),
+    (await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)).includes("hiragana:a"),
     "canceling kana progress reset should keep mastered kana"
   )
   await page.getByTestId("kana-clear-progress").click()

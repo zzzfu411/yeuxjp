@@ -86,9 +86,10 @@ test("learning backups include existing learning keys and can restore them", () 
   map.set(storage.STORAGE_KEYS.MISTAKES, "[{\"id\":\"stale\"}]")
   assert.equal(store.restoreLearningBackup(backup), true)
   const kanaSrs = JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA))
-  assert.equal(kanaSrs.a.box, 1)
-  assert.equal(kanaSrs.a.dueAt, 600123)
-  assert.equal(kanaSrs.a.createdAt, 123)
+  assert.deepEqual(Object.keys(kanaSrs), ["hiragana:a", "katakana:a"])
+  assert.equal(kanaSrs["hiragana:a"].box, 1)
+  assert.equal(kanaSrs["hiragana:a"].dueAt, 600123)
+  assert.equal(kanaSrs["katakana:a"].createdAt, 123)
   assert.equal(map.has(storage.STORAGE_KEYS.MISTAKES), false)
 })
 
@@ -132,7 +133,7 @@ test("learning backup creation stays finite when the system clock is invalid", (
 
     const backup = store.createLearningBackup(Number.NaN)
     assert.equal(backup.exportedAt, 0)
-    assert.equal(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA]).a.createdAt, 0)
+    assert.equal(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA])["hiragana:a"].createdAt, 0)
   } finally {
     Date.now = originalDateNow
   }
@@ -164,8 +165,10 @@ test("learning backup export normalizes active kana indexes", () => {
   const backup = store.tryCreateLearningBackup(123)
 
   assert.ok(backup)
-  assert.deepEqual(JSON.parse(backup.entries[storage.STORAGE_KEYS.KANA_MASTERED]), ["a", "ka"])
-  assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA])), ["a"])
+  assert.deepEqual(JSON.parse(backup.entries[storage.STORAGE_KEYS.KANA_MASTERED]), [
+    "hiragana:a", "katakana:a", "hiragana:ka", "katakana:ka",
+  ])
+  assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA])), ["hiragana:a", "katakana:a"])
 })
 
 test("learning backup export removes mistake SRS entries without notebook records", () => {
@@ -216,10 +219,12 @@ test("restoreLearningBackup normalizes managed entries before writing", () => {
   }
 
   assert.equal(store.restoreLearningBackup(backup), true)
-  assert.deepEqual(JSON.parse(map.get(storage.STORAGE_KEYS.KANA_MASTERED)), ["a", "ka"])
+  assert.deepEqual(JSON.parse(map.get(storage.STORAGE_KEYS.KANA_MASTERED)), [
+    "hiragana:a", "katakana:a", "hiragana:ka", "katakana:ka",
+  ])
   assert.deepEqual(JSON.parse(map.get(storage.STORAGE_KEYS.VOCAB_LEARNED)), ["sur-g-1", "day-v-1"])
-  assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA))), ["a"])
-  assert.equal(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA)).a.box, 6)
+  assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA))), ["hiragana:a", "katakana:a"])
+  assert.equal(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA))["hiragana:a"].box, 6)
   assert.deepEqual(Object.keys(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_VOCAB))), ["sur-g-1"])
 })
 
@@ -533,6 +538,24 @@ test("parseLearningBackup rejects invalid JSON and wrong versions", () => {
   )
 })
 
+test("version one backups migrate kana ids into version two without losing either script", () => {
+  const parsed = store.parseLearningBackup(JSON.stringify({
+    version: 1,
+    exportedAt: 123,
+    entries: {
+      [storage.STORAGE_KEYS.KANA_MASTERED]: JSON.stringify(["a"]),
+      [storage.STORAGE_KEYS.SRS_KANA]: JSON.stringify({
+        a: { box: 2, dueAt: 10, createdAt: 1, right: 1, wrong: 0 },
+      }),
+    },
+  }))
+
+  assert.ok(parsed)
+  assert.equal(parsed.version, store.LEARNING_BACKUP_VERSION)
+  assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.KANA_MASTERED]), ["hiragana:a", "katakana:a"])
+  assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA])), ["hiragana:a", "katakana:a"])
+})
+
 test("parseLearningBackup keeps only managed string entries", () => {
   const parsed = store.parseLearningBackup(JSON.stringify({
     version: store.LEARNING_BACKUP_VERSION,
@@ -629,12 +652,14 @@ test("parseLearningBackup normalizes managed entries before restore", () => {
   }))
 
   assert.ok(parsed)
-  assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.KANA_MASTERED]), ["a", "ka"])
+  assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.KANA_MASTERED]), [
+    "hiragana:a", "katakana:a", "hiragana:ka", "katakana:ka",
+  ])
   assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.VOCAB_LEARNED]), ["sur-g-1", "day-v-1"])
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.LESSON_PROGRESS])), ["day-3"])
   assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.PRACTICE_RESULTS]).map((item) => item.itemId), ["ok", "sur-g-999"])
-  assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA])), ["a"])
-  assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA]).a.box, 6)
+  assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA])), ["hiragana:a", "katakana:a"])
+  assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA])["hiragana:a"].box, 6)
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_VOCAB])).sort(), ["day-v-1", "sur-g-1"])
   assert.equal(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_VOCAB])["day-v-1"].box, 6)
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_MISTAKES])), ["m1"])

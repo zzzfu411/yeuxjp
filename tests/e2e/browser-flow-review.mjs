@@ -41,12 +41,12 @@ export async function verifyDueReviewFlow(page, baseUrl) {
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
     const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
     const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
-    return srs?.a?.box === 0 &&
-      srs?.a?.wrong >= 1 &&
-      srs?.a?.dueAt <= Date.now() &&
+    return srs?.["hiragana:a"]?.box === 0 &&
+      srs?.["hiragana:a"]?.wrong >= 1 &&
+      srs?.["hiragana:a"]?.dueAt <= Date.now() &&
       Array.isArray(practice) &&
       practice.some((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === false
@@ -55,15 +55,15 @@ export async function verifyDueReviewFlow(page, baseUrl) {
       mistakes.some((item) => item.correctAnswer === "a" && item.wrongCount >= 1)
   }, E2E_STORAGE_KEYS)
   const wrongKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
-  assert.equal(wrongKanaSrs?.a?.box, 0, "wrong review answer should reset kana SRS to immediate review")
-  assert.equal(wrongKanaSrs?.a?.wrong, 1, "rapid review answer clicks should grade SRS once")
-  assert.ok(wrongKanaSrs?.a?.wrong >= 1, "wrong review answer should increment SRS wrong count")
-  assert.ok(wrongKanaSrs?.a?.dueAt <= Date.now(), "wrong review answer should keep the item due now")
+  assert.equal(wrongKanaSrs?.["hiragana:a"]?.box, 0, "wrong review answer should reset kana SRS to immediate review")
+  assert.equal(wrongKanaSrs?.["hiragana:a"]?.wrong, 1, "rapid review answer clicks should grade SRS once")
+  assert.ok(wrongKanaSrs?.["hiragana:a"]?.wrong >= 1, "wrong review answer should increment SRS wrong count")
+  assert.ok(wrongKanaSrs?.["hiragana:a"]?.dueAt <= Date.now(), "wrong review answer should keep the item due now")
   const wrongReviewPractice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
   assert.ok(
     Array.isArray(wrongReviewPractice) &&
       wrongReviewPractice.some((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === false
@@ -73,7 +73,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   assert.equal(
     Array.isArray(wrongReviewPractice)
       ? wrongReviewPractice.filter((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === false
@@ -101,7 +101,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
       srs?.["e2e-mistake:kana-a"]?.box === 0 &&
       Array.isArray(practice) &&
       practice.some((entry) =>
-        entry.itemId === "a" &&
+        entry.itemId === "hiragana:a" &&
         entry.itemType === "kana" &&
         entry.mode === "recognition" &&
         entry.correct === false
@@ -145,20 +145,20 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   await page.waitForFunction((storageKeys) => {
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
     const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
-    return srs?.a?.box > 1 &&
-      srs?.a?.right >= 1 &&
-      srs?.a?.dueAt > Date.now() &&
+    return srs?.["hiragana:a"]?.box > 1 &&
+      srs?.["hiragana:a"]?.right >= 1 &&
+      srs?.["hiragana:a"]?.dueAt > Date.now() &&
       Array.isArray(practice) &&
       practice.some((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === true
       )
   }, E2E_STORAGE_KEYS)
   const reviewedKanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
-  assert.ok(reviewedKanaSrs?.a?.box > 1, "correct review answer should advance kana SRS box")
-  assert.ok(reviewedKanaSrs?.a?.right >= 1, "correct review answer should increment SRS right count")
+  assert.ok(reviewedKanaSrs?.["hiragana:a"]?.box > 1, "correct review answer should advance kana SRS box")
+  assert.ok(reviewedKanaSrs?.["hiragana:a"]?.right >= 1, "correct review answer should increment SRS right count")
   await page.getByTestId("review-next").click()
 
   await page.getByTestId("review-answer-sur-g-1").click()
@@ -187,7 +187,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   assert.ok(
     Array.isArray(reviewPractice) &&
       reviewPractice.some((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === true
@@ -212,10 +212,10 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   await page.waitForFunction((storageKeys) => {
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
     const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
-    return srs?.a?.box > 1 &&
+    return srs?.["hiragana:a"]?.box > 1 &&
       Array.isArray(practice) &&
       practice.some((item) =>
-        item.itemId === "a" &&
+        item.itemId === "hiragana:a" &&
         item.itemType === "kana" &&
         item.mode === "recognition" &&
         item.correct === true

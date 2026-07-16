@@ -187,7 +187,7 @@ export function HomePage() {
           <ActionCard
             icon={<Route className="h-5 w-5" />}
             title="薄弱项"
-            desc={weakest ? `${weakest.label}「${weakest.id}」平均掌握度 ${weakest.score}，建议在复习流里优先巩固。` : "完成几道课程练习后，这里会显示最需要补强的能力维度。"}
+            desc={weakest ? `${weakest.label}「${weakest.display}」平均掌握度 ${weakest.score}，建议在复习流里优先巩固。` : "完成几道课程练习后，这里会显示最需要补强的能力维度。"}
             href="/quiz"
             cta="做专项练习"
           />

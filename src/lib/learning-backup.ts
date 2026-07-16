@@ -1,6 +1,7 @@
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { MANAGED_LEARNING_STORAGE_KEYS } from "@/lib/managed-learning-keys"
+import { normalizeKanaIdList, normalizeKanaIdRecord } from "@/lib/kana-id"
 import { normalizeMistakeList } from "@/lib/mistake-notebook-model"
 import {
   normalizeItemProgressMap,
@@ -13,7 +14,8 @@ import { isReviewableKanaId } from "@/lib/review-visibility"
 import { normalizeSpeechPreferences } from "@/lib/speech-preferences-model"
 import { normalizeSrsState } from "@/lib/srs-model"
 
-export const LEARNING_BACKUP_VERSION = 1
+export const LEARNING_BACKUP_VERSION = 2
+const LEGACY_LEARNING_BACKUP_VERSION = 1
 export const BACKUP_KEYS = MANAGED_LEARNING_STORAGE_KEYS
 
 export type LearningBackupKey = (typeof BACKUP_KEYS)[number]
@@ -84,7 +86,8 @@ export function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, n
       return map ? JSON.stringify(map) : null
     }
     case STORAGE_KEYS.SRS_KANA: {
-      const map = normalizeSrsMapForBackup(parsed.value, isReviewableKanaId, safeNow)
+      if (!isPlainObject(parsed.value)) return null
+      const map = normalizeSrsMapForBackup(normalizeKanaIdRecord(parsed.value), isReviewableKanaId, safeNow)
       return map ? JSON.stringify(map) : null
     }
     case STORAGE_KEYS.SRS_VOCAB: {
@@ -97,7 +100,7 @@ export function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, n
     }
     case STORAGE_KEYS.KANA_MASTERED: {
       if (!Array.isArray(parsed.value)) return null
-      return JSON.stringify(normalizeProgressList(parsed.value).filter(isReviewableKanaId))
+      return JSON.stringify(normalizeKanaIdList(normalizeProgressList(parsed.value)))
     }
     case STORAGE_KEYS.VOCAB_LEARNED: {
       if (!Array.isArray(parsed.value)) return null
@@ -127,7 +130,7 @@ export function filterOrphanMistakeSrsEntries(entries: LearningBackup["entries"]
 
 export function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = Date.now()): LearningBackup | null {
   const safeNow = safeLearningBackupTimestamp(now)
-  if (backup.version !== LEARNING_BACKUP_VERSION) return null
+  if (backup.version !== LEARNING_BACKUP_VERSION && backup.version !== LEGACY_LEARNING_BACKUP_VERSION) return null
   if (typeof backup.exportedAt !== "number" || !Number.isFinite(backup.exportedAt)) return null
   if (!isPlainObject(backup.entries)) return null
 

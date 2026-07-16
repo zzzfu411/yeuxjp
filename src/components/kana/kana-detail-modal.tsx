@@ -151,6 +151,7 @@ export function KanaDetailModal({
                   variant={learned ? "default" : "secondary"}
                   className="w-full rounded-full"
                   onClick={onToggleMastered}
+                  aria-pressed={learned}
                   data-testid="kana-mastery-toggle"
                 >
                   <CheckCircle2 className="w-5 h-5 mr-2" />

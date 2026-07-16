@@ -45,8 +45,8 @@ export async function seedLearningDataBackupState(page, baseUrl) {
     localStorage.setItem(
       storageKeys.ITEM_PROGRESS,
       JSON.stringify({
-        a: {
-          itemId: "a",
+        "hiragana:a": {
+          itemId: "hiragana:a",
           itemType: "kana",
           recognition: 18,
           listening: 0,
@@ -77,7 +77,7 @@ export async function seedLearningDataBackupState(page, baseUrl) {
         {
           lessonId: "day-1-a-row-hello",
           lessonStepId: "recognize-a",
-          itemId: "a",
+          itemId: "hiragana:a",
           itemType: "kana",
           mode: "recognition",
           correct: true,
@@ -89,7 +89,7 @@ export async function seedLearningDataBackupState(page, baseUrl) {
     localStorage.setItem(
       storageKeys.SRS_KANA,
       JSON.stringify({
-        a: { box: 2, dueAt: now + 60_000, createdAt, lastReviewedAt: now, right: 1, wrong: 0 },
+        "hiragana:a": { box: 2, dueAt: now + 60_000, createdAt, lastReviewedAt: now, right: 1, wrong: 0 },
       })
     )
     localStorage.setItem(
@@ -124,7 +124,7 @@ export async function seedLearningDataBackupState(page, baseUrl) {
         "kana:a:hiragana-romaji": { box: 1, dueAt: now - 1, createdAt, right: 0, wrong: 1 },
       })
     )
-    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["a", "i"]))
+    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["hiragana:a", "hiragana:i"]))
     localStorage.setItem(storageKeys.VOCAB_LEARNED, JSON.stringify(["sur-n-35"]))
     localStorage.setItem(storageKeys.SPEECH_PREFS, JSON.stringify({ rate: 1, repeat: 2, autoPlay: false, gapMs: 500 }))
   }, E2E_STORAGE_KEYS)

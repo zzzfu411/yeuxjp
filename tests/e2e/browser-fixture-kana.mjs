@@ -99,3 +99,5 @@ const seionHiraganaCodePoints = [
 export const seionHiraganaToRomaji = Object.fromEntries(
   seionHiraganaCodePoints.map((codePoint, index) => [String.fromCodePoint(codePoint), seionRomaji[index]])
 )
+
+export const seionHiraganaIds = seionRomaji.map((romaji) => `hiragana:${romaji}`)

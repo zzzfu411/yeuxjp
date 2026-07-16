@@ -163,8 +163,8 @@ test("item progress normalization clamps mastery and counters", () => {
     55
   )
 
-  assert.deepEqual(normalized.a, {
-    itemId: "a",
+  const expected = {
+    itemId: "hiragana:a",
     itemType: "kana",
     recognition: 100,
     listening: 0,
@@ -174,7 +174,9 @@ test("item progress normalization clamps mastery and counters", () => {
     attempts: 0,
     correct: 2,
     updatedAt: 55,
-  })
+  }
+  assert.deepEqual(normalized["hiragana:a"], expected)
+  assert.deepEqual(normalized["katakana:a"], { ...expected, itemId: "katakana:a" })
   assert.equal(normalized.bad, undefined)
 })
 
@@ -281,7 +283,7 @@ test("practice result normalization replaces non-finite timing fields", () => {
     {
       lessonId: undefined,
       lessonStepId: undefined,
-      itemId: "ka",
+      itemId: "hiragana:ka",
       itemType: "kana",
       mode: "recognition",
       correct: true,
@@ -299,7 +301,7 @@ test("learning progress timestamps stay finite when inputs and system clock are 
     assert.equal(model.createItemProgress("a", "kana", Number.NaN).updatedAt, 0)
     assert.equal(model.normalizeProfile({ goal: "balanced" }, Number.NaN).createdAt, 0)
     assert.equal(model.normalizeLessonProgressMap({ one: { lessonId: "one", startedAt: Number.NaN } }, Number.NaN).one.startedAt, 0)
-    assert.equal(model.normalizeItemProgressMap({ a: { itemType: "kana", updatedAt: Number.NaN } }, Number.NaN).a.updatedAt, 0)
+    assert.equal(model.normalizeItemProgressMap({ a: { itemType: "kana", updatedAt: Number.NaN } }, Number.NaN)["hiragana:a"].updatedAt, 0)
     assert.equal(
       model.normalizePracticeResults([{ itemId: "a", itemType: "kana", mode: "recognition", correct: true }], Number.NaN)[0]
         .createdAt,
@@ -325,7 +327,7 @@ test("learning progress timestamps stay finite when inputs and system clock are 
         mode: "recognition",
         correct: true,
         createdAt: Number.NaN,
-      }).a.updatedAt,
+      })["hiragana:a"].updatedAt,
       0
     )
   } finally {
@@ -357,7 +359,7 @@ test("practice recording helpers append history and update item mastery from sto
   assert.equal(nextHistory.length, 300)
   assert.equal(nextHistory[0].itemId, "old-1")
   assert.deepEqual(nextHistory.at(-1), {
-    itemId: "ka",
+    itemId: "hiragana:ka",
     itemType: "kana",
     mode: "recognition",
     correct: false,
@@ -383,8 +385,8 @@ test("practice recording helpers append history and update item mastery from sto
     nextHistory.at(-1)
   )
 
-  assert.deepEqual(nextItems.ka, {
-    itemId: "ka",
+  assert.deepEqual(nextItems["hiragana:ka"], {
+    itemId: "hiragana:ka",
     itemType: "kana",
     recognition: 10,
     listening: 5,
@@ -395,6 +397,24 @@ test("practice recording helpers append history and update item mastery from sto
     correct: 1,
     updatedAt: 999,
   })
+  assert.equal(nextItems["katakana:ka"].attempts, 2)
+})
+
+test("legacy kana progress expands while practice history stays single-script", () => {
+  const items = model.normalizeItemProgressMap({
+    a: { itemType: "kana", attempts: 2, correct: 1, recognition: 20 },
+    "katakana:a": { itemType: "kana", attempts: 4, correct: 3, recognition: 60 },
+  })
+  assert.equal(items["hiragana:a"].attempts, 2)
+  assert.equal(items["katakana:a"].attempts, 4)
+  assert.equal(items["katakana:a"].recognition, 60)
+
+  const results = model.normalizePracticeResults([
+    { itemId: "a", itemType: "kana", mode: "recognition", correct: true, createdAt: 1 },
+    { itemId: "a", itemType: "kana", mode: "recognition", correct: true, lessonStepId: "katakana-a", createdAt: 2 },
+  ])
+  assert.deepEqual(results.map((item) => item.itemId), ["hiragana:a", "katakana:a"])
+  assert.equal(results.length, 2)
 })
 
 test("learning progress helpers merge maps, normalize step indexes, and average mastery", () => {

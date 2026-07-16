@@ -1,5 +1,6 @@
 import { kanaData } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
+import { getKanaById, normalizeKanaIdList, normalizeKanaIdRecord } from "@/lib/kana-id"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
 import { pickUniqueQuestionOptions } from "@/lib/question-options"
 import { normalizeAnswer, type Question } from "@/lib/questions"
@@ -87,9 +88,10 @@ export function buildTodayReviewQueue({
   vocabSrsMap: SrsMap
   limit?: number
 }): TodayReviewItem[] {
-  const kanaIds = kanaDueIds.filter(isReviewableKanaId)
+  const kanaIds = normalizeKanaIdList(kanaDueIds)
+  const normalizedKanaSrsMap = normalizeKanaIdRecord(kanaSrsMap) as SrsMap
   const dueItems = [
-    ...buildDueReviewItems({ deck: "kana", ids: kanaIds, srsMap: kanaSrsMap }),
+    ...buildDueReviewItems({ deck: "kana", ids: kanaIds, srsMap: normalizedKanaSrsMap }),
     ...buildDueReviewItems({ deck: "vocab", ids: vocabDueIds, srsMap: vocabSrsMap }),
   ]
 
@@ -140,8 +142,10 @@ export function mistakeToQuestion(item: MistakeItem): Question {
 }
 
 export function makeKanaReviewQuestion(id: string, random: () => number = Math.random): Question | null {
-  const item = kanaData.find((k) => k.romaji === id)
-  if (!item) return null
+  const parsed = getKanaById(id)
+  if (!parsed) return null
+  const item = parsed.kana
+  const glyph = item[parsed.script]
 
   const options = pickUniqueQuestionOptions({
     target: item,
@@ -153,11 +157,11 @@ export function makeKanaReviewQuestion(id: string, random: () => number = Math.r
 
   return {
     type: "review:kana",
-    itemId: item.romaji,
+    itemId: parsed.id,
     itemType: "kana",
     mode: "recognition",
-    questionText: item.hiragana,
-    questionAudio: item.hiragana,
+    questionText: glyph,
+    questionAudio: glyph,
     correctAnswer: item.romaji,
     correctDisplay: item.romaji,
     options: options.map((option) => ({ value: option.romaji, display: option.romaji })),

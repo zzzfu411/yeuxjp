@@ -42,7 +42,7 @@ test("kana page delegates mode, set, filter, and progress controls to KanaContro
   assert.match(page, /from "@\/components\/practice\/practice-save-error"/)
   assert.match(page, /const \[saveError, setSaveError\] = useState\(false\)/)
   assert.match(page, /const saved = clearMastered\(\)/)
-  assert.match(page, /const saved = toggleMastered\(romaji\)/)
+  assert.match(page, /const saved = toggleMastered\(id\)/)
   assert.match(page, /setSaveError\(!saved\)/)
   assert.match(page, /<PracticeSaveError show=\{saveError\} \/>/)
   assert.doesNotMatch(page, /EyeOff/)

@@ -41,6 +41,8 @@ test("review prompt content owns audio buttons and prompt typography", () => {
   assert.match(source, /aria-label="播放复习音频"/)
   assert.match(source, /export function MixedReviewPrompt/)
   assert.match(source, /export function KanaReviewPrompt/)
+  assert.match(source, /script: "hiragana" \| "katakana"/)
+  assert.match(source, /script === "hiragana" \? "平假名" : "片假名"/)
   assert.match(source, /export function VocabReviewPrompt/)
   assert.match(source, /export function MistakeReviewPrompt/)
   assert.match(source, /text-7xl/)

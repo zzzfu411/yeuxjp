@@ -2,6 +2,7 @@
 
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { warnInDevelopment } from "@/lib/dev-log"
+import { normalizeKanaIdRecord } from "@/lib/kana-id"
 import { queueLearningNotification } from "@/lib/learning-events"
 import { writeManagedLearningStorage } from "@/lib/managed-learning-storage"
 import { isReviewableKanaId } from "@/lib/review-visibility"
@@ -48,7 +49,8 @@ export function readSrsMap(storageKey: string): SrsMap {
     if (!raw) return {}
     const parsed = JSON.parse(raw) as unknown
     if (!parsed || typeof parsed !== "object") return {}
-    const obj = parsed as Record<string, unknown>
+    const rawObject = parsed as Record<string, unknown>
+    const obj = storageKey === STORAGE_KEYS.SRS_KANA ? normalizeKanaIdRecord(rawObject) : rawObject
 
     const now = Date.now()
     const out: SrsMap = {}

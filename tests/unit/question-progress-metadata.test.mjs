@@ -48,11 +48,14 @@ test("all public quiz modes expose progress metadata for learning-session writes
     assertProgressMetadata(question, entry.mode)
     assert.equal(question.itemType, entry.itemType)
     assert.equal(question.mode, entry.practiceMode)
+    if (entry.mode === "hiragana-romaji" || entry.mode === "audio-kana") {
+      assert.equal(question.itemId, "hiragana:a")
+    }
   }
 })
 
 test("review question builders expose progress metadata and mistake replay restores stored metadata", () => {
-  const kanaQuestion = review.makeKanaReviewQuestion("a", () => 0)
+  const kanaQuestion = review.makeKanaReviewQuestion("hiragana:a", () => 0)
   const vocabQuestion = review.makeVocabReviewQuestion("v1", vocab, () => 0)
   const mistakeQuestion = review.mistakeToQuestion({
     id: "m1",
@@ -69,7 +72,7 @@ test("review question builders expose progress metadata and mistake replay resto
   })
 
   assertProgressMetadata(kanaQuestion, "kana review")
-  assert.equal(kanaQuestion.itemId, "a")
+  assert.equal(kanaQuestion.itemId, "hiragana:a")
   assert.equal(kanaQuestion.itemType, "kana")
   assert.equal(kanaQuestion.mode, "recognition")
 

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { KanaDetailModal } from "./kana-detail-modal"
 import { speakJapanese } from "@/lib/speech"
 import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
+import { makeKanaId, type KanaId, type KanaScript } from "@/lib/kana-id"
 import {
   cacheKeyForChar,
   checkStrokeAvailability,
@@ -18,12 +19,12 @@ import {
 
 interface KanaGridProps {
   data: Kana[]
-  mode: "hiragana" | "katakana"
+  mode: KanaScript
   rows?: string[]
   columns?: 3 | 5
   showRomaji?: boolean
-  isMastered?: (romaji: string) => boolean
-  onToggleMastered?: (romaji: string) => void
+  isMastered?: (id: KanaId) => boolean
+  onToggleMastered?: (id: KanaId) => void
 }
 
 const DEFAULT_ROWS = ["a", "ka", "sa", "ta", "na", "ha", "ma", "ya", "ra", "wa", "n"]
@@ -43,7 +44,8 @@ export function KanaGrid({
   const [strokeAvailability, setStrokeAvailability] = useState<Record<string, StrokeAvailability>>({})
   
   const selectedKana = selectedIndex !== null ? data[selectedIndex] : null
-  const learned = selectedKana ? (isMastered?.(selectedKana.romaji) ?? false) : false
+  const selectedKanaId = selectedKana ? makeKanaId(mode, selectedKana.romaji) : null
+  const learned = selectedKanaId ? (isMastered?.(selectedKanaId) ?? false) : false
   
   // 获取当前字符 (根据模式)
   const currentChar = selectedKana ? (mode === "hiragana" ? selectedKana.hiragana : selectedKana.katakana) : null
@@ -140,6 +142,7 @@ export function KanaGrid({
             <div key={row} className={cn("grid gap-3 sm:gap-4", columns === 3 ? "grid-cols-3" : "grid-cols-5")}>
                {content.map((item, idx) => {
                   const itemChar = mode === "hiragana" ? item?.hiragana : item?.katakana
+                  const itemId = item ? makeKanaId(mode, item.romaji) : null
                   const strokesAvailable = itemChar
                     ? strokeAvailability[cacheKeyForChar(itemChar)] === "available"
                     : false
@@ -151,7 +154,7 @@ export function KanaGrid({
                       mode={mode} 
                       hasStrokes={strokesAvailable}
                       showRomaji={showRomaji}
-                      mastered={isMastered?.(item.romaji) ?? false}
+                      mastered={itemId ? (isMastered?.(itemId) ?? false) : false}
                       onClick={() => {
                         setIsWriting(false)
                         setSelectedIndex(data.indexOf(item))
@@ -188,7 +191,7 @@ export function KanaGrid({
         onPlay={handlePlay}
         onToggleWriting={() => setIsWriting((prev) => !prev)}
         onToggleMastered={() => {
-          if (selectedKana) onToggleMastered?.(selectedKana.romaji)
+          if (selectedKanaId) onToggleMastered?.(selectedKanaId)
         }}
       />
     </>

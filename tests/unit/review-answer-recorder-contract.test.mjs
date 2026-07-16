@@ -31,7 +31,8 @@ test("review sessions delegate shared answer recording to useReviewAnswerRecorde
 test("review sessions reuse shared kana and vocab review question builders", () => {
   const source = reviewSessionSources()
 
-  assert.match(source, /makeKanaReviewQuestion\(item\.romaji\)/)
+  assert.match(source, /makeKanaReviewQuestion\(item\.id\)/)
+  assert.doesNotMatch(source, /makeKanaReviewQuestion\(item\.romaji\)/)
   assert.match(source, /makeVocabReviewQuestion\(item, vocabulary\.data, createSeededRandom\(/)
   assert.match(source, /pickVocabReviewDirection\(createSeededRandom\(/)
   assert.match(source, /getVocabReviewPromptModel\(item, direction\)/)
@@ -66,11 +67,11 @@ test("review sessions require existing SRS records before grading queued items",
   const todayAdapter = read("src/lib/today-review-session.ts")
 
   assert.match(source, /canRecord: useCallback/)
-  assert.match(source, /srs\.has\(item\.romaji\)/)
-  assert.match(source, /srs\.has\(item\.id\)/)
+  assert.equal(source.match(/srs\.has\(item\.id\)/g)?.length, 3)
+  assert.doesNotMatch(source, /srs\.has\(item\.romaji\)/)
   assert.match(source, /canRecordTodayReviewItem\(current/)
-  assert.match(source, /srs\.gradeExisting\(item\.romaji/)
-  assert.match(source, /srs\.gradeExisting\(item\.id/)
+  assert.equal(source.match(/srs\.gradeExisting\(item\.id/g)?.length, 3)
+  assert.doesNotMatch(source, /srs\.gradeExisting\(item\.romaji/)
   assert.match(source, /gradeTodayReviewItem\(current, result/)
   assert.match(todayAdapter, /decks\[current\.deck\]\.has\(current\.id\)/)
   assert.match(todayAdapter, /decks\[current\.deck\]\.gradeExisting\(current\.id/)

@@ -1,3 +1,4 @@
+import { normalizeKanaPracticeRecord, normalizeKanaPracticeResultItemId } from "@/lib/kana-id"
 export type LearningGoal = "balanced" | "travel" | "jlpt" | "media"
 export type KanaLevel = "none" | "some" | "solid"
 export type RomajiMode = "always" | "practice" | "hidden"
@@ -10,7 +11,6 @@ export interface UserProfile {
   createdAt: number
   updatedAt: number
 }
-
 export interface LessonProgress {
   lessonId: string
   status: "started" | "completed"
@@ -21,7 +21,6 @@ export interface LessonProgress {
   lastStepId?: string
   updatedAt?: number
 }
-
 export type PracticeItemType = "kana" | "vocab" | "grammar" | "sentence" | "lesson"
 export type PracticeMode = "recognition" | "listening" | "meaning" | "recall" | "production"
 
@@ -36,7 +35,6 @@ export interface PracticeResult {
   durationMs?: number
   createdAt: number
 }
-
 export interface ItemProgress {
   itemId: string
   itemType: PracticeItemType
@@ -49,22 +47,18 @@ export interface ItemProgress {
   correct: number
   updatedAt: number
 }
-
 export type LessonProgressMap = Record<string, LessonProgress>
 export type ItemProgressMap = Record<string, ItemProgress>
 
 const PRACTICE_RESULT_LIMIT = 300
 const PRACTICE_ITEM_TYPES = new Set<PracticeItemType>(["kana", "vocab", "grammar", "sentence", "lesson"])
 const PRACTICE_MODES = new Set<PracticeMode>(["recognition", "listening", "meaning", "recall", "production"])
-
 function isPracticeItemType(value: unknown): value is PracticeItemType {
   return typeof value === "string" && PRACTICE_ITEM_TYPES.has(value as PracticeItemType)
 }
-
 function isPracticeMode(value: unknown): value is PracticeMode {
   return typeof value === "string" && PRACTICE_MODES.has(value as PracticeMode)
 }
-
 export function clampScore(value: number) {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, Math.min(100, Math.round(value)))
@@ -162,7 +156,8 @@ export function normalizeLessonProgressMap(input: unknown, now = Date.now()): Le
 export function normalizeItemProgressMap(input: unknown, now = Date.now()): ItemProgressMap {
   if (!input || typeof input !== "object") return {}
   const out: ItemProgressMap = {}
-  for (const [itemId, value] of Object.entries(input as Record<string, unknown>)) {
+  const normalizedInput = normalizeKanaPracticeRecord(input as Record<string, unknown>)
+  for (const [itemId, value] of Object.entries(normalizedInput)) {
     if (!value || typeof value !== "object") continue
     const obj = value as Partial<ItemProgress>
     const itemType = obj.itemType ?? "lesson"
@@ -195,10 +190,13 @@ export function normalizePracticeResults(input: unknown, now = Date.now()): Prac
     if (item.itemType !== undefined && !isPracticeItemType(item.itemType)) continue
     if (typeof item.correct !== "boolean") continue
 
+    const itemId = normalizeKanaPracticeResultItemId(item)
+    if (!itemId) continue
+
     out.push({
       lessonId: typeof item.lessonId === "string" ? item.lessonId : undefined,
       lessonStepId: typeof item.lessonStepId === "string" ? item.lessonStepId : undefined,
-      itemId: item.itemId,
+      itemId,
       itemType: item.itemType ?? "lesson",
       mode: item.mode,
       correct: item.correct,
@@ -213,20 +211,22 @@ export function normalizePracticeResults(input: unknown, now = Date.now()): Prac
 
 export function appendPracticeResult(previous: unknown, result: Omit<PracticeResult, "createdAt">, createdAt = Date.now()) {
   const safeCreatedAt = finiteNumber(createdAt, Date.now())
-  const nextResult: PracticeResult = { ...result, createdAt: safeCreatedAt }
+  const itemId = normalizeKanaPracticeResultItemId(result) ?? result.itemId
+  const nextResult: PracticeResult = { ...result, itemId, createdAt: safeCreatedAt }
   return [...normalizePracticeResults(previous, safeCreatedAt), nextResult].slice(-PRACTICE_RESULT_LIMIT)
 }
 
 export function updateItemProgressForPractice(previous: unknown, result: PracticeResult) {
   const updatedAt = finiteNumber(result.createdAt, Date.now())
   const base = normalizeItemProgressMap(previous, updatedAt)
-  const current = base[result.itemId] ?? createItemProgress(result.itemId, result.itemType, updatedAt)
+  const itemId = normalizeKanaPracticeResultItemId(result) ?? result.itemId
+  const current = base[itemId] ?? createItemProgress(itemId, result.itemType, updatedAt)
   const delta = result.correct ? 18 : -10
   const nextScore = clampScore(current[result.mode] + delta)
 
   return {
     ...base,
-    [result.itemId]: {
+    [itemId]: {
       ...current,
       itemType: result.itemType,
       [result.mode]: nextScore,

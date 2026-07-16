@@ -22,7 +22,7 @@ for (const relPath of ["src/lib/kana-progress.ts", "src/lib/vocab-progress.ts"])
       assert.match(source, /const base = new Set\(readLearned\(\)\)/)
     } else {
       assert.match(source, /isReviewableKanaId/)
-      assert.match(source, /readProgressList\(storageKey, STORAGE_LABEL\)\.filter\(isReviewableKanaId\)/)
+      assert.match(source, /normalizeKanaIdList\(readProgressList\(storageKey, STORAGE_LABEL\)\)/)
       assert.match(source, /const base = new Set\(readMastered\(\)\)/)
     }
     assert.match(source, /const srsSuccess =/)

@@ -12,7 +12,7 @@ test("lesson practice steps convert to shared Question objects", () => {
 
   const choiceQuestion = session.lessonStepToQuestion(choice)
   assert.equal(choiceQuestion.type, "lesson:multipleChoice")
-  assert.equal(choiceQuestion.itemId, "a")
+  assert.equal(choiceQuestion.itemId, "hiragana:a")
   assert.equal(choiceQuestion.itemType, "kana")
   assert.equal(choiceQuestion.mode, "recognition")
   assert.deepEqual(choiceQuestion.options.map((option) => option.value), choice.options)
@@ -43,6 +43,21 @@ test("sentence build lesson steps become production questions", () => {
   assert.equal(question.correctAnswer, step.answer)
 })
 
+test("lesson kana item ids identify the script taught by each course day", () => {
+  for (const lesson of lessons.STARTER_LESSONS) {
+    const expectedScript = lesson.order >= 25 && lesson.order <= 27 ? "katakana" : "hiragana"
+    const kanaIds = [
+      ...lesson.newItemIds.filter((item) => item.type === "kana").map((item) => item.id),
+      ...lesson.steps.filter((step) => step.itemType === "kana").map((step) => step.itemId),
+    ]
+
+    for (const itemId of kanaIds) {
+      if (/^(sokuon|longvowel):.+/.test(itemId)) continue
+      assert.match(itemId, new RegExp(`^${expectedScript}:[^:]+$`), `${lesson.id} has a mismatched kana itemId`)
+    }
+  }
+})
+
 test("lesson practice counts and completion scores are deterministic", () => {
   const lesson = lessons.STARTER_LESSONS[0]
 
@@ -67,7 +82,7 @@ test("lesson answered state restores the latest result for each practice step", 
     {
       lessonId: "day-1-a-row-hello",
       lessonStepId: "recognize-a",
-      itemId: "a",
+      itemId: "hiragana:a",
       itemType: "kana",
       mode: "recognition",
       correct: false,
@@ -76,7 +91,7 @@ test("lesson answered state restores the latest result for each practice step", 
     {
       lessonId: "day-1-a-row-hello",
       lessonStepId: "recognize-a",
-      itemId: "a",
+      itemId: "hiragana:a",
       itemType: "kana",
       mode: "recognition",
       correct: true,
@@ -85,7 +100,7 @@ test("lesson answered state restores the latest result for each practice step", 
     {
       lessonId: "day-1-a-row-hello",
       lessonStepId: "recognize-a",
-      itemId: "a",
+      itemId: "hiragana:a",
       itemType: "kana",
       mode: "recognition",
       correct: false,

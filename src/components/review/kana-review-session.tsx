@@ -9,7 +9,7 @@ import { ReviewDone, ReviewEmptyQuestionState } from "@/components/review/review
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
-import { kanaData } from "@/data/kana-data"
+import { getKanaById } from "@/lib/kana-id"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { Question, QuestionResult } from "@/lib/questions"
@@ -36,7 +36,7 @@ export function KanaReviewSession({
   const { dropCurrent } = review
 
   const currentId = review.currentItem
-  const item = useMemo(() => (currentId ? kanaData.find((k) => k.romaji === currentId) ?? null : null), [currentId])
+  const item = useMemo(() => (currentId ? getKanaById(currentId) : null), [currentId])
 
   useEffect(() => {
     if (currentId && !item) {
@@ -55,7 +55,7 @@ export function KanaReviewSession({
         return
       }
 
-      setQuestion(makeKanaReviewQuestion(item.romaji))
+      setQuestion(makeKanaReviewQuestion(item.id))
       setSaveError(false)
     })
 
@@ -65,8 +65,8 @@ export function KanaReviewSession({
   }, [item])
 
   const { playAudio } = useReviewAudio({
-    autoPlayText: item?.hiragana,
-    autoPlayKey: item?.romaji,
+    autoPlayText: item?.kana[item.script],
+    autoPlayKey: item?.id,
   })
 
   const recordAnswerSelection = useReviewAnswerRecorder({
@@ -75,11 +75,11 @@ export function KanaReviewSession({
     recordAnswer: review.recordAnswer,
     canRecord: useCallback(() => {
       if (!item) return false
-      return srs.has(item.romaji)
+      return srs.has(item.id)
     }, [item, srs]),
     grade: useCallback((result: QuestionResult) => {
       if (!item) return false
-      return srs.gradeExisting(item.romaji, result.correct ? "good" : "again")
+      return srs.gradeExisting(item.id, result.correct ? "good" : "again")
     }, [item, srs]),
   })
 
@@ -124,7 +124,7 @@ export function KanaReviewSession({
     >
 
       <ReviewPromptCard>
-        <KanaReviewPrompt hiragana={item.hiragana} katakana={item.katakana} onPlay={playAudio} />
+        <KanaReviewPrompt glyph={item.kana[item.script]} script={item.script} onPlay={playAudio} />
       </ReviewPromptCard>
 
       <ReviewOptionGrid

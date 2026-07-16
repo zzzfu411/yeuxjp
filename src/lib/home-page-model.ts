@@ -1,5 +1,6 @@
 import { getNextLesson } from "@/data/lessons"
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
+import { getKanaById } from "@/lib/kana-id"
 import { resolveLearningEntry, type LearningEntry, type LearningEntrySkill } from "@/lib/learning-entry"
 import { averageMastery, type ItemProgress, type ItemProgressMap, type PracticeItemType } from "@/lib/learning-progress-model"
 import {
@@ -10,6 +11,7 @@ import {
 
 export type HomeWeakestItem = {
   id: string
+  display: string
   label: string
   score: number
 }
@@ -49,6 +51,11 @@ export function getHomeWeakestItem(items: ItemProgressMap): HomeWeakestItem | nu
   return entries
     .map((item) => ({
       id: item.itemId,
+      display: (() => {
+        if (item.itemType !== "kana") return item.itemId
+        const parsed = getKanaById(item.itemId)
+        return parsed ? `${parsed.kana[parsed.script]} (${parsed.romaji})` : item.itemId
+      })(),
       label: practiceItemTypeLabel(item.itemType),
       score: averageMastery(item),
     }))

@@ -1,5 +1,6 @@
 import type { Kana } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
+import { makeKanaId } from "@/lib/kana-id"
 import { pickRandomListItem, pickUniqueQuestionOptions, shuffleList } from "@/lib/question-options"
 import { LONG_VOWEL_MINIMAL_PAIRS, PARTICLE_QUESTIONS, SOKUON_MINIMAL_PAIRS } from "@/lib/quiz-data"
 import type { QuizMode } from "@/lib/quiz-types"
@@ -27,6 +28,9 @@ export function generateKanaQuizQuestion({
   if (targetPool.length === 0) return null
 
   const target = randomItem(targetPool, random)
+  const itemId = makeKanaId("hiragana", target.romaji)
+  if (!itemId) return null
+
   const options = pickUniqueQuestionOptions({
     target,
     pool: basePool,
@@ -38,7 +42,7 @@ export function generateKanaQuizQuestion({
   if (mode === "hiragana-romaji") {
     return {
       type: mode,
-      itemId: target.romaji,
+      itemId,
       itemType: "kana",
       mode: "recognition",
       questionText: target.hiragana,
@@ -49,7 +53,7 @@ export function generateKanaQuizQuestion({
 
   return {
     type: mode,
-    itemId: target.romaji,
+    itemId,
     itemType: "kana",
     mode: "listening",
     questionAudio: target.hiragana,

@@ -53,10 +53,10 @@ async function seedKanaProgress(page, baseUrl) {
   await page.evaluate((storageKeys) => {
     const now = Date.now()
     localStorage.clear()
-    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["a"]))
+    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["hiragana:a"]))
     localStorage.setItem(
       storageKeys.SRS_KANA,
-      JSON.stringify({ a: { box: 1, dueAt: now + 60_000, createdAt: now - 1000, right: 0, wrong: 0 } })
+      JSON.stringify({ "hiragana:a": { box: 1, dueAt: now + 60_000, createdAt: now - 1000, right: 0, wrong: 0 } })
     )
   }, E2E_STORAGE_KEYS)
 }
@@ -108,10 +108,10 @@ async function verifyKanaClearDialogKeyboardFlow(page, baseUrl) {
   const afterEscapeMastered = await readJsonStorage(page, E2E_STORAGE_KEYS.KANA_MASTERED)
   const afterEscapeSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
   assert.ok(
-    Array.isArray(afterEscapeMastered) && afterEscapeMastered.includes("a"),
+    Array.isArray(afterEscapeMastered) && afterEscapeMastered.includes("hiragana:a"),
     "confirm dialog Escape should cancel without clearing kana progress"
   )
-  assert.ok(afterEscapeSrs?.a?.dueAt, "confirm dialog Escape should preserve kana SRS state")
+  assert.ok(afterEscapeSrs?.["hiragana:a"]?.dueAt, "confirm dialog Escape should preserve kana SRS state")
 }
 
 async function verifyKanaClearDialogKeyboardConfirmFlow(page, baseUrl) {

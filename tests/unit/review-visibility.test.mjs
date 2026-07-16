@@ -60,7 +60,7 @@ test("review visible ids include explicit marks and practiced progress items", (
     },
   })
 
-  assert.deepEqual([...visible].sort(), ["a", "ka"])
+  assert.deepEqual([...visible].sort(), ["hiragana:a", "hiragana:ka", "katakana:a", "katakana:ka"])
 })
 
 test("review visible vocabulary ids include only ids that still exist in vocabulary data", () => {
@@ -99,13 +99,14 @@ test("review visible vocabulary ids include only ids that still exist in vocabul
 })
 
 test("review visibility filters kana ids and SRS maps through canonical kana ids", () => {
-  const visible = new Set(["a", "ka", "sokuon:kitte"])
-  assert.equal(visibility.isReviewableKanaId("a"), true)
+  const visible = new Set(["hiragana:a", "katakana:ka", "sokuon:kitte"])
+  assert.equal(visibility.isReviewableKanaId("hiragana:a"), true)
+  assert.equal(visibility.isReviewableKanaId("a"), false)
   assert.equal(visibility.isReviewableKanaId("sokuon:kitte"), false)
-  assert.deepEqual(visibility.filterReviewableKanaIds(["sokuon:kitte", "ka", "ta", "a"], visible), ["ka", "a"])
+  assert.deepEqual(visibility.filterReviewableKanaIds(["sokuon:kitte", "katakana:ka", "hiragana:ta", "hiragana:a"], visible), ["katakana:ka", "hiragana:a"])
   assert.deepEqual(Object.keys(visibility.filterReviewableKanaSrsMap({
     a: { dueAt: 1, box: 1, createdAt: 1, right: 0, wrong: 0 },
     ta: { dueAt: 1, box: 1, createdAt: 1, right: 0, wrong: 0 },
     "sokuon:kitte": { dueAt: 1, box: 1, createdAt: 1, right: 0, wrong: 0 },
-  }, visible)).sort(), ["a"])
+  }, visible)).sort(), ["hiragana:a"])
 })

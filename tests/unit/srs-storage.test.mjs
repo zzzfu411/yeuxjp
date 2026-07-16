@@ -71,12 +71,12 @@ test("managed kana and vocabulary decks filter stale review ids on read and writ
     })
   )
 
-  assert.deepEqual(Object.keys(storage.readSrsMap(STORAGE_KEYS.SRS_KANA)), ["a"])
+  assert.deepEqual(Object.keys(storage.readSrsMap(STORAGE_KEYS.SRS_KANA)), ["hiragana:a", "katakana:a"])
   assert.deepEqual(Object.keys(storage.readSrsMap(STORAGE_KEYS.SRS_VOCAB)), ["sur-g-1"])
 
-  assert.equal(storage.writeSrsMap(STORAGE_KEYS.SRS_KANA, { a: state, "sokuon:kitte": state }), true)
+  assert.equal(storage.writeSrsMap(STORAGE_KEYS.SRS_KANA, { "hiragana:a": state, a: state, "sokuon:kitte": state }), true)
   assert.equal(storage.writeSrsMap(STORAGE_KEYS.SRS_VOCAB, { "sur-g-1": state, "sur-g-999": state }), true)
-  assert.deepEqual(Object.keys(JSON.parse(map.get(STORAGE_KEYS.SRS_KANA))), ["a"])
+  assert.deepEqual(Object.keys(JSON.parse(map.get(STORAGE_KEYS.SRS_KANA))), ["hiragana:a"])
   assert.deepEqual(Object.keys(JSON.parse(map.get(STORAGE_KEYS.SRS_VOCAB))), ["sur-g-1"])
 })
 

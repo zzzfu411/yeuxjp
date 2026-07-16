@@ -1,5 +1,6 @@
 import { kanaData, type Kana } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
+import { makeKanaId } from "@/lib/kana-id"
 import type { KanaQuizScope } from "@/lib/quiz-types"
 
 export function getKanaPool(scope: KanaQuizScope) {
@@ -8,7 +9,10 @@ export function getKanaPool(scope: KanaQuizScope) {
 
 export function filterUnmasteredKana(pool: Kana[], isMastered: (id: string) => boolean, onlyUnmastered: boolean) {
   if (!onlyUnmastered) return pool
-  return pool.filter((k) => !isMastered(k.romaji))
+  return pool.filter((kana) => {
+    const id = makeKanaId("hiragana", kana.romaji)
+    return !id || !isMastered(id)
+  })
 }
 
 export function filterUnlearnedVocab(pool: Vocabulary[], isLearned: (id: string) => boolean, onlyUnlearned: boolean) {

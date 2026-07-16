@@ -8,10 +8,10 @@ const questions = await loadTsModule("src/lib/questions.ts")
 test("today review queue prioritizes mistakes before due-sorted mixed decks", () => {
   const queue = review.buildTodayReviewQueue({
     dueMistakeIds: ["m2", "m1"],
-    kanaDueIds: ["ka", "a", "sokuon:きって"],
+    kanaDueIds: ["katakana:ka", "hiragana:a", "sokuon:きって"],
     kanaSrsMap: {
-      ka: { dueAt: 30, box: 1, createdAt: 1, right: 0, wrong: 0 },
-      a: { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      "katakana:ka": { dueAt: 30, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      "hiragana:a": { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
       "sokuon:きって": { dueAt: 1, box: 1, createdAt: 1, right: 0, wrong: 0 },
     },
     vocabDueIds: ["vo-late", "vo-early"],
@@ -24,9 +24,9 @@ test("today review queue prioritizes mistakes before due-sorted mixed decks", ()
   assert.deepEqual(queue, [
     { deck: "mistakes", id: "m2" },
     { deck: "mistakes", id: "m1" },
-    { deck: "kana", id: "a" },
+    { deck: "kana", id: "hiragana:a" },
     { deck: "vocab", id: "vo-early" },
-    { deck: "kana", id: "ka" },
+    { deck: "kana", id: "katakana:ka" },
     { deck: "vocab", id: "vo-late" },
   ])
 })
@@ -34,10 +34,10 @@ test("today review queue prioritizes mistakes before due-sorted mixed decks", ()
 test("today review queue uses the shorter due deck first when due times match", () => {
   const queue = review.buildTodayReviewQueue({
     dueMistakeIds: [],
-    kanaDueIds: ["ka", "a"],
+    kanaDueIds: ["katakana:ka", "hiragana:a"],
     kanaSrsMap: {
-      ka: { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
-      a: { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      "katakana:ka": { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      "hiragana:a": { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
     },
     vocabDueIds: ["v1"],
     vocabSrsMap: {
@@ -47,14 +47,33 @@ test("today review queue uses the shorter due deck first when due times match", 
 
   assert.deepEqual(queue, [
     { deck: "vocab", id: "v1" },
-    { deck: "kana", id: "ka" },
-    { deck: "kana", id: "a" },
+    { deck: "kana", id: "katakana:ka" },
+    { deck: "kana", id: "hiragana:a" },
   ])
 })
 
-test("only canonical kana romaji ids are reviewable", () => {
-  assert.equal(review.isReviewableKanaId("a"), true)
-  assert.equal(review.isReviewableKanaId("kya"), true)
+test("both scripts of the same romaji enqueue as independent kana reviews", () => {
+  const queue = review.buildTodayReviewQueue({
+    dueMistakeIds: [],
+    kanaDueIds: ["hiragana:a", "katakana:a"],
+    kanaSrsMap: {
+      "hiragana:a": { dueAt: 20, box: 1, createdAt: 1, right: 0, wrong: 0 },
+      "katakana:a": { dueAt: 10, box: 1, createdAt: 1, right: 0, wrong: 0 },
+    },
+    vocabDueIds: [],
+    vocabSrsMap: {},
+  })
+
+  assert.deepEqual(queue, [
+    { deck: "kana", id: "katakana:a" },
+    { deck: "kana", id: "hiragana:a" },
+  ])
+})
+
+test("only canonical script-aware kana ids are reviewable", () => {
+  assert.equal(review.isReviewableKanaId("hiragana:a"), true)
+  assert.equal(review.isReviewableKanaId("katakana:kya"), true)
+  assert.equal(review.isReviewableKanaId("a"), false)
   assert.equal(review.isReviewableKanaId("sokuon:きって"), false)
   assert.equal(review.isReviewableKanaId("longvowel:おばあさん"), false)
 })
@@ -131,7 +150,8 @@ test("mistakeToQuestion de-duplicates legacy mistake options by normalized answe
 })
 
 test("review question generators produce shared Question objects", () => {
-  const kanaQuestion = review.makeKanaReviewQuestion("a", () => 0)
+  const hiraganaQuestion = review.makeKanaReviewQuestion("hiragana:a", () => 0)
+  const katakanaQuestion = review.makeKanaReviewQuestion("katakana:a", () => 0)
   const vocabQuestion = review.makeVocabReviewQuestion(
     "v1",
     [
@@ -143,8 +163,17 @@ test("review question generators produce shared Question objects", () => {
     () => 0
   )
 
-  assert.equal(kanaQuestion.itemType, "kana")
-  assert.equal(kanaQuestion.correctAnswer, "a")
+  assert.equal(hiraganaQuestion.itemType, "kana")
+  assert.equal(hiraganaQuestion.itemId, "hiragana:a")
+  assert.equal(hiraganaQuestion.questionText, "あ")
+  assert.equal(hiraganaQuestion.questionAudio, "あ")
+  assert.equal(hiraganaQuestion.correctAnswer, "a")
+  assert.equal(katakanaQuestion.itemType, "kana")
+  assert.equal(katakanaQuestion.itemId, "katakana:a")
+  assert.equal(katakanaQuestion.questionText, "ア")
+  assert.equal(katakanaQuestion.questionAudio, "ア")
+  assert.equal(katakanaQuestion.correctAnswer, "a")
+  assert.notEqual(hiraganaQuestion.questionText, katakanaQuestion.questionText)
   assert.equal(vocabQuestion.itemType, "vocab")
   assert.equal(vocabQuestion.correctAnswer, "v1")
   assert.equal(vocabQuestion.options.length, 4)

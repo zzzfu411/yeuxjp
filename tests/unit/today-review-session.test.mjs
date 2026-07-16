@@ -60,22 +60,30 @@ function decks() {
   }
 }
 
-test("today review adapter resolves kana items into shared review questions", () => {
-  const resolved = today.resolveTodayReviewItemData({
-    current: { deck: "kana", id: "a" },
-    vocabulary: [],
-    mistakes: new Map(),
-  })
+test("today review adapter displays hiragana and katakana a independently", () => {
+  for (const expected of [
+    { id: "hiragana:a", glyph: "あ", otherGlyph: "ア", scriptLabel: "平假名" },
+    { id: "katakana:a", glyph: "ア", otherGlyph: "あ", scriptLabel: "片假名" },
+  ]) {
+    const resolved = today.resolveTodayReviewItemData({
+      current: { deck: "kana", id: expected.id },
+      vocabulary: [],
+      mistakes: new Map(),
+    })
 
-  assert.equal(resolved.missingReviewEntry, false)
-  assert.equal(resolved.insufficientQuestionOptions, false)
-  assert.equal(resolved.data.deckLabel, "假名")
-  assert.equal(resolved.data.prompt, "あ")
-  assert.equal(resolved.data.sub, "ア")
-  assert.equal(resolved.data.audio, "あ")
-  assert.equal(resolved.data.question.itemId, "a")
-  assert.equal(resolved.data.question.itemType, "kana")
-  assert.equal(resolved.data.question.mode, "recognition")
+    assert.equal(resolved.missingReviewEntry, false)
+    assert.equal(resolved.insufficientQuestionOptions, false)
+    assert.equal(resolved.data.deckLabel, "假名")
+    assert.equal(resolved.data.prompt, expected.glyph)
+    assert.equal(resolved.data.sub, expected.scriptLabel)
+    assert.equal(resolved.data.audio, expected.glyph)
+    assert.equal(resolved.data.question.itemId, expected.id)
+    assert.equal(resolved.data.question.itemType, "kana")
+    assert.equal(resolved.data.question.mode, "recognition")
+    assert.equal(resolved.data.question.questionText, expected.glyph)
+    assert.equal(resolved.data.prompt.includes(expected.otherGlyph), false)
+    assert.equal(resolved.data.question.questionText.includes(expected.otherGlyph), false)
+  }
 })
 
 test("today review adapter resolves vocabulary items with loaded distractor pools", () => {
@@ -124,7 +132,7 @@ test("today review adapter is deterministic per seed so answers cannot reshuffle
 
   const resolveKana = () =>
     today.resolveTodayReviewItemData({
-      current: { deck: "kana", id: "a" },
+      current: { deck: "kana", id: "hiragana:a" },
       vocabulary: [],
       mistakes: new Map(),
       seed: "stable-seed",
@@ -205,12 +213,14 @@ test("today review adapter centralizes SRS recordability, grading, and item keys
   const srs = decks()
 
   assert.equal(today.getTodayReviewItemKey({ deck: "vocab", id: "v1" }), "vocab:v1")
+  assert.equal(today.getTodayReviewItemKey({ deck: "kana", id: "hiragana:a" }), "kana:hiragana:a")
+  assert.equal(today.getTodayReviewItemKey({ deck: "kana", id: "katakana:a" }), "kana:katakana:a")
   assert.equal(today.getTodayReviewItemKey(null), null)
-  assert.equal(today.canRecordTodayReviewItem({ deck: "kana", id: "a" }, srs), true)
-  assert.deepEqual(srs.kana.calls.at(-1), ["has", "a"])
+  assert.equal(today.canRecordTodayReviewItem({ deck: "kana", id: "hiragana:a" }, srs), true)
+  assert.deepEqual(srs.kana.calls.at(-1), ["has", "hiragana:a"])
 
-  assert.equal(today.gradeTodayReviewItem({ deck: "kana", id: "a" }, { correct: true }, srs), true)
-  assert.deepEqual(srs.kana.calls.at(-1), ["gradeExisting", "a", "good"])
+  assert.equal(today.gradeTodayReviewItem({ deck: "kana", id: "katakana:a" }, { correct: true }, srs), true)
+  assert.deepEqual(srs.kana.calls.at(-1), ["gradeExisting", "katakana:a", "good"])
   assert.equal(today.gradeTodayReviewItem({ deck: "vocab", id: "v1" }, { correct: false }, srs), true)
   assert.deepEqual(srs.vocab.calls.at(-1), ["gradeExisting", "v1", "again"])
 
