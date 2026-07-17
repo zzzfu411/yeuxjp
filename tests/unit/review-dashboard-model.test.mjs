@@ -214,6 +214,8 @@ test("review dashboard keeps SRS items that have practice progress before master
   ])
   assert.equal(dashboard.counts.kanaDue, 1)
   assert.equal(dashboard.counts.vocabDue, 1)
+  assert.equal(dashboard.totals.mastered, 0)
+  assert.equal(dashboard.totals.learned, 0)
   assert.equal(dashboard.totalDue, 2)
 })
 

@@ -14,10 +14,12 @@ export function useLearningStatus() {
   const status = useMemo(() => {
     return buildLearningStatusModel({
       masteredKanaIds: kanaProgress.mastered,
+      excludedKanaIds: kanaProgress.excluded,
       learnedVocabIds: vocabProgress.learned,
+      excludedVocabIds: vocabProgress.excluded,
       items: learning.items,
     })
-  }, [kanaProgress.mastered, learning.items, vocabProgress.learned])
+  }, [kanaProgress.excluded, kanaProgress.mastered, learning.items, vocabProgress.excluded, vocabProgress.learned])
 
   const isKanaMastered = useCallback(
     (id: string) => status.masteredKanaIds.has(id),
@@ -27,6 +29,22 @@ export function useLearningStatus() {
     (id: string) => status.learnedVocabIds.has(id),
     [status.learnedVocabIds]
   )
+  const toggleKanaMastered = useCallback(
+    (id: string) => kanaProgress.setMasteredId(id, !status.masteredKanaIds.has(id)),
+    [kanaProgress, status.masteredKanaIds]
+  )
+  const clearKanaMastered = useCallback(
+    () => kanaProgress.clearMastered(status.masteredKanaIds),
+    [kanaProgress, status.masteredKanaIds]
+  )
+  const toggleVocabLearned = useCallback(
+    (id: string) => vocabProgress.setLearnedId(id, !status.learnedVocabIds.has(id)),
+    [status.learnedVocabIds, vocabProgress]
+  )
+  const clearVocabLearned = useCallback(
+    () => vocabProgress.clearLearned(status.learnedVocabIds),
+    [status.learnedVocabIds, vocabProgress]
+  )
 
   return {
     ...learning,
@@ -34,9 +52,9 @@ export function useLearningStatus() {
     learnedVocabIds: status.learnedVocabIds,
     isKanaMastered,
     isVocabLearned,
-    toggleKanaMastered: kanaProgress.toggleMastered,
-    clearKanaMastered: kanaProgress.clearMastered,
-    toggleVocabLearned: vocabProgress.toggleLearnedId,
-    clearVocabLearned: vocabProgress.clearLearned,
+    toggleKanaMastered,
+    clearKanaMastered,
+    toggleVocabLearned,
+    clearVocabLearned,
   }
 }

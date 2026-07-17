@@ -39,23 +39,32 @@ export function isItemLearnedFromProgress(
 
 export function buildLearningStatusModel({
   masteredKanaIds,
+  excludedKanaIds = [],
   learnedVocabIds,
+  excludedVocabIds = [],
   items,
   threshold = LEARNING_STATUS_MASTERY_THRESHOLD,
 }: {
   masteredKanaIds: Iterable<string>
+  excludedKanaIds?: Iterable<string>
   learnedVocabIds: Iterable<string>
+  excludedVocabIds?: Iterable<string>
   items: ItemProgressMap
   threshold?: number
 }): LearningStatusModel {
   const masteredKana = new Set(normalizeKanaIdList(masteredKanaIds))
+  const excludedKana = new Set(normalizeKanaIdList(excludedKanaIds))
   const learnedVocab = new Set(filterKnownVocabularyIds(learnedVocabIds))
+  const excludedVocab = new Set(filterKnownVocabularyIds(excludedVocabIds))
 
   for (const item of Object.values(normalizeItemProgressMap(items))) {
     if (!isItemLearnedFromProgress(item, threshold)) continue
     if (item.itemType === "kana" && isReviewableKanaId(item.itemId)) masteredKana.add(item.itemId)
     if (item.itemType === "vocab" && isKnownVocabularyId(item.itemId)) learnedVocab.add(item.itemId)
   }
+
+  for (const id of excludedKana) masteredKana.delete(id)
+  for (const id of excludedVocab) learnedVocab.delete(id)
 
   return {
     masteredKanaIds: masteredKana,

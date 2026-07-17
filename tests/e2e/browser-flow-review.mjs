@@ -209,6 +209,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("review-start-kana").click()
   await page.getByTestId("review-answer-a").click()
+  await page.getByRole("status").filter({ hasText: "你的答案" }).waitFor({ state: "visible" })
   await page.waitForFunction((storageKeys) => {
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_KANA) ?? "{}")
     const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
@@ -226,6 +227,7 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("review-start-vocab").click()
   await page.getByTestId("review-answer-sur-g-1").click()
+  await page.getByRole("status").filter({ hasText: "你的答案" }).waitFor({ state: "visible" })
   await page.waitForFunction((storageKeys) => {
     const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_VOCAB) ?? "{}")
     const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")

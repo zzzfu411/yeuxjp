@@ -14,8 +14,8 @@ import { isReviewableKanaId } from "@/lib/review-visibility"
 import { normalizeSpeechPreferences } from "@/lib/speech-preferences-model"
 import { normalizeSrsState } from "@/lib/srs-model"
 
-export const LEARNING_BACKUP_VERSION = 2
-const LEGACY_LEARNING_BACKUP_VERSION = 1
+export const LEARNING_BACKUP_VERSION = 3
+const LEGACY_LEARNING_BACKUP_VERSIONS = new Set([1, 2])
 export const BACKUP_KEYS = MANAGED_LEARNING_STORAGE_KEYS
 
 export type LearningBackupKey = (typeof BACKUP_KEYS)[number]
@@ -105,11 +105,13 @@ export function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, n
       if (!Array.isArray(parsed.value)) return null
       return JSON.stringify(normalizeMistakeList(parsed.value, safeNow))
     }
-    case STORAGE_KEYS.KANA_MASTERED: {
+    case STORAGE_KEYS.KANA_MASTERED:
+    case STORAGE_KEYS.KANA_MASTERY_EXCLUDED: {
       if (!Array.isArray(parsed.value)) return null
       return JSON.stringify(normalizeKanaIdList(normalizeProgressList(parsed.value)))
     }
-    case STORAGE_KEYS.VOCAB_LEARNED: {
+    case STORAGE_KEYS.VOCAB_LEARNED:
+    case STORAGE_KEYS.VOCAB_MASTERY_EXCLUDED: {
       if (!Array.isArray(parsed.value)) return null
       return JSON.stringify(filterKnownVocabularyIds(normalizeProgressList(parsed.value)))
     }
@@ -137,7 +139,7 @@ export function filterOrphanMistakeSrsEntries(entries: LearningBackup["entries"]
 
 export function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = Date.now()): LearningBackup | null {
   const safeNow = safeLearningBackupTimestamp(now)
-  if (backup.version !== LEARNING_BACKUP_VERSION && backup.version !== LEGACY_LEARNING_BACKUP_VERSION) return null
+  if (backup.version !== LEARNING_BACKUP_VERSION && !LEGACY_LEARNING_BACKUP_VERSIONS.has(backup.version ?? -1)) return null
   if (!isValidLearningBackupTimestamp(backup.exportedAt)) return null
   if (!isPlainObject(backup.entries)) return null
 

@@ -19,8 +19,8 @@ test("incremental learning mutations reject untrusted storage snapshots", () => 
 
   assert.match(learning, /if \(!currentResult\.ok\) return false/)
   assert.match(learning, /if \(!previousResultsResult\.ok \|\| !previousItemsResult\.ok\) return false/)
-  assert.match(kana, /if \(!current\.ok\) return false/)
-  assert.match(vocab, /if \(!current\.ok\) return false/)
+  assert.match(kana, /if \(!current\.ok \|\| !currentExcluded\.ok\) return false/)
+  assert.match(vocab, /if \(!current\.ok \|\| !currentExcluded\.ok\) return false/)
   assert.match(mistakes, /readMistakeListResult\(storageKey\)/)
   assert.match(mistakes, /if \(!current\.ok\) return false/)
   assert.match(srs, /readSrsMapResult\(storageKey\)/)

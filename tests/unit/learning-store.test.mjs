@@ -171,6 +171,20 @@ test("learning backup export normalizes active kana indexes", () => {
   assert.deepEqual(Object.keys(JSON.parse(backup.entries[storage.STORAGE_KEYS.SRS_KANA])), ["hiragana:a", "katakana:a"])
 })
 
+test("learning backup export normalizes explicit mastery exclusions", () => {
+  const { map } = installWindow()
+  map.set(storage.STORAGE_KEYS.KANA_MASTERY_EXCLUDED, JSON.stringify(["a", "sokuon:kitte", "ka", "a"]))
+  map.set(storage.STORAGE_KEYS.VOCAB_MASTERY_EXCLUDED, JSON.stringify(["sur-g-1", "sur-g-999", "day-v-1"]))
+
+  const backup = store.tryCreateLearningBackup(123)
+
+  assert.ok(backup)
+  assert.deepEqual(JSON.parse(backup.entries[storage.STORAGE_KEYS.KANA_MASTERY_EXCLUDED]), [
+    "hiragana:a", "katakana:a", "hiragana:ka", "katakana:ka",
+  ])
+  assert.deepEqual(JSON.parse(backup.entries[storage.STORAGE_KEYS.VOCAB_MASTERY_EXCLUDED]), ["sur-g-1", "day-v-1"])
+})
+
 test("learning backup export removes mistake SRS entries without notebook records", () => {
   const { map } = installWindow()
   map.set(storage.STORAGE_KEYS.MISTAKES, JSON.stringify([
@@ -569,7 +583,7 @@ test("parseLearningBackup rejects invalid JSON and wrong versions", () => {
   )
 })
 
-test("version one backups migrate kana ids into version two without losing either script", () => {
+test("version one and two backups migrate into the current schema", () => {
   const parsed = store.parseLearningBackup(JSON.stringify({
     version: 1,
     exportedAt: 123,
@@ -585,6 +599,17 @@ test("version one backups migrate kana ids into version two without losing eithe
   assert.equal(parsed.version, store.LEARNING_BACKUP_VERSION)
   assert.deepEqual(JSON.parse(parsed.entries[storage.STORAGE_KEYS.KANA_MASTERED]), ["hiragana:a", "katakana:a"])
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA])), ["hiragana:a", "katakana:a"])
+
+  const versionTwo = store.parseLearningBackup(JSON.stringify({
+    version: 2,
+    exportedAt: 456,
+    entries: {
+      [storage.STORAGE_KEYS.VOCAB_LEARNED]: JSON.stringify(["sur-g-1"]),
+    },
+  }))
+  assert.ok(versionTwo)
+  assert.equal(versionTwo.version, store.LEARNING_BACKUP_VERSION)
+  assert.deepEqual(JSON.parse(versionTwo.entries[storage.STORAGE_KEYS.VOCAB_LEARNED]), ["sur-g-1"])
 })
 
 test("parseLearningBackup rejects unknown or non-string entries instead of treating them as missing data", () => {
@@ -620,7 +645,9 @@ test("parseLearningBackup rejects managed entries that are not valid stored JSON
 test("parseLearningBackup rejects valid JSON with invalid managed entry shapes", () => {
   for (const [key, value] of [
     [storage.STORAGE_KEYS.KANA_MASTERED, "{}"],
+    [storage.STORAGE_KEYS.KANA_MASTERY_EXCLUDED, "{}"],
     [storage.STORAGE_KEYS.VOCAB_LEARNED, "{}"],
+    [storage.STORAGE_KEYS.VOCAB_MASTERY_EXCLUDED, "{}"],
     [storage.STORAGE_KEYS.PRACTICE_RESULTS, "{}"],
     [storage.STORAGE_KEYS.MISTAKES, "{}"],
     [storage.STORAGE_KEYS.SRS_KANA, "[]"],

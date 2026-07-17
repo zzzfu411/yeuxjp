@@ -93,6 +93,8 @@ export function buildReviewDashboardModel({
 }: ReviewDashboardModelInput): ReviewDashboardModel {
   const mastered = idsToSet(masteredIds)
   const learned = idsToSet(learnedIds)
+  const explicitMasteredKanaIds = buildReviewVisibleIdSet({ explicitIds: mastered, itemType: "kana" })
+  const explicitLearnedVocabIds = buildReviewVisibleIdSet({ explicitIds: learned, itemType: "vocab" })
   const visibleKanaIds = buildReviewVisibleIdSet({ explicitIds: mastered, items, itemType: "kana" })
   const visibleVocabIds = buildReviewVisibleIdSet({ explicitIds: learned, items, itemType: "vocab" })
   const mistakeIdSet = idsToSet(mistakeIds)
@@ -117,8 +119,8 @@ export function buildReviewDashboardModel({
     kana: Object.keys(visibleKanaSrsMap).length,
     vocab: Object.keys(visibleVocabSrsMap).length,
     mistakes: mistakeIdSet.size,
-    mastered: visibleKanaIds.size,
-    learned: visibleVocabIds.size,
+    mastered: explicitMasteredKanaIds.size,
+    learned: explicitLearnedVocabIds.size,
   }
   const counts: ReviewDashboardCounts = {
     mistakesDue: dueMistakeIds.length,

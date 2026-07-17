@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
+import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
 import { VocabReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
@@ -151,6 +152,13 @@ export function VocabReviewSession({
         acceptedAnswers={question.acceptedAnswers}
         selectedAnswer={selected}
         onSelect={handleSelect}
+      />
+
+      <ReviewAnswerFeedback
+        question={question}
+        selectedAnswer={selected}
+        correct={review.lastAnswerCorrect}
+        showSelectedAnswer
       />
 
       <PracticeSaveError show={saveError} />

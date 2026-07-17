@@ -255,6 +255,59 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
     return Array.isArray(mastered) && mastered.length === 0
   }, E2E_STORAGE_KEYS.KANA_MASTERED)
 
+  await page.evaluate((storageKeys) => {
+    const items = JSON.parse(localStorage.getItem(storageKeys.ITEM_PROGRESS) ?? "{}")
+    items["hiragana:i"] = {
+      itemId: "hiragana:i",
+      itemType: "kana",
+      recognition: 54,
+      listening: 0,
+      meaning: 0,
+      recall: 0,
+      production: 0,
+      attempts: 3,
+      correct: 3,
+      updatedAt: Date.now(),
+    }
+    const excluded = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERY_EXCLUDED) ?? "[]")
+      .filter((id) => id !== "hiragana:i")
+    localStorage.setItem(storageKeys.ITEM_PROGRESS, JSON.stringify(items))
+    localStorage.setItem(storageKeys.KANA_MASTERY_EXCLUDED, JSON.stringify(excluded))
+  }, E2E_STORAGE_KEYS)
+  await page.reload({ waitUntil: "networkidle" })
+  await page.getByTestId("kana-card-i").click()
+  await page.waitForFunction(() => {
+    return document.querySelector('[data-testid="kana-mastery-toggle"]')?.getAttribute("aria-pressed") === "true"
+  })
+  assert.equal(
+    await page.getByTestId("kana-mastery-toggle").getAttribute("aria-pressed"),
+    "true",
+    "practice-derived mastery should be visible before an explicit override"
+  )
+  await page.getByTestId("kana-mastery-toggle").click()
+  await page.waitForFunction((storageKeys) => {
+    const mastered = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERED) ?? "[]")
+    const excluded = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERY_EXCLUDED) ?? "[]")
+    return !mastered.includes("hiragana:i") && excluded.includes("hiragana:i")
+  }, E2E_STORAGE_KEYS)
+  await page.waitForFunction(() => {
+    return document.querySelector('[data-testid="kana-mastery-toggle"]')?.getAttribute("aria-pressed") === "false"
+  })
+  assert.equal(
+    await page.getByTestId("kana-mastery-toggle").getAttribute("aria-pressed"),
+    "false",
+    "explicit unmastering should override the retained practice score"
+  )
+  await page.getByTestId("kana-mastery-toggle").click()
+  await page.waitForFunction((storageKeys) => {
+    const mastered = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERED) ?? "[]")
+    const excluded = JSON.parse(localStorage.getItem(storageKeys.KANA_MASTERY_EXCLUDED) ?? "[]")
+    return mastered.includes("hiragana:i") && !excluded.includes("hiragana:i")
+  }, E2E_STORAGE_KEYS)
+  await page.keyboard.press("Escape")
+  await page.getByTestId("kana-clear-progress").click()
+  await page.getByTestId("kana-clear-progress-dialog-confirm").click()
+
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").fill("みせ")
   await page.getByText("みせ").first().waitFor({ state: "visible" })
@@ -279,6 +332,7 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await page.waitForFunction(() => document.querySelector('[data-testid="vocabulary-focus-card"]')?.getAttribute("aria-pressed") === "true")
   const learnedToggle = page.getByTestId("vocabulary-learned-toggle")
   await learnedToggle.waitFor({ state: "visible" })
+  assert.equal(await learnedToggle.getAttribute("aria-pressed"), "false")
   await learnedToggle.click()
   await learnedToggle.waitFor({ state: "visible" })
   await page.waitForFunction((key) => {
@@ -292,6 +346,7 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   }, E2E_STORAGE_KEYS)
   const learnedVocab = await readJsonStorage(page, E2E_STORAGE_KEYS.VOCAB_LEARNED)
   assert.ok(Array.isArray(learnedVocab) && learnedVocab.includes("sur-n-35"), "vocabulary learned toggle should persist without flipping the modal")
+  assert.equal(await learnedToggle.getAttribute("aria-pressed"), "true")
   const vocabSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_VOCAB)
   assert.ok(vocabSrs?.["sur-n-35"]?.dueAt, "vocabulary learned toggle should enroll the selected vocabulary for SRS review")
   await page.keyboard.press("Escape")

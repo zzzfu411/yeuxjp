@@ -125,7 +125,9 @@ export async function seedLearningDataBackupState(page, baseUrl) {
       })
     )
     localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["hiragana:a", "hiragana:i"]))
+    localStorage.setItem(storageKeys.KANA_MASTERY_EXCLUDED, JSON.stringify([]))
     localStorage.setItem(storageKeys.VOCAB_LEARNED, JSON.stringify(["sur-n-35"]))
+    localStorage.setItem(storageKeys.VOCAB_MASTERY_EXCLUDED, JSON.stringify([]))
     localStorage.setItem(storageKeys.SPEECH_PREFS, JSON.stringify({ rate: 1, repeat: 2, autoPlay: false, gapMs: 500 }))
   }, E2E_STORAGE_KEYS)
 }

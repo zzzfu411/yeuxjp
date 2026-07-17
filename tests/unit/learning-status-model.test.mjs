@@ -150,3 +150,19 @@ test("new script-aware progress does not master the matching kana in the other s
   assert.equal(status.masteredKanaIds.has("hiragana:a"), true)
   assert.equal(status.masteredKanaIds.has("katakana:a"), false)
 })
+
+test("explicit exclusions override legacy marks and mastery derived from practice", () => {
+  const status = model.buildLearningStatusModel({
+    masteredKanaIds: ["hiragana:a", "katakana:a"],
+    excludedKanaIds: ["hiragana:a", "hiragana:ka"],
+    learnedVocabIds: ["sur-g-1"],
+    excludedVocabIds: ["sur-g-1", "sur-v-1"],
+    items: {
+      "hiragana:ka": item({ itemId: "hiragana:ka", recognition: 54, attempts: 3 }),
+      "sur-v-1": item({ itemId: "sur-v-1", itemType: "vocab", meaning: 54, attempts: 3 }),
+    },
+  })
+
+  assert.deepEqual([...status.masteredKanaIds], ["katakana:a"])
+  assert.deepEqual([...status.learnedVocabIds], [])
+})

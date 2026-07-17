@@ -78,7 +78,7 @@ function KanaPageContent() {
       <ConfirmActionDialog
         open={confirmClearOpen}
         title="清空假名掌握进度？"
-        description="显式掌握标记及假名 SRS 箱位、到期时间会被清空。练习历史、错题本和由练习成绩推导的掌握状态会保留。"
+        description="当前假名掌握状态及 SRS 箱位、到期时间会被清空。练习历史和错题本会保留；之后仍可逐个重新标记掌握。"
         confirmLabel="清空进度"
         testId="kana-clear-progress-dialog"
         onConfirm={handleConfirmClearMastered}

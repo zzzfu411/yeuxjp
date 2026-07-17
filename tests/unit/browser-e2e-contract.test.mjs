@@ -803,6 +803,7 @@ test("browser E2E verifies dynamic vocabulary load retry recovery", () => {
 test("browser E2E verifies learning data export reset and import through the UI", () => {
   const e2e = readBrowserE2ESources()
   const fixtures = readBrowserFixtures()
+  const storageKeys = readE2EStorageKeys()
 
   assert.match(e2e, /acceptDownloads: true/)
   assert.match(e2e, /import fs from "node:fs\/promises"/)
@@ -834,7 +835,8 @@ test("browser E2E verifies learning data export reset and import through the UI"
   assert.match(e2e, /suggestedFilename\(\)/)
   assert.match(e2e, /yasashi-learning-backup-\\d\{4\}-\\d\{2\}-\\d\{2\}-\\d\{2\}-\\d\{2\}-\\d\{2\}/)
   assert.match(e2e, /JSON\.parse\(await fs\.readFile\(backupPath, "utf8"\)\)/)
-  assert.match(e2e, /assert\.equal\(exportedBackup\.version, 2/)
+  assert.match(e2e, /E2E_LEARNING_BACKUP_VERSION/)
+  assert.match(storageKeys, /export const E2E_LEARNING_BACKUP_VERSION = 3/)
   assert.match(e2e, /learning data export should include every managed learning key/)
   assert.match(e2e, /getByTestId\("learning-data-reset"\)\.click\(\)/)
   assert.match(e2e, /keys\.every\(\(key\) => localStorage\.getItem\(key\) === null\)/)

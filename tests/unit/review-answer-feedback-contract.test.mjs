@@ -12,6 +12,8 @@ function read(relPath) {
 function reviewSessionSources() {
   return [
     read("src/components/review/review-runner.tsx"),
+    read("src/components/review/kana-review-session.tsx"),
+    read("src/components/review/vocab-review-session.tsx"),
     read("src/components/review/today-review-session.tsx"),
     read("src/components/review/mistake-review-session.tsx"),
   ].join("\n")
@@ -20,7 +22,7 @@ function reviewSessionSources() {
 test("review sessions delegate answer explanation surfaces to ReviewAnswerFeedback", () => {
   const source = reviewSessionSources()
 
-  assert.equal(source.match(/<ReviewAnswerFeedback\b/g)?.length, 2)
+  assert.equal(source.match(/<ReviewAnswerFeedback\b/g)?.length, 4)
   assert.doesNotMatch(source, /ParticleFillFeedback/)
   assert.doesNotMatch(source, /ConjugationComparison/)
   assert.doesNotMatch(source, /canShowConj/)

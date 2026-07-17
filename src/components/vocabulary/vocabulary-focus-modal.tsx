@@ -116,6 +116,7 @@ export function VocabularyFocusModal({
                         event.stopPropagation()
                         onToggleLearned()
                       }}
+                      aria-pressed={learned}
                       data-testid="vocabulary-learned-toggle"
                     >
                       <CheckCircle2 className="w-5 h-5" />

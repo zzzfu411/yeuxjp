@@ -7,7 +7,7 @@ import {
   readManagedLearningBackupSnapshot,
   seedLearningDataBackupState,
 } from "./browser-fixtures.mjs"
-import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
+import { E2E_LEARNING_BACKUP_VERSION, E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 async function assertReviewDashboardDue(page, message) {
   await page.getByTestId("review-due-state").waitFor({ state: "visible" })
@@ -35,7 +35,11 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   const backupPath = await download.path()
   assert.ok(backupPath, "learning data export should create a downloadable backup file")
   const exportedBackup = JSON.parse(await fs.readFile(backupPath, "utf8"))
-  assert.equal(exportedBackup.version, 2, "learning data export should use the current backup version")
+  assert.equal(
+    exportedBackup.version,
+    E2E_LEARNING_BACKUP_VERSION,
+    "learning data export should use the current backup version"
+  )
   assertManagedLearningSnapshot(
     exportedBackup.entries,
     seededLearningBackupSnapshot,

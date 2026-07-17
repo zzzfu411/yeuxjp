@@ -4,7 +4,9 @@
 export const STORAGE_KEYS = {
   // 学习进度
   KANA_MASTERED: "yasashi.kana.mastered.v1",
+  KANA_MASTERY_EXCLUDED: "yasashi.kana.mastery.excluded.v1",
   VOCAB_LEARNED: "yasashi.vocab.learned.v1",
+  VOCAB_MASTERY_EXCLUDED: "yasashi.vocab.mastery.excluded.v1",
 
   // SRS系统
   SRS_KANA: "yasashi.srs.kana.v1",

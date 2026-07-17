@@ -45,6 +45,7 @@ test("VocabularyFocusModal owns focused vocabulary card controls", () => {
   assert.match(source, /flex min-h-full flex-col items-center justify-center/)
   assert.doesNotMatch(source, /className="absolute inset-0 flex flex-col items-center justify-center/)
   assert.match(source, /data-testid="vocabulary-learned-toggle"/)
+  assert.match(source, /aria-pressed=\{learned\}/)
   assert.match(source, /点击或按空格翻面/)
   assert.match(source, /朗读/)
   assert.match(source, /<Volume2/)
