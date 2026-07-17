@@ -5,6 +5,7 @@ import type { GrammarPoint } from "@/data/grammar-data"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
 import { SpeakButton } from "@/components/ui/speak-button"
+import { GrammarPracticePanel } from "@/components/reference/grammar-practice-panel"
 
 export function GrammarFocusModal({
   point,
@@ -90,6 +91,8 @@ export function GrammarFocusModal({
                   ))}
                 </div>
               </div>
+
+              <GrammarPracticePanel key={point.id} point={point} />
             </div>
           </div>
 

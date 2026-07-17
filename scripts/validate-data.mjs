@@ -277,10 +277,63 @@ function validateObjectArrayFields(block, file, id, arrayName, fieldNames) {
   }
 }
 
+function validateGrammarPracticeTemplates(block, file, grammarId) {
+  const body = arrayBody(block, "practiceTemplates")
+  const templates = body ? topLevelObjectBlocks(body) : []
+  if (!templates.length) {
+    fail(`${file} ${grammarId} needs at least one practiceTemplates item`)
+    return
+  }
+
+  const templateIds = new Set()
+  for (const template of templates) {
+    const templateId = (requiredString(template, file, grammarId, "id") ?? "(unknown)").trim()
+    const answer = requiredString(template, file, `${grammarId}/${templateId}`, "answer")
+    requiredString(template, file, `${grammarId}/${templateId}`, "prompt")
+
+    if (templateIds.has(templateId)) fail(`${file} ${grammarId} has duplicate practice template id: ${templateId}`)
+    templateIds.add(templateId)
+
+    const options = arrayStrings(template, "options").map((option) => option.trim()).filter(Boolean)
+    if (options.length < 2) {
+      fail(`${file} ${grammarId}/${templateId} practice options must contain at least two non-empty values`)
+    }
+    if (new Set(options).size !== options.length) {
+      fail(`${file} ${grammarId}/${templateId} practice options must be unique`)
+    }
+    if (answer && !options.includes(answer.trim())) {
+      fail(`${file} ${grammarId}/${templateId} answer must be present in practice options`)
+    }
+  }
+}
+
+function validateGrammarPracticeData(text, n5GrammarIds) {
+  const file = "src/data/grammar-data.ts"
+  const body = arrayBody(text, "n5GrammarPracticeSets")
+  const sets = body ? topLevelObjectBlocks(body) : []
+  const coveredGrammarIds = new Set()
+
+  for (const block of sets) {
+    const grammarId = (requiredString(block, file, "(unknown practice set)", "grammarId") ?? "(unknown)").trim()
+    if (coveredGrammarIds.has(grammarId)) fail(`${file} has duplicate N5 grammar practice set: ${grammarId}`)
+    coveredGrammarIds.add(grammarId)
+    if (!n5GrammarIds.has(grammarId)) fail(`${file} practice set references unknown N5 grammar id: ${grammarId}`)
+    validateGrammarPracticeTemplates(block, file, grammarId)
+  }
+
+  for (const grammarId of n5GrammarIds) {
+    if (!coveredGrammarIds.has(grammarId)) fail(`${file} ${grammarId} is missing an N5 grammar practice set`)
+  }
+
+  if (sets.length) pass(`N5 grammar practice sets checked (${sets.length})`)
+  else fail(`${file} does not define any N5 grammar practice sets`)
+}
+
 function validateGrammarData(text) {
   const file = "src/data/grammar-data.ts"
   const levels = Array.from(text.matchAll(/^\s*(N5|N4|N3|N2|N1|Anime):\s*\[/gm))
   const allowedLevels = new Set(["N5", "N4", "N3", "N2", "N1", "Anime"])
+  const n5GrammarIds = new Set()
   let checked = 0
 
   for (let i = 0; i < levels.length; i += 1) {
@@ -292,6 +345,7 @@ function validateGrammarData(text) {
     for (const block of topLevelObjectBlocks(section).filter((item) => /id:\s*['"]/.test(item))) {
       checked += 1
       const id = requiredString(block, file, "(unknown)", "id") ?? "(unknown)"
+      if (containingLevel === "N5") n5GrammarIds.add(id)
       requiredString(block, file, id, "title")
       requiredString(block, file, id, "structure")
       requiredString(block, file, id, "explanation")
@@ -303,6 +357,8 @@ function validateGrammarData(text) {
       validateObjectArrayFields(block, file, id, "examples", ["japanese", "romaji", "meaning"])
     }
   }
+
+  validateGrammarPracticeData(text, n5GrammarIds)
 
   if (checked) pass(`grammar entries checked (${checked})`)
   else fail("grammar data validation did not find any entries")

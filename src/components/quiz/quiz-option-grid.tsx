@@ -16,10 +16,12 @@ export function QuizOptionGrid({
   question,
   selectedOption,
   onSelect,
+  testIdPrefix = "quiz-answer-option",
 }: {
   question: Question
   selectedOption: string | null
   onSelect: (value: string) => void
+  testIdPrefix?: string
 }) {
   return (
     <div className="grid grid-cols-2 gap-4 w-full">
@@ -42,7 +44,7 @@ export function QuizOptionGrid({
             disabled={selectedOption != null}
             data-answer-value={option.value}
             data-feedback={feedback}
-            data-testid={`quiz-answer-option-${index}`}
+            data-testid={`${testIdPrefix}-${index}`}
           >
             {option.display}
             {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}

@@ -46,6 +46,8 @@ Use `npm run check:release` for release environments that have Playwright and it
 
 `npm run e2e` requires `.next/BUILD_ID` from `npm run build`, starts that production artifact with `next start` on an isolated available port, and verifies HTTP route health for the core top-level pages plus the first lesson. It never reuses the development server on port 3000. `npm run e2e:browser` exercises real interactions with Playwright, including lesson resume persistence, lesson answer recording, kana stroke playback, vocabulary search, dynamic vocabulary load-error retry recovery across quiz/vocabulary/review, quiz mistakes, review queue startup, PWA update refresh paths including waiting-worker `SKIP_WAITING`, and learning data backup/restore/reset. `npm run e2e:pwa` runs against a production build, waits for the service worker, simulates offline navigation, verifies the manifest and install icons online and offline, verifies the pre-cached home page, a previously visited lesson page, the learning path at `/path`, cached query deep links such as `/kana?set=yoon`, `/vocabulary?level=daily`, `/quiz?mode=hiragana-romaji`, and `/grammar?level=N5`, real cached kana/vocabulary/quiz/path/grammar/semantics/pragmatics content, a service-worker-controlled online navigation failure, and a real AnimCJK kana SVG can be served offline, and verifies the fallback page does not overwrite local learning state. Optional browser scripts exit cleanly with a skip message when the Playwright package or Chromium browser binary is missing. After `npm ci`, run `npm run e2e:install` to provision Chromium for local strict browser/PWA gates; in CI Linux runners use `npm run e2e:install:ci` so Playwright can install required system dependencies too. Use the `:required` variants or `check:release` in local release checks that must fail when the browser stack is missing.
 
+The reference-page browser flow opens the first N5 grammar point, submits a wrong focused-practice answer, verifies the shared practice and mistake records in localStorage, and checks the completion state before continuing its keyboard-navigation assertions.
+
 Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale. Treat that as dependency maintenance, not a functional failure. Actionable Next.js image performance warnings, such as full-width `sizes="100vw"` misuse or above-the-fold LCP artwork missing eager/priority loading, are blocked by `npm run build` so they cannot pass `npm run check`.
 
 ## Implemented Features
@@ -56,13 +58,13 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 - AnimCJK stroke-order animation loaded from `web/public/animcjk/kana`.
 - Vocabulary cards grouped by level and category, with search, learned-state tracking, and TTS.
 - Grammar, semantics, and pragmatics reference pages.
-- Grammar reference keeps its static page shell server-rendered, with level selection, search, speech controls, and modal navigation isolated in a client component.
+- Grammar reference keeps its static page shell server-rendered, with level selection, search, speech controls, modal navigation, and focused N5 practice sessions isolated in client components.
 - Quiz modes for kana recognition, audio recognition, sokuon/long-vowel contrast, particles, verb conjugation, and vocabulary meaning.
 - Local SRS review for kana, vocabulary, and mistakes, with today queue priority of mistakes first and due-time sorting for kana/vocabulary.
 - A 30-day starter path with practice steps, step feedback, local progress, SRS enrollment for correct kana/vocab practice, and automatic mistake notebook capture for wrong answers. Days 1-14 cover partial kana plus survival phrases and core particles; days 15-30 complete all hiragana rows, dakuon, core yoon, katakana recognition, and additional N5 sentence patterns, with pure-review checkpoint lessons at day 20 and day 30.
 - Vocabulary review questions rotate between meaning recognition, Chinese-to-Japanese recall, and audio-only listening directions; the today review queue is capped per session (mistakes first) so batch-marked words cannot flood a single review run.
 - Survival greetings and high-frequency verbs ship with polite-form example sentences rendered on flashcards and in the vocabulary focus modal; the vocabulary toolbar can hide romaji to train direct kana reading.
-- N5 grammar points include plain-language explanations and common-pitfall notes rendered in the grammar focus modal, with polite-form example sentences that match the starter course style.
+- All 25 N5 grammar points include plain-language explanations, common-pitfall notes, and at least one focused recognition question in the grammar modal. Grammar answers use the shared question/result rules: every attempt updates practice progress, and wrong answers enter the mistake notebook without enrolling grammar into the kana/vocabulary SRS decks.
 - The home page turns the onboarding minutes-per-day preference into a daily practice target with a progress bar based on today's recorded practice.
 - Shared learning-session helpers in `web/src/lib/learning-session.ts` and shared question helpers in `web/src/lib/questions.ts`.
 - Learning backup/restore/reset helpers in `web/src/lib/learning-store.ts`; storage keys remain compatible with existing localStorage data. New exports use backup schema v3, while v1/v2 backups remain importable and are normalized to script-aware kana state. Restore rejects unknown/non-string entries, invalid timestamps, malformed managed values, and files larger than 2 MB before mutation, then shows the backup time and data-category count and requires explicit confirmation. A valid empty backup is identified as destructive because confirming it clears current learning data.
@@ -79,7 +81,7 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 ## Extending Content
 
 - Add vocabulary to `web/src/data/vocabulary/survival.ts`, `daily.ts`, or `fluent.ts`.
-- Add grammar to `web/src/data/grammar-data.ts`.
+- Add grammar to `web/src/data/grammar-data.ts`. Every N5 grammar point must also have a matching entry in `n5GrammarPracticeSets`; template ids, prompts, answers, and at least two unique options are required, and the answer must appear in the options.
 - Add lesson steps to `web/src/data/lessons.ts` and run `npm run validate:data`.
 - Practice steps should include stable `itemId`, `itemType`, and `mode` fields so progress/SRS/mistake recording can identify the learned item.
 - Reviewable kana practice uses `hiragana:<romaji>` or `katakana:<romaji>` item IDs. Phonology exercises that represent a whole word, such as `sokuon:きって`, keep their scoped custom IDs and do not enroll the single-kana SRS deck.

@@ -29,7 +29,121 @@ export interface GrammarPoint {
   prerequisites?: string[];
 }
 
-export const grammarData: Record<Level, GrammarPoint[]> = {
+interface GrammarPracticeSet {
+  grammarId: string;
+  practiceTemplates: GrammarPracticeTemplate[];
+}
+
+const grammarPracticeData = {
+  n5GrammarPracticeSets: [
+    {
+      grammarId: "n5-wa",
+      practiceTemplates: [{ id: "topic-particle", prompt: "私は___学生です。主题助词应填哪一个？", answer: "は", options: ["は", "が", "を", "で"] }],
+    },
+    {
+      grammarId: "n5-desu",
+      practiceTemplates: [{ id: "polite-copula", prompt: "これは本___。礼貌地判断“这是书”应填什么？", answer: "です", options: ["です", "だ", "ます", "でした"] }],
+    },
+    {
+      grammarId: "n5-da",
+      practiceTemplates: [{ id: "plain-copula", prompt: "今日は休み___。对朋友使用简体判断时应填什么？", answer: "だ", options: ["だ", "です", "ます", "か"] }],
+    },
+    {
+      grammarId: "n5-ka",
+      practiceTemplates: [{ id: "question-particle", prompt: "これはお茶です___。礼貌疑问句句尾应填什么？", answer: "か", options: ["か", "ね", "よ", "を"] }],
+    },
+    {
+      grammarId: "n5-no",
+      practiceTemplates: [{ id: "possession-particle", prompt: "これは私___本です。表示“我的书”应填什么？", answer: "の", options: ["の", "は", "を", "で"] }],
+    },
+    {
+      grammarId: "n5-wo",
+      practiceTemplates: [{ id: "object-particle", prompt: "パン___食べます。标记动作对象应填什么？", answer: "を", options: ["を", "に", "が", "で"] }],
+    },
+    {
+      grammarId: "n5-ni-loc",
+      practiceTemplates: [{ id: "existence-location", prompt: "部屋___猫がいます。标记存在地点应填什么？", answer: "に", options: ["に", "で", "を", "へ"] }],
+    },
+    {
+      grammarId: "n5-de-action",
+      practiceTemplates: [{ id: "action-location", prompt: "図書館___勉強します。标记动作发生地点应填什么？", answer: "で", options: ["で", "に", "を", "が"] }],
+    },
+    {
+      grammarId: "n5-e",
+      practiceTemplates: [{ id: "direction-particle", prompt: "東京___行きます。标记移动方向应填什么？", answer: "へ", options: ["へ", "を", "で", "が"] }],
+    },
+    {
+      grammarId: "n5-to",
+      practiceTemplates: [{ id: "companion-particle", prompt: "友達___映画を見ます。表示“和朋友一起”应填什么？", answer: "と", options: ["と", "の", "へ", "が"] }],
+    },
+    {
+      grammarId: "n5-ga",
+      practiceTemplates: [{ id: "existence-subject", prompt: "机の上に本___あります。标记存在的事物应填什么？", answer: "が", options: ["が", "を", "で", "へ"] }],
+    },
+    {
+      grammarId: "n5-mo",
+      practiceTemplates: [{ id: "also-particle", prompt: "田中さんが行きます。私___行きます。表示“我也去”应填什么？", answer: "も", options: ["も", "を", "に", "と"] }],
+    },
+    {
+      grammarId: "n5-kara",
+      practiceTemplates: [{ id: "starting-point", prompt: "9時___働きます。表示“从九点开始”应填什么？", answer: "から", options: ["から", "まで", "へ", "を"] }],
+    },
+    {
+      grammarId: "n5-made",
+      practiceTemplates: [{ id: "ending-point", prompt: "5時___働きます。表示“工作到五点”应填什么？", answer: "まで", options: ["まで", "から", "に", "で"] }],
+    },
+    {
+      grammarId: "n5-masu",
+      practiceTemplates: [{ id: "polite-present", prompt: "毎日日本語を勉強し___。礼貌地陈述日常习惯应填什么？", answer: "ます", options: ["ます", "ません", "ました", "たい"] }],
+    },
+    {
+      grammarId: "n5-masen",
+      practiceTemplates: [{ id: "polite-negative", prompt: "肉を食べ___。礼貌地表达“不吃”应填什么？", answer: "ません", options: ["ません", "ます", "ました", "ましょう"] }],
+    },
+    {
+      grammarId: "n5-mashita",
+      practiceTemplates: [{ id: "polite-past", prompt: "昨日映画を見___。礼貌地表达过去动作应填什么？", answer: "ました", options: ["ました", "ます", "ません", "たい"] }],
+    },
+    {
+      grammarId: "n5-nai",
+      practiceTemplates: [{ id: "plain-negative", prompt: "今日は行か___。使用简体否定应填什么？", answer: "ない", options: ["ない", "ます", "たい", "た"] }],
+    },
+    {
+      grammarId: "n5-ta",
+      practiceTemplates: [{ id: "plain-past", prompt: "もう食べ___。使用简体过去形应填什么？", answer: "た", options: ["た", "て", "ない", "ます"] }],
+    },
+    {
+      grammarId: "n5-te",
+      practiceTemplates: [{ id: "request-connector", prompt: "ちょっと待っ___ください。提出请求时应填什么？", answer: "て", options: ["て", "た", "ない", "ます"] }],
+    },
+    {
+      grammarId: "n5-arimasu",
+      practiceTemplates: [{ id: "inanimate-existence", prompt: "机の上に本が___。非生物“存在”应使用什么？", answer: "あります", options: ["あります", "います", "します", "行きます"] }],
+    },
+    {
+      grammarId: "n5-imasu",
+      practiceTemplates: [{ id: "animate-existence", prompt: "教室に先生が___。人“存在”应使用什么？", answer: "います", options: ["います", "あります", "します", "行きます"] }],
+    },
+    {
+      grammarId: "n5-tai",
+      practiceTemplates: [{ id: "desire-form", prompt: "日本へ行き___です。表达“想去日本”应填什么？", answer: "たい", options: ["たい", "ます", "ました", "ません"] }],
+    },
+    {
+      grammarId: "n5-mashou",
+      practiceTemplates: [{ id: "polite-volitional", prompt: "一緒に帰り___。礼貌地提议“一起回去吧”应填什么？", answer: "ましょう", options: ["ましょう", "ます", "ません", "ました"] }],
+    },
+    {
+      grammarId: "n5-ya",
+      practiceTemplates: [{ id: "partial-list", prompt: "本___雑誌などを買いました。表示不完全列举应填什么？", answer: "や", options: ["や", "と", "を", "が"] }],
+    },
+  ] satisfies GrammarPracticeSet[],
+};
+
+const n5GrammarPracticeById = new Map(
+  grammarPracticeData.n5GrammarPracticeSets.map((set) => [set.grammarId, set.practiceTemplates])
+);
+
+const grammarDataSource: Record<Level, GrammarPoint[]> = {
   // --- N5 (基础生存) ---
   N5: [
     { id: "n5-wa", title: "主题: は (Wa)", structure: "N + は", explanation: "标记主题。", plainExplanation: "「は」把一个词立为话题，后面的内容都是在说明它，相当于“要说……的话”。", pitfalls: ["作助词时读 wa，不读 ha", "「は」谈论已知话题；第一次引入新事物用「が」"], examples: [{ japanese: "私は学生です。", romaji: "Watashi wa gakusei desu.", meaning: "我是学生。" }], level: "N5" },
@@ -158,4 +272,12 @@ export const grammarData: Record<Level, GrammarPoint[]> = {
     { id: "ani-wa", title: "女性语气: ～わ", structure: "Sentence + わ", explanation: "女性终助词，表示轻微的决意或感叹。但在关西弁中男性也用。", examples: [{ japanese: "私、行くわ。", romaji: "Watashi, iku wa.", meaning: "我要走了。" }], level: "Anime" },
     { id: "ani-tatte", title: "即使: ～たって", structure: "V-ta + って", explanation: "ても的口语。", examples: [{ japanese: "何言ったって無駄だ。", romaji: "Nani ittatte muda da.", meaning: "说什么都没用。" }], level: "Anime" }
   ]
+};
+
+export const grammarData: Record<Level, GrammarPoint[]> = {
+  ...grammarDataSource,
+  N5: grammarDataSource.N5.map((point) => ({
+    ...point,
+    practiceTemplates: n5GrammarPracticeById.get(point.id) ?? point.practiceTemplates,
+  })),
 };

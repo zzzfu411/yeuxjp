@@ -495,6 +495,31 @@ export const requiredSelectors = [
     pattern: /data-testid="grammar-modal-next"/,
   },
   {
+    testId: "grammar-practice-start",
+    source: "src/components/reference/grammar-practice-panel.tsx",
+    pattern: /data-testid="grammar-practice-start"/,
+  },
+  {
+    testId: "grammar-practice-answer-1",
+    source: "src/components/reference/grammar-practice-panel.tsx",
+    pattern: /testIdPrefix="grammar-practice-answer"/,
+  },
+  {
+    testId: "grammar-practice-feedback",
+    source: "src/components/reference/grammar-practice-panel.tsx",
+    pattern: /data-testid="grammar-practice-feedback"/,
+  },
+  {
+    testId: "grammar-practice-next",
+    source: "src/components/reference/grammar-practice-panel.tsx",
+    pattern: /data-testid="grammar-practice-next"/,
+  },
+  {
+    testId: "grammar-practice-summary",
+    source: "src/components/reference/grammar-practice-panel.tsx",
+    pattern: /data-testid="grammar-practice-summary"/,
+  },
+  {
     testId: "review-start-today",
     source: "src/components/review/review-banners.tsx",
     pattern: /data-testid="review-start-today"/,
@@ -705,7 +730,7 @@ export const dynamicSelectorContracts = [
   {
     label: "quiz answer options",
     source: "src/components/quiz/quiz-option-grid.tsx",
-    pattern: /data-testid=\{`quiz-answer-option-\$\{index\}`\}/,
+    pattern: /testIdPrefix = "quiz-answer-option"[\s\S]*data-testid=\{`\$\{testIdPrefix\}-\$\{index\}`\}/,
   },
   {
     label: "recent mistake rows",

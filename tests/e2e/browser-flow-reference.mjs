@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 export async function verifyReferenceKeyboardFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/grammar`, { waitUntil: "networkidle" })
@@ -23,6 +24,29 @@ export async function verifyReferenceKeyboardFlow(page, baseUrl) {
 
   await page.getByTestId("grammar-modal-prev").click()
   await page.getByText(/1 \/ 25/).waitFor({ state: "visible" })
+
+  await page.getByTestId("grammar-practice-start").click()
+  await page.getByTestId("grammar-practice-answer-1").click()
+  await page.getByTestId("grammar-practice-feedback").waitFor({ state: "visible" })
+
+  const grammarPracticeState = await page.evaluate((storageKeys) => {
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    return {
+      result: practice.filter((item) => item.itemId === "n5-wa" && item.itemType === "grammar").at(-1),
+      mistake: mistakes.find((item) => item.id === "grammar-practice:n5-wa:topic-particle"),
+    }
+  }, E2E_STORAGE_KEYS)
+
+  assert.equal(grammarPracticeState.result?.mode, "recognition")
+  assert.equal(grammarPracticeState.result?.correct, false)
+  assert.equal(grammarPracticeState.result?.answer, "が")
+  assert.equal(grammarPracticeState.mistake?.itemId, "n5-wa")
+  assert.equal(grammarPracticeState.mistake?.itemType, "grammar")
+  assert.equal(grammarPracticeState.mistake?.mode, "recognition")
+
+  await page.getByTestId("grammar-practice-next").click()
+  await page.getByTestId("grammar-practice-summary").waitFor({ state: "visible" })
 
   await page.keyboard.press("Escape")
   await page.getByRole("dialog").waitFor({ state: "hidden" })
