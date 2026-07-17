@@ -85,6 +85,22 @@ test("srs storage ignores invalid persisted JSON", () => {
   map.set("broken", "{")
 
   assert.deepEqual(storage.readSrsMap("broken"), {})
+  assert.equal(storage.readSrsMapResult("broken").status, "invalid")
+  assert.equal(storage.enrollSrs("broken", "kana:a"), false)
+  assert.equal(storage.gradeSrs("broken", "kana:a", "again"), false)
+  assert.equal(storage.removeSrs("broken", "kana:a"), false)
+  assert.equal(map.get("broken"), "{")
+  assert.equal(storage.clearSrs("broken"), true)
+  assert.equal(map.get("broken"), "{}")
+})
+
+test("srs storage rejects maps with malformed entries before mutation", () => {
+  const { map } = installWindow()
+  map.set("deck", JSON.stringify({ validId: "not-an-srs-state" }))
+
+  assert.equal(storage.readSrsMapResult("deck").status, "invalid")
+  assert.equal(storage.setSrsState("deck", "new", model.createSrsState(10)), false)
+  assert.equal(map.get("deck"), '{"validId":"not-an-srs-state"}')
 })
 
 test("enrollSrs creates a review item and dispatches an update", () => {

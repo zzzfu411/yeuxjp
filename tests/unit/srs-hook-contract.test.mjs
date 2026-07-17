@@ -12,8 +12,9 @@ function read(relPath) {
 test("useSrsDeck mutates decks from current storage snapshots", () => {
   const source = read("src/lib/srs.ts")
 
-  const reads = source.match(/const previous = readSrsMap\(storageKey\)/g) ?? []
+  const reads = source.match(/const current = readSrsMapResult\(storageKey\)/g) ?? []
   assert.equal(reads.length, 2)
+  assert.match(source, /if \(!current\.ok\) return false/)
   assert.match(source, /const refreshDeck = useCallback\(\(\) => \{/)
   assert.match(source, /setMap\(readSrsMap\(storageKey\)\)/)
   assert.match(source, /setNow\(Date\.now\(\)\)/)
@@ -24,8 +25,8 @@ test("useSrsDeck mutates decks from current storage snapshots", () => {
   assert.match(source, /gradeSrs\(storageKey, id, result\)/)
   assert.match(source, /gradeExistingSrs\(storageKey, id, result\)/)
   assert.match(source, /hasSrs\(storageKey, id\)/)
-  assert.match(source, /if \(!writeSrsMap\(storageKey, next\)\) return false/)
-  assert.match(source, /if \(!writeSrsMap\(storageKey, \{\}\)\) return false/)
+  assert.match(source, /if \(!writeSrsMap\(storageKey, next, \{ expectedRaw: current\.raw \}\)\) return false/)
+  assert.match(source, /if \(!writeSrsMap\(storageKey, \{\}, \{ replaceInvalid: true \}\)\) return false/)
   assert.match(source, /return \{ map, dueIds, enroll, remove, grade, gradeExisting, has, clear \}/)
   assert.match(source, /return true/)
   assert.match(source, /return false/)

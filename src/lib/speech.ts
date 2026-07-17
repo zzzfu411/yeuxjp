@@ -12,6 +12,13 @@ import {
   normalizeSpeechSequenceTexts,
   pickJapaneseVoice,
 } from "@/lib/speech-playback-model"
+import {
+  canWriteJsonStorage,
+  invalidJsonStorageValue,
+  readJsonStorage,
+  validJsonStorageValue,
+  type JsonStorageWriteOptions,
+} from "@/lib/storage-read-result"
 
 export type SpeakCallbacks = {
   onStart?: () => void
@@ -193,23 +200,27 @@ export function applySpeechPreferences(prefs: SpeechUserPreferences) {
 export function readSpeechPreferences(
   storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY
 ): SpeechUserPreferences {
-  if (typeof window === "undefined") return DEFAULT_SPEECH_PREFERENCES
+  return readSpeechPreferencesResult(storageKey).value
+}
 
-  try {
-    const raw = window.localStorage.getItem(storageKey)
-    if (!raw) return DEFAULT_SPEECH_PREFERENCES
-
-    return normalizeSpeechPreferences(JSON.parse(raw) as unknown)
-  } catch {
-    return DEFAULT_SPEECH_PREFERENCES
-  }
+export function readSpeechPreferencesResult(storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY) {
+  return readJsonStorage(
+    storageKey,
+    DEFAULT_SPEECH_PREFERENCES,
+    (input) => input && typeof input === "object" && !Array.isArray(input)
+      ? validJsonStorageValue(normalizeSpeechPreferences(input))
+      : invalidJsonStorageValue<SpeechUserPreferences>(),
+    "speech-preferences"
+  )
 }
 
 export function writeSpeechPreferences(
   prefs: SpeechUserPreferences,
-  storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY
+  storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY,
+  options: JsonStorageWriteOptions = {}
 ) {
   if (typeof window === "undefined") return false
+  if (!canWriteJsonStorage(readSpeechPreferencesResult(storageKey), options)) return false
   try {
     writeManagedLearningStorage(storageKey, JSON.stringify(prefs))
     return true
@@ -240,10 +251,12 @@ export function updateSpeechPreferencesWithStatus(
   patch: Partial<SpeechUserPreferences>,
   storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY
 ) {
-  const prev = readSpeechPreferences(storageKey)
+  const current = readSpeechPreferencesResult(storageKey)
+  if (!current.ok) return { prefs: current.value, saved: false }
+  const prev = current.value
   const next = mergeSpeechPreferencesPatch(prev, patch)
 
-  if (!writeSpeechPreferences(next, storageKey)) {
+  if (!writeSpeechPreferences(next, storageKey, { expectedRaw: current.raw })) {
     applySpeechPreferences(prev)
     return { prefs: prev, saved: false }
   }
@@ -259,7 +272,7 @@ export function resetSpeechPreferences(storageKey: string = DEFAULT_SPEECH_PREFS
 
 export function resetSpeechPreferencesWithStatus(storageKey: string = DEFAULT_SPEECH_PREFS_STORAGE_KEY) {
   const prev = readSpeechPreferences(storageKey)
-  if (!writeSpeechPreferences(DEFAULT_SPEECH_PREFERENCES, storageKey)) {
+  if (!writeSpeechPreferences(DEFAULT_SPEECH_PREFERENCES, storageKey, { replaceInvalid: true })) {
     applySpeechPreferences(prev)
     return { prefs: prev, saved: false }
   }

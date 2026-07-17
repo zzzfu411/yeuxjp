@@ -67,10 +67,33 @@ test("mistake notebook storage falls back on invalid JSON and failed writes", ()
   map.set("mistakes", "{")
 
   assert.deepEqual(storage.readMistakeList("mistakes"), [])
+  assert.equal(storage.readMistakeListResult("mistakes").status, "invalid")
+  assert.equal(storage.writeMistakeList("mistakes", []), false)
+  assert.equal(map.get("mistakes"), "{")
+  assert.equal(storage.writeMistakeList("mistakes", [], "mistake-notebook", { replaceInvalid: true }), true)
+  assert.equal(map.get("mistakes"), "[]")
 
   const failing = installWindow({ failSet: true })
   assert.equal(storage.writeMistakeList("mistakes", []), false)
   assert.equal(failing.events.length, 0)
+})
+
+test("mistake notebook storage rejects valid JSON with the wrong shape", () => {
+  const { map } = installWindow()
+  map.set("mistakes", JSON.stringify({ id: "not-a-list" }))
+
+  assert.equal(storage.readMistakeListResult("mistakes").status, "invalid")
+  assert.equal(storage.writeMistakeList("mistakes", []), false)
+  assert.equal(map.get("mistakes"), '{"id":"not-a-list"}')
+})
+
+test("mistake notebook storage rejects non-empty arrays with no recoverable mistakes", () => {
+  const { map } = installWindow()
+  map.set("mistakes", JSON.stringify([{ id: "missing-required-fields" }]))
+
+  assert.equal(storage.readMistakeListResult("mistakes").status, "invalid")
+  assert.equal(storage.writeMistakeList("mistakes", []), false)
+  assert.equal(map.get("mistakes"), '[{"id":"missing-required-fields"}]')
 })
 
 test("mistake notebook storage dispatches same-tab update events on demand", () => {

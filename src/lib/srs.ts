@@ -9,6 +9,7 @@ import {
   hasSrs,
   notifySrs,
   readSrsMap,
+  readSrsMapResult,
   SRS_EVENT,
   writeSrsMap,
 } from "@/lib/srs-storage"
@@ -85,15 +86,16 @@ export function useSrsDeck(storageKey: string) {
   const enroll = useCallback(
     (id: string) => {
       if (!canStoreSrsId(storageKey, id)) return true
-      const previous = readSrsMap(storageKey)
-      if (previous[id]) {
-        setMap(previous)
+      const current = readSrsMapResult(storageKey)
+      if (!current.ok) return false
+      if (current.value[id]) {
+        setMap(current.value)
         setNow(Date.now())
         return true
       }
       const now = Date.now()
-      const next = { ...previous, [id]: createSrsState(now) }
-      if (!writeSrsMap(storageKey, next)) return false
+      const next = { ...current.value, [id]: createSrsState(now) }
+      if (!writeSrsMap(storageKey, next, { expectedRaw: current.raw })) return false
       notifySrs(storageKey)
       setMap(filterSrsMapForStorage(storageKey, next))
       setNow(now)
@@ -104,15 +106,16 @@ export function useSrsDeck(storageKey: string) {
 
   const remove = useCallback(
     (id: string) => {
-      const previous = readSrsMap(storageKey)
-      if (!previous[id]) {
-        setMap(previous)
+      const current = readSrsMapResult(storageKey)
+      if (!current.ok) return false
+      if (!current.value[id]) {
+        setMap(current.value)
         setNow(Date.now())
         return true
       }
-      const next = { ...previous }
+      const next = { ...current.value }
       delete next[id]
-      if (!writeSrsMap(storageKey, next)) return false
+      if (!writeSrsMap(storageKey, next, { expectedRaw: current.raw })) return false
       notifySrs(storageKey)
       setMap(next)
       setNow(Date.now())
@@ -142,7 +145,7 @@ export function useSrsDeck(storageKey: string) {
   const has = useCallback((id: string) => hasSrs(storageKey, id), [storageKey])
 
   const clear = useCallback(() => {
-    if (!writeSrsMap(storageKey, {})) return false
+    if (!writeSrsMap(storageKey, {}, { replaceInvalid: true })) return false
     notifySrs(storageKey)
     setMap({})
     setNow(Date.now())

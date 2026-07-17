@@ -96,9 +96,8 @@ function rollbackLearningKeys(
   mutations?: readonly ManagedLearningStorageMutation[]
 ) {
   const rolledBack = mutations ? rollbackLearningMutations(mutations) : applyLearningSnapshot(snapshot)
-  if (!rolledBack) return false
   if (notify) notifyLearningStore({ action: "rollback", keys: BACKUP_KEYS })
-  return true
+  return rolledBack
 }
 
 export function getLearningBackupKeys() {

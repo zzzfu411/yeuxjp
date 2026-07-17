@@ -46,6 +46,29 @@ async function openVocabularyFocusModal(page) {
 
 export async function verifyProgressSaveFailureFlow(page, baseUrl) {
   await resetBrowserLearningState(page, `${baseUrl}/kana`)
+
+  const corruptKanaProgress = '["hiragana:a",'
+  await page.evaluate(({ key, value }) => {
+    localStorage.setItem(key, value)
+  }, { key: E2E_STORAGE_KEYS.KANA_MASTERED, value: corruptKanaProgress })
+  await page.reload({ waitUntil: "networkidle" })
+  await page.getByTestId("kana-card-a").click()
+  await page.getByTestId("kana-mastery-toggle").click()
+  await page.getByTestId("practice-save-error").waitFor({ state: "visible" })
+  assert.equal(
+    await page.evaluate((key) => localStorage.getItem(key), E2E_STORAGE_KEYS.KANA_MASTERED),
+    corruptKanaProgress,
+    "incremental kana writes must preserve corrupt storage for explicit recovery"
+  )
+  await page.keyboard.press("Escape")
+  await page.getByTestId("kana-clear-progress").click()
+  await page.getByTestId("kana-clear-progress-dialog-confirm").click()
+  await page.waitForFunction(
+    (key) => localStorage.getItem(key) === "[]",
+    E2E_STORAGE_KEYS.KANA_MASTERED
+  )
+
+  await resetBrowserLearningState(page, `${baseUrl}/kana`)
   await page.getByTestId("kana-card-a").click()
   await failStorageWrites(page, [E2E_STORAGE_KEYS.KANA_MASTERED], "kana progress")
   await page.getByTestId("kana-mastery-toggle").click()

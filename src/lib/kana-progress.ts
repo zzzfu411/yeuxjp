@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { warnInDevelopment } from "@/lib/dev-log"
 import { normalizeKanaIdList } from "@/lib/kana-id"
 import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
-import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressList, writeProgressList } from "@/lib/progress-list-storage"
+import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressListResult, writeProgressList } from "@/lib/progress-list-storage"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
@@ -13,20 +13,20 @@ const STORAGE_LABEL = "kana-progress"
 
 export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
   const [mastered, setMastered] = useState<Set<string>>(() => new Set())
-  const readMastered = useCallback(
-    () => normalizeKanaIdList(readProgressList(storageKey, STORAGE_LABEL)),
-    [storageKey]
-  )
+  const readMastered = useCallback(() => {
+    const result = readProgressListResult(storageKey, STORAGE_LABEL)
+    return { ...result, value: normalizeKanaIdList(result.value) }
+  }, [storageKey])
 
   useEffect(() => {
     let cancelled = false
 
     Promise.resolve().then(() => {
       if (cancelled) return
-      setMastered(new Set(readMastered()))
+      setMastered(new Set(readMastered().value))
     })
 
-    const sync = () => setMastered(new Set(readMastered()))
+    const sync = () => setMastered(new Set(readMastered().value))
 
     const onStorage = (event: StorageEvent) => {
       if (event.key !== storageKey) return
@@ -63,7 +63,9 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
     (id: string) => {
       if (!isReviewableKanaId(id)) return true
 
-      const base = new Set(readMastered())
+      const current = readMastered()
+      if (!current.ok) return false
+      const base = new Set(current.value)
       const next = new Set(base)
       const wasMastered = next.has(id)
 
@@ -75,7 +77,12 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
 
       const saved = runLearningStorageTransaction(() => {
         const srsSuccess = wasMastered ? removeSrs(KANA_SRS_STORAGE_KEY, id) : enrollSrs(KANA_SRS_STORAGE_KEY, id)
-        return srsSuccess && writeProgressList(storageKey, Array.from(next), STORAGE_LABEL)
+        return srsSuccess && writeProgressList(
+          storageKey,
+          Array.from(next),
+          STORAGE_LABEL,
+          { expectedRaw: current.raw }
+        )
       })
 
       if (!saved) {
@@ -91,7 +98,14 @@ export function useKanaProgress(storageKey: string = DEFAULT_STORAGE_KEY) {
   )
 
   const clearMastered = useCallback(() => {
-    const saved = runLearningStorageTransaction(() => clearSrs(KANA_SRS_STORAGE_KEY) && writeProgressList(storageKey, [], STORAGE_LABEL))
+    const saved = runLearningStorageTransaction(
+      () => clearSrs(KANA_SRS_STORAGE_KEY) && writeProgressList(
+        storageKey,
+        [],
+        STORAGE_LABEL,
+        { replaceInvalid: true }
+      )
+    )
     if (saved) {
       setMastered(new Set())
       notifyProgressList(storageKey)

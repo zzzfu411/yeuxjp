@@ -53,6 +53,42 @@ test("progress list storage falls back on invalid JSON", () => {
   map.set("progress", "{")
 
   assert.deepEqual(progressStorage.readProgressList("progress"), [])
+  assert.equal(progressStorage.readProgressListResult("progress").status, "invalid")
+  assert.equal(progressStorage.writeProgressList("progress", ["a"]), false)
+  assert.equal(map.get("progress"), "{")
+  assert.equal(progressStorage.writeProgressList("progress", [], "progress-list", { replaceInvalid: true }), true)
+  assert.equal(map.get("progress"), "[]")
+})
+
+test("progress list storage rejects stale read snapshots", () => {
+  const { map } = installWindow()
+  map.set("progress", '["a"]')
+  const snapshot = progressStorage.readProgressListResult("progress")
+  map.set("progress", '["a","from-other-tab"]')
+
+  assert.equal(
+    progressStorage.writeProgressList("progress", ["a", "local"], "progress-list", { expectedRaw: snapshot.raw }),
+    false
+  )
+  assert.equal(map.get("progress"), '["a","from-other-tab"]')
+})
+
+test("progress list storage rejects a valid JSON value with the wrong shape", () => {
+  const { map } = installWindow()
+  map.set("progress", JSON.stringify({ a: true }))
+
+  assert.equal(progressStorage.readProgressListResult("progress").status, "invalid")
+  assert.equal(progressStorage.writeProgressList("progress", ["ka"]), false)
+  assert.equal(map.get("progress"), '{"a":true}')
+})
+
+test("progress list storage rejects non-empty arrays with no recoverable ids", () => {
+  const { map } = installWindow()
+  map.set("progress", JSON.stringify([1, null, " "]))
+
+  assert.equal(progressStorage.readProgressListResult("progress").status, "invalid")
+  assert.equal(progressStorage.writeProgressList("progress", ["ka"]), false)
+  assert.equal(map.get("progress"), '[1,null," "]')
 })
 
 test("progress list storage writes JSON and dispatches shared update events", () => {

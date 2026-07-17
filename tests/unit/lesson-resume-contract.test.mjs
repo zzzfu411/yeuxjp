@@ -109,13 +109,15 @@ test("LessonRunner exposes stable completed lesson follow-up targets", () => {
 
 test("learning progress preserves compatible lesson keys while adding resume fields", () => {
   const progress = read("src/lib/learning-progress.ts")
+  const storage = read("src/lib/learning-progress-storage.ts")
   const model = read("src/lib/learning-progress-model.ts")
 
-  assert.match(progress, /normalizeLessonProgressMap/)
+  assert.match(storage, /normalizeLessonProgressMap/)
   assert.match(progress, /normalizeStepIndex/)
   assert.match(progress, /saveLessonPosition/)
-  assert.match(progress, /readLessonProgressMap\(\)/)
-  assert.match(progress, /const base = readLessonProgressMap\(\)/)
+  assert.match(progress, /readLessonProgressMapResult\(\)/)
+  assert.match(progress, /if \(!currentResult\.ok\) return false/)
+  assert.match(progress, /const base = currentResult\.value/)
   assert.match(progress, /const current = base\[lessonId\]/)
   assert.match(progress, /if \(!current\) return false/)
   assert.doesNotMatch(progress, /saveLessonPosition[\s\S]*status: current\?\.status \?\? \("started" as const\)/)
@@ -156,9 +158,11 @@ test("learning profile saves from the current storage snapshot", () => {
   const progress = read("src/lib/learning-progress.ts")
 
   assert.match(progress, /function readUserProfile\(\)/)
-  assert.match(progress, /const current = readUserProfile\(\)/)
+  assert.match(progress, /const currentResult = readUserProfileResult\(\)/)
+  assert.match(progress, /if \(!currentResult\.ok\) return false/)
+  assert.match(progress, /const current = currentResult\.value/)
   assert.match(progress, /createdAt: current\?\.createdAt \?\? now/)
-  assert.match(progress, /if \(!writeLearningJson\(STORAGE_KEYS\.USER_PROFILE, next\)\) return false/)
+  assert.match(progress, /writeLearningJson\(STORAGE_KEYS\.USER_PROFILE, next, \{ expectedRaw: currentResult\.raw \}\)/)
   assert.match(progress, /setProfileState\(next\)/)
   assert.match(progress, /return true/)
   assert.doesNotMatch(progress, /profile\?\.createdAt/)
@@ -168,7 +172,7 @@ test("learning profile saves from the current storage snapshot", () => {
 test("lesson progress updates state only after storage writes succeed", () => {
   const progress = read("src/lib/learning-progress.ts")
 
-  const guardedWrites = progress.match(/if \(!writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next\)\) return false/g) ?? []
+  const guardedWrites = progress.match(/if \(!writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next, \{ expectedRaw: (?:current|currentResult)\.raw \}\)\) return false/g) ?? []
   assert.equal(guardedWrites.length, 3)
   assert.match(progress, /setLessons\(next\)/)
   assert.match(progress, /return true/)

@@ -49,4 +49,33 @@ test("learning storage falls back when persisted JSON is invalid", () => {
   map.set("broken", "{")
 
   assert.deepEqual(storage.readLearningJson("broken", []), [])
+  assert.deepEqual(storage.readLearningJsonResult("broken", []).status, "invalid")
+  assert.equal(storage.writeLearningJson("broken", ["replacement"]), false)
+  assert.equal(map.get("broken"), "{")
+  assert.equal(storage.writeLearningJson("broken", ["replacement"], { replaceInvalid: true }), true)
+  assert.equal(map.get("broken"), '["replacement"]')
+})
+
+test("learning storage rejects stale read snapshots", () => {
+  const { map } = installWindow()
+  map.set("progress", '["old"]')
+  const snapshot = storage.readLearningJsonResult("progress", [])
+  map.set("progress", '["newer-tab"]')
+
+  assert.equal(storage.writeLearningJson("progress", ["old", "local"], { expectedRaw: snapshot.raw }), false)
+  assert.equal(map.get("progress"), '["newer-tab"]')
+})
+
+test("learning storage distinguishes missing and unavailable values", () => {
+  const { map } = installWindow()
+
+  assert.equal(storage.readLearningJsonResult("missing", null).status, "missing")
+  map.set("empty-string", "")
+  assert.equal(storage.readLearningJsonResult("empty-string", null).status, "invalid")
+
+  global.window.localStorage.getItem = () => {
+    throw new Error("blocked")
+  }
+  assert.equal(storage.readLearningJsonResult("profile", null).status, "unavailable")
+  assert.equal(storage.writeLearningJson("profile", { goal: "balanced" }), false)
 })

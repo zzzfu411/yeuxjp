@@ -658,6 +658,8 @@ test("browser E2E verifies kana and vocabulary progress save failures roll back 
   assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_KANA/)
   assert.match(e2e, /E2E_STORAGE_KEYS\.SRS_VOCAB/)
   assert.match(e2e, /getByTestId\("practice-save-error"\)/)
+  assert.match(e2e, /incremental kana writes must preserve corrupt storage for explicit recovery/)
+  assert.match(e2e, /localStorage\.getItem\(key\) === "\[\]"/)
   assert.match(e2e, /failed kana progress clear should keep mastered kana/)
   assert.match(e2e, /failed kana progress clear should restore kana SRS/)
   assert.match(e2e, /failed vocabulary progress clear should keep learned vocabulary/)

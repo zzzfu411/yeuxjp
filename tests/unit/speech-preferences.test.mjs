@@ -89,6 +89,23 @@ test("speech preference update failures keep the previous readable preference", 
   assert.equal(events.length, 0)
 })
 
+test("speech preference updates preserve corrupt storage until an explicit reset", () => {
+  const { map, events } = installWindow()
+  map.set("speech", "{")
+
+  const result = speech.updateSpeechPreferencesWithStatus({ rate: 1.2 }, "speech")
+
+  assert.equal(result.saved, false)
+  assert.deepEqual(result.prefs, speech.DEFAULT_SPEECH_PREFERENCES)
+  assert.equal(map.get("speech"), "{")
+  assert.equal(events.length, 0)
+
+  const reset = speech.resetSpeechPreferencesWithStatus("speech")
+  assert.equal(reset.saved, true)
+  assert.deepEqual(JSON.parse(map.get("speech")), speech.DEFAULT_SPEECH_PREFERENCES)
+  assert.equal(events.length, 1)
+})
+
 test("speech preference reset failures do not report default preferences", () => {
   const { map, events } = installWindow()
   map.set("speech", JSON.stringify({ rate: 0.75, repeat: 3, autoPlay: false, gapMs: 100 }))
@@ -128,7 +145,8 @@ test("speech preference writes report persistence failures to callers", () => {
   assert.match(source, /export function writeSpeechPreferences/)
   assert.match(source, /from "@\/lib\/speech-preferences-model"/)
   assert.match(source, /from "@\/lib\/speech-playback-model"/)
-  assert.match(source, /normalizeSpeechPreferences\(JSON\.parse\(raw\) as unknown\)/)
+  assert.match(source, /readSpeechPreferencesResult/)
+  assert.match(source, /normalizeSpeechPreferences\(input\)/)
   assert.match(source, /mergeSpeechPreferencesPatch\(prev, patch\)/)
   assert.match(source, /normalizeSpeechSequenceTexts\(texts\)/)
   assert.match(source, /buildRepeatedSpeechTexts\(text, options\.repeat\)/)
@@ -140,6 +158,6 @@ test("speech preference writes report persistence failures to callers", () => {
   assert.match(source, /resetSpeechPreferencesWithStatus/)
   assert.match(source, /saved: false/)
   assert.match(source, /saved: true/)
-  assert.match(source, /if \(!writeSpeechPreferences\(next, storageKey\)\)/)
-  assert.match(source, /if \(!writeSpeechPreferences\(DEFAULT_SPEECH_PREFERENCES, storageKey\)\)/)
+  assert.match(source, /if \(!writeSpeechPreferences\(next, storageKey, \{ expectedRaw: current\.raw \}\)\)/)
+  assert.match(source, /if \(!writeSpeechPreferences\(DEFAULT_SPEECH_PREFERENCES, storageKey, \{ replaceInvalid: true \}\)\)/)
 })

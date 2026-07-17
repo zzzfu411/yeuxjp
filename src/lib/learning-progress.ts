@@ -2,16 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { LEARNING_STORE_EVENT, queueLearningNotification, runLearningStorageTransaction } from "@/lib/learning-store"
-import { LEARNING_EVENT, readLearningJson, writeLearningJson } from "@/lib/learning-storage"
+import { LEARNING_EVENT, writeLearningJson } from "@/lib/learning-storage"
 import {
   clampScore,
   appendPracticeResult,
   buildStudyDates,
   calculateStudyStreak,
-  normalizeItemProgressMap,
-  normalizeLessonProgressMap,
-  normalizePracticeResults,
-  normalizeProfile,
   normalizeStepIndex,
   updateItemProgressForPractice,
   type ItemProgressMap,
@@ -21,6 +17,12 @@ import {
 } from "@/lib/learning-progress-model"
 import { includesProgressStorageKey, isProfileStorageKey, isProgressStorageKey } from "@/lib/learning-progress-keys"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import {
+  readItemProgressMapResult,
+  readLessonProgressMapResult,
+  readPracticeResultsResult,
+  readUserProfileResult,
+} from "@/lib/learning-progress-storage"
 
 export {
   averageMastery,
@@ -35,12 +37,8 @@ export {
   type UserProfile,
 } from "@/lib/learning-progress-model"
 
-function readLessonProgressMap() {
-  return normalizeLessonProgressMap(readLearningJson(STORAGE_KEYS.LESSON_PROGRESS, {}))
-}
-
 function readUserProfile() {
-  return normalizeProfile(readLearningJson(STORAGE_KEYS.USER_PROFILE, null))
+  return readUserProfileResult().value
 }
 
 export function useLearningProfile() {
@@ -82,13 +80,15 @@ export function useLearningProfile() {
 
   const saveProfile = useCallback((input: Omit<UserProfile, "createdAt" | "updatedAt">) => {
     const now = Date.now()
-    const current = readUserProfile()
+    const currentResult = readUserProfileResult()
+    if (!currentResult.ok) return false
+    const current = currentResult.value
     const next: UserProfile = {
       ...input,
       createdAt: current?.createdAt ?? now,
       updatedAt: now,
     }
-    if (!writeLearningJson(STORAGE_KEYS.USER_PROFILE, next)) return false
+    if (!writeLearningJson(STORAGE_KEYS.USER_PROFILE, next, { expectedRaw: currentResult.raw })) return false
     setProfileState(next)
     return true
   }, [])
@@ -103,9 +103,9 @@ export function useLearningProgress() {
   const [loaded, setLoaded] = useState(false)
 
   const load = useCallback(() => {
-    setLessons(normalizeLessonProgressMap(readLearningJson(STORAGE_KEYS.LESSON_PROGRESS, {})))
-    setItems(normalizeItemProgressMap(readLearningJson(STORAGE_KEYS.ITEM_PROGRESS, {})))
-    setResults(normalizePracticeResults(readLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, [])))
+    setLessons(readLessonProgressMapResult().value)
+    setItems(readItemProgressMapResult().value)
+    setResults(readPracticeResultsResult().value)
     setLoaded(true)
   }, [])
 
@@ -147,17 +147,21 @@ export function useLearningProgress() {
   }, [load])
 
   const startLesson = useCallback((lessonId: string) => {
-    const base = readLessonProgressMap()
+    const current = readLessonProgressMapResult()
+    if (!current.ok) return false
+    const base = current.value
     if (base[lessonId]) return true
     const now = Date.now()
     const next = { ...base, [lessonId]: { lessonId, status: "started" as const, startedAt: now, updatedAt: now } }
-    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)) return false
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: current.raw })) return false
     setLessons(next)
     return true
   }, [])
 
   const completeLesson = useCallback((lessonId: string, score?: number) => {
-    const base = readLessonProgressMap()
+    const currentResult = readLessonProgressMapResult()
+    if (!currentResult.ok) return false
+    const base = currentResult.value
     const current = base[lessonId]
     const now = Date.now()
     const next = {
@@ -173,13 +177,15 @@ export function useLearningProgress() {
         updatedAt: now,
       },
     }
-    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)) return false
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: currentResult.raw })) return false
     setLessons(next)
     return true
   }, [])
 
   const saveLessonPosition = useCallback((lessonId: string, currentStepIndex: number, lastStepId?: string) => {
-    const base = readLessonProgressMap()
+    const currentResult = readLessonProgressMapResult()
+    if (!currentResult.ok) return false
+    const base = currentResult.value
     const current = base[lessonId]
     if (!current) return false
     const now = Date.now()
@@ -196,15 +202,18 @@ export function useLearningProgress() {
         updatedAt: now,
       },
     }
-    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next)) return false
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: currentResult.raw })) return false
     setLessons(next)
     return true
   }, [])
 
   const recordPractice = useCallback((result: Omit<PracticeResult, "createdAt">) => {
     const createdAt = Date.now()
-    const previousResults = normalizePracticeResults(readLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, []))
-    const previousItems = normalizeItemProgressMap(readLearningJson(STORAGE_KEYS.ITEM_PROGRESS, {}))
+    const previousResultsResult = readPracticeResultsResult()
+    const previousItemsResult = readItemProgressMapResult()
+    if (!previousResultsResult.ok || !previousItemsResult.ok) return false
+    const previousResults = previousResultsResult.value
+    const previousItems = previousItemsResult.value
     const nextResults = appendPracticeResult(previousResults, result, createdAt)
     const nextResult = nextResults.at(-1)
     if (!nextResult) return false
@@ -212,7 +221,15 @@ export function useLearningProgress() {
     const nextItems = updateItemProgressForPractice(previousItems, nextResult)
 
     const saved = runLearningStorageTransaction(() => {
-      const wrote = writeLearningJson(STORAGE_KEYS.PRACTICE_RESULTS, nextResults) && writeLearningJson(STORAGE_KEYS.ITEM_PROGRESS, nextItems)
+      const wrote = writeLearningJson(
+        STORAGE_KEYS.PRACTICE_RESULTS,
+        nextResults,
+        { expectedRaw: previousResultsResult.raw }
+      ) && writeLearningJson(
+        STORAGE_KEYS.ITEM_PROGRESS,
+        nextItems,
+        { expectedRaw: previousItemsResult.raw }
+      )
       if (wrote) {
         queueLearningNotification(() => {
           setResults(nextResults)

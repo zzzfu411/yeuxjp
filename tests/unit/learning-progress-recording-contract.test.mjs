@@ -12,8 +12,11 @@ function read(relPath) {
 test("learning progress records practice from current storage snapshots", () => {
   const source = read("src/lib/learning-progress.ts")
 
-  assert.match(source, /const previousResults = normalizePracticeResults\(readLearningJson\(STORAGE_KEYS\.PRACTICE_RESULTS, \[\]\)\)/)
-  assert.match(source, /const previousItems = normalizeItemProgressMap\(readLearningJson\(STORAGE_KEYS\.ITEM_PROGRESS, \{\}\)\)/)
+  assert.match(source, /const previousResultsResult = readPracticeResultsResult\(\)/)
+  assert.match(source, /const previousItemsResult = readItemProgressMapResult\(\)/)
+  assert.match(source, /if \(!previousResultsResult\.ok \|\| !previousItemsResult\.ok\) return false/)
+  assert.match(source, /const previousResults = previousResultsResult\.value/)
+  assert.match(source, /const previousItems = previousItemsResult\.value/)
   assert.match(source, /appendPracticeResult\(previousResults, result, createdAt\)/)
   assert.match(source, /updateItemProgressForPractice\(previousItems, nextResult\)/)
   assert.doesNotMatch(source, /\[\.\.\.prev, nextResult\]\.slice\(-300\)/)
@@ -27,7 +30,8 @@ test("learning progress treats practice history and item progress as one write",
   assert.match(source, /runLearningStorageTransaction/)
   assert.match(source, /queueLearningNotification/)
   assert.match(source, /const saved = runLearningStorageTransaction\(\(\) => \{/)
-  assert.match(source, /const wrote = writeLearningJson\(STORAGE_KEYS\.PRACTICE_RESULTS, nextResults\) && writeLearningJson\(STORAGE_KEYS\.ITEM_PROGRESS, nextItems\)/)
+  assert.match(source, /writeLearningJson\([\s\S]*STORAGE_KEYS\.PRACTICE_RESULTS,[\s\S]*expectedRaw: previousResultsResult\.raw/)
+  assert.match(source, /writeLearningJson\([\s\S]*STORAGE_KEYS\.ITEM_PROGRESS,[\s\S]*expectedRaw: previousItemsResult\.raw/)
   assert.match(source, /if \(wrote\) \{/)
   assert.match(source, /queueLearningNotification\(\(\) => \{/)
   assert.match(source, /setResults\(nextResults\)/)

@@ -15,6 +15,13 @@ import {
   type SrsState,
 } from "@/lib/srs-model"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import {
+  canWriteJsonStorage,
+  invalidJsonStorageValue,
+  readJsonStorage,
+  validJsonStorageValue,
+  type JsonStorageWriteOptions,
+} from "@/lib/storage-read-result"
 
 export const SRS_EVENT = "yasashi:srs:update"
 
@@ -42,32 +49,42 @@ export function filterSrsMapForStorage(storageKey: string, map: SrsMap): SrsMap 
   return filtered
 }
 
-export function readSrsMap(storageKey: string): SrsMap {
-  if (typeof window === "undefined") return {}
-  try {
-    const raw = window.localStorage.getItem(storageKey)
-    if (!raw) return {}
-    const parsed = JSON.parse(raw) as unknown
-    if (!parsed || typeof parsed !== "object") return {}
-    const rawObject = parsed as Record<string, unknown>
-    const obj = storageKey === STORAGE_KEYS.SRS_KANA ? normalizeKanaIdRecord(rawObject) : rawObject
-
-    const now = Date.now()
-    const out: SrsMap = {}
-    const validator = getSrsIdValidator(storageKey)
-    for (const [id, value] of Object.entries(obj)) {
-      if (validator && !validator(id)) continue
-      out[id] = normalizeSrsState(value, now)
-    }
-    return out
-  } catch (e) {
-    warnInDevelopment("[srs-storage] Failed to read from localStorage:", e)
-    return {}
-  }
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value)
 }
 
-export function writeSrsMap(storageKey: string, map: SrsMap): boolean {
+export function readSrsMapResult(storageKey: string) {
+  return readJsonStorage(
+    storageKey,
+    {} as SrsMap,
+    (parsed) => {
+      if (!isPlainObject(parsed)) return invalidJsonStorageValue<SrsMap>()
+      const rawObject = parsed
+      if (Object.values(rawObject).some((value) => !isPlainObject(value))) {
+        return invalidJsonStorageValue<SrsMap>()
+      }
+
+      const obj = storageKey === STORAGE_KEYS.SRS_KANA ? normalizeKanaIdRecord(rawObject) : rawObject
+      const now = Date.now()
+      const out: SrsMap = {}
+      const validator = getSrsIdValidator(storageKey)
+      for (const [id, value] of Object.entries(obj)) {
+        if (validator && !validator(id)) continue
+        out[id] = normalizeSrsState(value, now)
+      }
+      return validJsonStorageValue(out)
+    },
+    "srs-storage"
+  )
+}
+
+export function readSrsMap(storageKey: string): SrsMap {
+  return readSrsMapResult(storageKey).value
+}
+
+export function writeSrsMap(storageKey: string, map: SrsMap, options: JsonStorageWriteOptions = {}): boolean {
   if (typeof window === "undefined") return false
+  if (!canWriteJsonStorage(readSrsMapResult(storageKey), options)) return false
   try {
     writeManagedLearningStorage(storageKey, JSON.stringify(filterSrsMapForStorage(storageKey, map)))
     return true
@@ -87,10 +104,12 @@ export function notifySrs(storageKey: string) {
 export function enrollSrs(storageKey: string, id: string, now: number = Date.now()) {
   if (typeof window === "undefined") return false
   if (!canStoreSrsId(storageKey, id)) return true
-  const map = readSrsMap(storageKey)
+  const current = readSrsMapResult(storageKey)
+  if (!current.ok) return false
+  const map = current.value
   if (map[id]) return true
   map[id] = createSrsState(now)
-  if (!writeSrsMap(storageKey, map)) return false
+  if (!writeSrsMap(storageKey, map, { expectedRaw: current.raw })) return false
   notifySrs(storageKey)
   return true
 }
@@ -98,16 +117,19 @@ export function enrollSrs(storageKey: string, id: string, now: number = Date.now
 export function hasSrs(storageKey: string, id: string) {
   if (typeof window === "undefined") return false
   if (!canStoreSrsId(storageKey, id)) return false
-  return !!readSrsMap(storageKey)[id]
+  const current = readSrsMapResult(storageKey)
+  return current.ok && !!current.value[id]
 }
 
 export function gradeSrs(storageKey: string, id: string, result: SrsResult, now: number = Date.now()) {
   if (typeof window === "undefined") return false
   if (!canStoreSrsId(storageKey, id)) return true
-  const map = readSrsMap(storageKey)
+  const current = readSrsMapResult(storageKey)
+  if (!current.ok) return false
+  const map = current.value
   const state = map[id] ? normalizeSrsState(map[id], now) : createSrsState(now)
   map[id] = applySrsResult(state, result, now)
-  if (!writeSrsMap(storageKey, map)) return false
+  if (!writeSrsMap(storageKey, map, { expectedRaw: current.raw })) return false
   notifySrs(storageKey)
   return true
 }
@@ -115,11 +137,13 @@ export function gradeSrs(storageKey: string, id: string, result: SrsResult, now:
 export function gradeExistingSrs(storageKey: string, id: string, result: SrsResult, now: number = Date.now()) {
   if (typeof window === "undefined") return false
   if (!canStoreSrsId(storageKey, id)) return false
-  const map = readSrsMap(storageKey)
+  const currentMap = readSrsMapResult(storageKey)
+  if (!currentMap.ok) return false
+  const map = currentMap.value
   const current = map[id]
   if (!current) return false
   map[id] = applySrsResult(normalizeSrsState(current, now), result, now)
-  if (!writeSrsMap(storageKey, map)) return false
+  if (!writeSrsMap(storageKey, map, { expectedRaw: currentMap.raw })) return false
   notifySrs(storageKey)
   return true
 }
@@ -127,26 +151,30 @@ export function gradeExistingSrs(storageKey: string, id: string, result: SrsResu
 export function setSrsState(storageKey: string, id: string, state: SrsState) {
   if (typeof window === "undefined") return false
   if (!canStoreSrsId(storageKey, id)) return true
-  const map = readSrsMap(storageKey)
+  const current = readSrsMapResult(storageKey)
+  if (!current.ok) return false
+  const map = current.value
   map[id] = normalizeSrsState(state, Date.now())
-  if (!writeSrsMap(storageKey, map)) return false
+  if (!writeSrsMap(storageKey, map, { expectedRaw: current.raw })) return false
   notifySrs(storageKey)
   return true
 }
 
 export function removeSrs(storageKey: string, id: string) {
   if (typeof window === "undefined") return false
-  const map = readSrsMap(storageKey)
+  const current = readSrsMapResult(storageKey)
+  if (!current.ok) return false
+  const map = current.value
   if (!map[id]) return true
   delete map[id]
-  if (!writeSrsMap(storageKey, map)) return false
+  if (!writeSrsMap(storageKey, map, { expectedRaw: current.raw })) return false
   notifySrs(storageKey)
   return true
 }
 
 export function clearSrs(storageKey: string) {
   if (typeof window === "undefined") return false
-  if (!writeSrsMap(storageKey, {})) return false
+  if (!writeSrsMap(storageKey, {}, { replaceInvalid: true })) return false
   notifySrs(storageKey)
   return true
 }

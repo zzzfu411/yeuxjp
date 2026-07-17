@@ -371,6 +371,36 @@ test("learning storage transactions do not overwrite newer cross-tab managed wri
   assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
 })
 
+test("partial rollback failures still notify hooks to resync from final storage", () => {
+  const { map, events } = installWindow()
+  const profileKey = storage.STORAGE_KEYS.USER_PROFILE
+  const srsKey = storage.STORAGE_KEYS.SRS_MISTAKES
+  map.set(profileKey, JSON.stringify({ goal: "balanced" }))
+  map.set(srsKey, JSON.stringify({ before: { box: 1 } }))
+
+  const originalSetItem = window.localStorage.setItem
+  let srsWrites = 0
+  window.localStorage.setItem = (key, value) => {
+    if (key === srsKey) {
+      srsWrites += 1
+      if (srsWrites === 2) throw new Error("rollback write failed")
+    }
+    originalSetItem(key, value)
+  }
+
+  assert.equal(store.runLearningStorageTransaction(() => {
+    assert.equal(learningStorage.writeLearningJson(profileKey, { goal: "travel" }), true)
+    assert.equal(learningStorage.writeLearningJson(srsKey, { after: { box: 2 } }), true)
+    return false
+  }), false)
+
+  assert.deepEqual(JSON.parse(map.get(profileKey)), { goal: "balanced" })
+  assert.deepEqual(JSON.parse(map.get(srsKey)), { after: { box: 2 } })
+  assert.equal(events.at(-1).type, store.LEARNING_STORE_EVENT)
+  assert.equal(events.at(-1).detail.action, "rollback")
+  assert.deepEqual(events.at(-1).detail.keys, store.getLearningBackupKeys())
+})
+
 test("learning storage transactions delay queued notifications until the outer commit succeeds", () => {
   const { events } = installWindow()
 
