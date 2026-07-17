@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { warnInDevelopment } from "@/lib/dev-log"
+import { warmCurrentPwaPage } from "@/lib/pwa-app-shell"
 import { shouldUsePwaDocumentNavigation } from "@/lib/pwa-navigation"
 
 export const PWA_UPDATE_READY_EVENT = "yasashi:pwa-update-ready"
@@ -34,6 +35,21 @@ export function PwaRegister() {
 
   useEffect(() => {
     let hasExistingController = "serviceWorker" in navigator && Boolean(navigator.serviceWorker.controller)
+    let lastWarmedController: ServiceWorker | null = null
+
+    const warmControlledPage = () => {
+      const controller = navigator.serviceWorker.controller
+      if (!controller || !navigator.onLine || controller === lastWarmedController) return
+
+      lastWarmedController = controller
+      document.documentElement.dataset.pwaAppShellReady = "warming"
+      void warmCurrentPwaPage(controller, document).then(() => {
+        document.documentElement.dataset.pwaAppShellReady = "true"
+      }).catch((error) => {
+        delete document.documentElement.dataset.pwaAppShellReady
+        warnInDevelopment("[pwa] Failed to warm current page resources:", error)
+      })
+    }
 
     const markUpdateReady = (registration?: ServiceWorkerRegistration | null) => {
       if (registration?.waiting) {
@@ -49,6 +65,7 @@ export function PwaRegister() {
     const onControllerChange = () => {
       if (!hasExistingController) {
         hasExistingController = true
+        warmControlledPage()
         return
       }
 
@@ -57,6 +74,7 @@ export function PwaRegister() {
         return
       }
 
+      warmControlledPage()
       markUpdateReady()
     }
 
@@ -112,8 +130,10 @@ export function PwaRegister() {
 
     document.addEventListener("click", onOfflineLinkClick, true)
     navigator.serviceWorker.addEventListener("controllerchange", onControllerChange)
+    warmControlledPage()
 
     navigator.serviceWorker.register("/sw.js").then((registration) => {
+      warmControlledPage()
       if (registration.waiting) {
         markUpdateReady(registration)
       }

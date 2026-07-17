@@ -143,10 +143,9 @@ export function generateVocabularyQuizQuestion({
   targetPool: Vocabulary[]
   random?: RandomFn
 }): Question | null {
-  const targetSource = targetPool.length ? targetPool : basePool
-  if (targetSource.length === 0) return null
+  if (targetPool.length === 0) return null
 
-  const target = randomItem(targetSource, random)
+  const target = randomItem(targetPool, random)
   const options = pickUniqueQuestionOptions({
     target,
     pool: basePool,

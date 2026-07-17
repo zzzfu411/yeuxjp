@@ -53,6 +53,8 @@ test("review sessions are invalidated by cross-tab review source storage changes
   assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.SRS_VOCAB]), true)
   assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.SRS_MISTAKES]), true)
   assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.MISTAKES]), true)
+  assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.ITEM_PROGRESS]), false)
+  assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.PRACTICE_RESULTS]), false)
   assert.equal(session.shouldInvalidateReviewSession("storage", [STORAGE_KEYS.USER_PROFILE]), false)
   assert.equal(session.shouldInvalidateReviewSession("backup", [STORAGE_KEYS.SRS_KANA]), false)
   assert.equal(session.shouldInvalidateReviewSession("rollback", [STORAGE_KEYS.SRS_KANA]), false)

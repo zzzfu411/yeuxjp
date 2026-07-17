@@ -10,6 +10,7 @@ export const appDir = fileURLToPath(new URL("../..", import.meta.url))
 
 export const nextCli = path.join(appDir, "node_modules", "next", "dist", "bin", "next")
 const nextDevLockPath = path.join(appDir, ".next", "dev", "lock")
+const productionBuildIdPath = path.join(appDir, ".next", "BUILD_ID")
 
 function runNextBuildSync() {
   const env = { ...process.env, NEXT_TELEMETRY_DISABLED: "1" }
@@ -301,12 +302,12 @@ export function runBuildIfNeeded(label = "production E2E") {
   }
 }
 
-export async function startProductionServer({ baseUrl, port, controller, label = "production E2E" }) {
-  if (process.env.E2E_BASE_URL && await canServeRoutes(baseUrl)) return baseUrl
+function requireProductionBuild(label) {
+  if (fs.existsSync(productionBuildIdPath)) return
+  throw new Error(`Missing production build before ${label}. Run \`npm run build\` first.`)
+}
 
-  const releaseBuildLock = await acquireBuildLock({ label })
-  controller.holdRelease(releaseBuildLock)
-  runBuildIfNeeded(label)
+async function launchProductionServer({ port, controller }) {
   const selectedPort = await findAvailablePort(port)
   const selectedBaseUrl = `http://127.0.0.1:${selectedPort}`
   controller.spawn(process.execPath, [nextCli, "start", "--hostname", "127.0.0.1", "--port", String(selectedPort)], {
@@ -316,6 +317,22 @@ export async function startProductionServer({ baseUrl, port, controller, label =
   })
   await waitForServer(selectedBaseUrl)
   return selectedBaseUrl
+}
+
+export async function startBuiltProductionServer({ port, controller, label = "production smoke" }) {
+  const releaseBuildLock = await acquireBuildLock({ label })
+  controller.holdRelease(releaseBuildLock)
+  requireProductionBuild(label)
+  return launchProductionServer({ port, controller })
+}
+
+export async function startProductionServer({ baseUrl, port, controller, label = "production E2E" }) {
+  if (process.env.E2E_BASE_URL && await canServeRoutes(baseUrl)) return baseUrl
+
+  const releaseBuildLock = await acquireBuildLock({ label })
+  controller.holdRelease(releaseBuildLock)
+  runBuildIfNeeded(label)
+  return launchProductionServer({ port, controller })
 }
 
 export async function readJsonStorage(page, key) {

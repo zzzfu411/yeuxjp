@@ -465,6 +465,16 @@ export const requiredSelectors = [
     pattern: /data-testid="quiz-empty-state"/,
   },
   {
+    testId: "quiz-answer-feedback",
+    source: "src/components/quiz/quiz-answer-feedback.tsx",
+    pattern: /data-testid="quiz-answer-feedback"/,
+  },
+  {
+    testId: "quiz-next-question",
+    source: "src/components/quiz/quiz-runner.tsx",
+    pattern: /data-testid="quiz-next-question"/,
+  },
+  {
     testId: "quiz-retry-vocabulary",
     source: "src/components/quiz/quiz-empty-state.tsx",
     pattern: /data-testid="quiz-retry-vocabulary"/,
@@ -643,6 +653,21 @@ export const requiredSelectors = [
     testId: "learning-data-reset",
     source: "src/components/review/learning-data-panel.tsx",
     pattern: /data-testid="learning-data-reset"/,
+  },
+  {
+    testId: "learning-data-restore-dialog",
+    source: "src/components/review/learning-data-panel.tsx",
+    pattern: /testId="learning-data-restore-dialog"/,
+  },
+  {
+    testId: "learning-data-restore-dialog-cancel",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-cancel`\}/,
+  },
+  {
+    testId: "learning-data-restore-dialog-confirm",
+    source: "src/components/ui/confirm-action-dialog.tsx",
+    pattern: /data-testid=\{`\$\{testId\}-confirm`\}/,
   },
   {
     testId: "learning-data-reset-dialog",

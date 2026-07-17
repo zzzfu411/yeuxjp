@@ -4,7 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningStatus } from "@/lib/learning-status"
 import type { Question } from "@/lib/questions"
-import { canStartQuizAnswerSubmission, createQuizStats, getQuizQuestionKey, pickFreshQuizQuestion, resolveQuizAnswerSubmission } from "@/lib/quiz-session"
+import {
+  canStartQuizAnswerSubmission,
+  createQuizStats,
+  getQuizQuestionKey,
+  pickFreshQuizQuestion,
+  resolveQuizAnswerSubmission,
+  shouldAutoGenerateQuizQuestion,
+} from "@/lib/quiz-session"
 import { useQuizAudio } from "@/components/quiz/use-quiz-audio"
 import { useQuizAnswerRecorder } from "@/components/quiz/use-quiz-answer-recorder"
 import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-pools"
@@ -26,6 +33,7 @@ import {
 export function useQuizSession(mode: QuizMode) {
   const answerPendingRef = useRef(false)
   const lastQuestionKeyRef = useRef<string | null>(null)
+  const selectedOptionRef = useRef<string | null>(null)
   const mistakes = useMistakeNotebook()
   const learning = useLearningStatus()
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
@@ -76,6 +84,7 @@ export function useQuizSession(mode: QuizMode) {
     })
     if (preflightReason) {
       setCurrentQuestion(null)
+      selectedOptionRef.current = null
       setSelectedOption(null)
       answerPendingRef.current = false
       setSaveError(false)
@@ -98,6 +107,7 @@ export function useQuizSession(mode: QuizMode) {
     if (q) {
       lastQuestionKeyRef.current = getQuizQuestionKey(q)
       setCurrentQuestion(q)
+      selectedOptionRef.current = null
       setSelectedOption(null)
       answerPendingRef.current = false
       setSaveError(false)
@@ -106,6 +116,7 @@ export function useQuizSession(mode: QuizMode) {
     }
 
     setCurrentQuestion(null)
+    selectedOptionRef.current = null
     setSelectedOption(null)
     answerPendingRef.current = false
     setSaveError(false)
@@ -123,6 +134,11 @@ export function useQuizSession(mode: QuizMode) {
   ])
 
   useEffect(() => {
+    if (!shouldAutoGenerateQuizQuestion({
+      selectedOption: selectedOptionRef.current,
+      answerPending: answerPendingRef.current,
+    })) return
+
     const timer = setTimeout(() => {
       generateQuestion()
     }, 0)
@@ -141,6 +157,7 @@ export function useQuizSession(mode: QuizMode) {
     const result = recordAnswer(currentQuestion, val)
     const submission = resolveQuizAnswerSubmission(val, Boolean(result))
     answerPendingRef.current = submission.answerPending
+    selectedOptionRef.current = submission.selectedOption
     setSaveError(submission.saveError)
     setSelectedOption(submission.selectedOption)
   }, [currentQuestion, recordAnswer, selectedOption])

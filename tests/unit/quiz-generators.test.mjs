@@ -150,6 +150,19 @@ test("vocabulary quiz generators require enough unique options", () => {
   assert.equal(question, null)
 })
 
+test("vocabulary quiz generators do not fall back to the base pool when the target pool is empty", () => {
+  const question = quiz.generateQuizQuestion({
+    mode: "meaning-vocab",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: vocab,
+    vocabTargetPool: [],
+    random: () => 0,
+  })
+
+  assert.equal(question, null)
+})
+
 test("vocabulary unlearned filter stays empty when every item is learned", () => {
   assert.deepEqual(
     quiz.filterUnlearnedVocab(vocab, () => true, true),

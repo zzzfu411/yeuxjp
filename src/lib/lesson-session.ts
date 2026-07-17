@@ -1,8 +1,16 @@
 import type { Lesson, LessonStep } from "@/data/lessons"
 import type { LessonProgressMap, PracticeResult } from "@/lib/learning-progress-model"
-import type { Question } from "@/lib/questions"
+import { makeQuestionResult, type Question, type QuestionResult } from "@/lib/questions"
 
 export type LessonPracticeStep = Extract<LessonStep, { itemId: string }>
+
+export interface PersistedLessonStepAnswer {
+  answer?: string
+  correct: boolean
+  createdAt: number
+}
+
+export type PersistedLessonStepAnswerMap = Record<string, PersistedLessonStepAnswer>
 
 export function lessonStepToQuestion(step: LessonPracticeStep): Question {
   if (step.type === "multipleChoice") {
@@ -42,6 +50,27 @@ export function lessonStepToQuestion(step: LessonPracticeStep): Question {
     questionText: step.prompt,
     correctAnswer: step.answer,
     options: [{ value: step.answer, display: step.answer }],
+  }
+}
+
+export function resolveLessonStepSubmission(
+  step: LessonPracticeStep,
+  answer: string,
+  persisted?: PersistedLessonStepAnswer
+): { result: QuestionResult; shouldRecord: boolean } {
+  const question = lessonStepToQuestion(step)
+  if (!persisted) {
+    return { result: makeQuestionResult(question, answer), shouldRecord: true }
+  }
+
+  return {
+    result: {
+      question,
+      selectedAnswer: persisted.answer ?? answer,
+      correct: persisted.correct,
+      answeredAt: finiteNumber(persisted.createdAt, 0),
+    },
+    shouldRecord: false,
   }
 }
 
@@ -124,10 +153,13 @@ export function buildLessonRunnerViewModel({
   }
 }
 
-export function getLessonAnsweredFromResults(lessonId: string, steps: LessonStep[], results: PracticeResult[]) {
-  const practiceStepIds = new Set(countPracticeSteps(steps) ? steps.filter((step) => "itemId" in step).map((step) => step.id) : [])
-  const latestByStep = new Map<string, { correct: boolean; createdAt: number }>()
-  const answered: Record<string, boolean> = {}
+export function getLatestLessonStepAnswers(
+  lessonId: string,
+  steps: readonly LessonStep[],
+  results: readonly PracticeResult[]
+): PersistedLessonStepAnswerMap {
+  const practiceStepIds = new Set(steps.filter((step): step is LessonPracticeStep => "itemId" in step).map((step) => step.id))
+  const latestByStep = new Map<string, PersistedLessonStepAnswer>()
 
   for (const result of results) {
     if (result.lessonId !== lessonId) continue
@@ -137,10 +169,25 @@ export function getLessonAnsweredFromResults(lessonId: string, steps: LessonStep
     if (existing && createdAt < existing.createdAt) {
       continue
     }
-    latestByStep.set(result.lessonStepId, { correct: result.correct, createdAt })
+    latestByStep.set(result.lessonStepId, {
+      answer: typeof result.answer === "string" ? result.answer : undefined,
+      correct: result.correct,
+      createdAt,
+    })
   }
 
-  for (const [stepId, result] of latestByStep) {
+  return Object.fromEntries(latestByStep)
+}
+
+export function getLessonAnsweredFromResults(
+  lessonId: string,
+  steps: readonly LessonStep[],
+  results: readonly PracticeResult[]
+) {
+  const latestByStep = getLatestLessonStepAnswers(lessonId, steps, results)
+  const answered: Record<string, boolean> = {}
+
+  for (const [stepId, result] of Object.entries(latestByStep)) {
     answered[stepId] = result.correct
   }
 

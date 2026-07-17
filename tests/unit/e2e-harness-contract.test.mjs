@@ -157,6 +157,9 @@ test("E2E harness owns server lifecycle and storage helpers", () => {
   assert.match(harness, /await waitForProcessExit\(runningServer\)/)
   assert.match(harness, /export async function reuseOrStartDevServer/)
   assert.match(harness, /await waitForNextDevLockRelease\(\)/)
+  assert.match(harness, /export async function startBuiltProductionServer/)
+  assert.match(harness, /const productionBuildIdPath = path\.join\(appDir, "\.next", "BUILD_ID"\)/)
+  assert.match(harness, /Missing production build before \$\{label\}/)
   assert.match(harness, /export async function startProductionServer/)
   assert.match(harness, /import fs from "node:fs"/)
   assert.match(harness, /import net from "node:net"/)
@@ -250,10 +253,13 @@ test("browser-backed E2E scripts exit explicitly after cleanup", () => {
   assert.match(pwa, /await context\?\.close\(\)/)
 })
 
-test("HTTP smoke reuses the shared E2E server harness", () => {
+test("HTTP smoke verifies the existing production build through the shared E2E server harness", () => {
   assert.match(smoke, /createServerController/)
-  assert.match(smoke, /reuseOrStartDevServer\(\{ baseUrl, port, controller: serverController \}\)/)
+  assert.match(smoke, /startBuiltProductionServer/)
+  assert.match(smoke, /label: "HTTP production smoke"/)
   assert.match(smoke, /await serverController\.stop\(\)/)
+  assert.doesNotMatch(smoke, /reuseOrStartDevServer/)
+  assert.doesNotMatch(smoke, /E2E_BASE_URL/)
   assert.doesNotMatch(smoke, /from "node:child_process"/)
   assert.doesNotMatch(smoke, /spawnSync\("taskkill"/)
   assert.doesNotMatch(smoke, /waitForServer/)

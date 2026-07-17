@@ -241,6 +241,48 @@ export async function verifyDueReviewFlow(page, baseUrl) {
 
   await startActiveKanaReview(page, baseUrl)
 
+  const unrelatedPracticePage = await page.context().newPage()
+  try {
+    await unrelatedPracticePage.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+    await unrelatedPracticePage.evaluate((storageKeys) => {
+      localStorage.setItem(storageKeys.ITEM_PROGRESS, JSON.stringify({
+        "grammar:unrelated": {
+          itemId: "grammar:unrelated",
+          itemType: "grammar",
+          recognition: 0,
+          listening: 0,
+          meaning: 0,
+          recall: 0,
+          production: 18,
+          attempts: 1,
+          correct: 1,
+          updatedAt: Date.now(),
+        },
+      }))
+      localStorage.setItem(storageKeys.PRACTICE_RESULTS, JSON.stringify([{
+        itemId: "grammar:unrelated",
+        itemType: "grammar",
+        mode: "production",
+        correct: true,
+        createdAt: Date.now(),
+      }]))
+    }, E2E_STORAGE_KEYS)
+    await page.waitForFunction(() => new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve(true)))
+    }))
+    assert.equal(
+      await page.getByTestId("review-invalidated-state").count(),
+      0,
+      "unrelated cross-tab practice history should not invalidate an active review session"
+    )
+    assert.ok(
+      await page.getByTestId("review-answer-a").isVisible(),
+      "active review should remain answerable after unrelated cross-tab practice"
+    )
+  } finally {
+    await unrelatedPracticePage.close()
+  }
+
   const resetPage = await page.context().newPage()
   try {
     await resetPage.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
@@ -276,6 +318,8 @@ export async function verifyDueReviewFlow(page, baseUrl) {
         entries: {},
       })),
     })
+    await restorePage.getByTestId("learning-data-restore-dialog").waitFor({ state: "visible" })
+    await restorePage.getByTestId("learning-data-restore-dialog-confirm").click()
     await restorePage.waitForFunction((storageKeys) => {
       return localStorage.getItem(storageKeys.KANA_MASTERED) === null &&
         localStorage.getItem(storageKeys.SRS_KANA) === null

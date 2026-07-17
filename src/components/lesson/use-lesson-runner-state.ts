@@ -8,6 +8,7 @@ import { isLessonUnlocked } from "@/lib/learning-entry"
 import {
   buildLessonRunnerViewModel,
   countPracticeSteps,
+  getLatestLessonStepAnswers,
   getLessonAnsweredFromResults,
   resolveLessonResumeStepIndex,
 } from "@/lib/lesson-session"
@@ -53,6 +54,9 @@ export function useLessonRunnerState(lesson: Lesson) {
   const current = lesson.steps[stepIndex]
   const isLast = stepIndex === lesson.steps.length - 1
   const practiceSteps = useMemo(() => countPracticeSteps(lesson.steps), [lesson.steps])
+  const persistedStepAnswers = useMemo(() => {
+    return getLatestLessonStepAnswers(lesson.id, lesson.steps, results)
+  }, [lesson.id, lesson.steps, results])
   const restoredAnswered = useMemo(() => {
     return getLessonAnsweredFromResults(lesson.id, lesson.steps, results)
   }, [lesson.id, lesson.steps, results])
@@ -114,6 +118,7 @@ export function useLessonRunnerState(lesson: Lesson) {
     current,
     isLast,
     practiceSteps,
+    persistedStepAnswers,
     setAnsweredForLesson,
     lessonView,
     saveError,

@@ -87,16 +87,16 @@ test("E2E app health recognizes current app pages", () => {
     "/learn/day-1-a-row-hello",
   ])
   assert.deepEqual(Object.keys(appHealthRouteSentinels), appHealthRoutes)
-  assert.equal(getRouteHealthSentinels("/kana").some((sentinel) => sentinel.test("kana-card-a")), true)
+  assert.equal(getRouteHealthSentinels("/kana").some((sentinel) => sentinel.test('data-route-shell="kana"')), true)
   assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>"), true)
   assert.equal(pageLooksLikeYasashi("<html><body><div id=\"__next\"></div></body></html>"), true)
   assert.equal(pageLooksLikeYasashi("<html>home-start-learning</html>", "/"), true)
   assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>", "/kana"), false)
-  assert.equal(pageLooksLikeYasashi("<html>kana-card-a</html>", "/kana"), true)
-  assert.equal(pageLooksLikeYasashi("<html>Select Mode</html>", "/quiz"), true)
+  assert.equal(pageLooksLikeYasashi('<html data-route-shell="kana"></html>', "/kana"), true)
+  assert.equal(pageLooksLikeYasashi('<html data-route-shell="quiz"></html>', "/quiz"), true)
   assert.equal(pageLooksLikeYasashi("<html>path-next-learning</html>", "/path"), true)
-  assert.equal(pageLooksLikeYasashi("<html>grammar-point-n5-wa</html>", "/grammar"), false)
-  assert.equal(pageLooksLikeYasashi("<html>grammar-point-n5-wa Grammar Dojo</html>", "/grammar"), true)
+  assert.equal(pageLooksLikeYasashi("<html>Grammar Dojo</html>", "/grammar"), false)
+  assert.equal(pageLooksLikeYasashi('<html data-route-shell="grammar"></html>', "/grammar"), true)
   assert.equal(pageLooksLikeYasashi("<html>learning-data-panel</html>", "/review"), false)
   assert.equal(pageLooksLikeYasashi("<html>learning-data-panel review-empty-state</html>", "/review"), true)
   assert.equal(pageLooksLikeYasashi("<html>Different local app</html>"), false)
@@ -115,7 +115,7 @@ test("E2E app health checks every candidate route before reusing a server", asyn
   const fetchImpl = async (url) => {
     seen.push(url)
     if (url.endsWith("/kana")) return fakeResponse(404, "not found")
-    if (url.endsWith("/quiz")) return fakeResponse(200, "Select Mode")
+    if (url.endsWith("/quiz")) return fakeResponse(200, '<div data-route-shell="quiz"></div>')
     return fakeResponse(200, "home-start-learning")
   }
 

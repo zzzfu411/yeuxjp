@@ -25,12 +25,12 @@ const defaultPageSentinelGroups = { any: [/Yasashi Japanese/, /__next/] }
 
 export const appHealthRouteSentinels = {
   "/": { all: [/home-start-learning/] },
-  "/kana": { all: [/kana-card-a/] },
-  "/vocabulary": { all: [/vocabulary-search/] },
-  "/quiz": { all: [/Select Mode/] },
+  "/kana": { all: [/data-route-shell="kana"/] },
+  "/vocabulary": { all: [/data-route-shell="vocabulary"/] },
+  "/quiz": { all: [/data-route-shell="quiz"/] },
   "/review": { all: [/learning-data-panel/], any: [/review-empty-state/, /review-scheduled-empty-state/] },
   "/path": { all: [/path-next-learning/] },
-  "/grammar": { all: [/grammar-point-n5-wa/, /Grammar Dojo/] },
+  "/grammar": { all: [/data-route-shell="grammar"/] },
   "/semantics": { all: [/Nuance Lab/, /s-shiru-wakaru/] },
   "/semantics/s-shiru-wakaru": { all: [/Nuance Lab/, /s-shiru-wakaru/] },
   "/pragmatics": { all: [/p-aisatsu-morning/] },

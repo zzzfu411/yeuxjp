@@ -34,7 +34,7 @@ export function QuizAnswerFeedback({
   const isCorrect = isQuestionAnswerCorrect(question, selectedOption)
 
   return (
-    <div role="status" aria-live="polite" className="contents">
+    <div role="status" aria-live="polite" className="contents" data-testid="quiz-answer-feedback">
       {mode === "particle" && question.questionText && (
         <ParticleFillFeedback
           sentence={question.questionText}

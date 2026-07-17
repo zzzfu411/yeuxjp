@@ -5,9 +5,11 @@ import type { LessonStep } from "@/data/lessons"
 import { isPracticeStep } from "@/data/lessons"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import { recordQuestionPractice } from "@/lib/learning-session"
-import { lessonStepToQuestion } from "@/lib/lesson-session"
+import {
+  resolveLessonStepSubmission,
+  type PersistedLessonStepAnswerMap,
+} from "@/lib/lesson-session"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
-import { makeQuestionResult } from "@/lib/questions"
 
 type LearningProgressApi = ReturnType<typeof useLearningProgress>
 type MistakeNotebookApi = ReturnType<typeof useMistakeNotebook>
@@ -16,20 +18,21 @@ export function useLessonAnswerRecorder({
   lessonId,
   progress,
   notebook,
+  persistedAnswers,
   setAnswered,
 }: {
   lessonId: string
   progress: LearningProgressApi
   notebook: MistakeNotebookApi
+  persistedAnswers: PersistedLessonStepAnswerMap
   setAnswered: Dispatch<SetStateAction<Record<string, boolean>>>
 }) {
   return useCallback((step: LessonStep, answer: string) => {
     if (!isPracticeStep(step)) return null
 
-    const question = lessonStepToQuestion(step)
-    const result = makeQuestionResult(question, answer)
+    const { result, shouldRecord } = resolveLessonStepSubmission(step, answer, persistedAnswers[step.id])
 
-    if (!recordQuestionPractice({
+    if (shouldRecord && !recordQuestionPractice({
       progress,
       notebook,
       result,
@@ -41,5 +44,5 @@ export function useLessonAnswerRecorder({
 
     setAnswered((prev) => ({ ...prev, [step.id]: result.correct }))
     return result
-  }, [lessonId, notebook, progress, setAnswered])
+  }, [lessonId, notebook, persistedAnswers, progress, setAnswered])
 }

@@ -2,6 +2,7 @@
   "name": "Yasashi Japanese",
   "short_name": "Yasashi",
   "description": "A gentle Japanese learning app for kana, vocabulary, grammar, quiz, and review.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

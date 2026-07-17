@@ -1,4 +1,6 @@
 import assert from "node:assert/strict"
+import fs from "node:fs"
+import path from "node:path"
 import {
   createPageIssueCollector,
   createServerController,
@@ -32,6 +34,10 @@ const semanticsItemId = "s-shiru-wakaru"
 const semanticsDetailPath = `/semantics/${semanticsItemId}`
 const pragmaticsItemId = "p-aisatsu-morning"
 const pragmaticsDetailPath = `/pragmatics/${pragmaticsItemId}`
+const animCjkStressPaths = fs.readdirSync(path.resolve(import.meta.dirname, "../../public/animcjk/kana"))
+  .filter((fileName) => fileName.endsWith(".svg"))
+  .slice(0, 72)
+  .map((fileName) => `/animcjk/kana/${fileName}`)
 
 async function ensureProductionServer() {
   baseUrl = await startProductionServer({
@@ -68,23 +74,83 @@ async function disableHttpCache(context, page) {
   return cdp
 }
 
-async function assertServiceWorkerStaticCache(page) {
-  const cacheState = await page.evaluate(async () => {
+async function readServiceWorkerCacheState(page) {
+  return page.evaluate(async () => {
     const names = await caches.keys()
-    const staticCacheName = names.find((name) => name.startsWith("yasashi-static-"))
-    if (!staticCacheName) return { staticCacheName: null, nextStaticUrls: [] }
+    const shellCacheName = names.find((name) => name.startsWith("yasashi-shell-")) ?? null
+    const runtimeCacheName = names.find((name) => name.startsWith("yasashi-runtime-")) ?? null
+    const shellUrls = shellCacheName
+      ? (await (await caches.open(shellCacheName)).keys()).map((request) => request.url)
+      : []
+    const runtimeUrls = runtimeCacheName
+      ? (await (await caches.open(runtimeCacheName)).keys()).map((request) => request.url)
+      : []
 
-    const cache = await caches.open(staticCacheName)
-    const keys = await cache.keys()
-    const nextStaticUrls = keys
-      .map((request) => request.url)
-      .filter((url) => url.includes("/_next/static/"))
-
-    return { staticCacheName, nextStaticUrls }
+    return { shellCacheName, runtimeCacheName, shellUrls, runtimeUrls }
   })
+}
 
-  assert.ok(cacheState.staticCacheName, "service worker should create the Yasashi static cache")
-  assert.ok(cacheState.nextStaticUrls.length > 0, "service worker static cache should contain Next static assets")
+async function assertServiceWorkerCachePartitions(page) {
+  await page.waitForFunction(async () => {
+    if (document.documentElement.dataset.pwaAppShellReady !== "true") return false
+    const names = await caches.keys()
+    const shellCacheName = names.find((name) => name.startsWith("yasashi-shell-"))
+    if (!shellCacheName) return false
+    const urls = (await (await caches.open(shellCacheName)).keys()).map((request) => request.url)
+    return urls.some((url) => url.includes("/_next/static/") && url.endsWith(".js")) &&
+      urls.some((url) => url.includes("/_next/static/") && url.endsWith(".css"))
+  }, undefined, { timeout: 15_000 })
+
+  const cacheState = await readServiceWorkerCacheState(page)
+  const nextStaticUrls = cacheState.shellUrls.filter((url) => url.includes("/_next/static/"))
+
+  assert.ok(cacheState.shellCacheName, "service worker should create the Yasashi shell cache")
+  assert.ok(cacheState.runtimeCacheName, "service worker should create the Yasashi runtime cache")
+  assert.ok(nextStaticUrls.some((url) => url.endsWith(".js")), "shell cache should contain current-page Next JavaScript")
+  assert.ok(nextStaticUrls.some((url) => url.endsWith(".css")), "shell cache should contain current-page Next CSS")
+  assert.equal(
+    cacheState.shellUrls.some((url) => url.includes("/animcjk/") || url.includes("/_next/image")),
+    false,
+    "shell cache should not contain runtime media"
+  )
+  assert.equal(
+    cacheState.runtimeUrls.some((url) => url.includes("/_next/static/")),
+    false,
+    "runtime media cache should not contain Next startup chunks"
+  )
+  return nextStaticUrls
+}
+
+async function waitForRealImages(page) {
+  await page.waitForFunction(() => {
+    const images = Array.from(document.images).filter((image) => {
+      const source = image.currentSrc || image.src
+      return source && !source.startsWith("data:") && !source.startsWith("blob:")
+    })
+    return images.length > 0 && images.every((image) => image.complete && image.naturalWidth > 0)
+  }, undefined, { timeout: 15_000 })
+}
+
+async function stressRuntimeMediaCache(page, startupNextStaticUrls) {
+  const results = await page.evaluate(async (paths) => {
+    const statuses = []
+    for (const assetPath of paths) {
+      const response = await fetch(assetPath)
+      statuses.push({ assetPath, ok: response.ok, contentType: response.headers.get("content-type") ?? "" })
+      await response.arrayBuffer()
+    }
+    return statuses
+  }, animCjkStressPaths)
+
+  assert.equal(results.length, animCjkStressPaths.length, "runtime cache stress should request every selected AnimCJK SVG")
+  assert.ok(results.every((result) => result.ok && /svg/i.test(result.contentType)), "runtime cache stress should load real AnimCJK SVGs")
+
+  const cacheState = await readServiceWorkerCacheState(page)
+  assert.ok(
+    startupNextStaticUrls.every((url) => cacheState.shellUrls.includes(url)),
+    "runtime media eviction must preserve every startup Next resource"
+  )
+  assert.ok(cacheState.runtimeUrls.length <= 64, "runtime media cache should remain within its independent entry limit")
 }
 
 async function assertPwaInstallAssets(page, phase) {
@@ -100,6 +166,7 @@ async function assertPwaInstallAssets(page, phase) {
 
   assert.equal(manifest.ok, true, `${phase} manifest should be readable`)
   assert.match(manifest.contentType, /json|manifest/i, `${phase} manifest should have a JSON-like content type`)
+  assert.equal(manifest.json.id, "/", `${phase} manifest should keep a stable app identity`)
   assert.equal(manifest.json.start_url, "/", `${phase} manifest should keep the app start URL`)
   assert.equal(manifest.json.scope, "/", `${phase} manifest should keep the app scope`)
   assert.equal(manifest.json.display, "standalone", `${phase} manifest should remain installable`)
@@ -212,10 +279,21 @@ try {
 
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   await waitForServiceWorker(page)
-  await page.reload({ waitUntil: "networkidle" })
-  await waitForServiceWorker(page)
-  await assertServiceWorkerStaticCache(page)
+  const startupNextStaticUrls = await assertServiceWorkerCachePartitions(page)
+  await waitForRealImages(page)
+  await cdp.send("Network.clearBrowserCache")
+  allowOfflineResourceFailures = true
+  await context.setOffline(true)
+  await page.reload({ waitUntil: "domcontentloaded" })
+  await page.getByTestId("home-start-learning").waitFor({ state: "visible", timeout: 10_000 })
+  const wasDark = await page.locator("html").evaluate((element) => element.classList.contains("dark"))
+  await page.getByRole("button", { name: "Toggle theme" }).click()
+  await page.waitForFunction((previous) => document.documentElement.classList.contains("dark") !== previous, wasDark)
+  await waitForRealImages(page)
+  await context.setOffline(false)
+  allowOfflineResourceFailures = false
   await assertPwaInstallAssets(page, "online PWA install asset")
+  await stressRuntimeMediaCache(page, startupNextStaticUrls)
 
   await page.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
   await page.getByTestId("kana-card-a").waitFor({ state: "visible", timeout: 10_000 })
@@ -256,6 +334,7 @@ try {
   await assertBodyIncludes(page, PRAGMATICS_MORNING_TITLE, "online pragmatics prewarm should load the fixed detail page")
   await assertBodyIncludes(page, OHAYOU_GOZAIMASU, "online pragmatics prewarm should load example responses")
   await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await waitForRealImages(page)
 
   const visitedLessonUrl = `${baseUrl}/learn/day-1-a-row-hello`
   await page.getByTestId("home-start-learning").click()

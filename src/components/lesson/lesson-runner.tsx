@@ -31,6 +31,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     current,
     isLast,
     practiceSteps,
+    persistedStepAnswers,
     setAnsweredForLesson,
     lessonView,
     saveError,
@@ -52,6 +53,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     lessonId: lesson.id,
     progress,
     notebook: mistakes,
+    persistedAnswers: persistedStepAnswers,
     setAnswered: setAnsweredForLesson,
   })
   const {
@@ -71,6 +73,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     current,
     readOnly: lessonReadOnly,
     recordAnswer,
+    restoredAnswer: persistedStepAnswers[current.id],
     setSaveError,
   })
 

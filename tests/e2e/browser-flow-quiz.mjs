@@ -245,6 +245,86 @@ async function verifyQuizScopeControls(page, baseUrl) {
   )
 }
 
+async function verifyFilteredVocabularyQuizTransitions(page, baseUrl) {
+  const survivalVocabIds = quizVocabIdsByLevel.survival
+  assert.ok(survivalVocabIds.length >= 4, "survival vocabulary should support four-option quiz questions")
+
+  await openQuizModeWithLearningState(page, baseUrl, "meaning-vocab", {
+    learnedVocab: survivalVocabIds,
+  })
+  await page.getByTestId("quiz-only-unlearned-vocab").click()
+  await page.getByTestId("quiz-empty-state").waitFor({ state: "visible" })
+  assert.equal(
+    await page.locator('[data-testid^="quiz-answer-option-"]').count(),
+    0,
+    "all-learned vocabulary filters should show an empty state instead of falling back to the base pool"
+  )
+
+  const [lastUnlearnedVocabId] = survivalVocabIds
+  const learnedExceptTarget = survivalVocabIds.filter((id) => id !== lastUnlearnedVocabId)
+  await openQuizModeWithLearningState(page, baseUrl, "meaning-vocab", {
+    learnedVocab: learnedExceptTarget,
+  })
+  await page.evaluate(({ storageKey, id }) => {
+    localStorage.setItem(storageKey, JSON.stringify({
+      [id]: {
+        itemId: id,
+        itemType: "vocab",
+        recognition: 0,
+        listening: 0,
+        meaning: 30,
+        recall: 0,
+        production: 0,
+        attempts: 1,
+        correct: 1,
+        updatedAt: Date.now(),
+      },
+    }))
+    Math.random = () => 0
+  }, { storageKey: E2E_STORAGE_KEYS.ITEM_PROGRESS, id: lastUnlearnedVocabId })
+  await clickQuizScopeAndWaitForQuestionRefresh(page, "quiz-only-unlearned-vocab")
+
+  const promptBeforeAnswer = (await page.getByTestId("quiz-question-text").innerText()).trim()
+  assert.equal(
+    getVocabularyIdForPrompt(promptBeforeAnswer),
+    lastUnlearnedVocabId,
+    "the filtered vocabulary quiz should show its last unlearned target"
+  )
+
+  await clickQuizOptionByValueAndReadPractice(page, lastUnlearnedVocabId)
+  await page.waitForFunction(({ storageKey, id }) => {
+    const items = JSON.parse(localStorage.getItem(storageKey) ?? "{}")
+    return items?.[id]?.meaning >= 40
+  }, { storageKey: E2E_STORAGE_KEYS.ITEM_PROGRESS, id: lastUnlearnedVocabId })
+  await page.evaluate(() => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  }))
+
+  assert.equal(
+    (await page.getByTestId("quiz-question-text").innerText()).trim(),
+    promptBeforeAnswer,
+    "answer-driven learning.items updates should keep the answered question mounted"
+  )
+  const answeredOption = page.locator(`[data-answer-value="${lastUnlearnedVocabId}"]`)
+  assert.equal(
+    await answeredOption.getAttribute("data-feedback"),
+    "correct",
+    "answer feedback should remain visible after learning.items updates"
+  )
+  assert.equal(await answeredOption.isDisabled(), true, "the answered options should stay frozen")
+  await page.getByTestId("quiz-answer-feedback").waitFor({ state: "attached" })
+  await page.getByTestId("quiz-next-question").waitFor({ state: "visible" })
+  assert.equal(await page.getByTestId("quiz-empty-state").count(), 0)
+
+  await page.getByTestId("quiz-next-question").click()
+  await page.getByTestId("quiz-empty-state").waitFor({ state: "visible" })
+  assert.equal(
+    await page.getByTestId("quiz-question-text").count(),
+    0,
+    "the exhausted filtered pool should advance only after the learner clicks next"
+  )
+}
+
 export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   await openQuizMode(page, baseUrl, "hiragana-romaji")
   await page.getByTestId("quiz-question-text").waitFor({ state: "visible" })
@@ -423,6 +503,7 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   await verifyVocabularyQuizMistakeReviewFlow(page, baseUrl)
 
   await verifyQuizScopeControls(page, baseUrl)
+  await verifyFilteredVocabularyQuizTransitions(page, baseUrl)
 
   await page.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
   await page.evaluate(({ masteredIds, key }) => {

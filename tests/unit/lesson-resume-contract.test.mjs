@@ -22,8 +22,12 @@ test("LessonRunner restores a saved lesson step only after progress storage has 
 
 test("LessonRunner restores answered practice state from persisted results", () => {
   const source = read("src/components/lesson/use-lesson-runner-state.ts")
+  const runner = read("src/components/lesson/lesson-runner.tsx")
   const session = read("src/lib/lesson-session.ts")
 
+  assert.match(source, /getLatestLessonStepAnswers/)
+  assert.match(source, /getLatestLessonStepAnswers\(lesson\.id, lesson\.steps, results\)/)
+  assert.match(source, /persistedStepAnswers/)
   assert.match(source, /getLessonAnsweredFromResults/)
   assert.match(source, /getLessonAnsweredFromResults\(lesson\.id, lesson\.steps, results\)/)
   assert.match(source, /answeredDraft/)
@@ -33,6 +37,8 @@ test("LessonRunner restores answered practice state from persisted results", () 
   assert.match(source, /answered,/)
   assert.match(session, /countCorrectLessonAnswers/)
   assert.match(session, /const correctCount = countCorrectLessonAnswers\(answered\)/)
+  assert.match(runner, /persistedAnswers: persistedStepAnswers/)
+  assert.match(runner, /restoredAnswer: persistedStepAnswers\[current\.id\]/)
 })
 
 test("LessonRunner saves step position through the shared learning progress facade", () => {

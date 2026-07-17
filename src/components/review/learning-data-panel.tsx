@@ -9,6 +9,7 @@ import {
   restoreLearningBackup,
   resetLearningData,
   tryCreateLearningBackup,
+  type LearningBackup,
 } from "@/lib/learning-store"
 import { cn } from "@/lib/utils"
 
@@ -17,15 +18,39 @@ type Notice = {
   text: string
 }
 
+const LEARNING_BACKUP_FILE_MAX_BYTES = 2 * 1024 * 1024
+
 function backupFileName(exportedAt: number) {
   const stamp = new Date(exportedAt).toISOString().slice(0, 19).replace(/:/g, "-").replace("T", "-")
   return `yasashi-learning-backup-${stamp}.json`
+}
+
+function backupExportTime(exportedAt: number) {
+  try {
+    return new Intl.DateTimeFormat("zh-CN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(exportedAt))
+  } catch {
+    return "时间未知"
+  }
+}
+
+function backupRestoreDescription(backup: LearningBackup) {
+  const entryCount = Object.keys(backup.entries).length
+  const time = backupExportTime(backup.exportedAt)
+  if (entryCount === 0) {
+    return `备份时间：${time}。该备份不含学习数据；恢复后会清空当前浏览器里的进度、SRS、错题本和朗读偏好。`
+  }
+  return `备份时间：${time}，包含 ${entryCount} 类本地数据。恢复后会替换当前浏览器里的进度、SRS、错题本和朗读偏好。`
 }
 
 export function LearningDataPanel({ className }: { className?: string }) {
   const fileRef = React.useRef<HTMLInputElement | null>(null)
   const [notice, setNotice] = React.useState<Notice | null>(null)
   const [resetDialogOpen, setResetDialogOpen] = React.useState(false)
+  const [pendingBackup, setPendingBackup] = React.useState<LearningBackup | null>(null)
+  const [readingBackup, setReadingBackup] = React.useState(false)
 
   const exportData = React.useCallback(() => {
     setResetDialogOpen(false)
@@ -56,6 +81,15 @@ export function LearningDataPanel({ className }: { className?: string }) {
 
   const importData = React.useCallback((file: File) => {
     setResetDialogOpen(false)
+    setPendingBackup(null)
+    setNotice(null)
+
+    if (file.size > LEARNING_BACKUP_FILE_MAX_BYTES) {
+      setNotice({ tone: "error", text: "备份文件超过 2 MB，无法导入。" })
+      return
+    }
+
+    setReadingBackup(true)
     const reader = new FileReader()
     reader.onload = () => {
       const backup = parseLearningBackup(String(reader.result ?? ""))
@@ -64,21 +98,31 @@ export function LearningDataPanel({ className }: { className?: string }) {
         return
       }
 
-      if (!restoreLearningBackup(backup)) {
-        setNotice({ tone: "error", text: "导入失败。" })
-        return
-      }
-
-      setNotice({ tone: "success", text: "学习数据已恢复。" })
-      setResetDialogOpen(false)
+      setPendingBackup(backup)
     }
+    reader.onloadend = () => setReadingBackup(false)
     reader.onerror = () => setNotice({ tone: "error", text: "备份文件无法读取。" })
+    reader.onabort = () => setNotice({ tone: "error", text: "备份文件读取已取消。" })
     try {
       reader.readAsText(file)
     } catch {
+      setReadingBackup(false)
       setNotice({ tone: "error", text: "备份文件无法读取。" })
     }
   }, [])
+
+  const restorePendingBackup = React.useCallback(() => {
+    if (!pendingBackup) return
+
+    if (!restoreLearningBackup(pendingBackup)) {
+      setNotice({ tone: "error", text: "导入失败。" })
+      setPendingBackup(null)
+      return
+    }
+
+    setNotice({ tone: "success", text: "学习数据已恢复。" })
+    setPendingBackup(null)
+  }, [pendingBackup])
 
   const resetData = React.useCallback(() => {
     if (resetLearningData()) {
@@ -108,11 +152,12 @@ export function LearningDataPanel({ className }: { className?: string }) {
             variant="outline"
             size="sm"
             className="gap-1.5 rounded-full"
+            disabled={readingBackup}
             onClick={() => fileRef.current?.click()}
             data-testid="learning-data-import"
           >
             <Upload className="h-3.5 w-3.5" />
-            导入
+            {readingBackup ? "读取中" : "导入"}
           </Button>
           <Button
             type="button"
@@ -153,7 +198,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
               ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-950/30 dark:text-green-200"
               : "border-destructive/30 bg-destructive/10 text-destructive"
           )}
-          role="status"
+          role={notice.tone === "error" ? "alert" : "status"}
           aria-live="polite"
           data-testid="learning-data-notice"
           data-tone={notice.tone}
@@ -161,6 +206,18 @@ export function LearningDataPanel({ className }: { className?: string }) {
           {notice.text}
         </div>
       ) : null}
+
+      <ConfirmActionDialog
+        open={pendingBackup !== null}
+        title="恢复学习数据"
+        description={pendingBackup
+          ? backupRestoreDescription(pendingBackup)
+          : "恢复后会替换当前浏览器里的本地学习数据。"}
+        confirmLabel="恢复数据"
+        testId="learning-data-restore-dialog"
+        onCancel={() => setPendingBackup(null)}
+        onConfirm={restorePendingBackup}
+      />
 
       <ConfirmActionDialog
         open={resetDialogOpen}

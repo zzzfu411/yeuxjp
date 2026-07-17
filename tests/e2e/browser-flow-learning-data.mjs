@@ -84,6 +84,44 @@ export async function verifyLearningDataFlow(page, baseUrl) {
     "malformed but valid JSON backup import should not overwrite managed learning keys"
   )
 
+  const unknownKeyFileChooserPromise = page.waitForEvent("filechooser")
+  await page.getByTestId("learning-data-import").click()
+  const unknownKeyFileChooser = await unknownKeyFileChooserPromise
+  await unknownKeyFileChooser.setFiles({
+    name: "unknown-key-yasashi-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify({
+      version: 2,
+      exportedAt: Date.now(),
+      entries: { "unexpected.backup.entry": "{}" },
+    })),
+  })
+  await page.waitForFunction(() =>
+    document.querySelector('[data-testid="learning-data-notice"]')?.getAttribute("data-tone") === "error"
+  )
+  assert.equal(await page.getByTestId("learning-data-restore-dialog").count(), 0)
+  assertManagedLearningSnapshot(
+    await readManagedLearningBackupSnapshot(page),
+    seededLearningBackupSnapshot,
+    "backup files with unknown keys should be rejected instead of clearing managed learning data"
+  )
+
+  const oversizedFileChooserPromise = page.waitForEvent("filechooser")
+  await page.getByTestId("learning-data-import").click()
+  const oversizedFileChooser = await oversizedFileChooserPromise
+  await oversizedFileChooser.setFiles({
+    name: "oversized-yasashi-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.alloc(2 * 1024 * 1024 + 1, " "),
+  })
+  await page.getByTestId("learning-data-notice").getByText("备份文件超过 2 MB，无法导入。").waitFor({ state: "visible" })
+  assert.equal(await page.getByTestId("learning-data-restore-dialog").count(), 0)
+  assertManagedLearningSnapshot(
+    await readManagedLearningBackupSnapshot(page),
+    seededLearningBackupSnapshot,
+    "oversized learning data import should be rejected before replacing managed learning keys"
+  )
+
   const staleBackup = {
     ...exportedBackup,
     version: 1,
@@ -136,6 +174,30 @@ export async function verifyLearningDataFlow(page, baseUrl) {
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(staleBackup)),
   })
+  await page.getByTestId("learning-data-restore-dialog").waitFor({ state: "visible" })
+  assertManagedLearningSnapshot(
+    await readManagedLearningBackupSnapshot(page),
+    seededLearningBackupSnapshot,
+    "selecting a valid backup should not replace managed learning keys before confirmation"
+  )
+  await page.getByTestId("learning-data-restore-dialog-cancel").click()
+  await page.getByTestId("learning-data-restore-dialog").waitFor({ state: "hidden" })
+  assertManagedLearningSnapshot(
+    await readManagedLearningBackupSnapshot(page),
+    seededLearningBackupSnapshot,
+    "canceling learning data restore should keep managed learning keys"
+  )
+
+  const confirmedStaleFileChooserPromise = page.waitForEvent("filechooser")
+  await page.getByTestId("learning-data-import").click()
+  const confirmedStaleFileChooser = await confirmedStaleFileChooserPromise
+  await confirmedStaleFileChooser.setFiles({
+    name: "stale-yasashi-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(staleBackup)),
+  })
+  await page.getByTestId("learning-data-restore-dialog").waitFor({ state: "visible" })
+  await page.getByTestId("learning-data-restore-dialog-confirm").click()
   await page.waitForFunction(() =>
     document.querySelector('[data-testid="learning-data-notice"]')?.getAttribute("data-tone") === "success"
   )
@@ -199,6 +261,13 @@ export async function verifyLearningDataFlow(page, baseUrl) {
   await page.getByTestId("learning-data-import").click()
   const fileChooser = await fileChooserPromise
   await fileChooser.setFiles(backupPath)
+  await page.getByTestId("learning-data-restore-dialog").waitFor({ state: "visible" })
+  assertManagedLearningSnapshot(
+    await readManagedLearningBackupSnapshot(page),
+    resetSnapshot,
+    "selecting the exported backup should keep reset state until restore is confirmed"
+  )
+  await page.getByTestId("learning-data-restore-dialog-confirm").click()
   await page.waitForFunction((keys) => keys.every((key) => localStorage.getItem(key) !== null), managedLearningBackupKeys)
   await assertReviewDashboardDue(page, "learning data import should update the review dashboard without reloading")
   const restoredSnapshot = await readManagedLearningBackupSnapshot(page)

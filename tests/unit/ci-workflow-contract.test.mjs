@@ -76,6 +76,8 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
   assert.match(workflow, /tests\/e2e\/\(pwa-offline\\\.mjs\|harness\\\.mjs\|storage-keys\\\.mjs\|browser-fixtures\\\.mjs\|browser-fixture-\.\*\\\.mjs\)/)
   assert.match(workflow, /package\\\.json/)
   assert.match(workflow, /package-lock\\\.json/)
+  assert.match(workflow, /next\\\.config\\\.\.\*/)
+  assert.match(workflow, /scripts\/\(build\|build-lock\)\\\.mjs/)
   assert.match(workflow, /run: npm run e2e:install:ci/)
   assert.match(workflow, /run: npm run e2e:pwa:required/)
   assert.doesNotMatch(workflow, /run: npm run e2e:pwa\s*$/m)
@@ -128,11 +130,17 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
     "tests/e2e/harness.mjs",
     "tests/e2e/storage-keys.mjs",
     "tests/e2e/browser-fixture-review.mjs",
+    "next.config.ts",
+    "postcss.config.mjs",
+    "tailwind.config.ts",
+    "eslint.config.mjs",
+    "tsconfig.json",
+    "scripts/build.mjs",
+    "scripts/build-lock.mjs",
     "package-lock.json",
   ])
   assertPathsDoNotMatch(pwa, [
     "README.md",
-    "scripts/build.mjs",
     "tests/e2e/browser-flow-lesson.mjs",
     "tests/e2e/browser-flow-pwa.mjs",
   ])
@@ -156,6 +164,8 @@ test("GitHub Actions workflow automatically runs strict browser gates for learni
   assert.match(workflow, /tests\/e2e\/\(browser\\\.mjs\|browser-\.\*\\\.mjs\|harness\\\.mjs\|storage-keys\\\.mjs\)/)
   assert.match(workflow, /package\\\.json/)
   assert.match(workflow, /package-lock\\\.json/)
+  assert.match(workflow, /next\\\.config\\\.\.\*/)
+  assert.match(workflow, /scripts\/\(build\|build-lock\)\\\.mjs/)
   assert.match(workflow, /run: npm run e2e:install:ci/)
   assert.match(workflow, /run: npm run e2e:browser:required/)
   assert.doesNotMatch(workflow, /run: npm run e2e:browser\s*$/m)
@@ -203,12 +213,18 @@ test("GitHub Actions workflow automatically runs strict browser gates for learni
     "tests/e2e/browser-fixture-learning-data.mjs",
     "tests/e2e/harness.mjs",
     "tests/e2e/storage-keys.mjs",
+    "next.config.ts",
+    "postcss.config.mjs",
+    "tailwind.config.ts",
+    "eslint.config.mjs",
+    "tsconfig.json",
+    "scripts/build.mjs",
+    "scripts/build-lock.mjs",
     "package-lock.json",
   ])
   assertPathsDoNotMatch(browser, [
     "README.md",
     "public/offline.html",
     "public/icons/icon-192.png",
-    "scripts/build.mjs",
   ])
 })

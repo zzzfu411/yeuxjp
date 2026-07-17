@@ -171,7 +171,7 @@ function VocabularyPageContent() {
       <ConfirmActionDialog
         open={confirmClearOpen}
         title="清空词汇掌握进度？"
-        description="当前词汇掌握标记会被清空。复习记录、错题本和其他学习数据不会被删除。"
+        description="显式掌握标记及词汇 SRS 箱位、到期时间会被清空。练习历史、错题本和由练习成绩推导的掌握状态会保留。"
         confirmLabel="清空进度"
         testId="vocabulary-clear-progress-dialog"
         onConfirm={handleConfirmClearLearned}

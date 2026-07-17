@@ -32,7 +32,7 @@ for (const [name, source] of [
 }
 
 test("app README documents the current E2E coverage layers", () => {
-  assert.match(webReadme, /inside `web\/`/)
+  assert.match(webReadme, /Git repository is the Next\.js app root/)
   assert.match(webReadme, /npm run check/)
   assert.match(webReadme, /npm run check:release/)
   assert.match(webReadme, /HTTP route health/)

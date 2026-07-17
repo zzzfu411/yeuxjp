@@ -37,6 +37,7 @@ test("QuizOptionGrid owns quiz option feedback visuals", () => {
   assert.match(source, /aria-pressed=\{selectedOption === option\.value\}/)
   assert.match(source, /disabled=\{selectedOption != null\}/)
   assert.match(source, /data-answer-value=\{option\.value\}/)
+  assert.match(source, /data-feedback=\{feedback\}/)
   assert.match(source, /data-testid=\{`quiz-answer-option-\$\{index\}`\}/)
   assert.match(source, /CheckCircle2/)
   assert.match(source, /XCircle/)

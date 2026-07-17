@@ -86,6 +86,7 @@ test("lesson answered state restores the latest result for each practice step", 
       itemType: "kana",
       mode: "recognition",
       correct: false,
+      answer: "i",
       createdAt: 1,
     },
     {
@@ -95,6 +96,7 @@ test("lesson answered state restores the latest result for each practice step", 
       itemType: "kana",
       mode: "recognition",
       correct: true,
+      answer: "a",
       createdAt: 2,
     },
     {
@@ -104,6 +106,7 @@ test("lesson answered state restores the latest result for each practice step", 
       itemType: "kana",
       mode: "recognition",
       correct: false,
+      answer: "u",
       createdAt: 0,
     },
     {
@@ -127,6 +130,47 @@ test("lesson answered state restores the latest result for each practice step", 
   ])
 
   assert.deepEqual(answered, { "recognize-a": true })
+  assert.deepEqual(session.getLatestLessonStepAnswers("day-1-a-row-hello", lesson.steps, [
+    {
+      lessonId: "day-1-a-row-hello",
+      lessonStepId: "recognize-a",
+      itemId: "hiragana:a",
+      itemType: "kana",
+      mode: "recognition",
+      correct: false,
+      answer: "i",
+      createdAt: 1,
+    },
+    {
+      lessonId: "day-1-a-row-hello",
+      lessonStepId: "recognize-a",
+      itemId: "hiragana:a",
+      itemType: "kana",
+      mode: "recognition",
+      correct: true,
+      answer: "a",
+      createdAt: 2,
+    },
+  ]), {
+    "recognize-a": { answer: "a", correct: true, createdAt: 2 },
+  })
+})
+
+test("persisted lesson step submissions reuse the saved answer without another write", () => {
+  const lesson = lessons.STARTER_LESSONS[0]
+  const step = lesson.steps.find((item) => item.id === "recognize-a")
+  const persisted = { answer: "i", correct: false, createdAt: 123 }
+
+  const duplicate = session.resolveLessonStepSubmission(step, "a", persisted)
+  assert.equal(duplicate.shouldRecord, false)
+  assert.equal(duplicate.result.selectedAnswer, "i")
+  assert.equal(duplicate.result.correct, false)
+  assert.equal(duplicate.result.answeredAt, 123)
+
+  const fresh = session.resolveLessonStepSubmission(step, "a")
+  assert.equal(fresh.shouldRecord, true)
+  assert.equal(fresh.result.selectedAnswer, "a")
+  assert.equal(fresh.result.correct, true)
 })
 
 test("lesson resume indexes are clamped to existing lesson steps", () => {

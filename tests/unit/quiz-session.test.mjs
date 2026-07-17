@@ -40,6 +40,25 @@ test("quiz answer submissions start only for unanswered active questions", () =>
   }), false)
 })
 
+test("quiz auto-generation pauses while an answer is pending or visible", () => {
+  assert.equal(session.shouldAutoGenerateQuizQuestion({
+    selectedOption: null,
+    answerPending: false,
+  }), true)
+  assert.equal(session.shouldAutoGenerateQuizQuestion({
+    selectedOption: null,
+    answerPending: true,
+  }), false)
+  assert.equal(session.shouldAutoGenerateQuizQuestion({
+    selectedOption: "vocab-id",
+    answerPending: false,
+  }), false)
+  assert.equal(session.shouldAutoGenerateQuizQuestion({
+    selectedOption: "vocab-id",
+    answerPending: true,
+  }), false)
+})
+
 test("quiz answer submission state preserves retryability after save failures", () => {
   assert.deepEqual(session.resolveQuizAnswerSubmission("a", false), {
     answerPending: false,

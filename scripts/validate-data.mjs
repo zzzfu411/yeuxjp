@@ -6,7 +6,8 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, "..")
 const workspaceRoot = path.resolve(root, "..")
 const srcDir = path.join(root, "src")
-const PWA_STATIC_ASSET_BUDGET_BYTES = 3 * 1024 * 1024
+const PWA_PRECACHE_ASSET_BUDGET_BYTES = 3 * 1024 * 1024
+const PWA_PRECACHE_ENTRY_BUDGET = 64
 
 let failed = false
 
@@ -90,7 +91,7 @@ function serviceWorkerArrayBody(text, name) {
   return text.slice(start + 1, end)
 }
 
-function serviceWorkerStaticAssets(text) {
+function serviceWorkerAssets(text, arrayName) {
   const constants = serviceWorkerConstStrings(text)
 
   function readArray(name, trail = new Set()) {
@@ -116,7 +117,19 @@ function serviceWorkerStaticAssets(text) {
     return assets
   }
 
-  return Array.from(new Set(readArray("STATIC_ASSETS")))
+  return Array.from(new Set(readArray(arrayName)))
+}
+
+function serviceWorkerAssetGroups(text) {
+  return {
+    shell: serviceWorkerAssets(text, "CORE_SHELL_ASSETS"),
+    runtime: serviceWorkerAssets(text, "RUNTIME_ASSETS"),
+  }
+}
+
+function serviceWorkerNumericConst(text, name) {
+  const match = new RegExp(`const\\s+${name}\\s*=\\s*([\\d_]+)\\s*;`).exec(text)
+  return match ? Number(match[1].replaceAll("_", "")) : null
 }
 
 function publicRootRelPath(file) {
@@ -448,6 +461,7 @@ function validatePwaManifest() {
   }
 
   const requiredFields = new Map([
+    ["id", "/"],
     ["start_url", "/"],
     ["scope", "/"],
     ["display", "standalone"],
@@ -525,15 +539,49 @@ function validateServiceWorkerAssets() {
   if (!exists(swPath)) return
 
   const swText = read(swPath)
-  if (!serviceWorkerArrayBody(swText, "STATIC_ASSETS")) {
-    fail("PWA service worker is missing STATIC_ASSETS")
+  const requiredArrays = ["CORE_SHELL_ASSETS", "RUNTIME_ASSETS"]
+  const missingArrays = requiredArrays.filter((name) => !serviceWorkerArrayBody(swText, name))
+  if (missingArrays.length) {
+    fail(`PWA service worker is missing asset groups: ${missingArrays.join(", ")}`)
     return
   }
 
-  const assets = serviceWorkerStaticAssets(swText)
-  if (!assets.length) fail("PWA service worker STATIC_ASSETS is empty")
+  const { shell: shellAssets, runtime: runtimeAssets } = serviceWorkerAssetGroups(swText)
+  if (!shellAssets.length) fail("PWA service worker CORE_SHELL_ASSETS is empty")
+  if (!runtimeAssets.length) fail("PWA service worker RUNTIME_ASSETS is empty")
 
-  let cachedAssetBytes = 0
+  const requiredShellAssets = ["/", "/offline.html", "/manifest.webmanifest"]
+  const missingShellAssets = requiredShellAssets.filter((asset) => !shellAssets.includes(asset))
+  if (missingShellAssets.length) {
+    fail(`PWA service worker CORE_SHELL_ASSETS is missing required shell resources: ${missingShellAssets.join(", ")}`)
+  } else {
+    pass(`PWA service worker keeps required shell resources together (${requiredShellAssets.length})`)
+  }
+
+  const overlappingAssets = shellAssets.filter((asset) => runtimeAssets.includes(asset))
+  if (overlappingAssets.length) {
+    fail(`PWA service worker shell/runtime asset groups overlap: ${overlappingAssets.join(", ")}`)
+  } else {
+    pass("PWA service worker shell/runtime asset groups are disjoint")
+  }
+
+  const partitionContracts = [
+    [/const\s+SHELL_ASSET_PATHS\s*=\s*new Set\(CORE_SHELL_ASSETS\)/, "shell paths must derive from CORE_SHELL_ASSETS"],
+    [/const\s+RUNTIME_ASSET_PATHS\s*=\s*new Set\(RUNTIME_ASSETS\)/, "runtime paths must derive from RUNTIME_ASSETS"],
+    [/isNextStaticAsset\(requestUrl\)[\s\S]*?return SHELL_CACHE_NAME/, "Next static resources must use the shell cache"],
+    [/isRuntimeAssetPath\(requestUrl\)[\s\S]*?return RUNTIME_CACHE_NAME/, "images and AnimCJK resources must use the runtime cache"],
+    [/cacheName === RUNTIME_CACHE_NAME[\s\S]*?trimRuntimeCache\(cache\)/, "runtime eviction must be scoped to the runtime cache"],
+  ]
+  for (const [pattern, message] of partitionContracts) {
+    if (!pattern.test(swText)) fail(`PWA service worker cache partition is invalid: ${message}`)
+  }
+  if (partitionContracts.every(([pattern]) => pattern.test(swText))) {
+    pass("PWA service worker shell and runtime cache partition is explicit")
+  }
+
+  const assets = Array.from(new Set([...shellAssets, ...runtimeAssets]))
+
+  let precachedAssetBytes = 0
   for (const asset of assets) {
     if (asset === "/") continue
     if (!asset.startsWith("/")) {
@@ -542,23 +590,44 @@ function validateServiceWorkerAssets() {
     }
     const relPath = `public/${asset.slice(1)}`
     requireFile(relPath, `PWA cached asset ${asset}`)
-    if (exists(relPath)) cachedAssetBytes += fileSize(relPath)
+    if (exists(relPath)) precachedAssetBytes += fileSize(relPath)
   }
 
-  const missingCacheAssets = cacheWorthyPublicAssets().filter((asset) => !assets.includes(asset))
-  if (missingCacheAssets.length) {
-    fail(`PWA service worker STATIC_ASSETS is missing cache-worthy public assets: ${missingCacheAssets.join(", ")}`)
+  const cacheWorthyAssets = cacheWorthyPublicAssets()
+  const missingRuntimeAssets = cacheWorthyAssets.filter((asset) => !runtimeAssets.includes(asset))
+  if (missingRuntimeAssets.length) {
+    fail(`PWA service worker RUNTIME_ASSETS is missing cache-worthy public assets: ${missingRuntimeAssets.join(", ")}`)
   } else {
-    pass(`PWA service worker caches cache-worthy public assets (${cacheWorthyPublicAssets().length})`)
+    pass(`PWA service worker runtime cache owns cache-worthy public assets (${cacheWorthyAssets.length})`)
   }
 
-  if (cachedAssetBytes > PWA_STATIC_ASSET_BUDGET_BYTES) {
+  const shellMediaAssets = shellAssets.filter((asset) => cacheWorthyAssets.includes(asset))
+  if (shellMediaAssets.length) {
+    fail(`PWA service worker CORE_SHELL_ASSETS must not contain runtime media: ${shellMediaAssets.join(", ")}`)
+  }
+
+  if (assets.length > PWA_PRECACHE_ENTRY_BUDGET) {
+    fail(`PWA service worker precache entry count is ${assets.length}, above ${PWA_PRECACHE_ENTRY_BUDGET}`)
+  } else {
+    pass(`PWA service worker precache entry count is ${assets.length} / ${PWA_PRECACHE_ENTRY_BUDGET}`)
+  }
+
+  const runtimeEntryLimit = serviceWorkerNumericConst(swText, "RUNTIME_CACHE_MAX_ENTRIES")
+  if (runtimeEntryLimit == null) {
+    fail("PWA service worker is missing numeric RUNTIME_CACHE_MAX_ENTRIES")
+  } else if (runtimeAssets.length > runtimeEntryLimit) {
+    fail(`PWA service worker RUNTIME_ASSETS count is ${runtimeAssets.length}, above runtime limit ${runtimeEntryLimit}`)
+  } else {
+    pass(`PWA service worker RUNTIME_ASSETS fit the runtime limit (${runtimeAssets.length} / ${runtimeEntryLimit})`)
+  }
+
+  if (precachedAssetBytes > PWA_PRECACHE_ASSET_BUDGET_BYTES) {
     fail(
-      `PWA service worker STATIC_ASSETS total size is ${formatBytes(cachedAssetBytes)}, above ${formatBytes(PWA_STATIC_ASSET_BUDGET_BYTES)}`
+      `PWA service worker precache total size is ${formatBytes(precachedAssetBytes)}, above ${formatBytes(PWA_PRECACHE_ASSET_BUDGET_BYTES)}`
     )
   } else {
     pass(
-      `PWA service worker STATIC_ASSETS total size is ${formatBytes(cachedAssetBytes)} / ${formatBytes(PWA_STATIC_ASSET_BUDGET_BYTES)}`
+      `PWA service worker precache total size is ${formatBytes(precachedAssetBytes)} / ${formatBytes(PWA_PRECACHE_ASSET_BUDGET_BYTES)}`
     )
   }
 }

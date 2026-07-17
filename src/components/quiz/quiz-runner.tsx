@@ -96,7 +96,12 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       />
 
       {selectedOption && (
-        <Button onClick={generateQuestion} size="lg" className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2">
+        <Button
+          onClick={generateQuestion}
+          size="lg"
+          className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2"
+          data-testid="quiz-next-question"
+        >
           下一题 <RefreshCw className="w-4 h-4" />
         </Button>
       )}

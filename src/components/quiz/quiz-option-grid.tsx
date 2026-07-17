@@ -41,6 +41,7 @@ export function QuizOptionGrid({
             onClick={() => onSelect(option.value)}
             disabled={selectedOption != null}
             data-answer-value={option.value}
+            data-feedback={feedback}
             data-testid={`quiz-answer-option-${index}`}
           >
             {option.display}

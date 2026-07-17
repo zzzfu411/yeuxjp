@@ -27,6 +27,13 @@ export interface LearningBackup {
   entries: Partial<Record<LearningBackupKey, string>>
 }
 
+function isValidLearningBackupTimestamp(value: unknown): value is number {
+  return typeof value === "number"
+    && Number.isFinite(value)
+    && value >= 0
+    && Number.isFinite(new Date(value).getTime())
+}
+
 function parseStoredJson(value: string) {
   try {
     return { ok: true as const, value: JSON.parse(value) as unknown }
@@ -40,8 +47,8 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 export function safeLearningBackupTimestamp(value: unknown, fallback: number = Date.now()) {
-  if (typeof value === "number" && Number.isFinite(value)) return value
-  if (Number.isFinite(fallback)) return fallback
+  if (isValidLearningBackupTimestamp(value)) return value
+  if (isValidLearningBackupTimestamp(fallback)) return fallback
   return 0
 }
 
@@ -131,13 +138,12 @@ export function filterOrphanMistakeSrsEntries(entries: LearningBackup["entries"]
 export function normalizeLearningBackup(backup: Partial<LearningBackup>, now: number = Date.now()): LearningBackup | null {
   const safeNow = safeLearningBackupTimestamp(now)
   if (backup.version !== LEARNING_BACKUP_VERSION && backup.version !== LEGACY_LEARNING_BACKUP_VERSION) return null
-  if (typeof backup.exportedAt !== "number" || !Number.isFinite(backup.exportedAt)) return null
+  if (!isValidLearningBackupTimestamp(backup.exportedAt)) return null
   if (!isPlainObject(backup.entries)) return null
 
   const entries: LearningBackup["entries"] = {}
   for (const [key, value] of Object.entries(backup.entries)) {
-    if (!BACKUP_KEY_SET.has(key)) continue
-    if (typeof value !== "string") continue
+    if (!BACKUP_KEY_SET.has(key) || typeof value !== "string") return null
     const normalized = normalizeBackupEntry(key as LearningBackupKey, value, safeNow)
     if (normalized === null) return null
     entries[key as LearningBackupKey] = normalized

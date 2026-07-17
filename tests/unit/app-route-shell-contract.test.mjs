@@ -16,6 +16,7 @@ const routeShells = [
   { route: "src/app/vocabulary/page.tsx", component: "VocabularyPage", importPath: "@/components/vocabulary/vocabulary-page" },
   { route: "src/app/quiz/page.tsx", component: "QuizPage", importPath: "@/components/quiz/quiz-page" },
   { route: "src/app/review/page.tsx", component: "ReviewPage", importPath: "@/components/review/review-page" },
+  { route: "src/app/grammar/page.tsx", component: "GrammarReferencePage", importPath: "@/components/reference/grammar-reference-page" },
 ]
 
 test("interactive app routes stay as server shells around component islands", () => {
@@ -27,5 +28,16 @@ test("interactive app routes stay as server shells around component islands", ()
     assert.doesNotMatch(source, /\b(localStorage|sessionStorage|window|document)\b/, route)
     assert.match(source, new RegExp(`from "${importPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`), route)
     assert.match(source, new RegExp(`<${component}(\\s|/|>)`), route)
+  }
+})
+
+test("client-only route shells expose stable production HTTP health markers", () => {
+  for (const [route, marker] of [
+    ["src/app/kana/page.tsx", "kana"],
+    ["src/app/vocabulary/page.tsx", "vocabulary"],
+    ["src/app/quiz/page.tsx", "quiz"],
+    ["src/app/grammar/page.tsx", "grammar"],
+  ]) {
+    assert.match(read(route), new RegExp(`data-route-shell="${marker}"`), route)
   }
 })

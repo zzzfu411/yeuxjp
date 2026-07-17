@@ -4,17 +4,21 @@ import {
   appNotFoundRoutes,
   pageLooksLikeYasashi,
 } from "./app-health.mjs"
-import { createServerController, reuseOrStartDevServer } from "./harness.mjs"
+import { createServerController, startBuiltProductionServer } from "./harness.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
-let baseUrl = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${port}`
+let baseUrl = `http://127.0.0.1:${port}`
 const routes = appHealthRoutes
 const serverController = createServerController()
 
 let failure = null
 
 try {
-  baseUrl = await reuseOrStartDevServer({ baseUrl, port, controller: serverController })
+  baseUrl = await startBuiltProductionServer({
+    port,
+    controller: serverController,
+    label: "HTTP production smoke",
+  })
 
   for (const route of routes) {
     const response = await fetch(`${baseUrl}${route}`)

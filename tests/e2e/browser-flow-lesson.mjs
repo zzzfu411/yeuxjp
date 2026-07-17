@@ -123,7 +123,45 @@ export async function verifyLessonFlow(page, baseUrl) {
   assert.equal(itemProgress?.["hiragana:a"]?.correct, 1, "lesson answer should increment correct count")
   const kanaSrs = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
   assert.ok(kanaSrs?.["hiragana:a"]?.dueAt, "correct kana lesson answer should enroll SRS")
+  const correctLessonResultCount = lessonPractice.filter((item) =>
+    item.lessonId === "day-1-a-row-hello" && item.lessonStepId === "recognize-a"
+  ).length
+  const correctKanaSrsBeforeRefresh = kanaSrs?.["hiragana:a"]
+
+  await page.reload({ waitUntil: "networkidle" })
+  await page.waitForFunction(() => {
+    const answer = document.querySelector('[data-testid="lesson-answer-a"]')
+    const next = document.querySelector('[data-testid="lesson-next"]')
+    return answer?.getAttribute("aria-pressed") === "true" && answer.disabled && next && !next.disabled
+  })
+  assert.equal(
+    await page.getByTestId("lesson-answer-a").getAttribute("aria-pressed"),
+    "true",
+    "refresh should restore the latest correct lesson answer"
+  )
+  assert.ok(await page.getByTestId("lesson-next").isEnabled(), "answered lesson step should remain continuable after refresh")
   await page.getByTestId("lesson-next").click()
+
+  const practiceAfterCorrectRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+  const itemProgressAfterCorrectRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
+  const kanaSrsAfterCorrectRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_KANA)
+  assert.equal(
+    practiceAfterCorrectRefresh.filter((item) =>
+      item.lessonId === "day-1-a-row-hello" && item.lessonStepId === "recognize-a"
+    ).length,
+    correctLessonResultCount,
+    "refreshing an answered lesson step should not duplicate practice history"
+  )
+  assert.equal(
+    itemProgressAfterCorrectRefresh?.["hiragana:a"]?.attempts,
+    1,
+    "refreshing an answered lesson step should not duplicate item attempts"
+  )
+  assert.deepEqual(
+    kanaSrsAfterCorrectRefresh?.["hiragana:a"],
+    correctKanaSrsBeforeRefresh,
+    "refreshing an answered lesson step should not grade kana SRS again"
+  )
   await page.getByTestId("lesson-answer-お").waitFor({ state: "visible" })
   await page.getByTestId("lesson-answer-お").click()
   await page.getByTestId("lesson-next").click()
@@ -235,6 +273,58 @@ export async function verifyLessonFlow(page, baseUrl) {
     await page.evaluate((key) => localStorage.getItem(key), E2E_STORAGE_KEYS.SRS_KANA),
     null,
     "wrong lesson answer should not enroll kana SRS"
+  )
+  const wrongItemProgressBeforeRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
+  const wrongMistakeSrsBeforeRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_MISTAKES)
+  const wrongLessonResultCount = wrongLessonPractice.filter((item) =>
+    item.lessonId === "day-1-a-row-hello" && item.lessonStepId === "recognize-a"
+  ).length
+  const wrongMistakeBeforeRefresh = wrongLessonMistakes.find((item) =>
+    item.type === "lesson:multipleChoice" && item.correctAnswer === "a"
+  )
+  assert.ok(wrongMistakeBeforeRefresh, "wrong lesson answer should expose its persisted mistake before refresh")
+  assert.ok(wrongMistakeSrsBeforeRefresh?.[wrongMistakeBeforeRefresh.id], "wrong lesson answer should enroll mistake SRS")
+
+  await page.reload({ waitUntil: "networkidle" })
+  await page.waitForFunction(() => {
+    const answer = document.querySelector('[data-testid="lesson-answer-i"]')
+    const next = document.querySelector('[data-testid="lesson-next"]')
+    return answer?.getAttribute("aria-pressed") === "true" && answer.disabled && next && !next.disabled
+  })
+  assert.equal(
+    await page.getByTestId("lesson-answer-i").getAttribute("aria-pressed"),
+    "true",
+    "refresh should restore the latest wrong lesson answer"
+  )
+  assert.ok(await page.getByTestId("lesson-next").isEnabled(), "wrong answered lesson step should remain continuable after refresh")
+  await page.getByTestId("lesson-next").click()
+
+  const wrongPracticeAfterRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
+  const wrongItemProgressAfterRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
+  const wrongMistakesAfterRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.MISTAKES)
+  const wrongMistakeSrsAfterRefresh = await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_MISTAKES)
+  const wrongMistakeAfterRefresh = wrongMistakesAfterRefresh.find((item) => item.id === wrongMistakeBeforeRefresh.id)
+  assert.equal(
+    wrongPracticeAfterRefresh.filter((item) =>
+      item.lessonId === "day-1-a-row-hello" && item.lessonStepId === "recognize-a"
+    ).length,
+    wrongLessonResultCount,
+    "refreshing a wrong answered lesson step should not duplicate practice history"
+  )
+  assert.equal(
+    wrongItemProgressAfterRefresh?.["hiragana:a"]?.attempts,
+    wrongItemProgressBeforeRefresh?.["hiragana:a"]?.attempts,
+    "refreshing a wrong answered lesson step should not duplicate item attempts"
+  )
+  assert.equal(
+    wrongMistakeAfterRefresh?.wrongCount,
+    wrongMistakeBeforeRefresh.wrongCount,
+    "refreshing a wrong answered lesson step should not increment mistake count"
+  )
+  assert.deepEqual(
+    wrongMistakeSrsAfterRefresh,
+    wrongMistakeSrsBeforeRefresh,
+    "refreshing a wrong answered lesson step should not grade mistake SRS again"
   )
 
   await page.evaluate((storageKeys) => {

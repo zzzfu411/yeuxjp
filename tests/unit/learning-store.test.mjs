@@ -531,6 +531,7 @@ test("parseLearningBackup rejects invalid JSON and wrong versions", () => {
   assert.equal(store.parseLearningBackup("not json"), null)
   assert.equal(store.parseLearningBackup(JSON.stringify({ version: 999, exportedAt: 1, entries: {} })), null)
   assert.equal(store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: null, entries: {} })), null)
+  assert.equal(store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: Number.MAX_VALUE, entries: {} })), null)
   assert.equal(store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: 1, entries: [] })), null)
   assert.deepEqual(
     store.parseLearningBackup(JSON.stringify({ version: store.LEARNING_BACKUP_VERSION, exportedAt: 1, entries: {} })),
@@ -556,25 +557,21 @@ test("version one backups migrate kana ids into version two without losing eithe
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_KANA])), ["hiragana:a", "katakana:a"])
 })
 
-test("parseLearningBackup keeps only managed string entries", () => {
-  const parsed = store.parseLearningBackup(JSON.stringify({
-    version: store.LEARNING_BACKUP_VERSION,
-    exportedAt: 123,
-    entries: {
+test("parseLearningBackup rejects unknown or non-string entries instead of treating them as missing data", () => {
+  for (const entries of [
+    { "not-yasashi": "{}" },
+    { [storage.STORAGE_KEYS.SRS_KANA]: { a: { box: 1 } } },
+    {
       [storage.STORAGE_KEYS.USER_PROFILE]: "{\"goal\":\"balanced\"}",
-      [storage.STORAGE_KEYS.SRS_KANA]: { a: { box: 1 } },
-      "not-yasashi": "ignore",
+      "not-yasashi": "{}",
     },
-  }))
-
-  assert.equal(parsed.version, store.LEARNING_BACKUP_VERSION)
-  assert.equal(parsed.exportedAt, 123)
-  assert.equal(Object.keys(parsed.entries).length, 1)
-  const profile = JSON.parse(parsed.entries[storage.STORAGE_KEYS.USER_PROFILE])
-  assert.equal(profile.goal, "balanced")
-  assert.equal(profile.minutesPerDay, 10)
-  assert.equal(profile.kanaLevel, "none")
-  assert.equal(profile.romajiMode, "practice")
+  ]) {
+    assert.equal(store.parseLearningBackup(JSON.stringify({
+      version: store.LEARNING_BACKUP_VERSION,
+      exportedAt: 123,
+      entries,
+    })), null)
+  }
 })
 
 test("parseLearningBackup rejects managed entries that are not valid stored JSON", () => {

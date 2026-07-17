@@ -33,6 +33,16 @@ export function canStartQuizAnswerSubmission({
   return !selectedOption && !answerPending && hasQuestion
 }
 
+export function shouldAutoGenerateQuizQuestion({
+  selectedOption,
+  answerPending,
+}: {
+  selectedOption: string | null
+  answerPending: boolean
+}) {
+  return selectedOption === null && !answerPending
+}
+
 export function resolveQuizAnswerSubmission(selectedAnswer: string, saved: boolean) {
   if (!saved) {
     return {
