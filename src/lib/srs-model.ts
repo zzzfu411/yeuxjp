@@ -19,7 +19,7 @@ const BOX_INTERVAL_MS = [
 
 const MAX_BOX = BOX_INTERVAL_MS.length - 1
 
-export type SrsResult = "again" | "good"
+export type SrsResult = "again" | "hard" | "good"
 
 function clampBox(box: number) {
   if (!Number.isFinite(box)) return 1
@@ -81,6 +81,16 @@ export function applySrsResult(state: SrsState, result: SrsResult, now: number =
       dueAt: nextDueAt(box, safeNow),
       lastReviewedAt: safeNow,
       right: current.right + 1,
+    }
+  }
+
+  if (result === "hard") {
+    const box = clampBox(Math.max(1, current.box - 1))
+    return {
+      ...current,
+      box,
+      dueAt: nextDueAt(box, safeNow),
+      lastReviewedAt: safeNow,
     }
   }
 

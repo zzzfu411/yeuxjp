@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useCallback, Suspense } from "react"
+import { useMemo, useRef, useState, useCallback, Suspense } from "react"
 import type { VocabLevel } from "@/data/vocabulary/types"
 import { speakJapanese } from "@/lib/speech"
 import { useLearningStatus } from "@/lib/learning-status"
@@ -25,16 +25,21 @@ import { useVocabularyLevelData } from "@/components/vocabulary/use-vocabulary-l
 import { useVocabularyPageControls } from "@/components/vocabulary/use-vocabulary-page-controls"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { ConfirmActionDialog } from "@/components/ui/confirm-action-dialog"
+import {
+  recordVocabularySelfAssessment,
+  type VocabularySelfAssessment,
+} from "@/lib/vocabulary-self-assessment"
 
 function VocabularyPageContent() {
   const [saveError, setSaveError] = useState(false)
   const [confirmClearOpen, setConfirmClearOpen] = useState(false)
 
+  const learning = useLearningStatus()
   const {
     isVocabLearned: isLearnedId,
     toggleVocabLearned: toggleLearnedId,
     clearVocabLearned: clearLearned,
-  } = useLearningStatus()
+  } = learning
   const {
     currentLevel,
     activeCategory,
@@ -69,6 +74,8 @@ function VocabularyPageContent() {
   )
 
   const [isModalFlipped, setIsModalFlipped] = useState(false)
+  const [selfAssessment, setSelfAssessment] = useState<VocabularySelfAssessment | null>(null)
+  const selfAssessmentLockedRef = useRef(false)
   const {
     selectedIndex,
     openAt,
@@ -79,10 +86,17 @@ function VocabularyPageContent() {
   const selectedVocab = selectedIndex !== null ? currentData[selectedIndex] ?? null : null
   const selectedKana = selectedVocab?.kana
 
+  const resetFocusedCard = useCallback(() => {
+    setIsModalFlipped(false)
+    setSelfAssessment(null)
+    setSaveError(false)
+    selfAssessmentLockedRef.current = false
+  }, [])
+
   const resetSelection = useCallback(() => {
     close()
-    setIsModalFlipped(false)
-  }, [close])
+    resetFocusedCard()
+  }, [close, resetFocusedCard])
 
   const handleLevelChange = useCallback((level: VocabLevel) => {
     setVocabularyLevel(level)
@@ -115,25 +129,47 @@ function VocabularyPageContent() {
 
   const handleToggleLearned = useCallback(() => {
     if (!selectedVocab) return
+    const wasLearned = isLearnedId(selectedVocab.id)
     const saved = toggleLearnedId(selectedVocab.id)
     setSaveError(!saved)
-  }, [selectedVocab, toggleLearnedId])
+    if (saved && onlyUnlearned && !wasLearned) {
+      resetSelection()
+    }
+  }, [isLearnedId, onlyUnlearned, resetSelection, selectedVocab, toggleLearnedId])
 
   // Handlers
   const handleNext = useCallback(() => {
     goNext()
-    setIsModalFlipped(false)
-  }, [goNext])
+    resetFocusedCard()
+  }, [goNext, resetFocusedCard])
 
   const handlePrev = useCallback(() => {
     goPrev()
-    setIsModalFlipped(false)
-  }, [goPrev])
+    resetFocusedCard()
+  }, [goPrev, resetFocusedCard])
 
   const handlePlay = useCallback(() => {
     if (!selectedKana) return
     speakJapanese(selectedKana)
   }, [selectedKana])
+
+  const handleSelfAssessment = useCallback((rating: VocabularySelfAssessment) => {
+    if (!selectedVocab || selfAssessment || selfAssessmentLockedRef.current) return
+    selfAssessmentLockedRef.current = true
+
+    const saved = recordVocabularySelfAssessment({
+      progress: learning,
+      itemId: selectedVocab.id,
+      rating,
+    })
+    setSaveError(!saved)
+    if (!saved) {
+      selfAssessmentLockedRef.current = false
+      return
+    }
+
+    setSelfAssessment(rating)
+  }, [learning, selectedVocab, selfAssessment])
 
   return (
     <div className="container py-10 px-4 mx-auto space-y-8 mb-20">
@@ -167,7 +203,7 @@ function VocabularyPageContent() {
         onClearLearned={handleClearLearned}
         onSelectCategory={scrollToCategory}
       />
-      <PracticeSaveError show={saveError} />
+      <PracticeSaveError show={saveError && !selectedVocab} />
       <ConfirmActionDialog
         open={confirmClearOpen}
         title="清空词汇掌握进度？"
@@ -189,7 +225,7 @@ function VocabularyPageContent() {
         onRetry={vocabulary.retry}
         onExpand={(index) => {
           openAt(index)
-          setIsModalFlipped(false)
+          resetFocusedCard()
         }}
       />
 
@@ -201,12 +237,15 @@ function VocabularyPageContent() {
         total={currentData.length}
         flipped={isModalFlipped}
         learned={selectedVocab ? isLearnedId(selectedVocab.id) : false}
+        assessment={selfAssessment}
+        saveError={saveError}
         showRomaji={showRomaji}
         onClose={resetSelection}
         onFlip={() => setIsModalFlipped((prev) => !prev)}
         onNext={handleNext}
         onPrev={handlePrev}
         onPlay={handlePlay}
+        onSelfAssess={handleSelfAssessment}
         onToggleLearned={handleToggleLearned}
       />
     </div>

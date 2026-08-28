@@ -28,6 +28,21 @@ test("good answers advance the box and wrong answers reset to immediate review",
   assert.equal(again.dueAt, now + 1_000)
 })
 
+test("hard answers shorten advanced intervals without counting as right or wrong", () => {
+  const now = 1_700_000_000_000
+  const advanced = { ...srs.createSrsState(now), box: 4, right: 3, wrong: 1 }
+  const hard = srs.applySrsResult(advanced, "hard", now + 2_000)
+  const beginnerHard = srs.applySrsResult(srs.createSrsState(now), "hard", now + 3_000)
+
+  assert.equal(hard.box, 3)
+  assert.equal(hard.dueAt, now + 2_000 + 3 * 24 * 60 * 60 * 1000)
+  assert.equal(hard.lastReviewedAt, now + 2_000)
+  assert.equal(hard.right, 3)
+  assert.equal(hard.wrong, 1)
+  assert.equal(beginnerHard.box, 1)
+  assert.equal(beginnerHard.dueAt, now + 3_000 + 10 * 60 * 1000)
+})
+
 test("normalizeSrsState clamps invalid persisted values", () => {
   const now = 1_700_000_000_000
   const state = srs.normalizeSrsState({ box: 99, right: -1, wrong: 1.8 }, now)

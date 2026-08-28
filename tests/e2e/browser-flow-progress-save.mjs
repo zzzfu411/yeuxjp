@@ -41,6 +41,7 @@ async function openVocabularyFocusModal(page) {
   await page.getByRole("dialog").waitFor({ state: "visible" })
   await page.getByTestId("vocabulary-focus-card").click()
   await page.waitForFunction(() => document.querySelector('[data-testid="vocabulary-focus-card"]')?.getAttribute("aria-pressed") === "true")
+  await page.getByTestId("vocabulary-self-grade-hard").waitFor({ state: "visible" })
   await page.getByTestId("vocabulary-learned-toggle").waitFor({ state: "visible" })
 }
 
@@ -104,6 +105,26 @@ export async function verifyProgressSaveFailureFlow(page, baseUrl) {
     const mastered = JSON.parse(localStorage.getItem(key) ?? "[]")
     return Array.isArray(mastered) && mastered.length === 0
   }, E2E_STORAGE_KEYS.KANA_MASTERED)
+
+  await resetBrowserLearningState(page, `${baseUrl}/vocabulary`)
+  await openVocabularyFocusModal(page)
+  await failStorageWrites(page, [E2E_STORAGE_KEYS.SRS_VOCAB], "vocabulary self-assessment SRS")
+  await page.getByTestId("vocabulary-self-grade-hard").click()
+  await page.getByTestId("practice-save-error").waitFor({ state: "visible" })
+  assert.equal(await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS), null)
+  assert.equal(await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS), null)
+  assert.equal(await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_VOCAB), null)
+  await restoreStorageWrites(page)
+
+  await page.getByTestId("vocabulary-self-grade-hard").click()
+  await page.getByTestId("vocabulary-self-grade-status").waitFor({ state: "visible" })
+  await page.waitForFunction((storageKeys) => {
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_VOCAB) ?? "{}")
+    return practice.some((item) => item.itemId === "sur-n-35" && item.answer === "hard")
+      && srs?.["sur-n-35"]?.box === 1
+  }, E2E_STORAGE_KEYS)
+  await page.keyboard.press("Escape")
 
   await resetBrowserLearningState(page, `${baseUrl}/vocabulary`)
   await openVocabularyFocusModal(page)

@@ -2,8 +2,11 @@
 
 import { CheckCircle2, ChevronLeft, ChevronRight, RotateCw, Volume2 } from "lucide-react"
 import type { Vocabulary } from "@/data/vocabulary/types"
+import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
+import { VocabularySelfAssessmentControls } from "@/components/vocabulary/vocabulary-self-assessment-controls"
+import type { VocabularySelfAssessment } from "@/lib/vocabulary-self-assessment"
 
 export function VocabularyFocusModal({
   vocab,
@@ -11,12 +14,15 @@ export function VocabularyFocusModal({
   total,
   flipped,
   learned,
+  assessment,
+  saveError,
   showRomaji = true,
   onClose,
   onFlip,
   onNext,
   onPrev,
   onPlay,
+  onSelfAssess,
   onToggleLearned,
 }: {
   vocab: Vocabulary | null
@@ -24,12 +30,15 @@ export function VocabularyFocusModal({
   total: number
   flipped: boolean
   learned: boolean
+  assessment: VocabularySelfAssessment | null
+  saveError: boolean
   showRomaji?: boolean
   onClose: () => void
   onFlip: () => void
   onNext: () => void
   onPrev: () => void
   onPlay: () => void
+  onSelfAssess: (rating: VocabularySelfAssessment) => void
   onToggleLearned: () => void
 }) {
   const titleId = "vocabulary-focus-modal-title"
@@ -107,6 +116,8 @@ export function VocabularyFocusModal({
                       <Volume2 className="w-5 h-5" /> 朗读
                     </Button>
                   </div>
+                  <VocabularySelfAssessmentControls value={assessment} onSelect={onSelfAssess} />
+                  <PracticeSaveError show={saveError} />
                   <div className="pt-2">
                     <Button
                       size="lg"

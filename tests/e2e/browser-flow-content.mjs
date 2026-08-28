@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 
-import { readJsonStorage } from "./harness.mjs"
+import { rapidClick, readJsonStorage } from "./harness.mjs"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 
 const modalFocusableSelector = [
@@ -330,6 +330,34 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
   await verifyDialogHasAccessibleName(page, "vocabulary focus modal")
   await page.getByTestId("vocabulary-focus-card").click()
   await page.waitForFunction(() => document.querySelector('[data-testid="vocabulary-focus-card"]')?.getAttribute("aria-pressed") === "true")
+  const hardSelfGrade = page.getByTestId("vocabulary-self-grade-hard")
+  assert.equal(await hardSelfGrade.getAttribute("aria-pressed"), "false")
+  await rapidClick(hardSelfGrade)
+  await page.getByTestId("vocabulary-self-grade-status").waitFor({ state: "visible" })
+  assert.equal(await hardSelfGrade.getAttribute("aria-pressed"), "true")
+  const selfAssessmentState = await page.evaluate((storageKeys) => {
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    const items = JSON.parse(localStorage.getItem(storageKeys.ITEM_PROGRESS) ?? "{}")
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_VOCAB) ?? "{}")
+    const mistakes = JSON.parse(localStorage.getItem(storageKeys.MISTAKES) ?? "[]")
+    return {
+      results: practice.filter((item) => item.itemId === "sur-n-35" && item.itemType === "vocab"),
+      item: items["sur-n-35"],
+      srs: srs["sur-n-35"],
+      mistake: mistakes.find((item) => item.itemId === "sur-n-35"),
+    }
+  }, E2E_STORAGE_KEYS)
+  assert.equal(selfAssessmentState.results.length, 1, "rapid self-grading should record exactly one practice result")
+  const [selfAssessmentResult] = selfAssessmentState.results
+  assert.equal(selfAssessmentResult?.mode, "meaning")
+  assert.equal(selfAssessmentResult?.correct, false)
+  assert.equal(selfAssessmentResult?.answer, "hard")
+  assert.equal(selfAssessmentState.item?.attempts, 1)
+  assert.equal(selfAssessmentState.item?.meaning, 0)
+  assert.equal(selfAssessmentState.srs?.box, 1)
+  assert.equal(selfAssessmentState.srs?.right, 0)
+  assert.equal(selfAssessmentState.srs?.wrong, 0)
+  assert.equal(selfAssessmentState.mistake, undefined)
   const learnedToggle = page.getByTestId("vocabulary-learned-toggle")
   await learnedToggle.waitFor({ state: "visible" })
   assert.equal(await learnedToggle.getAttribute("aria-pressed"), "false")
@@ -362,6 +390,30 @@ export async function verifyKanaAndVocabularyFlow(page, baseUrl) {
     const learned = JSON.parse(localStorage.getItem(key) ?? "[]")
     return Array.isArray(learned) && learned.length === 0
   }, E2E_STORAGE_KEYS.VOCAB_LEARNED)
+
+  await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
+  await page.getByTestId("vocabulary-search").fill("みせ")
+  const onlyUnlearnedToggle = page.getByTestId("vocabulary-only-unlearned")
+  await onlyUnlearnedToggle.click()
+  assert.equal(await onlyUnlearnedToggle.getAttribute("aria-pressed"), "true")
+  await page.getByTestId("vocabulary-expand-sur-n-35").locator("xpath=ancestor::*[@role='button'][1]").press("Space")
+  await page.getByTestId("vocabulary-expand-back-sur-n-35").press("Space")
+  await page.getByRole("dialog").waitFor({ state: "visible" })
+  await page.getByTestId("vocabulary-focus-card").click()
+  await page.waitForFunction(() => {
+    return document.querySelector('[data-testid="vocabulary-focus-card"]')?.getAttribute("aria-pressed") === "true"
+  })
+  await page.getByTestId("vocabulary-learned-toggle").click()
+  await page.getByRole("dialog").waitFor({ state: "hidden" })
+  await page.getByTestId("vocabulary-expand-sur-n-35").waitFor({ state: "hidden" })
+  assert.ok(
+    (await readJsonStorage(page, E2E_STORAGE_KEYS.VOCAB_LEARNED)).includes("sur-n-35"),
+    "mastering the focused item in the unlearned filter should persist before closing the modal"
+  )
+  await onlyUnlearnedToggle.click()
+  await page.getByTestId("vocabulary-clear-progress").click()
+  await page.getByTestId("vocabulary-clear-progress-dialog-confirm").click()
+
   await page.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-level-daily").click()
   await page.getByTestId("vocabulary-search").fill("Yakusoku")

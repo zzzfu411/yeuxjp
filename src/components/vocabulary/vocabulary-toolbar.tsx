@@ -95,6 +95,7 @@ export function VocabularyToolbar({
             type="button"
             aria-pressed={onlyUnlearned}
             onClick={onToggleOnlyUnlearned}
+            data-testid="vocabulary-only-unlearned"
             className={cn(
               "rounded-full border bg-background px-4 py-2 transition-colors hover:bg-secondary/60",
               onlyUnlearned && "border-primary/40 bg-primary/5"

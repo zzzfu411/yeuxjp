@@ -325,6 +325,11 @@ export const requiredSelectors = [
     pattern: /data-testid="vocabulary-toggle-romaji"/,
   },
   {
+    testId: "vocabulary-only-unlearned",
+    source: "src/components/vocabulary/vocabulary-toolbar.tsx",
+    pattern: /data-testid="vocabulary-only-unlearned"/,
+  },
+  {
     testId: "vocabulary-expand-sur-n-35",
     source: "src/components/vocabulary/flashcard.tsx",
     pattern: /data-testid=\{`vocabulary-expand-\$\{vocab\.id\}`\}/,
@@ -338,6 +343,16 @@ export const requiredSelectors = [
     testId: "vocabulary-focus-card",
     source: "src/components/vocabulary/vocabulary-focus-modal.tsx",
     pattern: /data-testid="vocabulary-focus-card"/,
+  },
+  {
+    testId: "vocabulary-self-grade-hard",
+    source: "src/components/vocabulary/vocabulary-self-assessment-controls.tsx",
+    pattern: /data-testid=\{`vocabulary-self-grade-\$\{option\.id\}`\}/,
+  },
+  {
+    testId: "vocabulary-self-grade-status",
+    source: "src/components/vocabulary/vocabulary-self-assessment-controls.tsx",
+    pattern: /data-testid="vocabulary-self-grade-status"/,
   },
   {
     testId: "vocabulary-learned-toggle",
