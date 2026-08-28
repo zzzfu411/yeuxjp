@@ -43,7 +43,7 @@ export function KanaBanner({ banner, className }: KanaBannerProps) {
   return (
     <div
       className={cn(
-        "relative w-full max-w-3xl mx-auto h-28 sm:h-36 rounded-2xl overflow-hidden ring-1 ring-border/60 shadow-sm",
+        "relative mx-auto h-28 w-full max-w-3xl overflow-hidden border-[3px] border-foreground shadow-hard sm:h-36",
         className
       )}
     >

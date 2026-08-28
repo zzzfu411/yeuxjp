@@ -1,13 +1,9 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
-import { ArrowRight, BookOpenCheck, CalendarDays, Flame, Headphones, Route, Sparkles, Target } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { OnboardingPanel } from "@/components/home/onboarding-panel"
+import { HomeNowPlaying } from "@/components/home/home-now-playing"
 import { HomeStarterLessons } from "@/components/home/home-starter-lessons"
-import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { useLearningProfile } from "@/lib/learning-progress"
 import { useLearningRecommendation } from "@/lib/learning-recommendation"
 import { useSrsDeck } from "@/lib/srs"
@@ -80,144 +76,55 @@ export function HomePage() {
   const dailyGoalDone = todayPracticeCount >= dailyTarget
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_15%_0%,hsl(var(--primary)/0.22),transparent_32rem),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted)/0.28))]">
-      <section className="relative overflow-hidden border-b">
-        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-75">
-          <Image
-            src="/assets/hero/hero-watercolor.webp"
-            alt=""
-            fill
-            priority
-            sizes="(max-width: 1536px) 100vw, 1536px"
-            className="object-cover object-right dark:hidden"
-          />
-          <Image
-            src="/assets/hero/hero-watercolor-dark.webp"
-            alt=""
-            fill
-            priority
-            sizes="(max-width: 1536px) 100vw, 1536px"
-            className="hidden object-cover object-right dark:block"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />
-        </div>
+    <div className="flex min-h-[calc(100vh-8rem)] flex-col gap-0 px-3 pb-4 lg:flex-row lg:px-4">
+      <HomeNowPlaying
+        profile={profile}
+        profileSaveError={profileSaveError}
+        onSaveProfile={(input) => {
+          const saved = saveProfile(input)
+          setProfileSaveError(!saved)
+          return saved
+        }}
+        learningEntry={learningEntry}
+        todayPracticeCount={todayPracticeCount}
+        dailyTarget={dailyTarget}
+        dailyGoalDone={dailyGoalDone}
+        completedCount={completedCount}
+        totalLessons={STARTER_LESSONS.length}
+        streak={learning.streak}
+        totalDue={totalDue}
+      />
 
-        <div className="relative container mx-auto grid gap-8 px-4 py-10 md:grid-cols-[minmax(0,1.1fr)_360px] md:py-14">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border bg-card/80 px-4 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              今日 10-15 分钟 · 学一点 · 练会用 · 明天记得住
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col border-[3px] border-foreground bg-card">
+        <header className="flex flex-wrap items-center gap-3 border-b-[3px] border-foreground bg-background px-4 py-3">
+          <span className="font-black tracking-widest">今 日 队 列</span>
+          <span className="text-xs font-extrabold text-muted-foreground">{STARTER_LESSONS.length} 天入门 · 到期 {totalDue}</span>
+          <Link href="/path" className="ml-auto text-xs font-extrabold underline-offset-4 hover:underline">
+            技能树 →
+          </Link>
+        </header>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <HomeStarterLessons completedLessonIds={learning.completedLessonIds} activeLessonId={nextLesson?.id} />
+          <Link href="/review" className="flex items-center justify-between gap-3 border-b-[2px] border-foreground px-4 py-3 hover:bg-primary/40">
+            <div>
+              <div className="text-xs font-extrabold text-muted-foreground">QUEUE</div>
+              <div className="font-black">今日复习流</div>
+              <div className="text-xs font-semibold text-muted-foreground">错题优先 · 到期 {totalDue} 项</div>
             </div>
-            <div className="max-w-3xl space-y-4">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">今天日语学什么，一眼就知道。</h1>
-              <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-                Yasashi Japanese 现在会先安排复习，再带你完成一节短微课，并把听辨、回忆、造句写入掌握度。
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild size="lg" className="gap-2 rounded-full px-7">
-                <Link href={learningEntry.href} data-testid="home-start-learning">
-                  {learningEntry.cta} <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="gap-2 rounded-full">
-                <Link href="/review">先复习 {totalDue} 项</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border bg-card/90 p-5 shadow-sm backdrop-blur">
-            {profile ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-xs font-semibold tracking-wider text-muted-foreground">今日目标 · {profile.minutesPerDay} 分钟</div>
-                    <div className="mt-1 text-xl font-bold">
-                      {dailyGoalDone ? "今日目标已完成！" : `已练 ${todayPracticeCount}/${dailyTarget} 题`}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border bg-primary/10 p-3">
-                    <Target className="h-5 w-5" />
-                  </div>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-valuemin={0} aria-valuemax={dailyTarget} aria-valuenow={Math.min(todayPracticeCount, dailyTarget)} aria-label="今日练习进度">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{ width: `${Math.min(100, Math.round((todayPracticeCount / dailyTarget) * 100))}%` }}
-                  />
-                </div>
-                <div className="rounded-2xl border bg-background/70 p-4">
-                  <div className="text-sm font-semibold">下一课</div>
-                  <div className="mt-1 text-lg font-bold">{learningEntry.title}</div>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{learningEntry.subtitle}</p>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <MiniStat icon={<BookOpenCheck className="h-4 w-4" />} label="已完成" value={`${completedCount}/${STARTER_LESSONS.length}`} />
-                  <MiniStat icon={<Flame className="h-4 w-4" />} label="连续" value={`${learning.streak} 天`} />
-                  <MiniStat icon={<Headphones className="h-4 w-4" />} label="到期" value={`${totalDue}`} />
-                </div>
+            <span className="border-[2px] border-foreground bg-primary px-2 py-1 text-xs font-black">开始复习</span>
+          </Link>
+          <Link href="/quiz" className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-primary/40">
+            <div>
+              <div className="text-xs font-extrabold text-muted-foreground">WEAK</div>
+              <div className="font-black">薄弱项</div>
+              <div className="text-xs font-semibold text-muted-foreground">
+                {weakest ? `${weakest.label}「${weakest.display}」平均 ${weakest.score}` : "练几题后这里会出现最该补的能力"}
               </div>
-            ) : (
-              <>
-                <OnboardingPanel
-                  onSave={(input) => {
-                    const saved = saveProfile(input)
-                    setProfileSaveError(!saved)
-                    return saved
-                  }}
-                />
-                <PracticeSaveError show={profileSaveError} />
-              </>
-            )}
-          </div>
+            </div>
+            <span className="border-[2px] border-foreground bg-card px-2 py-1 text-xs font-black shadow-hard-sm">专项练习</span>
+          </Link>
         </div>
       </section>
-
-      <section className="container mx-auto grid gap-5 px-4 py-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
-        <HomeStarterLessons completedLessonIds={learning.completedLessonIds} activeLessonId={nextLesson?.id} />
-
-        <div className="space-y-5">
-          <ActionCard
-            icon={<CalendarDays className="h-5 w-5" />}
-            title="今日复习流"
-            desc={`先处理错题，再复习到期假名和词汇。当前到期 ${totalDue} 项。`}
-            href="/review"
-            cta="开始复习"
-          />
-          <ActionCard
-            icon={<Route className="h-5 w-5" />}
-            title="薄弱项"
-            desc={weakest ? `${weakest.label}「${weakest.display}」平均掌握度 ${weakest.score}，建议在复习流里优先巩固。` : "完成几道课程练习后，这里会显示最需要补强的能力维度。"}
-            href="/quiz"
-            cta="做专项练习"
-          />
-        </div>
-      </section>
-    </div>
-  )
-}
-
-function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border bg-background/70 p-3">
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        {icon}
-        <span className="text-xs">{label}</span>
-      </div>
-      <div className="mt-1 text-lg font-bold">{value}</div>
-    </div>
-  )
-}
-
-function ActionCard({ icon, title, desc, href, cta }: { icon: React.ReactNode; title: string; desc: string; href: string; cta: string }) {
-  return (
-    <div className="rounded-3xl border bg-card p-5 shadow-sm">
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl border bg-primary/10">{icon}</div>
-      <div className="text-lg font-bold">{title}</div>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
-      <Button asChild variant="outline" className="mt-4 rounded-full">
-        <Link href={href}>{cta}</Link>
-      </Button>
     </div>
   )
 }

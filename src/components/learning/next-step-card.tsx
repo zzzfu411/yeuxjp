@@ -12,7 +12,7 @@ export function NextStepCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "w-full rounded-2xl border bg-muted/10 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4",
+        "w-full border-[3px] border-foreground bg-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-hard",
         className
       )}
     >
@@ -26,10 +26,10 @@ export function NextStepCard({ className }: { className?: string }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button asChild className="rounded-full">
+        <Button asChild>
           <Link href={entry.href}>{entry.cta}</Link>
         </Button>
-        <Button asChild variant="outline" className="rounded-full">
+        <Button asChild variant="outline">
           <Link href="/path">打开技能树</Link>
         </Button>
       </div>

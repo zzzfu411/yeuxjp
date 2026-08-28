@@ -78,7 +78,7 @@ export function ReviewDashboard({
   return (
     <div className="container py-10 px-4 mx-auto max-w-4xl space-y-8 mb-20">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">复习（轻量 SRS）</h1>
+        <h1 className="font-brush text-4xl tracking-tight">复习台</h1>
         <p className="text-sm text-muted-foreground">
           只覆盖 <span className="font-semibold text-foreground">假名 / 单词 / 错题本</span>：把“学过但会忘”系统性解决。
         </p>

@@ -50,8 +50,8 @@ export function OnboardingPanel({ onSave }: { onSave: (input: Omit<UserProfile, 
               data-testid={`onboarding-goal-${item.value}`}
               onClick={() => setGoal(item.value)}
               className={cn(
-                "rounded-2xl border p-3 text-left transition hover:border-primary/50",
-                goal === item.value && "border-primary/60 bg-primary/10"
+                "border-[2px] border-foreground p-3 text-left transition hover:bg-primary/40",
+                goal === item.value && "bg-primary"
               )}
             >
               <div className="text-sm font-semibold">{item.label}</div>
@@ -66,7 +66,7 @@ export function OnboardingPanel({ onSave }: { onSave: (input: Omit<UserProfile, 
         <SelectPills label="罗马音" value={romajiMode} options={romajiOptions} onChange={(value) => setRomajiMode(value as RomajiMode)} />
       </div>
 
-      <div className="rounded-2xl border bg-background/70 p-3">
+      <div className="border-[2px] border-foreground bg-background p-3">
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-semibold">每天学习时长</span>
           <span className="text-muted-foreground">{minutesPerDay} 分钟</span>
@@ -86,7 +86,7 @@ export function OnboardingPanel({ onSave }: { onSave: (input: Omit<UserProfile, 
 
       <Button
         type="button"
-        className="w-full gap-2 rounded-full"
+        className="w-full gap-2"
         data-testid="onboarding-save"
         onClick={() => onSave({ goal, kanaLevel, romajiMode, minutesPerDay })}
       >
@@ -119,8 +119,8 @@ function SelectPills({
             data-testid={`onboarding-${item.value}`}
             onClick={() => onChange(item.value)}
             className={cn(
-              "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-              value === item.value ? "border-primary/60 bg-primary/10 text-foreground" : "bg-background text-muted-foreground hover:text-foreground"
+              "border-[2px] border-foreground px-3 py-1.5 text-xs font-extrabold transition",
+              value === item.value ? "bg-primary text-foreground" : "bg-card text-muted-foreground hover:bg-primary/40"
             )}
           >
             {item.label}

@@ -16,13 +16,13 @@ export function QuizQuestionPrompt({
   onPlayAudio: (text: string) => void
 }) {
   return (
-    <div className="w-full flex flex-col items-center justify-center py-12 bg-card border rounded-xl shadow-sm min-h-[200px] relative">
+    <div className="w-full flex flex-col items-center justify-center py-12 hard-panel min-h-[200px] relative">
       {question.questionAudio ? (
         <>
           <Button
             variant="outline"
             size="icon"
-            className="w-24 h-24 rounded-full border-4"
+            className="h-24 w-24 border-[3px]"
             aria-label="播放题目音频"
             onClick={() => question.questionAudio && onPlayAudio(question.questionAudio)}
           >
@@ -38,7 +38,7 @@ export function QuizQuestionPrompt({
         <div className="text-center">
           <span
             className={cn(
-              "font-bold text-foreground block mb-2",
+              "font-jp font-bold text-foreground block mb-2",
               mode === "verb-conjugation" ? "text-3xl" : "text-6xl"
             )}
             data-testid="quiz-question-text"

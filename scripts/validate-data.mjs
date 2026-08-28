@@ -521,8 +521,8 @@ function validatePwaManifest() {
     ["start_url", "/"],
     ["scope", "/"],
     ["display", "standalone"],
-    ["background_color", "#fdfbf7"],
-    ["theme_color", "#ffb7b2"],
+    ["background_color", "#fdf6e3"],
+    ["theme_color", "#facc15"],
   ])
 
   for (const [field, expected] of requiredFields) {

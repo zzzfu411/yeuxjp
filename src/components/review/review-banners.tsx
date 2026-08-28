@@ -8,7 +8,7 @@ import type { ReviewDashboardProps } from "@/components/review/review-dashboard"
 
 export function FirstReviewBanner() {
   return (
-    <div className="relative w-full rounded-2xl border bg-card/80 overflow-hidden flex flex-col sm:flex-row items-center gap-6 p-6 sm:pr-8" data-testid="review-empty-state">
+    <div className="relative w-full hard-panel overflow-hidden flex flex-col sm:flex-row items-center gap-6 p-6 sm:pr-8" data-testid="review-empty-state">
       <div className="relative w-40 h-32 shrink-0 sm:w-48 sm:h-40">
         <Image
           src="/assets/states/state-empty.webp"
@@ -51,7 +51,7 @@ export function ReviewStreakBanner({
 }) {
   return (
     <div
-      className="relative w-full rounded-2xl border bg-gradient-to-br from-primary/10 via-card to-card overflow-hidden"
+      className="relative w-full hard-panel overflow-hidden bg-primary/20"
       data-testid={totalDue > 0 ? "review-due-state" : "review-scheduled-empty-state"}
     >
       <Image
@@ -92,7 +92,7 @@ export function TodayReviewPanel({
 }) {
   return (
     <div
-      className="rounded-2xl border bg-card p-5 shadow-sm flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      className="hard-panel p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       data-testid={todayQueueLength ? "review-today-due" : "review-today-empty"}
     >
       <div className="space-y-1">

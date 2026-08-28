@@ -18,22 +18,22 @@ export function SkillTreePage() {
   const masterySummary = useMemo(() => getPathMasterySummary(learning.items), [learning.items])
 
   return (
-    <div className="container py-10 px-4 mx-auto space-y-10 max-w-5xl mb-20">
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight">技能树（学习路线）</h1>
+    <div className="container py-6 px-4 mx-auto space-y-6 max-w-5xl mb-20">
+      <div className="space-y-3 border-[3px] border-foreground bg-card p-5 shadow-hard">
+        <h1 className="font-brush text-4xl tracking-tight">技能树</h1>
         <p className="text-muted-foreground max-w-3xl mx-auto">
           按“能力”而不是按“章节”学习：先把 <GlossaryTerm termId="kana">假名</GlossaryTerm> 与读音打牢，再进入{" "}
           <GlossaryTerm termId="particle">助词</GlossaryTerm> 和 <GlossaryTerm termId="conjugation">活用</GlossaryTerm>，最后提升语感。
         </p>
         <div className="flex items-center justify-center gap-2">
-          <GlossaryButton className="h-auto px-3 py-2 rounded-full border bg-background hover:bg-secondary/60">
+          <GlossaryButton className="h-auto px-3 py-2 border-[3px] border-foreground bg-card shadow-hard-sm hover:bg-primary">
             不懂术语？打开术语表
           </GlossaryButton>
         </div>
       </div>
 
       {/* Next recommended */}
-      <div className="rounded-2xl border bg-muted/10 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="border-[3px] border-foreground bg-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-hard">
         <div className="space-y-1">
           <div className="text-xs font-semibold text-muted-foreground tracking-wider">下一步推荐</div>
           <div className="text-lg font-bold">{learningEntry.title}</div>
@@ -50,7 +50,7 @@ export function SkillTreePage() {
       <section className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
         <PathStarterLessons completedLessonIds={learning.completedLessonIds} activeLessonId={nextLesson?.id} />
 
-        <div className="rounded-2xl border bg-card p-5 shadow-sm">
+        <div className="border-[3px] border-foreground bg-card p-5 shadow-hard">
           <div className="text-xs font-semibold text-muted-foreground tracking-wider">五维掌握度</div>
           <div className="mt-4 space-y-4">
             <Metric label="平均掌握" value={`${masterySummary.avg}%`} />
@@ -85,9 +85,9 @@ export function SkillTreePage() {
                   <div
                     key={skill.id}
                     className={cn(
-                      "rounded-2xl border bg-card p-5 shadow-sm flex flex-col gap-3",
+                      "border-[3px] border-foreground bg-card p-5 shadow-hard flex flex-col gap-3",
                       status === "locked" && "opacity-60",
-                      isRecommended && "border-primary/50 bg-primary/5"
+                      isRecommended && "bg-primary/40"
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -98,7 +98,7 @@ export function SkillTreePage() {
                       {badge && (
                         <div
                           className={cn(
-                            "text-xs font-semibold px-3 py-1 rounded-full border whitespace-nowrap",
+                            "text-xs font-extrabold px-3 py-1 border-[2px] border-foreground whitespace-nowrap",
                             status === "done" && "bg-green-100 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/40 dark:text-green-300",
                             status === "in-progress" && "bg-primary/10 border-primary/20 text-primary",
                             status === "locked" && "bg-muted border-border text-muted-foreground",
@@ -122,7 +122,7 @@ export function SkillTreePage() {
                     ) : null}
 
                     <div className="flex flex-wrap items-center gap-2 pt-1">
-                      <Button asChild variant="outline" className="rounded-full">
+                      <Button asChild variant="outline">
                         <Link href={skill.href}>{status === "locked" ? "查看内容" : "去学习"}</Link>
                       </Button>
                       {!!skill.glossary?.length && (
@@ -144,7 +144,7 @@ export function SkillTreePage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border bg-background/70 px-4 py-3">
+    <div className="flex items-center justify-between gap-3 border-[2px] border-foreground bg-background px-4 py-3">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-lg font-bold">{value}</span>
     </div>

@@ -23,7 +23,7 @@ function evaluateServiceWorker(sandbox) {
 test("PWA registers a production service worker and exposes install metadata", () => {
   assert.match(layout, /manifest:\s*"\/manifest\.webmanifest"/)
   assert.match(layout, /appleWebApp:\s*\{/)
-  assert.match(layout, /themeColor:\s*"#ffb7b2"/)
+  assert.match(layout, /themeColor:\s*"#facc15"/)
   assert.match(layout, /import \{ PwaRegister \} from "@\/components\/pwa-register"/)
   assert.match(layout, /<PwaRegister \/>/)
   assert.match(register, /process\.env\.NODE_ENV !== "production"/)

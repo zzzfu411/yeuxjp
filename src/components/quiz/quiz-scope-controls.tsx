@@ -5,17 +5,17 @@ import type { KanaQuizScope, QuizMode, VocabQuizScope } from "@/lib/quiz-generat
 
 function scopeButtonClassName(active: boolean) {
   return cn(
-    "px-4 py-2 rounded-md text-sm font-medium transition-all",
+    "border-[3px] border-foreground px-4 py-2 text-sm font-extrabold",
     active
-      ? "bg-background text-foreground shadow-sm"
-      : "text-muted-foreground hover:text-foreground"
+      ? "z-[1] bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
+      : "bg-card hover:bg-primary"
   )
 }
 
 function filterButtonClassName(active: boolean) {
   return cn(
-    "px-4 py-2 rounded-full border transition-colors bg-background hover:bg-secondary/60 text-sm",
-    active && "border-primary/40 bg-primary/5"
+    "hard-chip px-4 py-2 text-sm hover:bg-primary",
+    active && "bg-primary"
   )
 }
 
@@ -43,7 +43,7 @@ export function QuizScopeControls({
   if (mode === "hiragana-romaji" || mode === "audio-kana") {
     return (
       <div className="w-full flex flex-wrap items-center justify-center gap-2">
-        <div className="flex p-1 bg-secondary rounded-lg">
+        <div className="flex">
           <button
             type="button"
             aria-pressed={kanaScope === "seion"}
@@ -58,7 +58,7 @@ export function QuizScopeControls({
             aria-pressed={kanaScope === "all"}
             onClick={() => onKanaScopeChange("all")}
             data-testid="quiz-kana-scope-all"
-            className={cn(scopeButtonClassName(kanaScope === "all"), "px-5")}
+            className={cn(scopeButtonClassName(kanaScope === "all"), "-ml-[3px] px-5")}
           >
             全部
           </button>
@@ -80,7 +80,7 @@ export function QuizScopeControls({
   if (mode === "meaning-vocab") {
     return (
       <div className="w-full flex flex-wrap items-center justify-center gap-2">
-        <div className="flex flex-wrap p-1 bg-secondary rounded-lg">
+        <div className="flex flex-wrap">
           {[
             ["survival", "生存"],
             ["daily", "日常"],
@@ -93,7 +93,7 @@ export function QuizScopeControls({
               aria-pressed={vocabScope === scope}
               onClick={() => onVocabScopeChange(scope as VocabQuizScope)}
               data-testid={`quiz-vocab-scope-${scope}`}
-              className={scopeButtonClassName(vocabScope === scope)}
+              className={cn(scopeButtonClassName(vocabScope === scope), scope !== "survival" && "-ml-[3px]")}
             >
               {label}
             </button>

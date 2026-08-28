@@ -39,9 +39,10 @@ export function SemanticsReferencePage({
       )}
 
       <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight flex items-center justify-center gap-3">
+        <h1 className="font-brush text-4xl tracking-tight flex items-center justify-center gap-3">
           <BrainCircuit className="w-8 h-8 text-primary" />
-          语义辨析 (Nuance Lab)
+          语义辨析
+          <span className="sr-only">Nuance Lab</span>
         </h1>
         <p className="text-muted-foreground text-lg">点击卡片进入深度辨析模式。</p>
       </div>
@@ -51,7 +52,7 @@ export function SemanticsReferencePage({
           <Link
             key={point.id}
             href={semanticsItemHref(index)}
-            className="group relative bg-card border rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden"
+            className="group relative hard-panel overflow-hidden transition-transform hover:-translate-x-px hover:-translate-y-px"
           >
             <div className="bg-secondary/30 p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4 group-hover:bg-secondary/50 transition-colors">
               <h2 className="text-2xl font-bold flex items-center gap-2">

@@ -5,11 +5,12 @@ import path from "node:path"
 import test from "node:test"
 import { pathToFileURL } from "node:url"
 
-const root = path.resolve(import.meta.dirname, "..", "..", "..")
+const root = path.resolve(import.meta.dirname, "..", "..")
+const workspaceRoot = path.resolve(root, "..")
 
 test("data validation script passes for the current repository", () => {
   const result = spawnSync("node", ["scripts/validate-data.mjs"], {
-    cwd: path.join(root, "web"),
+    cwd: root,
     encoding: "utf8",
   })
 
@@ -18,7 +19,7 @@ test("data validation script passes for the current repository", () => {
 })
 
 test("data validation scans source, scripts, tests, public text assets, and docs for common mojibake fragments", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /function validateNoMojibakeMarkers/)
   assert.match(source, /walkFiles\(srcDir/)
@@ -45,7 +46,7 @@ test("data validation scans source, scripts, tests, public text assets, and docs
 })
 
 test("data validation checks lesson practice metadata and references", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /function validateLessonPracticeMetadata/)
   assert.match(source, /lesson practice metadata checked/)
@@ -59,7 +60,7 @@ test("data validation checks lesson practice metadata and references", () => {
 })
 
 test("lesson kana validation rejects bare romaji while accepting canonical and custom phonology ids", async () => {
-  const validator = await import(pathToFileURL(path.join(root, "web/scripts/validate-data.mjs")).href)
+  const validator = await import(pathToFileURL(path.join(root, "scripts/validate-data.mjs")).href)
   const knownRomaji = new Set(["a", "sokuon"])
 
   assert.equal(validator.classifyLessonKanaItemId("a", knownRomaji), "bare-romaji")
@@ -71,15 +72,15 @@ test("lesson kana validation rejects bare romaji while accepting canonical and c
 })
 
 test("data validation requires AnimCJK license files for distribution", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /public\/animcjk\/licenses\/COPYING\.txt/)
   assert.match(source, /public\/animcjk\/licenses\/LGPL\.txt/)
 })
 
 test("data validation normalizes every small kana variant before checking AnimCJK coverage", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
-  const rootDownloaderPath = path.join(root, "scripts/download-animcjk-kana.mjs")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
+  const rootDownloaderPath = path.join(workspaceRoot, "scripts/download-animcjk-kana.mjs")
   const rootDownloader = fs.existsSync(rootDownloaderPath)
     ? fs.readFileSync(rootDownloaderPath, "utf8")
     : null
@@ -134,7 +135,7 @@ test("data validation normalizes every small kana variant before checking AnimCJ
 })
 
 test("data validation verifies the offline fallback copy and learning-state boundary", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /function validateOfflineFallback/)
   assert.match(source, /public\/offline\.html/)
@@ -147,7 +148,7 @@ test("data validation verifies the offline fallback copy and learning-state boun
 })
 
 test("data validation verifies PWA manifest install metadata and PNG dimensions", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /function validatePwaManifest/)
   assert.match(source, /function readPngDimensions/)
@@ -157,8 +158,8 @@ test("data validation verifies PWA manifest install metadata and PNG dimensions"
   assert.match(source, /\["start_url", "\/"\]/)
   assert.match(source, /\["scope", "\/"\]/)
   assert.match(source, /\["display", "standalone"\]/)
-  assert.match(source, /\["background_color", "#fdfbf7"\]/)
-  assert.match(source, /\["theme_color", "#ffb7b2"\]/)
+  assert.match(source, /\["background_color", "#fdf6e3"\]/)
+  assert.match(source, /\["theme_color", "#facc15"\]/)
   assert.match(source, /PWA manifest icon src must be root-relative/)
   assert.match(source, /for \(const field of \["sizes", "type", "purpose"\]\)/)
   assert.match(source, /PWA manifest icon \$\{icon\.src\} \$\{field\} must be/)
@@ -170,7 +171,7 @@ test("data validation verifies PWA manifest install metadata and PNG dimensions"
 })
 
 test("data validation guards partitioned PWA precache drift and budgets", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /const PWA_PRECACHE_ASSET_BUDGET_BYTES = 3 \* 1024 \* 1024/)
   assert.match(source, /const PWA_PRECACHE_ENTRY_BUDGET = 64/)
@@ -199,7 +200,7 @@ test("data validation guards partitioned PWA precache drift and budgets", () => 
 })
 
 test("data validation requires explicit vocabulary fields and matching levels", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /const vocabLevelPrefixes = new Map/)
   assert.match(source, /requiredString\(block, file, id, "kana"\)/)
@@ -216,7 +217,7 @@ test("data validation requires explicit vocabulary fields and matching levels", 
 })
 
 test("data validation requires reference data fields and enum values", () => {
-  const source = fs.readFileSync(path.join(root, "web/scripts/validate-data.mjs"), "utf8")
+  const source = fs.readFileSync(path.join(root, "scripts/validate-data.mjs"), "utf8")
 
   assert.match(source, /function topLevelObjectBlocks/)
   assert.match(source, /function validateGrammarData/)

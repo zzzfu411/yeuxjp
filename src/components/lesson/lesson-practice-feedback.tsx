@@ -19,7 +19,7 @@ export function LessonPracticeFeedback({
       role="status"
       aria-live="polite"
       className={cn(
-        "mt-5 rounded-2xl border p-4 text-sm leading-relaxed",
+        "hard-panel mt-5 p-4 text-sm leading-relaxed",
         result === "correct"
           ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-200"
           : "border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-200"

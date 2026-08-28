@@ -154,7 +154,7 @@ export function Modal({
         aria-describedby={ariaDescribedBy}
         tabIndex={-1}
         className={cn(
-          "relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border bg-card text-card-foreground shadow-2xl outline-none",
+          "relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-sm border-[3px] border-foreground bg-card text-card-foreground shadow-hard outline-none",
           "transform transition-all duration-300",
           isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4",
           className
@@ -164,7 +164,7 @@ export function Modal({
           variant="ghost"
           size="icon"
           aria-label="关闭"
-          className="absolute right-4 top-4 z-10 rounded-full bg-background/50 hover:bg-background"
+          className="absolute right-4 top-4 z-10 bg-card"
           onClick={onClose}
         >
           <X className="h-4 w-4" />

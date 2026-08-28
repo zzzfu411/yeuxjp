@@ -174,7 +174,7 @@ function VocabularyPageContent() {
   return (
     <div className="container py-10 px-4 mx-auto space-y-8 mb-20">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">单词宝库 (Kotoba)</h1>
+        <h1 className="font-brush text-4xl tracking-tight">单词宝库 <span className="sr-only">Kotoba</span></h1>
         <p className="text-muted-foreground text-sm">
           {getVocabularyLevelDescription(currentLevel)}
         </p>

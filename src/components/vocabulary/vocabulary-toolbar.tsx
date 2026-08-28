@@ -63,31 +63,30 @@ export function VocabularyToolbar({
         />
       </div>
 
-      <div className="sticky top-16 z-30 -mx-4 space-y-4 border-b bg-background/95 px-4 py-4 shadow-sm backdrop-blur transition-all sm:mx-0 sm:rounded-xl sm:border-none sm:px-0">
-        <div className="flex justify-center">
-          <div className="inline-flex rounded-full bg-secondary/50 p-1">
-            {levels.map((level) => (
-              <button
-                key={level.id}
-                type="button"
-                aria-pressed={currentLevel === level.id}
-                data-testid={`vocabulary-level-${level.id}`}
-                onClick={() => onLevelChange(level.id)}
-                className={cn(
-                  "rounded-full px-6 py-2 text-sm font-medium transition-all",
-                  currentLevel === level.id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {level.label}
-              </button>
-            ))}
-          </div>
+      <div className="sticky top-16 z-30 -mx-4 space-y-4 border-b-[3px] border-foreground bg-background px-4 py-4 sm:mx-0 sm:px-0">
+        <div className="flex flex-wrap justify-center">
+          {levels.map((level, index) => (
+            <button
+              key={level.id}
+              type="button"
+              aria-pressed={currentLevel === level.id}
+              data-testid={`vocabulary-level-${level.id}`}
+              onClick={() => onLevelChange(level.id)}
+              className={cn(
+                "border-[3px] border-foreground px-5 py-2 text-sm font-extrabold",
+                index > 0 && "-ml-[3px]",
+                currentLevel === level.id
+                  ? "z-[1] bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
+                  : "bg-card hover:bg-primary"
+              )}
+            >
+              {level.label}
+            </button>
+          ))}
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-          <div className="rounded-full border bg-secondary/50 px-3 py-1 font-mono text-xs text-muted-foreground">
+          <div className="hard-chip px-3 py-1 font-mono text-xs text-muted-foreground">
             进度：{progress.learned}/{progress.total}
           </div>
 
@@ -97,8 +96,8 @@ export function VocabularyToolbar({
             onClick={onToggleOnlyUnlearned}
             data-testid="vocabulary-only-unlearned"
             className={cn(
-              "rounded-full border bg-background px-4 py-2 transition-colors hover:bg-secondary/60",
-              onlyUnlearned && "border-primary/40 bg-primary/5"
+              "hard-chip px-4 py-2 hover:bg-primary",
+              onlyUnlearned && "bg-primary"
             )}
           >
             {onlyUnlearned ? "显示全部" : "只看未掌握"}
@@ -112,8 +111,8 @@ export function VocabularyToolbar({
             data-testid="vocabulary-toggle-romaji"
             title="熟悉假名后建议隐藏罗马音，训练直接读假名"
             className={cn(
-              "rounded-full border bg-background px-4 py-2 transition-colors hover:bg-secondary/60",
-              showRomaji && "border-primary/40 bg-primary/5"
+              "hard-chip px-4 py-2 hover:bg-primary",
+              showRomaji && "bg-primary"
             )}
           >
             罗马音：{showRomaji ? "显示" : "隐藏"}
@@ -123,14 +122,14 @@ export function VocabularyToolbar({
             type="button"
             onClick={onClearLearned}
             data-testid="vocabulary-clear-progress"
-            className="rounded-full border bg-background px-4 py-2 text-muted-foreground transition-colors hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+            className="hard-chip px-4 py-2 text-muted-foreground hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
           >
             清空进度
           </button>
         </div>
 
-        <div className="mask-fade scrollbar-hide flex items-center gap-2 overflow-x-auto pb-2">
-          {categories.map((category) => {
+        <div className="scrollbar-hide flex items-center gap-0 overflow-x-auto pb-2">
+          {categories.map((category, index) => {
             const withIcon = hasCategoryIcon(category)
             return (
               <button
@@ -139,11 +138,12 @@ export function VocabularyToolbar({
                 aria-pressed={activeCategory === category}
                 onClick={() => onSelectCategory(category)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border text-xs font-medium transition-all hover:shadow-sm",
+                  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border-[2px] border-foreground text-xs font-extrabold",
                   withIcon ? "py-1 pl-1 pr-3" : "px-4 py-1.5",
+                  index > 0 && "-ml-[2px]",
                   activeCategory === category
-                    ? "scale-105 border-primary bg-primary/10 font-bold text-primary"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                    ? "z-[1] bg-primary"
+                    : "bg-card text-muted-foreground hover:bg-primary/40"
                 )}
               >
                 {withIcon && <CategoryIcon category={category} size={20} fallback={false} />}

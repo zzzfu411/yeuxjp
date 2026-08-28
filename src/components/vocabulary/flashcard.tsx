@@ -45,7 +45,7 @@ export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true 
     <div
       role="button"
       tabIndex={0}
-      className="group relative w-full h-64 sm:h-80 perspective-1000 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-xl"
+      className="group relative w-full h-64 sm:h-80 perspective-1000 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
       onClick={() => setIsFlipped(!isFlipped)}
       onKeyDown={handleKeyDown}
       aria-pressed={isFlipped}
@@ -62,10 +62,10 @@ export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true 
       )}>
         {/* Front */}
         <div
-          className="absolute w-full h-full backface-hidden bg-card border rounded-xl shadow-sm flex flex-col items-center justify-center p-6 text-center hover:shadow-md transition-all"
+          className="absolute w-full h-full backface-hidden hard-panel flex flex-col items-center justify-center p-6 text-center"
           aria-hidden={isFlipped}
         >
-          <div className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">{vocab.kanji || vocab.kana}</div>
+          <div className="font-jp text-3xl sm:text-4xl font-bold mb-4 text-foreground">{vocab.kanji || vocab.kana}</div>
           {vocab.kanji && <div className="text-lg text-muted-foreground">{vocab.kana}</div>}
           
           <div className="absolute bottom-3 right-3 text-muted-foreground/30">
@@ -87,7 +87,7 @@ export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true 
 
         {/* Back */}
         <div
-          className="absolute w-full h-full backface-hidden bg-card border-2 border-primary/20 rounded-xl shadow-sm rotate-y-180 flex flex-col items-center justify-center p-6 text-center"
+          className="absolute w-full h-full backface-hidden hard-panel rotate-y-180 flex flex-col items-center justify-center p-6 text-center"
           aria-hidden={!isFlipped}
         >
           <div className="text-2xl font-bold text-primary mb-2">{vocab.meaning}</div>

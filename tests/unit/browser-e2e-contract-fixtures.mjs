@@ -76,7 +76,7 @@ export function readE2EStorageKeys() {
 export const requiredSelectors = [
   {
     testId: "home-start-learning",
-    source: "src/components/home/home-page.tsx",
+    source: "src/components/home/home-now-playing.tsx",
     pattern: /data-testid="home-start-learning"/,
   },
   {

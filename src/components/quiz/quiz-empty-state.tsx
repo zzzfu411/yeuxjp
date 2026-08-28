@@ -50,7 +50,7 @@ export function QuizEmptyState({
             type="button"
             variant="default"
             onClick={onRetryVocabulary}
-            className="gap-2 rounded-full"
+            className="gap-2"
             data-testid="quiz-retry-vocabulary"
           >
             <RefreshCw className="w-4 h-4" /> 重试加载

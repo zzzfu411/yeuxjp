@@ -6,7 +6,7 @@ import type { Lesson } from "@/data/lessons"
 
 export function LessonLockedPreview({ recommendedLesson }: { recommendedLesson: Lesson | null }) {
   return (
-    <div className="mb-6 rounded-2xl border bg-muted/40 p-4 text-sm" data-testid="lesson-locked-preview">
+    <div className="hard-panel mb-6 p-4 text-sm" data-testid="lesson-locked-preview">
       <div className="font-semibold">这节课还没有解锁</div>
       <p className="mt-1 leading-relaxed text-muted-foreground">
         你可以先预览内容，但当前课程不会自动写入学习进度。建议先完成前置课程，再回来练习。

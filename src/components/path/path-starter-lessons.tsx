@@ -13,7 +13,7 @@ export function PathStarterLessons({
   activeLessonId: string | null | undefined
 }) {
   return (
-    <div className="rounded-2xl border bg-card p-5 shadow-sm">
+    <div className="border-[3px] border-foreground bg-card p-5 shadow-hard">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-xs font-semibold text-muted-foreground tracking-wider">
@@ -35,7 +35,7 @@ export function PathStarterLessons({
             <>
               <div className="flex items-center justify-between gap-2">
                 <div className="font-semibold">Day {lesson.order}</div>
-                <span className="rounded-full border bg-background px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                <span className="border-[2px] border-foreground bg-background px-2 py-0.5 text-[11px] font-extrabold text-muted-foreground">
                   {getLessonEntryBadge(status)}
                 </span>
               </div>
@@ -43,7 +43,7 @@ export function PathStarterLessons({
             </>
           )
           const className = cn(
-            "rounded-xl border bg-background/70 p-3 text-sm transition hover:border-primary/50",
+            "border-[2px] border-foreground bg-background p-3 text-sm hover:bg-primary/30",
             done && "border-green-200 bg-green-50/70 dark:border-green-900/40 dark:bg-green-900/10",
             active && "border-primary/60 bg-primary/10",
             locked && "opacity-60 hover:border-border"

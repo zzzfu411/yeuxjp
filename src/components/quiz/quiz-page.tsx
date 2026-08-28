@@ -64,7 +64,7 @@ function QuizPageContent() {
     return (
       <div className="container py-20 px-4 mx-auto max-w-4xl flex flex-col items-center space-y-10 animate-in fade-in slide-in-from-bottom-4">
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">选择测验模式 (Select Mode)</h1>
+          <h1 className="font-brush text-4xl">选择测验模式</h1>
           <p className="text-muted-foreground text-lg">Choose how you want to test your skills today.</p>
         </div>
 
@@ -143,9 +143,9 @@ function ModeCard({
       type="button"
       onClick={onClick}
       data-testid={testId}
-      className="flex flex-col items-center p-8 bg-card border rounded-xl shadow-sm hover:shadow-md hover:border-primary/50 cursor-pointer transition-all group text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="flex flex-col items-center p-8 bg-card border-[3px] border-foreground shadow-hard hover:-translate-x-px hover:-translate-y-px cursor-pointer transition-transform group text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
-      <div className="mb-6 p-4 bg-primary/10 rounded-full group-hover:scale-110 transition-transform">
+      <div className="mb-6 p-4 bg-primary border-[3px] border-foreground shadow-hard-sm">
         <ModeIcon icon={icon} />
       </div>
       <h3 className="text-xl font-bold mb-2">{title}</h3>

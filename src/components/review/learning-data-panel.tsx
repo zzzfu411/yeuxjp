@@ -135,7 +135,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
   }, [])
 
   return (
-    <section className={cn("rounded-2xl border bg-card p-5 shadow-sm", className)} data-testid="learning-data-panel">
+    <section className={cn("hard-panel p-5", className)} data-testid="learning-data-panel">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <div className="text-sm font-semibold text-foreground">本地学习数据</div>

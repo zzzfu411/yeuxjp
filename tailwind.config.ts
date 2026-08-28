@@ -18,6 +18,15 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-ui)", "PingFang SC", "Microsoft YaHei", "sans-serif"],
+        jp: ["var(--font-jp)", "Noto Serif JP", "serif"],
+        brush: ["var(--font-brush)", "Ma Shan Zheng", "serif"],
+      },
+      boxShadow: {
+        hard: "4px 4px 0 hsl(var(--shadow-color))",
+        "hard-sm": "3px 3px 0 hsl(var(--shadow-color))",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -55,8 +64,12 @@ const config = {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "2px",
+        sm: "0px",
+        xl: "4px",
+        "2xl": "4px",
+        "3xl": "6px",
+        full: "3px",
       },
       keyframes: {
         "accordion-down": {

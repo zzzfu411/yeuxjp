@@ -123,7 +123,7 @@ export function KanaDetailModal({
               <div className="flex gap-3 w-full">
                 <Button
                   size="lg"
-                  className="flex-1 rounded-full shadow-lg hover:shadow-xl transition-all"
+                  className="flex-1"
                   onClick={onPlay}
                   disabled={isPlaying}
                 >
@@ -135,7 +135,7 @@ export function KanaDetailModal({
                   <Button
                     size="lg"
                     variant="outline"
-                    className="flex-1 rounded-full border-2"
+                    className="flex-1"
                     data-testid="kana-stroke-toggle"
                     onClick={onToggleWriting}
                   >
@@ -149,7 +149,7 @@ export function KanaDetailModal({
                 <Button
                   size="lg"
                   variant={learned ? "default" : "secondary"}
-                  className="w-full rounded-full"
+                  className="w-full"
                   onClick={onToggleMastered}
                   aria-pressed={learned}
                   data-testid="kana-mastery-toggle"

@@ -124,7 +124,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
             savedProgress={savedLessonProgress}
           />
 
-          <main className="rounded-3xl border bg-card p-5 shadow-sm sm:p-7">
+          <main className="hard-panel p-5 sm:p-7">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <div className="mb-2 inline-flex items-center gap-2 rounded-full border bg-muted/40 px-3 py-1 text-xs font-semibold text-muted-foreground">

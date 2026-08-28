@@ -29,7 +29,7 @@ export function GrammarPointList({
           role="button"
           tabIndex={0}
           data-testid={`grammar-point-${point.id}`}
-          className="group cursor-pointer flex flex-col bg-card border rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md hover:border-primary/50 relative"
+          className="group relative flex cursor-pointer flex-col overflow-hidden hard-panel transition-transform hover:-translate-x-px hover:-translate-y-px"
         >
           <div className="absolute top-0 right-0 p-4 opacity-5 text-6xl font-black select-none pointer-events-none group-hover:opacity-10 transition-opacity">
             {activeLevel}

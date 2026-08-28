@@ -88,7 +88,7 @@ export function GrammarReferenceControls({
         />
       </div>
 
-      <div className="flex flex-wrap justify-center items-center gap-2 p-1 bg-secondary/50 rounded-lg w-fit mx-auto sticky top-20 z-30 backdrop-blur-md">
+      <div className="sticky top-20 z-30 mx-auto flex w-fit flex-wrap items-center justify-center">
         {GRAMMAR_LEVELS.map((level) => (
           <Button
             key={level}

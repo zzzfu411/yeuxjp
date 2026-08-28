@@ -136,7 +136,7 @@ export function SpeechSettingsBar({
   ]
 
   return (
-    <div className={cn("w-full rounded-xl border bg-muted/10 p-4 space-y-3", className)}>
+    <div className={cn("hard-panel w-full space-y-3 p-4", className)}>
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm font-semibold text-foreground">听力设置</div>
         <Button

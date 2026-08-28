@@ -26,7 +26,7 @@ export function ReviewDeckCard({
   extra,
 }: ReviewDeckCardProps) {
   return (
-    <div className="rounded-2xl border bg-card p-5 shadow-sm space-y-3">
+    <div className="hard-panel p-5 space-y-3">
       <div className="space-y-1">
         <div className="text-lg font-bold">{title}</div>
         <div className="text-sm text-muted-foreground leading-relaxed">{desc}</div>

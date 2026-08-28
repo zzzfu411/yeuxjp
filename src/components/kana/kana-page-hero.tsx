@@ -5,7 +5,7 @@ import { GlossaryTerm } from "@/components/ui/glossary"
 export function KanaPageHero() {
   return (
     <div className="text-center space-y-4">
-      <h1 className="text-3xl font-bold tracking-tight">五十音图 (Gojūon)</h1>
+      <h1 className="font-brush text-4xl tracking-tight">五十音图 (Gojūon)</h1>
       <p className="text-muted-foreground max-w-2xl text-sm sm:text-base">
         日语的基础。点击卡片听发音。
         <br className="hidden sm:inline" />

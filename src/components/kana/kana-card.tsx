@@ -32,10 +32,10 @@ export function KanaCard({
       data-testid={`kana-card-${kana.romaji}`}
       className={cn(
         "group relative flex flex-col items-center justify-center p-2 sm:p-4 aspect-square",
-        "bg-card border rounded-xl shadow-sm cursor-pointer select-none",
-        "transition-all duration-200 hover:shadow-md hover:-translate-y-1 hover:border-primary/50",
-        "active:scale-95 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        mastered && "border-primary/30 bg-primary/5"
+        "bg-card border-[3px] border-foreground shadow-hard-sm cursor-pointer select-none",
+        "transition-transform hover:-translate-x-px hover:-translate-y-px",
+        "active:translate-x-0 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+        mastered && "bg-primary/40"
       )}
     >
       <div className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
@@ -56,7 +56,7 @@ export function KanaCard({
       
       <div
         className={cn(
-          "font-bold text-foreground mb-1 leading-none text-center",
+          "font-jp font-bold text-foreground mb-1 leading-none text-center",
           mainChar.length > 1 ? "text-xl sm:text-2xl tracking-tight" : "text-3xl sm:text-4xl"
         )}
       >

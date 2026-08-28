@@ -80,7 +80,7 @@ export function VocabularyFocusModal({
               {!flipped ? (
                 <div className="animate-in fade-in zoom-in duration-200 space-y-6">
                   <div className="space-y-2">
-                    <h2 className="text-6xl sm:text-7xl font-bold text-foreground tracking-tight">{vocab.kanji || vocab.kana}</h2>
+                    <h2 className="font-jp text-6xl sm:text-7xl font-bold text-foreground tracking-tight">{vocab.kanji || vocab.kana}</h2>
                     {vocab.kanji && <p className="text-2xl text-muted-foreground/80 font-medium">{vocab.kana}</p>}
                   </div>
                   <div className="mt-8 flex justify-center opacity-50 transition-opacity group-hover:opacity-100">

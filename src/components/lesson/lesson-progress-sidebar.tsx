@@ -26,7 +26,7 @@ export function LessonProgressSidebar({
   savedProgress,
 }: LessonProgressSidebarProps) {
   return (
-    <aside className="rounded-2xl border bg-card/80 p-5 shadow-sm lg:sticky lg:top-24 lg:self-start">
+    <aside className="hard-panel p-5 lg:sticky lg:top-24 lg:self-start">
       <div className="space-y-3">
         <div className="text-xs font-semibold tracking-wider text-muted-foreground">当前课程</div>
         <div>

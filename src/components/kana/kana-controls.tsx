@@ -48,17 +48,17 @@ export function KanaControls({
 }: KanaControlsProps) {
   return (
     <>
-      <div className="flex rounded-lg bg-secondary p-1">
+      <div className="flex">
         <button
           type="button"
           aria-pressed={mode === "hiragana"}
           data-testid="kana-mode-hiragana"
           onClick={() => onModeChange("hiragana")}
           className={cn(
-            "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-8",
+            "border-[3px] border-foreground px-4 py-2 text-sm font-extrabold sm:px-8",
             mode === "hiragana"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
+              : "bg-card hover:bg-primary"
           )}
         >
           平假名 (Hiragana)
@@ -69,10 +69,10 @@ export function KanaControls({
           data-testid="kana-mode-katakana"
           onClick={() => onModeChange("katakana")}
           className={cn(
-            "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-8",
+            "-ml-[3px] border-[3px] border-foreground px-4 py-2 text-sm font-extrabold sm:px-8",
             mode === "katakana"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "z-[1] bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
+              : "bg-card hover:bg-primary"
           )}
         >
           片假名 (Katakana)
@@ -80,8 +80,8 @@ export function KanaControls({
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        <div className="flex rounded-lg bg-secondary p-1">
-          {kanaSets.map((set) => (
+        <div className="flex flex-wrap justify-center">
+          {kanaSets.map((set, index) => (
             <button
               key={set.id}
               type="button"
@@ -89,10 +89,11 @@ export function KanaControls({
               data-testid={`kana-set-${set.id}`}
               onClick={() => onKanaSetChange(set.id)}
               className={cn(
-                "rounded-md px-4 py-2 text-sm font-medium transition-all sm:px-6",
+                "border-[3px] border-foreground px-3 py-2 text-sm font-extrabold sm:px-5",
+                index > 0 && "-ml-[3px]",
                 kanaSet === set.id
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "z-[1] bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
+                  : "bg-card hover:bg-primary"
               )}
             >
               {set.label}
@@ -111,8 +112,8 @@ export function KanaControls({
             data-testid="kana-romaji-toggle"
             onClick={onToggleRomaji}
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
-              "bg-background hover:bg-secondary/60"
+              "inline-flex items-center gap-2 border-[3px] border-foreground px-4 py-2 text-sm font-extrabold shadow-hard-sm transition-transform hover:-translate-x-px hover:-translate-y-px",
+              "bg-card hover:bg-primary"
             )}
           >
             {showRomaji ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -125,8 +126,8 @@ export function KanaControls({
             data-testid="kana-only-unmastered-toggle"
             onClick={onToggleOnlyUnmastered}
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
-              "bg-background hover:bg-secondary/60"
+              "inline-flex items-center gap-2 border-[3px] border-foreground px-4 py-2 text-sm font-extrabold shadow-hard-sm transition-transform hover:-translate-x-px hover:-translate-y-px",
+              "bg-card hover:bg-primary"
             )}
           >
             {onlyUnmastered ? "显示全部" : "只看未掌握"}
@@ -137,8 +138,8 @@ export function KanaControls({
             onClick={onClearMastered}
             data-testid="kana-clear-progress"
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors",
-              "bg-background text-muted-foreground hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+              "inline-flex items-center gap-2 border-[3px] border-foreground px-4 py-2 text-sm font-extrabold shadow-hard-sm transition-transform hover:-translate-x-px hover:-translate-y-px",
+              "bg-card text-muted-foreground hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
             )}
           >
             清空进度

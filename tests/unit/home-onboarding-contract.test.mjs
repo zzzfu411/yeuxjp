@@ -12,13 +12,15 @@ function read(relPath) {
 test("home page delegates first-run profile setup to OnboardingPanel", () => {
   const route = read("src/app/page.tsx")
   const page = read("src/components/home/home-page.tsx")
+  const nowPlaying = read("src/components/home/home-now-playing.tsx")
 
   assert.doesNotMatch(route, /"use client"/)
   assert.match(route, /from "@\/components\/home\/home-page"/)
   assert.match(route, /<HomePage \/>/)
-  assert.match(page, /from "@\/components\/home\/onboarding-panel"/)
+  assert.match(page, /from "@\/components\/home\/home-now-playing"/)
   assert.match(page, /from "@\/components\/home\/home-starter-lessons"/)
-  assert.match(page, /from "@\/components\/practice\/practice-save-error"/)
+  assert.match(nowPlaying, /from "@\/components\/home\/onboarding-panel"/)
+  assert.match(nowPlaying, /from "@\/components\/practice\/practice-save-error"/)
   assert.match(page, /from "@\/lib\/home-page-model"/)
   assert.match(page, /from "@\/lib\/learning-recommendation"/)
   assert.match(page, /useLearningRecommendation\(\)/)
@@ -29,7 +31,7 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
   assert.match(page, /const saved = saveProfile\(input\)/)
   assert.match(page, /setProfileSaveError\(!saved\)/)
   assert.match(page, /<HomeStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
-  assert.match(page, /<PracticeSaveError show=\{profileSaveError\} \/>/)
+  assert.match(nowPlaying, /<PracticeSaveError show=\{profileSaveError\} \/>/)
   assert.doesNotMatch(page, /STARTER_LESSONS\.slice/)
   assert.doesNotMatch(page, /getLessonEntryStatus\(lesson/)
   assert.doesNotMatch(page, /dueMistakeIds = useMemo/)
@@ -50,10 +52,12 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
 
 test("home hero images use bounded responsive sizes for LCP", () => {
   const page = read("src/components/home/home-page.tsx")
+  const nowPlaying = read("src/components/home/home-now-playing.tsx")
 
-  assert.match(page, /src="\/assets\/hero\/hero-watercolor\.webp"[\s\S]*?priority[\s\S]*?sizes="\(max-width: 1536px\) 100vw, 1536px"/)
-  assert.match(page, /src="\/assets\/hero\/hero-watercolor-dark\.webp"[\s\S]*?priority[\s\S]*?sizes="\(max-width: 1536px\) 100vw, 1536px"/)
-  assert.doesNotMatch(page, /src="\/assets\/hero\/hero-watercolor[^"]*"[\s\S]{0,160}sizes="100vw"/)
+  assert.doesNotMatch(page, /sizes="100vw"/)
+  assert.doesNotMatch(nowPlaying, /sizes="100vw"/)
+  assert.match(nowPlaying, /data-testid="home-start-learning"/)
+  assert.match(nowPlaying, /font-jp/)
 })
 
 test("HomeStarterLessons owns starter lesson cards and locked card behavior", () => {
@@ -62,7 +66,7 @@ test("HomeStarterLessons owns starter lesson cards and locked card behavior", ()
   assert.match(source, /export function HomeStarterLessons/)
   assert.match(source, /completedLessonIds: ReadonlySet<string>/)
   assert.match(source, /activeLessonId: string \| null \| undefined/)
-  assert.match(source, /STARTER_LESSONS\.slice\(0, 6\)\.map/)
+  assert.match(source, /STARTER_LESSONS\.map\(/)
   assert.match(source, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId\)/)
   assert.match(source, /getLessonEntryBadge\(status\)/)
   assert.match(source, /if \(locked\)/)
