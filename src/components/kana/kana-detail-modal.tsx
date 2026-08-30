@@ -70,13 +70,13 @@ export function KanaDetailModal({
           <h2 id={titleId} className="sr-only">
             {currentChar ? `${currentChar} ${kana.romaji}` : kana.romaji}
           </h2>
-          <div className="flex-1 p-8 flex flex-col items-center justify-center space-y-8">
+          <div className="flex-1 p-5 sm:p-8 flex flex-col items-center justify-center space-y-8">
             <div className="text-sm font-mono text-muted-foreground uppercase tracking-[0.2em]">
               {kana.romaji}
             </div>
 
             {isWriting && currentChar ? (
-              <div className={cn("h-72 flex items-stretch justify-center", isComboChar ? "w-[22rem]" : "w-64")}>
+              <div className={cn("h-72 flex w-full items-stretch justify-center", isComboChar ? "max-w-[22rem]" : "max-w-64")}>
                 <KanaStrokeAnimCJK
                   char={currentChar}
                   label={`笔顺：${kana.romaji}`}
@@ -84,7 +84,7 @@ export function KanaDetailModal({
                 />
               </div>
             ) : (
-              <div className="relative w-64 h-56 flex items-center justify-center bg-secondary/30 rounded-[2rem] border-4 border-background shadow-inner overflow-hidden">
+              <div className="relative h-56 w-full max-w-64 flex items-center justify-center bg-secondary/30 rounded-[2rem] border-4 border-background shadow-inner overflow-hidden">
                 <span
                   className={cn(
                     "font-bold text-foreground leading-none pb-4 whitespace-nowrap",

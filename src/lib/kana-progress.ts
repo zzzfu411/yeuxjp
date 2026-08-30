@@ -19,6 +19,7 @@ export function useKanaProgress(
 ) {
   const [mastered, setMastered] = useState<Set<string>>(() => new Set())
   const [excluded, setExcluded] = useState<Set<string>>(() => new Set())
+  const [loaded, setLoaded] = useState(false)
   const readMastered = useCallback(() => {
     const result = readProgressListResult(storageKey, STORAGE_LABEL)
     return { ...result, value: normalizeKanaIdList(result.value) }
@@ -35,11 +36,13 @@ export function useKanaProgress(
       if (cancelled) return
       setMastered(new Set(readMastered().value))
       setExcluded(new Set(readExcluded().value))
+      setLoaded(true)
     })
 
     const sync = () => {
       setMastered(new Set(readMastered().value))
       setExcluded(new Set(readExcluded().value))
+      setLoaded(true)
     }
 
     const onStorage = (event: StorageEvent) => {
@@ -157,5 +160,5 @@ export function useKanaProgress(
     return false
   }, [exclusionStorageKey, mastered, readExcluded, storageKey])
 
-  return { mastered, excluded, isMastered, setMasteredId, toggleMastered, clearMastered }
+  return { mastered, excluded, loaded, isMastered, setMasteredId, toggleMastered, clearMastered }
 }

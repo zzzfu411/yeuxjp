@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { Search } from "lucide-react"
+import { Search, SearchX } from "lucide-react"
 import type { GrammarPoint, Level } from "@/data/grammar-data"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -104,7 +104,15 @@ export function GrammarReferenceControls({
         ))}
       </div>
 
-      <GrammarPointList points={currentPoints} activeLevel={activeLevel} onOpen={openAt} />
+      {currentPoints.length ? (
+        <GrammarPointList points={currentPoints} activeLevel={activeLevel} onOpen={openAt} />
+      ) : (
+        <div className="hard-panel flex flex-col items-center gap-3 px-6 py-12 text-center" role="status">
+          <SearchX className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+          <div className="font-bold">没有找到匹配语法</div>
+          <p className="text-sm text-muted-foreground">试试更短的关键词，或切换其他等级。</p>
+        </div>
+      )}
 
       <GrammarFocusModal
         point={selectedPoint}

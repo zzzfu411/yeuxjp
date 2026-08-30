@@ -40,7 +40,7 @@ export function PragmaticsReferencePage({
 
       <div className="text-center space-y-4">
         <h1 className="font-brush text-4xl tracking-tight flex items-center justify-center gap-3">
-          <Users className="w-8 h-8 text-primary" />
+          <Users className="w-8 h-8 text-accent" />
           情境模拟
           <span className="sr-only">Context Dojo</span>
         </h1>
@@ -55,7 +55,7 @@ export function PragmaticsReferencePage({
             className="hard-panel space-y-4 border-l-[6px] border-l-primary p-5 hover:bg-primary/20"
           >
             <div>
-              <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-sm mb-1">
+              <div className="flex items-center gap-2 text-accent font-bold uppercase tracking-wider text-sm mb-1">
                 <MessageCircle className="w-4 h-4" />
                 场景：{scenario.situation}
               </div>

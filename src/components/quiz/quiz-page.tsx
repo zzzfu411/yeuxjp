@@ -114,7 +114,7 @@ export function QuizPage() {
 }
 
 function ModeIcon({ icon }: { icon: QuizModeIcon }) {
-  const className = "w-8 h-8 text-primary"
+  const className = "w-8 h-8 text-primary-foreground"
 
   switch (icon) {
     case "ear":

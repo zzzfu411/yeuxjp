@@ -30,10 +30,12 @@ export { clearSrs, enrollSrs, gradeExistingSrs, gradeSrs, hasSrs, removeSrs, set
 export function useSrsDeck(storageKey: string) {
   const [map, setMap] = useState<SrsMap>(() => ({}))
   const [now, setNow] = useState(0)
+  const [loaded, setLoaded] = useState(false)
 
   const refreshDeck = useCallback(() => {
     setMap(readSrsMap(storageKey))
     setNow(Date.now())
+    setLoaded(true)
   }, [storageKey])
 
   useEffect(() => {
@@ -162,5 +164,5 @@ export function useSrsDeck(storageKey: string) {
     return true
   }, [storageKey])
 
-  return { map, dueIds, enroll, remove, grade, gradeExisting, has, clear }
+  return { map, dueIds, loaded, enroll, remove, grade, gradeExisting, has, clear }
 }

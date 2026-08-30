@@ -82,7 +82,7 @@ export function VocabularyFocusModal({
                 <div className="animate-in fade-in zoom-in duration-200 space-y-6">
                   <div className="space-y-2">
                     <h2 className="font-jp text-6xl sm:text-7xl font-bold text-foreground tracking-tight">{vocab.kanji || vocab.kana}</h2>
-                    {vocab.kanji && <p className="text-2xl text-muted-foreground/80 font-medium">{vocab.kana}</p>}
+                    {vocab.kanji && <p className="font-jp text-2xl text-muted-foreground/80 font-medium">{vocab.kana}</p>}
                   </div>
                   <div className="mt-8 flex justify-center opacity-50 transition-opacity group-hover:opacity-100">
                     <div className="bg-background/80 backdrop-blur px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm flex items-center gap-2 border">
@@ -93,13 +93,13 @@ export function VocabularyFocusModal({
               ) : (
                 <div className="animate-in fade-in zoom-in duration-200 space-y-6 w-full max-w-sm">
                   <div className="space-y-1">
-                    <p className="text-4xl font-bold text-primary">{vocab.meaning}</p>
+                    <p className="text-4xl font-bold text-accent">{vocab.meaning}</p>
                     {showRomaji && <p className="text-xl text-muted-foreground font-serif italic">{vocab.romaji}</p>}
                     <VocabCourseAppearances vocabId={vocab.id} />
                   </div>
                   {vocab.exampleSentences?.[0] && (
                     <div className="rounded-xl border bg-background/70 px-4 py-3 text-left space-y-1">
-                      <p className="text-base text-foreground leading-relaxed">{vocab.exampleSentences[0].japanese}</p>
+                      <p className="font-jp text-base text-foreground leading-relaxed">{vocab.exampleSentences[0].japanese}</p>
                       {showRomaji && vocab.exampleSentences[0].romaji && (
                         <p className="text-xs text-muted-foreground font-serif italic">{vocab.exampleSentences[0].romaji}</p>
                       )}

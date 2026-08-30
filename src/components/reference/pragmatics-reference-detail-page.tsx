@@ -23,7 +23,7 @@ export function PragmaticsReferenceDetailPage({ selectedItemId }: PragmaticsRefe
     <div className="container py-10 px-4 mx-auto max-w-4xl min-h-[70vh]">
       <div className="text-center space-y-4">
         <h1 className="text-3xl font-bold tracking-tight flex items-center justify-center gap-3">
-          <Users className="w-8 h-8 text-primary" />
+          <Users className="w-8 h-8 text-accent" />
           Context Dojo
         </h1>
         <p className="text-muted-foreground text-lg">{selectedScenario.title}</p>

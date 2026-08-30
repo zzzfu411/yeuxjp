@@ -9,12 +9,12 @@ export function KanaPageHero() {
       <p className="text-muted-foreground max-w-2xl text-sm sm:text-base">
         日语的基础。点击卡片听发音。
         <br className="hidden sm:inline" />
-        <span className="font-semibold text-primary">
+        <span className="font-semibold text-accent">
           {" "}
           Hiragana (<GlossaryTerm termId="hiragana">平假名</GlossaryTerm>)
         </span>{" "}
         用于原生词汇，
-        <span className="font-semibold text-primary">
+        <span className="font-semibold text-accent">
           {" "}
           Katakana (<GlossaryTerm termId="katakana">片假名</GlossaryTerm>)
         </span>{" "}

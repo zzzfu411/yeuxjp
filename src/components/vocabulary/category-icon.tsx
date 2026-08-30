@@ -55,7 +55,7 @@ export function CategoryIcon({ category, size = 32, className, fallback = true }
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center shrink-0 rounded-full bg-primary/10 text-primary/70 font-black",
+        "inline-flex items-center justify-center shrink-0 rounded-full bg-accent/10 text-accent font-black",
         dimensionClass,
         className
       )}

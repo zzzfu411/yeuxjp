@@ -63,7 +63,7 @@ export function VocabularyToolbar({
         />
       </div>
 
-      <div className="sticky top-16 z-30 -mx-4 space-y-4 border-b-[3px] border-foreground bg-background px-4 py-4 sm:mx-0 sm:px-0">
+      <div className="sticky top-20 z-30 -mx-4 space-y-4 border-b-[3px] border-foreground bg-background px-4 py-4 sm:mx-0 sm:px-0">
         <div className="flex flex-wrap justify-center">
           {levels.map((level, index) => (
             <button

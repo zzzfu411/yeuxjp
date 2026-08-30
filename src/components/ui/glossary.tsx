@@ -120,7 +120,7 @@ export function GlossaryTerm({
       onClick={() => ctx.openGlossary(termId)}
       className={cn(
         "inline-flex items-center rounded-sm px-0.5 underline decoration-dotted underline-offset-4",
-        "text-primary/90 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+        "text-accent hover:text-accent/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         className
       )}
       aria-label={`解释：${GLOSSARY_BY_ID[termId]?.term ?? termId}`}

@@ -41,7 +41,7 @@ export function GlossaryModal({
     >
       <div className="flex flex-col h-full">
         <div className="p-6 border-b bg-muted/10 space-y-3">
-          <div className="flex items-baseline justify-between gap-3">
+          <div className="flex items-baseline justify-between gap-3 pr-12">
             <div className="space-y-1">
               <h2 id={titleId} className="text-2xl font-bold tracking-tight">术语解释</h2>
               <p id={descriptionId} className="text-sm text-muted-foreground">
@@ -146,7 +146,7 @@ function GlossaryEntryCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <div className="text-lg font-bold">{entry.term}</div>
+          <div className="font-jp text-lg font-bold">{entry.term}</div>
           <div className="text-sm text-muted-foreground leading-relaxed">{entry.short}</div>
         </div>
         <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={onActivate}>
@@ -164,7 +164,7 @@ function GlossaryEntryCard({
           <div className="grid gap-2">
             {entry.examples.map((example, index) => (
               <div key={index} className="rounded-lg bg-muted/30 border px-3 py-2 text-sm flex flex-col gap-1">
-                <div className="font-medium">{example.jp}</div>
+                <div className="font-jp font-medium">{example.jp}</div>
                 {example.note && <div className="text-xs text-muted-foreground">{example.note}</div>}
               </div>
             ))}

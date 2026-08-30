@@ -38,19 +38,19 @@ export function KanaCard({
         mastered && "bg-primary/40"
       )}
     >
-      <div className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
-        <Volume2 className="w-3 h-3 sm:w-4 sm:h-4 text-primary/60" />
+      <div className="absolute top-2 right-2 opacity-60 transition-opacity group-hover:opacity-100">
+        <Volume2 className="w-3 h-3 sm:w-4 sm:h-4 text-foreground" />
       </div>
       
       {propHasStrokes && (
         <div className="absolute bottom-1.5 right-2 opacity-30 group-hover:opacity-100 transition-opacity" title="笔顺可用">
-          <PenTool className="w-3 h-3 text-primary" />
+          <PenTool className="w-3 h-3 text-foreground" />
         </div>
       )}
 
       {mastered && (
         <div className="absolute bottom-1.5 left-2 opacity-70" title="已掌握">
-          <CheckCircle2 className="w-3 h-3 text-primary" />
+          <CheckCircle2 className="w-3 h-3 text-foreground" />
         </div>
       )}
       

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { SpeechControlsButton } from "@/components/ui/speech-controls-button"
@@ -23,7 +24,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95">
-      <div className="flex flex-wrap items-center gap-2 px-3 py-3 sm:px-4">
+      <div className="flex flex-nowrap items-center gap-2 px-3 py-3 sm:px-4">
         <Link
           href="/"
           className="shrink-0 bg-primary px-3 py-1.5 text-xl font-black tracking-tighter text-foreground border-[3px] border-foreground shadow-hard-sm sm:text-2xl"
@@ -32,7 +33,7 @@ export function Navbar() {
           YASASHI!
         </Link>
 
-        <nav className="flex min-w-0 flex-1 items-center overflow-x-auto">
+        <nav className="scrollbar-hide flex min-w-0 flex-1 items-center overflow-x-auto">
           {navItems.map((item, index) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
             return (
@@ -56,8 +57,11 @@ export function Navbar() {
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <ModeToggle />
           <SpeechControlsButton />
-          <Button asChild size="sm">
-            <Link href="/path" data-testid="nav-start-learning">开始学习</Link>
+          <Button asChild size="sm" className="gap-2">
+            <Link href="/path" data-testid="nav-start-learning" aria-label="开始学习">
+              <BookOpen className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden min-[360px]:inline">开始学习</span>
+            </Link>
           </Button>
         </div>
       </div>

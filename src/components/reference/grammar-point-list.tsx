@@ -40,7 +40,7 @@ export function GrammarPointList({
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shadow-sm group-hover:scale-110 transition-transform">
                 {index + 1}
               </span>
-              <h2 className="text-xl font-bold group-hover:text-primary transition-colors">{point.title}</h2>
+              <h2 className="text-xl font-bold group-hover:text-accent transition-colors">{point.title}</h2>
             </div>
             <p className="text-muted-foreground leading-relaxed relative z-10">{point.explanation}</p>
           </div>
@@ -51,7 +51,7 @@ export function GrammarPointList({
                 结构
                 <div className="h-px bg-border flex-1" />
               </div>
-              <code className="text-lg font-mono font-bold text-primary block">{point.structure}</code>
+              <code className="text-lg font-mono font-bold text-accent block">{point.structure}</code>
             </div>
 
             <div className="space-y-4">
@@ -62,7 +62,7 @@ export function GrammarPointList({
               <div className="grid gap-4">
                 {point.examples.map((ex, i) => (
                   <div key={i} className="pl-4 border-l-2 border-primary/30 space-y-1 hover:border-primary transition-colors">
-                    <div className="text-lg font-medium tracking-wide">{ex.japanese}</div>
+                    <div className="font-jp text-lg font-medium tracking-wide">{ex.japanese}</div>
                     <div className="text-sm text-muted-foreground italic font-serif">{ex.romaji}</div>
                     <div className="text-sm text-foreground/80">{ex.meaning}</div>
                   </div>

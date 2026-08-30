@@ -20,11 +20,15 @@ export const MISTAKE_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_MISTAKES
 
 export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
   const [list, setList] = useState<MistakeItem[]>(() => [])
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     let cancelled = false
 
-    const sync = () => setList(readMistakeList(storageKey))
+    const sync = () => {
+      setList(readMistakeList(storageKey))
+      setLoaded(true)
+    }
 
     Promise.resolve().then(() => {
       if (cancelled) return
@@ -121,5 +125,5 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
     return true
   }, [storageKey])
 
-  return { list, byId, recordWrong, remove, clear }
+  return { list, byId, loaded, recordWrong, remove, clear }
 }
