@@ -7,19 +7,6 @@ import { chromium } from "playwright"
 const BASE_URL = process.env.SCREENSHOT_BASE_URL ?? "http://127.0.0.1:3000"
 const OUT_DIR = process.env.SCREENSHOT_OUT_DIR ?? "/workspace/docs/screenshots"
 
-const STORAGE_KEYS = {
-  KANA_MASTERED: "yasashi.kana.mastered.v1",
-  VOCAB_LEARNED: "yasashi.vocab.learned.v1",
-  SRS_KANA: "yasashi.srs.kana.v1",
-  SRS_VOCAB: "yasashi.srs.vocab.v1",
-  SRS_MISTAKES: "yasashi.srs.mistakes.v1",
-  MISTAKES: "yasashi.mistakes.v1",
-  USER_PROFILE: "yasashi.learning.profile.v1",
-  LESSON_PROGRESS: "yasashi.learning.lessons.v1",
-  ITEM_PROGRESS: "yasashi.learning.items.v1",
-  PRACTICE_RESULTS: "yasashi.learning.practice.v1",
-}
-
 function seedLearnerState() {
   const STORAGE_KEYS = {
     KANA_MASTERED: "yasashi.kana.mastered.v1",
