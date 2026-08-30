@@ -24,7 +24,7 @@ const OHAYOU_GOZAIMASU = String.fromCodePoint(0x304a, 0x306f, 0x3088, 0x3046, 0x
 const defaultPageSentinelGroups = { any: [/Yasashi Japanese/, /__next/] }
 
 export const appHealthRouteSentinels = {
-  "/": { all: [/home-start-learning/] },
+  "/": { all: [/课 程 路 径/] },
   "/kana": { all: [/data-route-shell="kana"/] },
   "/vocabulary": { all: [/data-route-shell="vocabulary"/] },
   "/quiz": { all: [/data-route-shell="quiz"/] },

@@ -50,17 +50,21 @@ export function HomeNowPlaying({
         {learningEntry.subtitle}
       </p>
 
-      <Link
-        href={learningEntry.href}
-        data-testid="home-start-learning"
-        className="mt-5 flex h-14 w-14 items-center justify-center border-[3px] border-foreground bg-destructive text-2xl text-white shadow-hard-sm hover:-translate-x-px hover:-translate-y-px"
-        aria-label={learningEntry.cta}
-      >
-        ▶
-      </Link>
-      <div className="mt-2 text-xs font-extrabold">
-        {profileLoaded ? learningEntry.cta : "正在读取学习设置..."}
-      </div>
+      {profileLoaded ? (
+        <>
+          <Link
+            href={learningEntry.href}
+            data-testid="home-start-learning"
+            className="mt-5 flex h-14 w-14 items-center justify-center border-[3px] border-foreground bg-destructive text-2xl text-white shadow-hard-sm hover:-translate-x-px hover:-translate-y-px"
+            aria-label={learningEntry.cta}
+          >
+            ▶
+          </Link>
+          <div className="mt-2 text-xs font-extrabold">{learningEntry.cta}</div>
+        </>
+      ) : (
+        <div className="mt-5 text-xs font-extrabold text-muted-foreground">正在读取学习设置...</div>
+      )}
 
       {showOnboarding ? (
         <div className="mt-5 w-full">

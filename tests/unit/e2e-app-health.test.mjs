@@ -90,7 +90,8 @@ test("E2E app health recognizes current app pages", () => {
   assert.equal(getRouteHealthSentinels("/kana").some((sentinel) => sentinel.test('data-route-shell="kana"')), true)
   assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>"), true)
   assert.equal(pageLooksLikeYasashi("<html><body><div id=\"__next\"></div></body></html>"), true)
-  assert.equal(pageLooksLikeYasashi("<html>home-start-learning</html>", "/"), true)
+  assert.equal(pageLooksLikeYasashi("<html>课 程 路 径</html>", "/"), true)
+  assert.equal(pageLooksLikeYasashi("<html>home-start-learning</html>", "/"), false)
   assert.equal(pageLooksLikeYasashi("<html>Yasashi Japanese</html>", "/kana"), false)
   assert.equal(pageLooksLikeYasashi('<html data-route-shell="kana"></html>', "/kana"), true)
   assert.equal(pageLooksLikeYasashi('<html data-route-shell="quiz"></html>', "/quiz"), true)
@@ -116,7 +117,7 @@ test("E2E app health checks every candidate route before reusing a server", asyn
     seen.push(url)
     if (url.endsWith("/kana")) return fakeResponse(404, "not found")
     if (url.endsWith("/quiz")) return fakeResponse(200, '<div data-route-shell="quiz"></div>')
-    return fakeResponse(200, "home-start-learning")
+    return fakeResponse(200, "课 程 路 径")
   }
 
   assert.equal(await routeLooksHealthy("http://local.test", "/", fetchImpl), true)
