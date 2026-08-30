@@ -28,9 +28,9 @@ function ParticleFilledLine({
   return (
     <div className="space-y-1">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-lg leading-relaxed font-medium">
+      <div className="font-jp text-lg font-medium leading-relaxed">
         {before}
-        <span className={cn("mx-0.5 px-1 rounded-md border", particleClassName)}>{particle}</span>
+        <span className={cn("mx-0.5 border-b px-1", particleClassName)}>{particle}</span>
         {after}
       </div>
     </div>
@@ -59,7 +59,7 @@ export function ParticleFillFeedback({
   const isCorrect = isFeedbackAnswerCorrect(correct, selected, acceptedAnswers)
 
   return (
-    <div className={cn("w-full rounded-xl border bg-muted/20 p-4 space-y-3", className)}>
+    <div className={cn("w-full space-y-3 border-y border-dashed border-border/60 bg-primary/5 p-4", className)}>
       <div className="text-xs font-semibold text-foreground tracking-wider">句子回填</div>
 
       {isCorrect ? (
@@ -68,7 +68,7 @@ export function ParticleFillFeedback({
           after={after}
           label="正确"
           particle={correct}
-          particleClassName="border-green-300 bg-green-100 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-300"
+          particleClassName="border-foreground/50 bg-primary/10 text-foreground"
         />
       ) : (
         <>
@@ -77,14 +77,14 @@ export function ParticleFillFeedback({
             after={after}
             label="你的答案"
             particle={selected}
-            particleClassName="border-red-300 bg-red-100 text-red-700 dark:bg-red-900/30 dark:border-red-700 dark:text-red-300"
+            particleClassName="border-accent/70 bg-accent/10 text-accent"
           />
           <ParticleFilledLine
             before={before}
             after={after}
             label="正确答案"
             particle={correct}
-            particleClassName="border-green-300 bg-green-100 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-300"
+            particleClassName="border-foreground/50 bg-primary/10 text-foreground"
           />
         </>
       )}
@@ -127,7 +127,7 @@ export function ConjugationComparison({
   ]
 
   return (
-    <div className={cn("w-full rounded-xl border bg-muted/20 p-4 space-y-3", className)}>
+    <div className={cn("w-full space-y-4 border-y border-dashed border-border/60 bg-primary/5 p-4", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="text-xs font-semibold text-foreground tracking-wider">活用对照表</div>
@@ -138,10 +138,10 @@ export function ConjugationComparison({
 
         <div
           className={cn(
-            "text-xs font-semibold px-3 py-1 rounded-full border whitespace-nowrap",
+            "whitespace-nowrap border px-3 py-1 text-xs font-semibold",
             isCorrect
-              ? "bg-green-100 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/40 dark:text-green-300"
-              : "bg-red-100 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-900/40 dark:text-red-300"
+              ? "border-foreground/30 bg-primary/10 text-foreground"
+              : "seal-stamp border-accent/70 bg-accent/5 text-accent"
           )}
         >
           {isCorrect ? "正确" : "已记录错题"}
@@ -150,13 +150,13 @@ export function ConjugationComparison({
 
       {!isCorrect && (
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-lg border bg-background/60 p-3">
+          <div className="border-b border-dashed border-accent/50 bg-accent/5 p-3">
             <div className="text-xs text-muted-foreground mb-1">你的选择</div>
-            <div className="text-lg font-semibold text-red-700 dark:text-red-300">{selected}</div>
+            <div className="font-jp text-lg font-semibold text-accent">{selected}</div>
           </div>
-          <div className="rounded-lg border bg-background/60 p-3">
+          <div className="border-b border-dashed border-foreground/30 bg-primary/5 p-3">
             <div className="text-xs text-muted-foreground mb-1">正确答案</div>
-            <div className="text-lg font-semibold text-green-700 dark:text-green-300">{correct}</div>
+            <div className="font-jp text-lg font-semibold text-foreground">{correct}</div>
           </div>
         </div>
       )}
@@ -168,8 +168,8 @@ export function ConjugationComparison({
             <div
               key={f.id}
               className={cn(
-                "rounded-lg border bg-background/60 p-3",
-                isAsked && "border-primary/50 bg-primary/5"
+                "ledger-row border-l-2 border-l-transparent bg-transparent p-3",
+                isAsked && "border-l-accent bg-primary/10"
               )}
             >
               <div className="text-xs text-muted-foreground mb-1">{f.label}</div>

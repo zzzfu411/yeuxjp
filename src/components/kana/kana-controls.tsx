@@ -47,21 +47,21 @@ export function KanaControls({
   onClearMastered,
 }: KanaControlsProps) {
   return (
-    <>
-      <div className="flex">
+    <section className="mx-auto w-full max-w-4xl" aria-label="假名练习筛选">
+      <div className="flex justify-center gap-7 border-b border-border/35">
         <button
           type="button"
           aria-pressed={mode === "hiragana"}
           data-testid="kana-mode-hiragana"
           onClick={() => onModeChange("hiragana")}
           className={cn(
-            "border-[3px] border-foreground px-4 py-2 text-sm font-extrabold sm:px-8",
+            "relative border-b-2 border-transparent px-1 py-2 text-sm font-semibold transition-colors sm:px-3",
             mode === "hiragana"
-              ? "bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
-              : "bg-card hover:bg-primary"
+              ? "border-accent text-accent"
+              : "text-muted-foreground hover:border-border hover:text-foreground"
           )}
         >
-          平假名 (Hiragana)
+          平假名 <span className="font-scribble ml-1 font-normal">Hiragana</span>
         </button>
         <button
           type="button"
@@ -69,19 +69,19 @@ export function KanaControls({
           data-testid="kana-mode-katakana"
           onClick={() => onModeChange("katakana")}
           className={cn(
-            "-ml-[3px] border-[3px] border-foreground px-4 py-2 text-sm font-extrabold sm:px-8",
+            "relative border-b-2 border-transparent px-1 py-2 text-sm font-semibold transition-colors sm:px-3",
             mode === "katakana"
-              ? "z-[1] bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
-              : "bg-card hover:bg-primary"
+              ? "border-accent text-accent"
+              : "text-muted-foreground hover:border-border hover:text-foreground"
           )}
         >
-          片假名 (Katakana)
+          片假名 <span className="font-scribble ml-1 font-normal">Katakana</span>
         </button>
       </div>
 
-      <div className="flex flex-col items-center gap-3">
-        <div className="flex flex-wrap justify-center">
-          {kanaSets.map((set, index) => (
+      <div className="mt-5 flex flex-col items-center gap-4">
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+          {kanaSets.map((set) => (
             <button
               key={set.id}
               type="button"
@@ -89,11 +89,10 @@ export function KanaControls({
               data-testid={`kana-set-${set.id}`}
               onClick={() => onKanaSetChange(set.id)}
               className={cn(
-                "border-[3px] border-foreground px-3 py-2 text-sm font-extrabold sm:px-5",
-                index > 0 && "-ml-[3px]",
+                "border-b px-0.5 py-1 text-sm font-semibold transition-colors",
                 kanaSet === set.id
-                  ? "z-[1] bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
-                  : "bg-card hover:bg-primary"
+                  ? "border-accent text-accent"
+                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
               )}
             >
               {set.label}
@@ -102,18 +101,18 @@ export function KanaControls({
         </div>
 
         <div className="max-w-2xl text-center text-xs leading-relaxed text-muted-foreground">
-          {hint} <GlossaryButton className="ml-2 h-auto rounded-md px-2 py-1">术语表</GlossaryButton>
+          {hint} <GlossaryButton className="ml-2 h-auto border-0 bg-transparent px-1 py-0 text-xs shadow-none">术语笺</GlossaryButton>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-y border-border/35 px-3 py-3">
           <button
             type="button"
             aria-pressed={showRomaji}
             data-testid="kana-romaji-toggle"
             onClick={onToggleRomaji}
             className={cn(
-              "inline-flex items-center gap-2 border-[3px] border-foreground px-4 py-2 text-sm font-extrabold shadow-hard-sm transition-transform hover:-translate-x-px hover:-translate-y-px",
-              "bg-card hover:bg-primary"
+              "inline-flex items-center gap-2 border-b border-transparent px-0.5 py-1 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:text-foreground",
+              showRomaji && "text-foreground"
             )}
           >
             {showRomaji ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -126,8 +125,8 @@ export function KanaControls({
             data-testid="kana-only-unmastered-toggle"
             onClick={onToggleOnlyUnmastered}
             className={cn(
-              "inline-flex items-center gap-2 border-[3px] border-foreground px-4 py-2 text-sm font-extrabold shadow-hard-sm transition-transform hover:-translate-x-px hover:-translate-y-px",
-              "bg-card hover:bg-primary"
+              "inline-flex items-center gap-2 border-b border-transparent px-0.5 py-1 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:text-foreground",
+              onlyUnmastered && "border-accent text-accent"
             )}
           >
             {onlyUnmastered ? "显示全部" : "只看未掌握"}
@@ -138,15 +137,15 @@ export function KanaControls({
             onClick={onClearMastered}
             data-testid="kana-clear-progress"
             className={cn(
-              "inline-flex items-center gap-2 border-[3px] border-foreground px-4 py-2 text-sm font-extrabold shadow-hard-sm transition-transform hover:-translate-x-px hover:-translate-y-px",
-              "bg-card text-muted-foreground hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+              "inline-flex items-center gap-2 border-b border-transparent px-0.5 py-1 text-sm font-semibold",
+              "text-muted-foreground hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
             )}
           >
             清空进度
           </button>
         </div>
 
-        <div className="font-mono text-xs text-muted-foreground">
+        <div className="font-scribble text-sm text-muted-foreground">
           进度：{progress.learned}/{progress.total}
         </div>
 
@@ -157,6 +156,6 @@ export function KanaControls({
           </div>
         )}
       </div>
-    </>
+    </section>
   )
 }

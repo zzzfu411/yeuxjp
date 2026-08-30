@@ -30,21 +30,25 @@ export function VocabularyCategoryList({
   onRetry,
 }: VocabularyCategoryListProps) {
   return (
-    <div className="space-y-16 pt-4">
+    <div className="space-y-12 pt-10">
       {categories.map((category) => {
         const categoryItems = getVocabularyItemsByCategory(items, category)
 
         return (
-          <div key={category} id={`cat-${category}`} className="space-y-6 scroll-mt-48">
-            <h2 className="text-xl font-bold text-foreground flex items-center gap-3 border-b pb-2">
-              <CategoryIcon category={category} size={40} />
-              {categoryNames[category] || category}
-              <span className="text-xs font-normal text-muted-foreground ml-auto bg-secondary px-2 py-1 rounded-full">
+          <section key={category} id={`cat-${category}`} className="paper-sheet relative scroll-mt-48 px-4 py-7 sm:px-6 sm:py-8">
+            <span className="paper-tape" aria-hidden="true" />
+            <header className="mb-7 flex items-center gap-4 border-b border-border/45 pb-4">
+              <CategoryIcon category={category} size={44} />
+              <h2 className="min-w-0 text-lg font-semibold text-foreground sm:text-xl">
+                <span className="inkline">{categoryNames[category] || category}</span>
+                <span className="font-scribble ml-3 text-base font-normal text-muted-foreground">{category}</span>
+              </h2>
+              <span className="font-scribble ml-auto text-base text-muted-foreground">
                 {categoryItems.length}
               </span>
-            </h2>
+            </header>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {categoryItems.map((vocab) => (
                 <Flashcard
                   key={vocab.id}
@@ -55,28 +59,34 @@ export function VocabularyCategoryList({
                 />
               ))}
             </div>
-          </div>
+          </section>
         )
       })}
 
       {loading && (
-        <div className="text-center py-20 text-muted-foreground">
-          {"\u6b63\u5728\u52a0\u8f7d\u8bcd\u6c47..."}
+        <div className="paper-slip relative mx-auto max-w-lg px-6 py-14 text-center text-muted-foreground">
+          <span className="paper-tape" aria-hidden="true" />
+          <span className="font-scribble block text-lg">loading notes...</span>
+          <span className="mt-2 block text-sm">{"\u6b63\u5728\u52a0\u8f7d\u8bcd\u6c47..."}</span>
         </div>
       )}
 
       {!loading && error && (
-        <div className="text-center py-20 text-muted-foreground space-y-4">
-          <div>{"\u8bcd\u6c47\u52a0\u8f7d\u5931\u8d25\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002"}</div>
-          <Button type="button" variant="outline" className="rounded-full" onClick={onRetry} data-testid="vocabulary-retry-load">
+        <div className="paper-slip relative mx-auto max-w-lg space-y-4 px-6 py-14 text-center text-muted-foreground">
+          <span className="paper-tape" aria-hidden="true" />
+          <div className="seal-stamp">再试</div>
+          <div className="text-sm">{"\u8bcd\u6c47\u52a0\u8f7d\u5931\u8d25\uff0c\u8bf7\u7a0d\u540e\u91cd\u8bd5\u3002"}</div>
+          <Button type="button" variant="outline" className="border border-border/60 bg-transparent shadow-none hover:bg-muted/40 hover:shadow-none" onClick={onRetry} data-testid="vocabulary-retry-load">
             {"\u91cd\u65b0\u52a0\u8f7d"}
           </Button>
         </div>
       )}
 
       {!loading && !error && items.length === 0 && (
-        <div className="text-center py-20 text-muted-foreground">
-          {"\u8be5\u7b49\u7ea7\u6682\u65e0\u5339\u914d\u8bcd\u6c47\u3002"}
+        <div className="paper-slip relative mx-auto max-w-lg px-6 py-14 text-center text-muted-foreground">
+          <span className="paper-tape" aria-hidden="true" />
+          <span className="seal-stamp">空</span>
+          <p className="mt-4 text-sm">{"\u8be5\u7b49\u7ea7\u6682\u65e0\u5339\u914d\u8bcd\u6c47\u3002"}</p>
         </div>
       )}
     </div>

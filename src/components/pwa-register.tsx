@@ -187,7 +187,7 @@ export function PwaRegister() {
       aria-label="应用更新"
       aria-live="polite"
       role="region"
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-center gap-3 rounded-md border bg-card p-3 text-card-foreground shadow-lg sm:inset-x-auto sm:right-4 sm:left-auto"
+      className="paper-slip fixed inset-x-3 bottom-3 z-[90] mx-auto flex max-w-md items-center gap-3 p-3 text-card-foreground sm:inset-x-auto sm:right-4 sm:left-auto"
       data-testid="pwa-update-banner"
     >
       <div className="min-w-0 flex-1">

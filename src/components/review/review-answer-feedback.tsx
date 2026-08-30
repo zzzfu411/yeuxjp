@@ -72,13 +72,13 @@ export function ReviewAnswerFeedback({
         />
       ) : null}
 
-      <div className="w-full rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground leading-relaxed">
+      <div className="w-full border-y border-dashed border-border/60 bg-primary/5 p-4 text-sm leading-relaxed text-muted-foreground">
         {showSelectedAnswer ? (
           <>
             <div className="text-xs font-semibold text-foreground mb-1 tracking-wider">解析</div>
             <div className="space-y-2">
               <div className="text-sm">
-                你的答案：<span className={cn("font-semibold", correct === true ? "text-green-700 dark:text-green-300" : "text-red-700 dark:text-red-300")}>{selectedDisplay}</span>
+                你的答案：<span className={cn("font-semibold", correct === true ? "text-foreground" : "text-accent")}>{selectedDisplay}</span>
                 <span className="text-muted-foreground"> · 正确：<span className="font-semibold text-foreground">{correctDisplay}</span></span>
               </div>
               {question.explanation ? <div>{question.explanation}</div> : null}

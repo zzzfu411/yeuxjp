@@ -4,9 +4,10 @@ import { NextStepCard } from "@/components/learning/next-step-card"
 
 export function GrammarReferencePage() {
   return (
-    <div className="container py-10 px-4 mx-auto space-y-8 max-w-4xl mb-20">
-      <div className="text-center space-y-4">
-        <h1 className="font-brush text-4xl tracking-tight">语法道场 <span className="sr-only">Grammar Dojo</span></h1>
+    <div className="paper-wrap mb-20 max-w-4xl space-y-10 py-10">
+      <div className="text-center">
+        <p className="eyebrow">文法 · Grammar Dojo</p>
+        <h1 className="mt-2 font-brush text-4xl">语法手帖 <span className="sr-only">Grammar Dojo</span></h1>
       </div>
 
       <GrammarReferenceControls pointsByLevel={grammarData} />

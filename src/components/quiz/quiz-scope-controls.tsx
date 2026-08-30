@@ -5,17 +5,17 @@ import type { KanaQuizScope, QuizMode, VocabQuizScope } from "@/lib/quiz-generat
 
 function scopeButtonClassName(active: boolean) {
   return cn(
-    "border-[3px] border-foreground px-4 py-2 text-sm font-extrabold",
+    "relative min-h-10 border-0 border-b border-dashed px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     active
-      ? "z-[1] bg-foreground text-background dark:bg-primary dark:text-primary-foreground"
-      : "bg-card hover:bg-primary"
+      ? "border-accent bg-primary/10 text-foreground"
+      : "border-border/50 bg-transparent text-muted-foreground hover:border-foreground/40 hover:bg-primary/5 hover:text-foreground"
   )
 }
 
 function filterButtonClassName(active: boolean) {
   return cn(
-    "hard-chip px-4 py-2 text-sm hover:bg-primary",
-    active && "bg-primary"
+    "min-h-10 border border-dashed border-border/60 bg-transparent px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    active && "border-accent/70 bg-accent/10 text-accent"
   )
 }
 
@@ -42,8 +42,8 @@ export function QuizScopeControls({
 }) {
   if (mode === "hiragana-romaji" || mode === "audio-kana") {
     return (
-      <div className="w-full flex flex-wrap items-center justify-center gap-2">
-        <div className="flex">
+      <div className="flex w-full flex-wrap items-center justify-center gap-3 border-y border-dashed border-border/50 py-3">
+        <div className="flex gap-1">
           <button
             type="button"
             aria-pressed={kanaScope === "seion"}
@@ -58,7 +58,7 @@ export function QuizScopeControls({
             aria-pressed={kanaScope === "all"}
             onClick={() => onKanaScopeChange("all")}
             data-testid="quiz-kana-scope-all"
-            className={cn(scopeButtonClassName(kanaScope === "all"), "-ml-[3px] px-5")}
+            className={cn(scopeButtonClassName(kanaScope === "all"), "px-5")}
           >
             全部
           </button>
@@ -79,8 +79,8 @@ export function QuizScopeControls({
 
   if (mode === "meaning-vocab") {
     return (
-      <div className="w-full flex flex-wrap items-center justify-center gap-2">
-        <div className="flex flex-wrap">
+      <div className="flex w-full flex-wrap items-center justify-center gap-3 border-y border-dashed border-border/50 py-3">
+        <div className="flex flex-wrap gap-1">
           {[
             ["survival", "生存"],
             ["daily", "日常"],
@@ -93,7 +93,7 @@ export function QuizScopeControls({
               aria-pressed={vocabScope === scope}
               onClick={() => onVocabScopeChange(scope as VocabQuizScope)}
               data-testid={`quiz-vocab-scope-${scope}`}
-              className={cn(scopeButtonClassName(vocabScope === scope), scope !== "survival" && "-ml-[3px]")}
+              className={scopeButtonClassName(vocabScope === scope)}
             >
               {label}
             </button>

@@ -156,10 +156,10 @@ export function TodayReviewSession({
   return (
     <ReviewSessionFrame
       onExit={onExit}
-      headerRight={<div className="text-xs text-muted-foreground font-mono" data-testid="review-remaining">今日剩余: {review.remainingCount}</div>}
+      headerRight={<div className="font-scribble text-sm text-muted-foreground" data-testid="review-remaining">今日剩余: {review.remainingCount}</div>}
     >
 
-      <div className="w-full rounded-xl border bg-muted/10 p-4 text-sm text-muted-foreground leading-relaxed">
+      <div className="w-full border-y border-dashed border-border/60 bg-primary/5 p-4 text-sm leading-relaxed text-muted-foreground">
         当前：<span className="font-semibold text-foreground">{data.deckLabel}</span> · 答错会排到本轮队尾，答对会进入下一次间隔复习。
       </div>
 

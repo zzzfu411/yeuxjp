@@ -97,8 +97,8 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_32rem),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted)/0.22))]">
-      <div className="container mx-auto max-w-5xl px-4 py-8 md:py-10">
+    <div className="min-h-[calc(100vh-8rem)]">
+      <div className="paper-wrap py-8 md:py-12">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
             <Link href="/">
@@ -113,7 +113,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
 
         {loaded && !lessonUnlocked ? <LessonLockedPreview recommendedLesson={recommendedLesson} /> : null}
 
-        <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="grid gap-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12">
           <LessonProgressSidebar
             lesson={lesson}
             lessonPosition={lessonPosition}
@@ -125,20 +125,18 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
             savedProgress={savedLessonProgress}
           />
 
-          <main className="hard-panel p-5 sm:p-7">
+          <main className="paper-sheet p-5 sm:p-8">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <div className="mb-2 inline-flex items-center gap-2 rounded-full border bg-muted/40 px-3 py-1 text-xs font-semibold text-muted-foreground">
-                  {stepLabel(current.type)}
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight">{current.title}</h2>
+                <div className="eyebrow mb-1">{stepLabel(current.type)}</div>
+                <h2 className="font-brush text-3xl font-normal">{current.title}</h2>
               </div>
               {"audioText" in current && current.audioText ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="shrink-0 rounded-full"
+                  className="shrink-0"
                   aria-label="朗读当前课程内容"
                   onClick={() => playAudio(current.audioText!)}
                 >

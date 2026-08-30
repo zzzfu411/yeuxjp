@@ -172,64 +172,74 @@ function VocabularyPageContent() {
   }, [learning, selectedVocab, selfAssessment])
 
   return (
-    <div className="container py-10 px-4 mx-auto space-y-8 mb-20">
-      <div className="text-center space-y-2">
-        <h1 className="font-brush text-4xl tracking-tight">单词宝库 <span className="sr-only">Kotoba</span></h1>
-        <p className="text-muted-foreground text-sm">
-          {getVocabularyLevelDescription(currentLevel)}
-        </p>
-        <p className="text-muted-foreground text-xs">
-          <GlossaryTerm termId="jlpt">JLPT</GlossaryTerm>：N5 最基础，N1 最难。本页分级为学习路线（大致对应 JLPT）。{" "}
-          <GlossaryButton className="h-auto px-2 py-1 rounded-md">术语表</GlossaryButton>
-        </p>
-      </div>
+    <div className="paper-wrap px-3 py-8 sm:px-5 sm:py-12">
+      <article className="paper-sheet mx-auto mb-16 max-w-6xl px-4 py-8 sm:px-8 lg:px-12">
+        <header className="border-b border-border/50 pb-7">
+          <p className="eyebrow">ことば帖 · Vocabulary ledger</p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <h1 className="inkline font-brush text-4xl sm:text-5xl">单词手帖 <span className="sr-only">Kotoba</span></h1>
+              <p className="font-scribble mt-1 text-lg text-muted-foreground">words, noted by hand</p>
+            </div>
+            <GlossaryButton className="h-auto border-0 bg-transparent px-0 py-1 text-sm text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground">
+              打开术语笺
+            </GlossaryButton>
+          </div>
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground">
+            {getVocabularyLevelDescription(currentLevel)} 依等级与主题翻阅，点开词笺可朗读、自评并记入掌握进度。
+          </p>
+          <p className="mt-2 text-xs leading-6 text-muted-foreground">
+            <GlossaryTerm termId="jlpt">JLPT</GlossaryTerm>：N5 最基础，N1 最难。本页分级为学习路线（大致对应 JLPT）。
+          </p>
+        </header>
 
-      <SpeechSettingsBar className="max-w-3xl mx-auto" />
+        <SpeechSettingsBar className="paper-slip relative mx-auto mt-8 max-w-3xl border-border/50 bg-card/60 shadow-paper-soft" />
 
-      <VocabularyToolbar
-        levels={VOCABULARY_LEVELS}
-        currentLevel={currentLevel}
-        searchQuery={searchQuery}
-        onlyUnlearned={onlyUnlearned}
-        showRomaji={showRomaji}
-        activeCategory={activeCategory}
-        categories={categories}
-        categoryNames={VOCABULARY_CATEGORY_NAMES}
-        progress={levelProgress}
-        onSearchChange={handleSearchChange}
-        onLevelChange={handleLevelChange}
-        onToggleOnlyUnlearned={handleToggleOnlyUnlearned}
-        onToggleShowRomaji={toggleShowRomaji}
-        onClearLearned={handleClearLearned}
-        onSelectCategory={scrollToCategory}
-      />
-      <PracticeSaveError show={saveError && !selectedVocab} />
-      <ConfirmActionDialog
-        open={confirmClearOpen}
-        title="清空词汇掌握进度？"
-        description="当前词汇掌握状态及 SRS 箱位、到期时间会被清空。练习历史和错题本会保留；之后仍可逐个重新标记掌握。"
-        confirmLabel="清空进度"
-        testId="vocabulary-clear-progress-dialog"
-        onConfirm={handleConfirmClearLearned}
-        onCancel={handleCancelClearLearned}
-      />
+        <VocabularyToolbar
+          levels={VOCABULARY_LEVELS}
+          currentLevel={currentLevel}
+          searchQuery={searchQuery}
+          onlyUnlearned={onlyUnlearned}
+          showRomaji={showRomaji}
+          activeCategory={activeCategory}
+          categories={categories}
+          categoryNames={VOCABULARY_CATEGORY_NAMES}
+          progress={levelProgress}
+          onSearchChange={handleSearchChange}
+          onLevelChange={handleLevelChange}
+          onToggleOnlyUnlearned={handleToggleOnlyUnlearned}
+          onToggleShowRomaji={toggleShowRomaji}
+          onClearLearned={handleClearLearned}
+          onSelectCategory={scrollToCategory}
+        />
+        <PracticeSaveError show={saveError && !selectedVocab} />
+        <ConfirmActionDialog
+          open={confirmClearOpen}
+          title="清空词汇掌握进度？"
+          description="当前词汇掌握状态及 SRS 箱位、到期时间会被清空。练习历史和错题本会保留；之后仍可逐个重新标记掌握。"
+          confirmLabel="清空进度"
+          testId="vocabulary-clear-progress-dialog"
+          onConfirm={handleConfirmClearLearned}
+          onCancel={handleCancelClearLearned}
+        />
 
-      <VocabularyCategoryList
-        categories={categories}
-        categoryNames={VOCABULARY_CATEGORY_NAMES}
-        items={currentData}
-        loading={vocabulary.loading}
-        error={vocabulary.error}
-        showRomaji={showRomaji}
-        isLearnedId={isLearnedId}
-        onRetry={vocabulary.retry}
-        onExpand={(index) => {
-          openAt(index)
-          resetFocusedCard()
-        }}
-      />
+        <VocabularyCategoryList
+          categories={categories}
+          categoryNames={VOCABULARY_CATEGORY_NAMES}
+          items={currentData}
+          loading={vocabulary.loading}
+          error={vocabulary.error}
+          showRomaji={showRomaji}
+          isLearnedId={isLearnedId}
+          onRetry={vocabulary.retry}
+          onExpand={(index) => {
+            openAt(index)
+            resetFocusedCard()
+          }}
+        />
 
-      <NextStepCard />
+        <NextStepCard className="mt-12" />
+      </article>
 
       <VocabularyFocusModal
         vocab={selectedVocab}

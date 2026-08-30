@@ -31,43 +31,41 @@ export function KanaCard({
       aria-label={`打开 ${mainChar}（${kana.romaji}）的详情`}
       data-testid={`kana-card-${kana.romaji}`}
       className={cn(
-        "group relative flex flex-col items-center justify-center p-2 sm:p-4 aspect-square",
-        "bg-card border-[3px] border-foreground shadow-hard-sm cursor-pointer select-none",
-        "transition-transform hover:-translate-x-px hover:-translate-y-px",
-        "active:translate-x-0 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-        mastered && "bg-primary/40"
+        "paper-slip group relative flex aspect-square cursor-pointer select-none flex-col items-center justify-center p-2 sm:p-4",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        mastered && "bg-accent/[0.08] ring-1 ring-accent/35"
       )}
     >
       <div className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
-        <Volume2 className="w-3 h-3 sm:w-4 sm:h-4 text-primary/60" />
+        <Volume2 className="h-3 w-3 text-muted-foreground sm:h-4 sm:w-4" />
       </div>
       
       {propHasStrokes && (
-        <div className="absolute bottom-1.5 right-2 opacity-30 group-hover:opacity-100 transition-opacity" title="笔顺可用">
-          <PenTool className="w-3 h-3 text-primary" />
+        <div className="absolute bottom-1.5 right-2 opacity-30 transition-opacity group-hover:opacity-100" title="笔顺可用">
+          <PenTool className="h-3 w-3 text-accent" />
         </div>
       )}
 
       {mastered && (
         <div className="absolute bottom-1.5 left-2 opacity-70" title="已掌握">
-          <CheckCircle2 className="w-3 h-3 text-primary" />
+          <CheckCircle2 className="h-3 w-3 text-accent" />
         </div>
       )}
       
       <div
         className={cn(
-          "font-jp font-bold text-foreground mb-1 leading-none text-center",
-          mainChar.length > 1 ? "text-xl sm:text-2xl tracking-tight" : "text-3xl sm:text-4xl"
+          "font-jp mb-1 text-center font-semibold leading-none text-foreground",
+          mainChar.length > 1 ? "text-xl sm:text-2xl" : "text-3xl sm:text-4xl"
         )}
       >
         {mainChar}
       </div>
-      {showRomaji && <div className="text-xs sm:text-sm text-muted-foreground font-medium">{kana.romaji}</div>}
+      {showRomaji && <div className="font-scribble text-sm text-muted-foreground sm:text-base">{kana.romaji}</div>}
 
       {/* Sub-char watermark — only useful for single-char rows; combo kana
           (yoon like きゃ) would overflow the corner, so we hide it there. */}
       {mainChar.length === 1 && (
-        <div className="absolute top-2 left-2 sm:left-3 text-[10px] sm:text-xs text-muted-foreground/30 font-serif select-none">
+        <div className="font-jp absolute left-2 top-2 select-none text-[10px] text-muted-foreground/30 sm:left-3 sm:text-xs">
           {subChar}
         </div>
       )}

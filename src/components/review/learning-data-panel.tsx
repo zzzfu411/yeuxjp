@@ -135,7 +135,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
   }, [])
 
   return (
-    <section className={cn("hard-panel p-5", className)} data-testid="learning-data-panel">
+    <section className={cn("paper-sheet p-5", className)} data-testid="learning-data-panel">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <div className="text-sm font-semibold text-foreground">本地学习数据</div>
@@ -143,7 +143,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-full" onClick={exportData} data-testid="learning-data-export">
+          <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={exportData} data-testid="learning-data-export">
             <Download className="h-3.5 w-3.5" />
             导出
           </Button>
@@ -151,7 +151,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
             type="button"
             variant="outline"
             size="sm"
-            className="gap-1.5 rounded-full"
+            className="gap-1.5"
             disabled={readingBackup}
             onClick={() => fileRef.current?.click()}
             data-testid="learning-data-import"
@@ -163,7 +163,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
             type="button"
             variant="ghost"
             size="sm"
-            className="gap-1.5 rounded-full"
+            className="gap-1.5 text-accent hover:border-accent/40 hover:bg-accent/5"
             onClick={() => {
               setNotice(null)
               setResetDialogOpen(true)
@@ -193,10 +193,10 @@ export function LearningDataPanel({ className }: { className?: string }) {
       {notice ? (
         <div
           className={cn(
-            "mt-4 rounded-xl border px-3 py-2 text-xs",
+            "mt-4 border-y border-dashed px-3 py-2 text-xs",
             notice.tone === "success"
-              ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-950/30 dark:text-green-200"
-              : "border-destructive/30 bg-destructive/10 text-destructive"
+              ? "border-foreground/25 bg-primary/10 text-foreground"
+              : "border-accent/30 bg-accent/10 text-accent"
           )}
           role={notice.tone === "error" ? "alert" : "status"}
           aria-live="polite"

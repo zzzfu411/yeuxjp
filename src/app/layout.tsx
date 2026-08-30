@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Ma_Shan_Zheng, Noto_Serif_JP } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -9,32 +8,13 @@ import { GlossaryProvider } from "@/components/ui/glossary";
 import { SpeechPreferencesProvider } from "@/components/ui/speech-preferences";
 import { PwaRegister } from "@/components/pwa-register";
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800", "900"],
-  variable: "--font-ui",
-  display: "swap",
-});
-
-const notoSerifJp = Noto_Serif_JP({
-  subsets: ["latin"],
-  weight: ["500", "700"],
-  variable: "--font-jp",
-  display: "swap",
-  preload: false,
-});
-
-const maShanZheng = Ma_Shan_Zheng({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-brush",
-  display: "swap",
-  preload: false,
-});
-
 export const metadata: Metadata = {
-  title: "Yasashi Japanese | 零基础日语学习",
-  description: "一个温暖、简单的零基础日语学习平台",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://yeuxjp.vercel.app"),
+  title: {
+    default: "優しい Yasashi | 纸上日语",
+    template: "%s | 優しい Yasashi",
+  },
+  description: "在一张安静的纸上，循序学习五十音、词汇、语法与复习。",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -49,10 +29,27 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-touch-icon.png",
   },
+  openGraph: {
+    type: "website",
+    locale: "zh_CN",
+    siteName: "優しい Yasashi",
+    title: "優しい Yasashi | 纸上日语",
+    description: "在一张安静的纸上，循序学习日语。",
+    images: [{ url: "/assets/brand/yasashi-og.webp", width: 1200, height: 630, alt: "優しい Yasashi 纸上日语" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "優しい Yasashi | 纸上日语",
+    description: "在一张安静的纸上，循序学习日语。",
+    images: ["/assets/brand/yasashi-og.webp"],
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#facc15",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#d8d3cc" },
+    { media: "(prefers-color-scheme: dark)", color: "#2a2733" },
+  ],
 };
 
 export default function RootLayout({
@@ -63,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body
-        className={`${dmSans.variable} ${notoSerifJp.variable} ${maShanZheng.variable} min-h-screen bg-background font-sans antialiased flex flex-col`}
+        className="flex min-h-screen flex-col bg-background font-sans antialiased"
       >
         <ThemeProvider
           attribute="class"
@@ -75,8 +72,11 @@ export default function RootLayout({
             <GlossaryProvider>
               <PwaRegister />
               <PaperGrain />
+              <a href="#main-content" className="skip-link">
+                跳到正文
+              </a>
               <Navbar />
-              <main className="flex-1">{children}</main>
+              <main id="main-content" className="site-main flex-1">{children}</main>
               <Footer />
             </GlossaryProvider>
           </SpeechPreferencesProvider>

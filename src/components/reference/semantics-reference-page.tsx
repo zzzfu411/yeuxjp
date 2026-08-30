@@ -31,20 +31,21 @@ export function SemanticsReferencePage({
   )
 
   return (
-    <div className="container py-10 px-4 mx-auto space-y-12 max-w-4xl mb-20">
+    <div className="paper-wrap mb-20 max-w-4xl space-y-12 py-10">
       {enableQueryRedirect && (
         <Suspense fallback={null}>
           <ReferenceQueryRedirect basePath="/semantics" validIds={semanticsData.map((point) => point.id)} />
         </Suspense>
       )}
 
-      <div className="text-center space-y-4">
-        <h1 className="font-brush text-4xl tracking-tight flex items-center justify-center gap-3">
-          <BrainCircuit className="w-8 h-8 text-primary" />
+      <div className="space-y-2 text-center">
+        <p className="eyebrow">意味 · Nuance notes</p>
+        <h1 className="flex items-center justify-center gap-3 font-brush text-4xl">
+          <BrainCircuit className="h-7 w-7 text-muted-foreground" />
           语义辨析
           <span className="sr-only">Nuance Lab</span>
         </h1>
-        <p className="text-muted-foreground text-lg">点击卡片进入深度辨析模式。</p>
+        <p className="text-sm text-muted-foreground">点击纸笺进入深度辨析。</p>
       </div>
 
       <div className="grid gap-10">
@@ -52,15 +53,16 @@ export function SemanticsReferencePage({
           <Link
             key={point.id}
             href={semanticsItemHref(index)}
-            className="group relative hard-panel overflow-hidden transition-transform hover:-translate-x-px hover:-translate-y-px"
+            className="paper-slip group relative overflow-hidden"
           >
-            <div className="bg-secondary/30 p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4 group-hover:bg-secondary/50 transition-colors">
+            <span className="paper-tape" aria-hidden="true" />
+            <div className="flex flex-col justify-between gap-4 border-b border-border/35 p-6 md:flex-row md:items-center">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <span className="text-primary">{point.pair[0]}</span>
                 <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
                 <span className="text-primary">{point.pair[1]}</span>
               </h2>
-              <div className="text-sm font-mono text-muted-foreground bg-background/50 px-3 py-1 rounded-full border">
+              <div className="font-scribble text-base text-muted-foreground">
                 {point.title}
               </div>
             </div>
@@ -68,7 +70,7 @@ export function SemanticsReferencePage({
             <div className="p-6 grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Lightbulb className="w-5 h-5 text-yellow-500 mt-1 shrink-0" />
+                  <Lightbulb className="mt-1 h-5 w-5 shrink-0 text-accent" />
                   <div>
                     <h3 className="font-semibold text-lg mb-2">核心语义差异</h3>
                     <p className="text-muted-foreground leading-relaxed">{point.explanation}</p>
@@ -78,13 +80,13 @@ export function SemanticsReferencePage({
 
               <div className="space-y-2">
                 {point.examples.slice(0, 1).map((example, exampleIndex) => (
-                  <div key={exampleIndex} className="bg-muted/30 p-3 rounded-lg text-sm">
+                  <div key={exampleIndex} className="border-l border-border/45 bg-primary/[0.035] p-3 text-sm">
                     <div className="font-medium">{example.sentence}</div>
                     <div className="text-muted-foreground">{example.translation}</div>
                   </div>
                 ))}
-                <div className="text-xs text-center text-muted-foreground mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  Click to see full analysis
+                <div className="font-scribble mt-2 text-center text-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                  open note →
                 </div>
               </div>
             </div>

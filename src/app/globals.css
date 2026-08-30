@@ -1,96 +1,442 @@
+@import "../../public/fonts/lxgw/lxgwwenkaiscreen.css";
+
+@font-face {
+  font-family: "Ma Shan Zheng";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ma-shan-zheng/ma-shan-zheng-chinese-simplified-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Caveat";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/caveat/caveat-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Caveat";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/caveat/caveat-latin-600-normal.woff2") format("woff2");
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Cream paper — KAZAM light + YeuxPage graphite ink */
-    --background: 46 87% 94%;
-    --foreground: 240 28% 14%;
+    color-scheme: light;
 
-    --card: 50 100% 99%;
-    --card-foreground: 240 28% 14%;
+    --paper: #d8d3cc;
+    --paper-hi: #e7e3db;
+    --paper-lo: #c6c0b6;
+    --paper-edge: #b4ada1;
+    --ink: #1b1815;
+    --ink-soft: #3b352f;
+    --seal: #8c3a2c;
+    --tape: rgba(206, 188, 138, 0.46);
+    --tape-edge: rgba(150, 132, 84, 0.3);
+    --shadow: 0 16px 34px rgba(46, 39, 31, 0.16);
+    --shadow-soft: 0 6px 16px rgba(46, 39, 31, 0.12);
+    --sheen: rgba(255, 255, 255, 0.22);
+    --shade: rgba(90, 78, 60, 0.1);
+    --grain-o: 0.5;
 
-    --popover: 50 100% 99%;
-    --popover-foreground: 240 28% 14%;
+    --ink-mute: color-mix(in srgb, var(--ink) 60%, transparent);
+    --ink-faint: color-mix(in srgb, var(--ink) 30%, transparent);
+    --ink-ghost: color-mix(in srgb, var(--ink) 14%, transparent);
+    --line: color-mix(in srgb, var(--ink) 34%, transparent);
+    --seal-soft: color-mix(in srgb, var(--seal) 72%, transparent);
+    --wash-1: color-mix(in srgb, var(--ink) 4%, transparent);
+    --wash-2: color-mix(in srgb, var(--ink) 6%, transparent);
+    --wash-3: color-mix(in srgb, var(--ink) 8%, transparent);
 
-    /* Action yellow */
-    --primary: 48 96% 53%;
-    --primary-foreground: 240 28% 14%;
-
-    --secondary: 46 40% 90%;
-    --secondary-foreground: 240 28% 14%;
-
-    --muted: 46 28% 88%;
-    --muted-foreground: 240 12% 38%;
-
-    /* Seal vermillion */
+    /* Tailwind semantic colors mapped onto one paper-and-ink system. */
+    --background: 35 15% 82%;
+    --foreground: 30 13% 9%;
+    --card: 40 20% 88%;
+    --card-foreground: 30 13% 9%;
+    --popover: 40 20% 88%;
+    --popover-foreground: 30 13% 9%;
+    --primary: 30 11% 21%;
+    --primary-foreground: 40 20% 88%;
+    --secondary: 37 13% 75%;
+    --secondary-foreground: 30 13% 9%;
+    --muted: 37 13% 75%;
+    --muted-foreground: 30 10% 34%;
     --accent: 9 52% 36%;
-    --accent-foreground: 50 100% 99%;
-
-    --destructive: 350 100% 65%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 240 28% 14%;
-    --input: 240 28% 14%;
-    --ring: 48 96% 53%;
-    --shadow-color: 240 28% 14%;
+    --accent-foreground: 40 20% 92%;
+    --destructive: 9 52% 36%;
+    --destructive-foreground: 40 20% 92%;
+    --border: 30 9% 48%;
+    --input: 30 9% 48%;
+    --ring: 9 52% 36%;
+    --shadow-color: 30 13% 9%;
     --radius: 3px;
+
+    --font-hand: "LXGW WenKai Screen", "LXGW WenKai", "霞鹜文楷", "楷体", "KaiTi", "STKaiti", serif;
+    --font-brush: "Ma Shan Zheng", "LXGW WenKai Screen", "STKaiti", "楷体", serif;
+    --font-en: "Caveat", "Segoe Print", "Bradley Hand ITC", var(--font-hand), cursive;
+    --font-jp: "LXGW WenKai Screen", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
   }
 
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 94%;
+    color-scheme: dark;
+    --paper: #2a2733;
+    --paper-hi: #332f3f;
+    --paper-lo: #221f2b;
+    --paper-edge: #191622;
+    --ink: #d9d4c9;
+    --ink-soft: #c3bdb0;
+    --seal: #cf7a63;
+    --tape: rgba(206, 188, 138, 0.3);
+    --tape-edge: rgba(206, 188, 138, 0.18);
+    --shadow: 0 16px 34px rgba(0, 0, 0, 0.44);
+    --shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.34);
+    --sheen: rgba(255, 255, 255, 0.05);
+    --shade: rgba(0, 0, 0, 0.24);
+    --grain-o: 0.36;
 
-    --card: 0 0% 2%;
-    --card-foreground: 0 0% 94%;
+    --background: 255 13% 18%;
+    --foreground: 41 17% 82%;
+    --card: 255 15% 22%;
+    --card-foreground: 41 17% 82%;
+    --popover: 255 15% 22%;
+    --popover-foreground: 41 17% 82%;
+    --primary: 39 12% 73%;
+    --primary-foreground: 255 13% 18%;
+    --secondary: 255 16% 15%;
+    --secondary-foreground: 41 17% 82%;
+    --muted: 255 16% 15%;
+    --muted-foreground: 39 10% 64%;
+    --accent: 13 52% 60%;
+    --accent-foreground: 255 16% 15%;
+    --destructive: 13 52% 60%;
+    --destructive-foreground: 255 16% 15%;
+    --border: 40 8% 48%;
+    --input: 40 8% 48%;
+    --ring: 13 52% 60%;
+    --shadow-color: 255 16% 8%;
+  }
 
-    --popover: 0 0% 2%;
-    --popover-foreground: 0 0% 94%;
+  *, *::before, *::after {
+    @apply border-border;
+    box-sizing: border-box;
+  }
 
-    /* Void navy */
-    --primary: 204 56% 21%;
-    --primary-foreground: 210 40% 96%;
+  html {
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+    scrollbar-color: var(--ink-faint) transparent;
+    scrollbar-width: thin;
+  }
 
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 94%;
+  body {
+    min-height: 100vh;
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-hand);
+    font-size: 17px;
+    line-height: 1.78;
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(120% 120% at 50% 30%, var(--paper-hi) 0%, var(--paper) 46%, var(--paper-lo) 100%),
+      radial-gradient(60% 50% at 18% 12%, var(--sheen), transparent 60%),
+      radial-gradient(70% 60% at 82% 88%, var(--shade), transparent 60%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 64%;
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [tabindex] {
+    -webkit-tap-highlight-color: transparent;
+  }
 
-    --accent: 12 52% 60%;
-    --accent-foreground: 0 0% 8%;
+  a { color: inherit; }
 
-    --destructive: 350 80% 48%;
-    --destructive-foreground: 0 0% 100%;
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
 
-    --border: 0 0% 16%;
-    --input: 0 0% 16%;
-    --ring: 204 56% 21%;
-    --shadow-color: 204 56% 21%;
-    --radius: 3px;
+  ::selection {
+    color: var(--paper-hi);
+    background: var(--seal-soft);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--seal);
+    outline-offset: 3px;
   }
 }
 
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 1rem;
+  z-index: 300;
+  transform: translateY(-220%);
+  border: 1px solid var(--line);
+  background: var(--paper-hi);
+  padding: 0.45rem 0.9rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.skip-link:focus { transform: none; }
+
+.paper-nav {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--paper) 96%, transparent) 0%,
+    color-mix(in srgb, var(--paper) 86%, transparent) 72%,
+    transparent 100%
+  );
+}
+
+.nav-signpost {
+  position: relative;
+  padding-bottom: 0.15rem;
+}
+
+.nav-signpost::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.1rem;
+  left: 0;
+  height: 2px;
+  background: var(--ink);
+  content: "";
+  opacity: 0;
+  filter: url(#roughen);
+  transition: opacity 240ms ease;
+}
+
+.nav-signpost:hover::after,
+.nav-signpost:focus-visible::after,
+.nav-signpost.is-active::after {
+  opacity: 0.56;
+}
+
 @layer components {
-  .hard-panel {
-    @apply border-[3px] border-foreground bg-card shadow-hard;
+  .paper-sheet {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background-color: color-mix(in srgb, var(--paper-hi) 88%, transparent);
+    background-image: url("/assets/textures/paper-washi-tile.png");
+    background-size: 420px 420px;
+    background-blend-mode: soft-light;
+    box-shadow: var(--shadow-soft);
   }
-  .hard-chip {
-    @apply border-[2px] border-foreground bg-card font-extrabold;
+
+  .paper-slip {
+    position: relative;
+    border: 1px solid var(--ink-ghost);
+    border-radius: var(--radius);
+    background-color: color-mix(in srgb, var(--paper-hi) 90%, transparent);
+    background-image: url("/assets/textures/paper-washi-tile.png");
+    background-size: 360px 360px;
+    background-blend-mode: soft-light;
+    box-shadow: var(--shadow-soft);
+    transition: transform 360ms ease, box-shadow 360ms ease, background-color 360ms ease;
+  }
+
+  .paper-slip:nth-child(3n + 1) { transform: rotate(-0.45deg); }
+  .paper-slip:nth-child(3n + 2) { transform: rotate(0.35deg); }
+  .paper-slip:nth-child(3n) { transform: rotate(-0.2deg); }
+  .paper-slip:hover,
+  .paper-slip:focus-within {
+    z-index: 1;
+    transform: translateY(-3px) rotate(0deg);
+    box-shadow: var(--shadow);
+  }
+
+  .dark :is(.paper-sheet, .paper-slip) {
+    background-image: none;
+  }
+
+  .paper-tape {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    z-index: 2;
+    width: 88px;
+    height: 25px;
+    transform: translateX(-50%) rotate(-3deg);
+    border-right: 1px dashed var(--tape-edge);
+    border-left: 1px dashed var(--tape-edge);
+    background: var(--tape);
+    box-shadow: 0 2px 6px rgba(40, 34, 28, 0.12);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .seal-stamp {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
+    padding: 0.12rem 0.38rem;
+    color: var(--seal);
+    font-family: var(--font-brush);
+    font-weight: 400;
+    line-height: 1;
+    transform: rotate(-3deg);
+    opacity: 0.82;
+    filter: url(#roughen);
+  }
+
+  .ledger-row {
+    border-bottom: 1px dashed var(--ink-ghost);
+    transition: background-color 240ms ease, padding-left 240ms ease;
+  }
+
+  .ledger-row:hover,
+  .ledger-row:focus-within {
+    background: var(--wash-2);
   }
 }
 
 @layer utilities {
+  .paper-wrap {
+    width: min(calc(100% - 2rem), 1120px);
+    margin-inline: auto;
+  }
+
+  .site-main {
+    min-height: calc(100vh - 7rem);
+    padding-top: 4.8rem;
+  }
+
+  .font-jp {
+    font-family: var(--font-jp);
+  }
+
+  .font-brush {
+    font-family: var(--font-brush);
+    font-weight: 400;
+  }
+
+  .font-scribble {
+    font-family: var(--font-en);
+    letter-spacing: 0;
+  }
+
+  .eyebrow {
+    font-family: var(--font-en);
+    font-size: 1rem;
+    letter-spacing: 0;
+    color: var(--ink-mute);
+  }
+
+  .rough { filter: url(#roughen); }
+
+  .inkline {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.16em;
+  }
+
+  .inkline::after {
+    position: absolute;
+    right: -0.1em;
+    bottom: 0;
+    left: -0.04em;
+    height: 0.3em;
+    background: var(--ink);
+    content: "";
+    opacity: 0.58;
+    pointer-events: none;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 14' preserveAspectRatio='none'%3E%3Cpath d='M3 9.2 C28 5.5 52 10.5 78 7.8 C104 5.2 128 10.2 154 7.2 C180 4.4 206 9.5 236 6.8' fill='none' stroke='%23000' stroke-width='1.65' stroke-linecap='round'/%3E%3Cpath d='M5 10.4 C36 7.8 64 11.2 96 9 C128 6.8 162 11 198 8.6 C214 7.6 228 9.2 235 8' fill='none' stroke='%23000' stroke-width='.9' stroke-linecap='round' opacity='.35'/%3E%3C/svg%3E") center bottom / 100% 100% no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 14' preserveAspectRatio='none'%3E%3Cpath d='M3 9.2 C28 5.5 52 10.5 78 7.8 C104 5.2 128 10.2 154 7.2 C180 4.4 206 9.5 236 6.8' fill='none' stroke='%23000' stroke-width='1.65' stroke-linecap='round'/%3E%3Cpath d='M5 10.4 C36 7.8 64 11.2 96 9 C128 6.8 162 11 198 8.6 C214 7.6 228 9.2 235 8' fill='none' stroke='%23000' stroke-width='.9' stroke-linecap='round' opacity='.35'/%3E%3C/svg%3E") center bottom / 100% 100% no-repeat;
+    filter: url(#roughen);
+    transform: rotate(-0.5deg);
+  }
+
+  .paper-cover {
+    position: relative;
+    display: grid;
+    min-height: min(34rem, 84svh);
+    height: min(84svh, 820px);
+    margin-top: -4.8rem;
+    place-items: center;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .cover-art {
+    width: min(76vmin, 680px);
+    aspect-ratio: 1;
+    object-fit: contain;
+    opacity: 0.9;
+    mix-blend-mode: multiply;
+    filter: contrast(1.04);
+  }
+
+  .dark .cover-art,
+  .dark .night-ink-art {
+    mix-blend-mode: screen;
+    filter: invert(1) contrast(1.04);
+    opacity: 0.82;
+  }
+
+  .cover-scroll {
+    position: absolute;
+    bottom: max(1.6rem, env(safe-area-inset-bottom));
+    left: 50%;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    transform: translateX(-50%);
+    color: var(--ink-mute);
+    place-items: center;
+  }
+
+  .perspective-1000 { perspective: 1000px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
+  .rotate-y-180 { transform: rotateY(180deg); }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  .mask-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+  }
+
   .kana-glyph-svg svg.acjk {
+    display: block;
     width: 100%;
     height: 100%;
-    display: block;
   }
+
   .kana-glyph-svg svg.acjk path[id] {
     fill: hsl(var(--muted-foreground));
     opacity: 0.1;
   }
+
   .kana-glyph-svg svg.acjk path[clip-path][data-stroke-index] {
     fill: none;
     stroke: hsl(var(--foreground));
@@ -99,128 +445,61 @@
     stroke-linejoin: round;
     stroke-dasharray: var(--stroke-len, 3333);
     stroke-dashoffset: var(--stroke-off, 3335);
-    transition: stroke-dashoffset var(--stroke-draw-ms, 800ms) linear,
-      stroke 240ms ease;
+    transition: stroke-dashoffset var(--stroke-draw-ms, 800ms) linear, stroke 240ms ease;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  html {
-    scrollbar-gutter: stable;
-    scrollbar-color: hsl(var(--foreground) / 0.28) transparent;
-  }
-  body {
-    @apply bg-background text-foreground;
-    background-image:
-      radial-gradient(120% 120% at 50% 24%, hsl(var(--card)) 0%, hsl(var(--background)) 52%, hsl(46 40% 86%) 100%),
-      radial-gradient(circle at 18% 82%, hsl(var(--destructive) / 0.08) 0%, transparent 52%),
-      radial-gradient(circle at 82% 18%, hsl(var(--primary) / 0.16) 0%, transparent 48%);
-    background-attachment: fixed;
-  }
-  .dark body {
-    background-image: radial-gradient(ellipse 70% 45% at 50% -15%, hsl(204 56% 21% / 0.5) 0%, transparent 60%);
-  }
-  ::selection {
-    background: hsl(var(--accent) / 0.72);
-    color: hsl(var(--card));
-  }
-}
-
-@layer utilities {
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-  .preserve-3d {
-    transform-style: preserve-3d;
-  }
-  .backface-hidden {
-    backface-visibility: hidden;
-  }
-  .rotate-y-180 {
-    transform: rotateY(180deg);
-  }
-
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mask-fade {
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      #000 24px,
-      #000 calc(100% - 24px),
-      transparent
-    );
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      #000 24px,
-      #000 calc(100% - 24px),
-      transparent
-    );
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-  }
-
-  .font-jp {
-    font-family: var(--font-jp), "Noto Serif JP", serif;
-  }
-  .font-brush {
-    font-family: var(--font-brush), "Ma Shan Zheng", serif;
-  }
-}
-
-.paper-grain {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  mix-blend-mode: multiply;
-  opacity: 0.42;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(91deg, rgba(20, 18, 16, 0.035) 0 1px, transparent 1px 9px),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  background-size: auto, auto, 180px 180px;
-  animation: grain-shiver 360ms steps(2, end) infinite;
-}
-.dark .paper-grain {
-  mix-blend-mode: overlay;
-  opacity: 0.28;
-}
+.paper-grain,
 .paper-vignette {
   position: fixed;
   inset: 0;
-  z-index: 2;
   pointer-events: none;
-  mix-blend-mode: multiply;
-  background:
-    radial-gradient(120% 100% at 50% 46%, transparent 0 56%, rgba(40, 34, 28, 0.16) 84%, rgba(28, 23, 18, 0.28) 100%),
-    linear-gradient(90deg, rgba(40, 34, 28, 0.12), transparent 10% 90%, rgba(40, 34, 28, 0.12));
 }
+
+.paper-grain {
+  z-index: 80;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(91deg, rgba(20, 18, 16, 0.035) 0 1px, transparent 1px 9px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  background-size: auto, auto, 180px 180px;
+  mix-blend-mode: multiply;
+  opacity: var(--grain-o);
+  animation: grain-shiver 360ms steps(2, end) infinite;
+}
+
+.paper-vignette {
+  z-index: 81;
+  background:
+    radial-gradient(120% 100% at 50% 46%, transparent 0 56%, rgba(40, 34, 28, 0.16) 84%, rgba(28, 23, 18, 0.3) 100%),
+    linear-gradient(90deg, rgba(40, 34, 28, 0.14), transparent 10% 90%, rgba(40, 34, 28, 0.14));
+  mix-blend-mode: multiply;
+}
+
+.dark .paper-grain { mix-blend-mode: overlay; }
+
 .dark .paper-vignette {
-  mix-blend-mode: normal;
-  background: radial-gradient(120% 80% at 50% 0%, rgba(23, 58, 82, 0.22), transparent 55%);
+  background:
+    radial-gradient(120% 100% at 50% 42%, transparent 0 50%, rgba(0, 0, 0, 0.24) 82%, rgba(0, 0, 0, 0.48) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.2), transparent 10% 90%, rgba(0, 0, 0, 0.2));
+  mix-blend-mode: multiply;
 }
 
 @keyframes grain-shiver {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  40% { transform: translate3d(0.2px, -0.18px, 0); }
-  72% { transform: translate3d(-0.16px, 0.12px, 0); }
+  0%, 100% { transform: translate3d(0, 0, 0); opacity: var(--grain-o); }
+  40% { transform: translate3d(0.2px, -0.18px, 0); opacity: calc(var(--grain-o) + 0.06); }
+  72% { transform: translate3d(-0.16px, 0.12px, 0); opacity: calc(var(--grain-o) - 0.06); }
+}
+
+@media (max-width: 640px) {
+  .site-main { padding-top: 4.35rem; }
+  .paper-cover { margin-top: -4.35rem; }
+  .paper-wrap { width: min(calc(100% - 1.25rem), 1120px); }
+  .cover-art { width: min(88vmin, 560px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .paper-grain {
-    animation: none;
-  }
+  html { scroll-behavior: auto; }
+  .paper-grain { animation: none; }
+  .paper-slip { transition: none; }
 }

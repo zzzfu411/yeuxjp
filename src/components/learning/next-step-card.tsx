@@ -12,15 +12,16 @@ export function NextStepCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "w-full border-[3px] border-foreground bg-card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-hard",
+        "paper-slip relative flex w-full flex-col items-start justify-between gap-5 px-5 py-6 sm:flex-row sm:items-center sm:px-7",
         className
       )}
     >
-      <div className="space-y-1">
-        <div className="text-xs font-semibold text-muted-foreground tracking-wider">下一步推荐</div>
-        <div className="text-lg font-bold">{entry.title}</div>
-        <div className="text-sm text-muted-foreground">{entry.subtitle}</div>
-        <div className="text-xs text-muted-foreground pt-1">
+      <span className="paper-tape" aria-hidden="true" />
+      <div>
+        <div className="eyebrow">下一页 · Next</div>
+        <div className="mt-2 text-lg font-semibold">{entry.title}</div>
+        <div className="mt-1 text-sm leading-relaxed text-muted-foreground">{entry.subtitle}</div>
+        <div className="mt-2 text-xs leading-relaxed text-muted-foreground">
           已完成 {satisfiedLessonCount}/{STARTER_LESSONS.length}（N5–N2）。旧的五十音/词汇标记仍会作为兜底推荐依据。
         </div>
       </div>
@@ -30,7 +31,7 @@ export function NextStepCard({ className }: { className?: string }) {
           <Link href={entry.href}>{entry.cta}</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href="/path">打开技能树</Link>
+          <Link href="/path">打开学习帖</Link>
         </Button>
       </div>
     </div>

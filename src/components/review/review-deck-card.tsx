@@ -26,23 +26,24 @@ export function ReviewDeckCard({
   extra,
 }: ReviewDeckCardProps) {
   return (
-    <div className="hard-panel p-5 space-y-3">
+    <article className="paper-slip space-y-4 p-5 pt-7">
+      <span className="paper-tape" aria-hidden />
       <div className="space-y-1">
-        <div className="text-lg font-bold">{title}</div>
+        <div className="font-brush text-2xl">{title}</div>
         <div className="text-sm text-muted-foreground leading-relaxed">{desc}</div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 border-t border-dashed border-border/60 pt-3">
         <div className="text-xs text-muted-foreground">
           待复习：<span className="font-semibold text-foreground">{formatReviewDueCount(due)}</span>{" "}
           <span className="text-muted-foreground/60">/ 已加入：{formatReviewDueCount(total)}</span>
         </div>
-        <Button type="button" size="sm" className="rounded-full" onClick={onStart} disabled={startDisabled} data-testid={startTestId}>
+        <Button type="button" size="sm" onClick={onStart} disabled={startDisabled} data-testid={startTestId}>
           开始
         </Button>
       </div>
 
       {extra ? <div className="pt-1">{extra}</div> : null}
-    </div>
+    </article>
   )
 }

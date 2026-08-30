@@ -135,11 +135,11 @@ export function KanaGrid({
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-3xl mx-auto pb-20">
+      <div className="mx-auto flex w-full max-w-3xl flex-col border-y border-border/40 pb-0">
         {rows.map(row => {
           const content = getKanaGridRowContent(data, row, columns);
           return (
-            <div key={row} className={cn("grid gap-3 sm:gap-4", columns === 3 ? "grid-cols-3" : "grid-cols-5")}>
+            <div key={row} className={cn("grid gap-2 border-b border-border/30 py-2 last:border-b-0 sm:gap-3 sm:py-3", columns === 3 ? "grid-cols-3" : "grid-cols-5")}>
                {content.map((item, idx) => {
                   const itemChar = mode === "hiragana" ? item?.hiragana : item?.katakana
                   const itemId = item ? makeKanaId(mode, item.romaji) : null
@@ -161,7 +161,7 @@ export function KanaGrid({
                       }} 
                     />
                   ) : (
-                    <div key={`${row}-empty-${idx}`} className="aspect-square" />
+                    <div key={`${row}-empty-${idx}`} className="aspect-square" aria-hidden="true" />
                   )
                })}
             </div>

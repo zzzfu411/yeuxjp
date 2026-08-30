@@ -45,13 +45,16 @@ export function SpeakButton({
       type="button"
       variant={variant}
       size={size}
-      className={cn("rounded-full", className)}
+      className={cn(
+        "rounded-sm border-transparent bg-transparent text-muted-foreground shadow-none hover:translate-y-0 hover:border-border/50 hover:bg-muted/35 hover:text-accent",
+        className
+      )}
       onClick={() => speakJapanese(text, { rate })}
       disabled={disabled}
       aria-label={label ?? "朗读"}
       title={label ?? "朗读"}
     >
-      <Volume2 className="w-5 h-5" />
+      <Volume2 className="h-5 w-5" aria-hidden="true" />
     </Button>
   )
 }

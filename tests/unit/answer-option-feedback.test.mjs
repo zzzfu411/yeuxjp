@@ -50,8 +50,8 @@ test("answer option feedback dims unselected wrong options after selection", () 
 
 test("answer option class names and icons are derived from feedback state", () => {
   assert.equal(feedback.getAnswerOptionClassName("idle"), "")
-  assert.match(feedback.getAnswerOptionClassName("correct"), /bg-green-100/)
-  assert.match(feedback.getAnswerOptionClassName("wrong"), /bg-red-100/)
+  assert.match(feedback.getAnswerOptionClassName("correct"), /border-primary\/45 bg-primary\/10/)
+  assert.match(feedback.getAnswerOptionClassName("wrong"), /border-destructive\/65 bg-destructive\/10/)
   assert.equal(feedback.getAnswerOptionClassName("dimmed"), "opacity-50")
 
   assert.equal(feedback.shouldShowCorrectAnswerIcon("correct"), true)

@@ -16,7 +16,7 @@ export function ControlBtn({
       type="button"
       {...rest}
       className={cn(
-        "inline-flex items-center justify-center h-7 px-2 rounded-md border border-border bg-background/80 text-foreground/80 hover:text-foreground hover:bg-secondary/80 transition-colors disabled:opacity-30 disabled:pointer-events-none",
+        "inline-flex h-8 min-w-8 items-center justify-center border border-border/45 bg-background/35 px-2 text-foreground/70 transition-colors hover:bg-muted/35 hover:text-foreground disabled:pointer-events-none disabled:opacity-30",
         className
       )}
     >
@@ -64,10 +64,8 @@ export function KanaGlyphBoard({
   return (
     <div
       className={cn(
-        "relative min-w-0 h-full rounded-xl bg-card/60 overflow-hidden",
+        "relative h-full min-w-0 overflow-hidden border border-border/40 bg-card/40",
         flexBasis === "minor" ? "flex-[0.68]" : "flex-1",
-        // Subtle inner border so the board reads as a card on any bg
-        "ring-1 ring-border/60"
       )}
       role="img"
       aria-label={label}
@@ -91,7 +89,7 @@ export function KanaGlyphBoard({
       {showGrid && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-2 rounded-lg"
+          className="pointer-events-none absolute inset-2"
           style={{
             // Outer dashed border + crosshair
             backgroundImage: [
@@ -148,7 +146,7 @@ export function KanaGlyphBoard({
                     cx={s.startX}
                     cy={s.startY}
                     r={isCurrent ? 44 : 30}
-                    fill="hsl(var(--primary))"
+                    fill="hsl(var(--accent))"
                     className="transition-all duration-300"
                   />
                   <text
@@ -157,9 +155,9 @@ export function KanaGlyphBoard({
                     textAnchor="middle"
                     fontSize={isCurrent ? 52 : 40}
                     fontWeight={700}
-                    fill="hsl(var(--primary-foreground))"
+                    fill="hsl(var(--accent-foreground))"
                     className="transition-all duration-300 select-none"
-                    style={{ fontFamily: "ui-sans-serif, system-ui, sans-serif" }}
+                    style={{ fontFamily: "var(--font-en), cursive" }}
                   >
                     {s.index}
                   </text>

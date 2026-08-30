@@ -71,8 +71,8 @@ export function QuizModeHint({ mode }: { mode: QuizMode }) {
   }
 
   return (
-    <div className="hard-panel w-full p-4 text-sm leading-relaxed text-muted-foreground">
-      {content} <GlossaryButton className="ml-2 h-auto px-2 py-1 rounded-md">术语表</GlossaryButton>
-    </div>
+    <aside className="w-full border-l-2 border-l-accent/40 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+      {content} <GlossaryButton className="ml-2 h-auto px-2 py-1">术语表</GlossaryButton>
+    </aside>
   )
 }

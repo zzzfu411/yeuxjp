@@ -79,9 +79,9 @@ export function GrammarPracticePanel({ point }: { point: GrammarPoint }) {
 
   if (phase === "idle") {
     return (
-      <section className="rounded-lg border border-primary/20 bg-primary/5 p-5 text-center space-y-3">
+      <section className="space-y-3 border-y border-border/45 bg-primary/[0.035] p-5 text-center">
         <div>
-          <h3 className="font-semibold text-lg">专项练习</h3>
+          <h3 className="eyebrow text-base text-foreground">专项练习 · practice</h3>
           <p className="mt-1 text-sm text-muted-foreground">用 {questions.length} 道题检查这个语法点。</p>
         </div>
         <Button onClick={startPractice} data-testid="grammar-practice-start">
@@ -94,12 +94,12 @@ export function GrammarPracticePanel({ point }: { point: GrammarPoint }) {
   if (phase === "complete") {
     return (
       <section
-        className="rounded-lg border border-green-200 bg-green-50/70 p-5 text-center dark:border-green-900/60 dark:bg-green-950/20"
+        className="border-y border-border/50 bg-primary/[0.035] p-5 text-center"
         data-testid="grammar-practice-summary"
       >
-        <CheckCircle2 className="mx-auto h-8 w-8 text-green-600 dark:text-green-400" />
+        <CheckCircle2 className="mx-auto h-8 w-8 text-foreground/60" />
         <h3 className="mt-3 text-lg font-semibold">本组练习完成</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="font-scribble mt-1 text-base text-muted-foreground">
           答对 {correctCount} / {results.length} 题
         </p>
         <Button variant="outline" className="mt-4 gap-2" onClick={startPractice} data-testid="grammar-practice-restart">
@@ -111,10 +111,10 @@ export function GrammarPracticePanel({ point }: { point: GrammarPoint }) {
   }
 
   return (
-    <section className="rounded-lg border bg-card p-5 space-y-5" aria-label={`${point.title} 专项练习`}>
+    <section className="space-y-5 border-y border-border/50 bg-primary/[0.025] p-5" aria-label={`${point.title} 专项练习`}>
       <div className="flex items-center justify-between gap-4 text-sm">
-        <h3 className="font-semibold text-base">专项练习</h3>
-        <span className="font-mono text-muted-foreground">
+        <h3 className="eyebrow text-base text-foreground">专项练习 · practice</h3>
+        <span className="font-scribble text-base text-muted-foreground">
           {questionIndex + 1} / {questions.length}
         </span>
       </div>

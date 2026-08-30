@@ -19,10 +19,10 @@ export function LessonPracticeFeedback({
       role="status"
       aria-live="polite"
       className={cn(
-        "hard-panel mt-5 p-4 text-sm leading-relaxed",
+        "mt-5 border-l-2 p-4 text-sm leading-relaxed",
         result === "correct"
-          ? "border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-200"
-          : "border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-200"
+          ? "border-primary/35 bg-primary/[0.05] text-foreground"
+          : "border-destructive/60 bg-destructive/[0.07] text-foreground"
       )}
     >
       <div className="mb-1 flex items-center gap-2 font-semibold">

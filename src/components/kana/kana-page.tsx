@@ -58,44 +58,55 @@ function KanaPageContent() {
   )
 
   return (
-    <div className="container py-10 px-4 mx-auto flex flex-col items-center space-y-8">
-      <KanaPageHero />
+    <div className="paper-wrap py-8 sm:py-12">
+      <article className="paper-sheet mx-auto mb-16 px-4 py-8 sm:px-8 lg:px-12">
+        <KanaPageHero />
 
-      <KanaControls
-        mode={mode}
-        kanaSet={kanaSet}
-        showRomaji={showRomaji}
-        onlyUnmastered={onlyUnmastered}
-        progress={pageData.activeProgress}
-        hint={<KanaSetHint kanaSet={kanaSet} />}
-        onModeChange={setMode}
-        onKanaSetChange={setKanaSet}
-        onToggleRomaji={toggleShowRomaji}
-        onToggleOnlyUnmastered={toggleOnlyUnmastered}
-        onClearMastered={handleClearMastered}
-      />
-      <PracticeSaveError show={saveError} />
-      <ConfirmActionDialog
-        open={confirmClearOpen}
-        title="清空假名掌握进度？"
-        description="当前假名掌握状态及 SRS 箱位、到期时间会被清空。练习历史和错题本会保留；之后仍可逐个重新标记掌握。"
-        confirmLabel="清空进度"
-        testId="kana-clear-progress-dialog"
-        onConfirm={handleConfirmClearMastered}
-        onCancel={handleCancelClearMastered}
-      />
-      <SpeechSettingsBar className="max-w-3xl" />
+        <div className="mt-9 border-y border-border/45 py-6">
+          <KanaControls
+            mode={mode}
+            kanaSet={kanaSet}
+            showRomaji={showRomaji}
+            onlyUnmastered={onlyUnmastered}
+            progress={pageData.activeProgress}
+            hint={<KanaSetHint kanaSet={kanaSet} />}
+            onModeChange={setMode}
+            onKanaSetChange={setKanaSet}
+            onToggleRomaji={toggleShowRomaji}
+            onToggleOnlyUnmastered={toggleOnlyUnmastered}
+            onClearMastered={handleClearMastered}
+          />
+        </div>
+        <PracticeSaveError show={saveError} />
+        <ConfirmActionDialog
+          open={confirmClearOpen}
+          title="清空假名掌握进度？"
+          description="当前假名掌握状态及 SRS 箱位、到期时间会被清空。练习历史和错题本会保留；之后仍可逐个重新标记掌握。"
+          confirmLabel="清空进度"
+          testId="kana-clear-progress-dialog"
+          onConfirm={handleConfirmClearMastered}
+          onCancel={handleCancelClearMastered}
+        />
 
-      <KanaPageSections
-        kanaSet={kanaSet}
-        pageData={pageData}
-        mode={mode}
-        showRomaji={showRomaji}
-        isMastered={isMastered}
-        onToggleMastered={handleToggleMastered}
-      />
+        <div className="mx-auto mt-6 max-w-3xl">
+          <SpeechSettingsBar className="max-w-3xl" />
+        </div>
 
-      <NextStepCard className="max-w-3xl" />
+        <div className="mt-10">
+          <KanaPageSections
+            kanaSet={kanaSet}
+            pageData={pageData}
+            mode={mode}
+            showRomaji={showRomaji}
+            isMastered={isMastered}
+            onToggleMastered={handleToggleMastered}
+          />
+        </div>
+
+        <div className="mx-auto mt-12 max-w-3xl">
+          <NextStepCard className="max-w-3xl" />
+        </div>
+      </article>
     </div>
   )
 }

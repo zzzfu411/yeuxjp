@@ -47,12 +47,12 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
   }
 
   return (
-    <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20">
-      <div className="w-full flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
+    <div className="container py-10 px-4 mx-auto max-w-lg mb-20 flex flex-col items-center space-y-6">
+      <div className="flex w-full items-center justify-between border-b border-dashed border-border/60 pb-3">
+        <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 px-2 text-muted-foreground shadow-none">
           <ArrowLeft className="w-4 h-4" /> 退出
         </Button>
-        <div className="font-mono font-medium" data-testid="quiz-score">
+        <div className="font-scribble text-lg text-muted-foreground" data-testid="quiz-score">
           得分: {quizStats.score}/{quizStats.total}
         </div>
       </div>

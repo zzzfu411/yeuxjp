@@ -41,7 +41,8 @@ export function QuizEmptyState({
 }) {
   return (
     <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6">
-      <div className="text-center space-y-4">
+      <div className="paper-slip space-y-4 px-6 py-8 text-center">
+        <div className="eyebrow">Empty practice page</div>
         <p className="text-lg text-muted-foreground" data-testid="quiz-empty-state">
           {getQuizEmptyMessage({ mode, reason })}
         </p>

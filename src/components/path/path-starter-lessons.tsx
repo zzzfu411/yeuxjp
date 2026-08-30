@@ -35,26 +35,26 @@ export function PathStarterLessons({
 
   if (!profileLoaded) {
     return (
-      <div className="border-[3px] border-foreground bg-card p-5 shadow-hard">
+      <div className="py-8">
         <div className="text-sm text-muted-foreground">正在读取课表...</div>
       </div>
     )
   }
 
   return (
-    <div className="border-[3px] border-foreground bg-card p-5 shadow-hard">
+    <div>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-xs font-semibold text-muted-foreground tracking-wider">
+          <div className="eyebrow">
             N5–N2 · {STARTER_LESSONS.length} 天路径
           </div>
-          <h2 className="mt-1 text-xl font-bold">按阶段推进，而不是一次摊开 175 课</h2>
+          <h2 className="mt-2 text-xl font-semibold">一页一课，循序展卷</h2>
         </div>
-        <div className="text-sm font-semibold text-muted-foreground">
+        <div className="font-scribble text-base text-muted-foreground">
           {satisfiedCount}/{STARTER_LESSONS.length}
         </div>
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+      <div className="mt-5 border-y border-border/50">
         {STARTER_LESSONS.map((lesson, index) => {
           const status = getLessonEntryStatus(lesson, completedLessonIds, activeLessonId, kanaLevel)
           const done = status === "done"
@@ -70,25 +70,25 @@ export function PathStarterLessons({
             : null
           const cardContent = (
             <>
-              <div className="flex items-center justify-between gap-2">
-                <div className="font-semibold">Day {lesson.order}</div>
-                <span className="border-[2px] border-foreground bg-background px-2 py-0.5 text-[11px] font-extrabold text-muted-foreground">
-                  {getLessonEntryBadge(status)}
-                </span>
+              <div className="flex min-w-0 flex-1 items-baseline gap-3">
+                <span className="font-scribble w-12 shrink-0 text-sm text-muted-foreground">Day {lesson.order}</span>
+                <span className="truncate text-sm font-semibold">{lesson.title.replace(/^Day \d+：/, "")}</span>
               </div>
-              <div className="mt-1 text-muted-foreground">{lesson.title.replace(/^Day \d+：/, "")}</div>
+              <span className={cn("font-scribble shrink-0 text-sm text-muted-foreground", active && "text-accent")}>
+                {getLessonEntryBadge(status)}
+              </span>
             </>
           )
           const className = cn(
-            "border-[2px] border-foreground bg-background p-3 text-sm hover:bg-primary/30",
-            done && "border-green-200 bg-green-50/70 dark:border-green-900/40 dark:bg-green-900/10",
-            skipped && "bg-muted/40",
-            active && "border-primary/60 bg-primary/10",
-            locked && "opacity-60 hover:border-border"
+            "ledger-row flex items-center gap-4 border-b border-border/30 px-2 py-3.5 transition-colors hover:bg-muted/30",
+            done && "text-foreground/75",
+            skipped && "bg-muted/20",
+            active && "border-l-2 border-l-accent bg-accent/[0.06] pl-[calc(0.5rem-2px)]",
+            locked && "cursor-default opacity-45 hover:bg-transparent"
           )
 
           return (
-            <div key={lesson.id} className="contents">
+            <div key={lesson.id}>
               {showPhaseHeader && progress ? (
                 <button
                   type="button"
@@ -100,14 +100,14 @@ export function PathStarterLessons({
                       [lesson.track]: !(current[lesson.track] ?? lesson.track === activePhase.track),
                     }))
                   }
-                  className="col-span-full flex w-full items-center justify-between gap-3 border-[2px] border-foreground bg-muted px-3 py-2 text-left"
+                  className="flex w-full items-center justify-between gap-3 border-b border-border/45 bg-muted/20 px-2 py-3.5 text-left hover:bg-muted/35"
                 >
                   <div>
-                    <div className="text-[10px] font-extrabold tracking-wider text-muted-foreground">{phase.range}</div>
-                    <div className="font-black">{phase.label}</div>
-                    <div className="text-xs text-muted-foreground">{phase.short}</div>
+                    <div className="eyebrow">{phase.range}</div>
+                    <div className="mt-0.5 font-semibold">{phase.label}</div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">{phase.short}</div>
                   </div>
-                  <div className="text-xs font-extrabold text-muted-foreground">
+                  <div className="font-scribble text-sm text-muted-foreground">
                     {progress.done}/{progress.total} {phaseOpen ? "▾" : "▸"}
                   </div>
                 </button>

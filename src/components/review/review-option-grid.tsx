@@ -34,7 +34,7 @@ export function ReviewOptionGrid({
   optionClassName?: string
 }) {
   return (
-    <div className="grid grid-cols-2 gap-4 w-full">
+    <div className="grid w-full grid-cols-1 gap-x-5 sm:grid-cols-2">
       {options.map((option) => {
         const ariaLabelBase = typeof option.display === "string" ? option.display : option.value
         const feedback = getAnswerOptionFeedback({
@@ -48,7 +48,13 @@ export function ReviewOptionGrid({
             key={option.value}
             variant="outline"
             size="lg"
-            className={cn(optionClassName, getAnswerOptionClassName(feedback))}
+            className={cn(
+              getAnswerOptionClassName(feedback),
+              "min-h-16 h-auto justify-between whitespace-normal rounded-none border-x-0 border-t-0 border-b border-dashed border-border/70 bg-transparent px-3 text-left shadow-none hover:translate-y-0 hover:bg-primary/10",
+              optionClassName,
+              feedback === "correct" && "border-foreground/60 bg-primary/10 text-foreground hover:bg-primary/10 disabled:opacity-100",
+              feedback === "wrong" && "border-accent/70 bg-accent/10 text-accent hover:bg-accent/10 disabled:opacity-100"
+            )}
             aria-label={getAnswerOptionAriaLabel(ariaLabelBase, feedback)}
             aria-pressed={selectedAnswer === option.value}
             onClick={() => onSelect(option.value)}

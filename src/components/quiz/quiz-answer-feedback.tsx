@@ -55,7 +55,7 @@ export function QuizAnswerFeedback({
       )}
 
       {question.explanation && (
-        <div className="w-full rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground leading-relaxed">
+        <div className="w-full border-y border-dashed border-border/60 bg-primary/5 p-4 text-sm leading-relaxed text-muted-foreground">
           <div className="text-xs font-semibold text-foreground mb-1 tracking-wider">解析</div>
           {question.explanation}
         </div>
@@ -64,7 +64,7 @@ export function QuizAnswerFeedback({
       {!isCorrect && (
         <div className="w-full text-xs text-muted-foreground">
           已加入错题本，可在{" "}
-          <Link href="/review" className="underline underline-offset-4">
+          <Link href="/review" className="text-accent underline decoration-dashed underline-offset-4">
             复习（SRS）
           </Link>{" "}
           里集中复盘。
