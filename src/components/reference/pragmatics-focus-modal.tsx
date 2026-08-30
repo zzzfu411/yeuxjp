@@ -37,7 +37,7 @@ export function PragmaticsFocusModal({
     >
       <div className="flex-1 overflow-y-auto p-8 space-y-8">
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-sm">
+          <div className="flex items-center gap-2 text-accent font-bold uppercase tracking-wider text-sm">
             <MessageCircle className="w-4 h-4" />
             场景：{scenario.situation}
           </div>
@@ -90,7 +90,7 @@ export function PragmaticsFocusModal({
                     </span>
                     {isBad && <XCircle className="w-5 h-5 text-red-500/70" />}
                     {response.type === "Good" && <CheckCircle2 className="w-5 h-5 text-green-500/70" />}
-                    {isNative && <Crown className="w-5 h-5 text-primary/70" />}
+                    {isNative && <Crown className="w-5 h-5 text-accent/80" />}
                   </div>
 
                   <div className="space-y-2">

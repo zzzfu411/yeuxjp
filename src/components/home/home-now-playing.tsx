@@ -1,4 +1,5 @@
 import { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { OnboardingPanel } from "@/components/home/onboarding-panel"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
@@ -42,29 +43,39 @@ export function HomeNowPlaying({
 
   return (
     <aside className="flex w-full shrink-0 flex-col items-center border-[3px] border-foreground bg-card px-4 py-6 lg:w-[320px] lg:border-r-0">
-      <div className="flex h-40 w-40 items-center justify-center border-[5px] border-foreground bg-muted shadow-hard">
-        <span className="font-jp text-6xl text-accent">あ</span>
+      <div className="relative flex h-40 w-40 items-center justify-center overflow-hidden border-[5px] border-foreground bg-muted shadow-hard">
+        <span className="relative z-10 font-jp text-6xl text-accent drop-shadow">あ</span>
+        <Image
+          src="/assets/hero/hero-watercolor.webp"
+          alt=""
+          fill
+          sizes="160px"
+          className="object-cover dark:opacity-0"
+          priority
+        />
+        <Image
+          src="/assets/hero/hero-watercolor-dark.webp"
+          alt=""
+          fill
+          sizes="160px"
+          className="object-cover opacity-0 dark:opacity-100"
+          priority
+        />
       </div>
       <div className="mt-4 text-center font-black leading-tight">{learningEntry.title}</div>
       <p className="mt-1 max-w-[16rem] text-center text-xs font-semibold text-muted-foreground">
         {learningEntry.subtitle}
       </p>
 
-      {profileLoaded ? (
-        <>
-          <Link
-            href={learningEntry.href}
-            data-testid="home-start-learning"
-            className="mt-5 flex h-14 w-14 items-center justify-center border-[3px] border-foreground bg-destructive text-2xl text-white shadow-hard-sm hover:-translate-x-px hover:-translate-y-px"
-            aria-label={learningEntry.cta}
-          >
-            ▶
-          </Link>
-          <div className="mt-2 text-xs font-extrabold">{learningEntry.cta}</div>
-        </>
-      ) : (
-        <div className="mt-5 text-xs font-extrabold text-muted-foreground">正在读取学习设置...</div>
-      )}
+      <Link
+        href={learningEntry.href}
+        data-testid="home-start-learning"
+        className="mt-5 flex h-14 w-14 items-center justify-center border-[3px] border-foreground bg-destructive text-2xl text-white shadow-hard-sm hover:-translate-x-px hover:-translate-y-px"
+        aria-label={learningEntry.cta}
+      >
+        ▶
+      </Link>
+      <div className="mt-2 text-xs font-extrabold">{learningEntry.cta}</div>
 
       {showOnboarding ? (
         <div className="mt-5 w-full">

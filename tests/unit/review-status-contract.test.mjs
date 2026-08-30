@@ -32,6 +32,8 @@ test("review status owns completion and loading surfaces", () => {
   assert.match(source, /onRetry\?: \(\) => void/)
   assert.match(source, /data-testid="review-retry-load"/)
   assert.match(source, /onClick=\{onRetry\}/)
+  assert.match(source, /本轮作答 \$\{stats\.answered\} 次，通过 \$\{stats\.correct\}\/\$\{stats\.initial\} 项/)
+  assert.doesNotMatch(source, /\$\{stats\.answered\}\/\$\{stats\.initial\} 题已处理/)
 })
 
 test("review vocabulary hook owns scoped vocabulary loading", () => {

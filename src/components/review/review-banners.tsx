@@ -67,7 +67,7 @@ export function ReviewStreakBanner({
         <div className="space-y-1">
           <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">今日复习</div>
           <div className="text-2xl sm:text-3xl font-bold text-foreground">
-            <span className="text-primary">{totalDue}</span> 张到期
+            <span className="text-accent">{totalDue}</span> 张到期
             <span className="text-base font-normal text-muted-foreground"> · 共 {totalEnrolled} 张</span>
           </div>
           <p className="text-sm text-muted-foreground">

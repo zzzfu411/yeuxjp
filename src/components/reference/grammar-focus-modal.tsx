@@ -39,7 +39,7 @@ export function GrammarFocusModal({
         <>
           <div className="flex-1 overflow-y-auto p-8 space-y-8">
             <div className="space-y-4 text-center pb-6 border-b">
-              <div className="flex items-center justify-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+              <div className="flex items-center justify-center gap-2 text-accent font-bold text-sm uppercase tracking-wider">
                 <BookOpen className="w-4 h-4" />
                 {point.level} 语法 No.{selectedPosition}
               </div>
@@ -50,7 +50,7 @@ export function GrammarFocusModal({
             <div className="space-y-8">
               <div className="bg-primary/5 p-6 rounded-xl border border-primary/20 text-center">
                 <div className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">结构</div>
-                <code className="text-3xl font-mono font-bold text-primary block">{point.structure}</code>
+                <code className="text-3xl font-mono font-bold text-accent block">{point.structure}</code>
               </div>
 
               {point.plainExplanation && (
@@ -82,10 +82,10 @@ export function GrammarFocusModal({
                   {point.examples.map((ex, i) => (
                     <div key={i} className="bg-card p-6 rounded-xl border shadow-sm space-y-2">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="text-2xl font-medium tracking-wide text-foreground">{ex.japanese}</div>
+                        <div className="font-jp text-2xl font-medium tracking-wide text-foreground">{ex.japanese}</div>
                         <SpeakButton text={ex.japanese} label="朗读例句" className="shrink-0" />
                       </div>
-                      <div className="text-base text-primary/80 font-serif italic">{ex.romaji}</div>
+                      <div className="text-base text-accent/80 font-serif italic">{ex.romaji}</div>
                       <div className="text-lg text-muted-foreground">{ex.meaning}</div>
                     </div>
                   ))}

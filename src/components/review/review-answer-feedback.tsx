@@ -3,6 +3,7 @@
 import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta } from "@/components/quiz/feedback"
 import { cn } from "@/lib/utils"
 import type { Question } from "@/lib/questions"
+import type { VerbConjForm } from "@/lib/verb-conjugation"
 
 type ReviewFeedbackQuestion = Pick<
   Question,
@@ -13,8 +14,13 @@ function isVerbKind(value: unknown): value is ConjugationVerbMeta["kind"] {
   return value === "ichidan" || value === "godan" || value === "suru" || value === "kuru"
 }
 
-function isVerbForm(value: unknown): value is "masu" | "nai" | "te" | "ta" {
-  return value === "masu" || value === "nai" || value === "te" || value === "ta"
+function isVerbForm(value: unknown): value is VerbConjForm {
+  return value === "masu"
+    || value === "nai"
+    || value === "te"
+    || value === "ta"
+    || value === "potential"
+    || value === "causative"
 }
 
 function getSelectedDisplay(question: ReviewFeedbackQuestion, value: string) {
@@ -65,7 +71,7 @@ export function ReviewAnswerFeedback({
       {canShowConjugation ? (
         <ConjugationComparison
           verb={{ ...question.meta!.verb!, kind: question.meta!.verb!.kind as ConjugationVerbMeta["kind"] }}
-          askedForm={{ id: question.meta!.askedForm!.id as "masu" | "nai" | "te" | "ta", label: question.meta!.askedForm!.label }}
+          askedForm={{ id: question.meta!.askedForm!.id as VerbConjForm, label: question.meta!.askedForm!.label }}
           selected={selectedAnswer}
           correct={question.correctAnswer}
           acceptedAnswers={question.acceptedAnswers}

@@ -44,4 +44,8 @@ test("ReviewOptionGrid owns review option feedback visuals", () => {
   assert.match(source, /aria-label=\{getAnswerOptionAriaLabel\(ariaLabelBase, feedback\)\}/)
   assert.match(source, /aria-pressed=\{selectedAnswer === option\.value\}/)
   assert.match(source, /data-testid=\{`review-answer-\$\{option\.value\}`\}/)
+  assert.match(source, /grid-cols-1/)
+  assert.match(source, /sm:grid-cols-2/)
+  assert.match(source, /whitespace-normal/)
+  assert.match(source, /min-h-16/)
 })

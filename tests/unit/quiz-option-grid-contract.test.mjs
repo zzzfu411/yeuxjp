@@ -42,4 +42,8 @@ test("QuizOptionGrid owns quiz option feedback visuals", () => {
   assert.match(source, /data-testid=\{`\$\{testIdPrefix\}-\$\{index\}`\}/)
   assert.match(source, /CheckCircle2/)
   assert.match(source, /XCircle/)
+  assert.match(source, /grid-cols-1/)
+  assert.match(source, /sm:grid-cols-2/)
+  assert.match(source, /whitespace-normal/)
+  assert.match(source, /min-h-16/)
 })

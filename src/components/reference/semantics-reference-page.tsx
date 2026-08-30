@@ -40,7 +40,7 @@ export function SemanticsReferencePage({
 
       <div className="text-center space-y-4">
         <h1 className="font-brush text-4xl tracking-tight flex items-center justify-center gap-3">
-          <BrainCircuit className="w-8 h-8 text-primary" />
+          <BrainCircuit className="w-8 h-8 text-accent" />
           语义辨析
           <span className="sr-only">Nuance Lab</span>
         </h1>
@@ -56,9 +56,9 @@ export function SemanticsReferencePage({
           >
             <div className="bg-secondary/30 p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4 group-hover:bg-secondary/50 transition-colors">
               <h2 className="text-2xl font-bold flex items-center gap-2">
-                <span className="text-primary">{point.pair[0]}</span>
+                <span className="text-accent">{point.pair[0]}</span>
                 <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
-                <span className="text-primary">{point.pair[1]}</span>
+                <span className="text-accent">{point.pair[1]}</span>
               </h2>
               <div className="text-sm font-mono text-muted-foreground bg-background/50 px-3 py-1 rounded-full border">
                 {point.title}

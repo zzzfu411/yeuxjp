@@ -25,12 +25,10 @@ export function useKanaPageControls() {
     Promise.resolve().then(() => {
       if (cancelled) return
 
-      if (urlMode === "hiragana" || urlMode === "katakana") {
-        setMode(urlMode)
-      }
+      setMode(urlMode === "hiragana" || urlMode === "katakana" ? urlMode : "hiragana")
 
       const parsedSet = parseKanaSet(urlSet)
-      if (parsedSet) setKanaSet(parsedSet)
+      setKanaSet(parsedSet ?? "seion")
     })
 
     return () => {

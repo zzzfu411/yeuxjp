@@ -106,7 +106,7 @@ export function SkillTreePage() {
                           className={cn(
                             "text-xs font-extrabold px-3 py-1 border-[2px] border-foreground whitespace-nowrap",
                             status === "done" && "bg-green-100 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/40 dark:text-green-300",
-                            status === "in-progress" && "bg-primary/10 border-primary/20 text-primary",
+                            status === "in-progress" && "bg-accent/10 border-accent/30 text-accent",
                             status === "locked" && "bg-muted border-border text-muted-foreground",
                             status === "available" && "bg-secondary/40 border-border text-muted-foreground"
                           )}

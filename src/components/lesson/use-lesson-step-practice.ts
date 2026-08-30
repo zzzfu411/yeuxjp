@@ -103,7 +103,7 @@ export function useLessonStepPractice({
 
   const submitTyping = useCallback(() => {
     if (readOnly) return
-    if ((current.type !== "typing" && current.type !== "dictation") || result) return
+    if ((current.type !== "typing" && current.type !== "dictation") || result || !typed.trim()) return
     applyRecordedAnswer(typed)
   }, [applyRecordedAnswer, current, readOnly, result, typed])
 

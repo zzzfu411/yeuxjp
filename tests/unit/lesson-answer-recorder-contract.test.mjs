@@ -31,19 +31,18 @@ test("LessonRunner delegates shared answer recording to useLessonAnswerRecorder"
   assert.doesNotMatch(source, /recordAnswer\(current, typed\)/)
 })
 
-test("useLessonAnswerRecorder resolves persisted answers before practice writes", () => {
+test("useLessonAnswerRecorder resolves persisted answers and commits fresh answers atomically", () => {
   const source = read("src/components/lesson/use-lesson-answer-recorder.ts")
 
   assert.match(source, /export function useLessonAnswerRecorder/)
   assert.match(source, /isPracticeStep\(step\)/)
   assert.match(source, /persistedAnswers: PersistedLessonStepAnswerMap/)
   assert.match(source, /resolveLessonStepSubmission\(step, answer, persistedAnswers\[step\.id\]\)/)
-  assert.match(source, /saveLessonStepAnswer\(lessonId, step\.id/)
-  assert.match(source, /recordQuestionPractice\(\{/)
+  assert.match(source, /recordLessonQuestionPractice\(\{/)
   assert.match(source, /lessonId/)
   assert.match(source, /lessonStepId: step\.id/)
-  assert.match(source, /if \(shouldRecord && !recordQuestionPractice\(\{/)
-  assert.match(source, /if \(shouldRecord && !progress\.saveLessonStepAnswer\(lessonId, step\.id/)
+  assert.match(source, /if \(shouldRecord && !recordLessonQuestionPractice\(\{/)
+  assert.doesNotMatch(source, /progress\.saveLessonStepAnswer/)
   assert.match(source, /return null/)
   assert.match(source, /setAnswered\(\(prev\) => \(\{ \.\.\.prev, \[step\.id\]: result\.correct \}\)\)/)
   assert.match(source, /return result/)
@@ -69,6 +68,7 @@ test("useLessonStepPractice owns lesson input state and guarded submit flows", (
   assert.match(source, /answerPendingRef\.current = current/)
   assert.match(source, /current\.type !== "multipleChoice" \|\| result/)
   assert.match(source, /current\.type !== "typing" && current\.type !== "dictation"/)
+  assert.match(source, /\|\| !typed\.trim\(\)/)
   assert.match(source, /current\.type !== "sentenceBuild" \|\| result/)
   assert.match(source, /setBuilt\(\(prev\) => \[\.\.\.prev, chunk\]\)/)
   assert.match(source, /setBuilt\(\(prev\) => prev\.slice\(0, -1\)\)/)
