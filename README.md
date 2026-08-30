@@ -2,6 +2,30 @@
 
 Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana, vocabulary, grammar, semantic nuance, pragmatics, quizzes, a 30-day starter path, local progress tracking, SRS review, and a mistake notebook. Course practice, quiz practice, and review now share the same question/result rules so progress, SRS enrollment, and mistake recording stay consistent across pages.
 
+![Yasashi Japanese home](docs/screenshots/home.jpg)
+
+*Home — a paper-style player with today's 30-day queue, daily goal, streak, and the next lesson to play.*
+
+![Kana chart](docs/screenshots/kana.jpg)
+
+*Kana — hiragana and katakana charts with listening, romaji toggles, and mastery tracking.*
+
+![Guided lesson](docs/screenshots/lesson.jpg)
+
+*Lesson — a guided day on the 30-day path, with examples, audio, and step progress.*
+
+![Kana quiz](docs/screenshots/quiz.jpg)
+
+*Quiz — look at a kana, pick the reading; also covers particles, verbs, and vocabulary.*
+
+![30-day skill tree](docs/screenshots/path.jpg)
+
+*30-day path — starter days, next-lesson recommendation, and five-dimension mastery.*
+
+![SRS review desk](docs/screenshots/review.jpg)
+
+*SRS review — today's mixed queue for due kana, vocabulary, and the mistake notebook.*
+
 ## Project Layout
 
 - This Git repository is the Next.js app root. In the historical outer workspace it appears as `web/`.
