@@ -59,19 +59,16 @@ export function HomeNowPlaying({
         {learningEntry.subtitle}
       </p>
 
-      {profileLoaded ? (
-        <Link
-          href={learningEntry.href}
-          data-testid="home-start-learning"
-          className="group mt-5 inline-flex items-center gap-2 border-b border-accent/50 pb-1 text-sm font-semibold text-accent"
-          aria-label={learningEntry.cta}
-        >
-          {learningEntry.cta}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-        </Link>
-      ) : (
-        <div className="mt-5 text-xs text-muted-foreground">正在读取学习设置...</div>
-      )}
+      <Link
+        href={learningEntry.href}
+        data-testid="home-start-learning"
+        className="group mt-5 inline-flex items-center gap-2 border-b border-accent/50 pb-1 text-sm font-semibold text-accent"
+        aria-label={learningEntry.cta}
+      >
+        {learningEntry.cta}
+        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+      </Link>
+      {!profileLoaded ? <div className="mt-2 text-xs text-muted-foreground">正在读取学习设置...</div> : null}
 
       {showOnboarding ? (
         <div className="mt-6 border-t border-border/50 pt-6">

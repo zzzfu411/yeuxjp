@@ -22,7 +22,7 @@ export function Navbar() {
   const pathname = usePathname()
   const coverRoute = pathname === "/"
   const [pastCover, setPastCover] = useState(!coverRoute)
-  const showNav = !coverRoute || pastCover
+  const coverAtTop = coverRoute && !pastCover
 
   useEffect(() => {
     if (!coverRoute) return
@@ -40,10 +40,7 @@ export function Navbar() {
 
   return (
     <header
-      className={cn(
-        "paper-nav fixed inset-x-0 top-0 z-[60] transition-[opacity,transform] duration-500",
-        !showNav && "pointer-events-none -translate-y-full opacity-0"
-      )}
+      className="paper-nav fixed inset-x-0 top-0 z-[60] transition-[opacity,transform] duration-500"
     >
       <div className="flex h-[4.8rem] items-center gap-2 px-3 sm:px-5 lg:gap-5 lg:px-8">
         <Link
@@ -55,7 +52,7 @@ export function Navbar() {
           <span className="hidden font-scribble text-base text-muted-foreground sm:inline">Yasashi</span>
         </Link>
 
-        <nav className="scrollbar-hide flex min-w-0 flex-1 items-center gap-4 overflow-x-auto px-1 lg:gap-6">
+        <nav className={cn("scrollbar-hide flex min-w-0 flex-1 items-center gap-4 overflow-x-auto px-1 lg:gap-6", coverAtTop && "hidden")}>
           {navItems.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
             return (
@@ -75,7 +72,7 @@ export function Navbar() {
           })}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className={cn("flex shrink-0 items-center gap-0.5", coverAtTop && "ml-auto")}>
           <SpeechControlsButton />
           <ModeToggle />
           <Link
