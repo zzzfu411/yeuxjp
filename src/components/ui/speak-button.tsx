@@ -4,7 +4,7 @@ import * as React from "react"
 import { Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { isSpeechSupported, speakJapanese } from "@/lib/speech"
+import { cancelJapaneseSpeech, isSpeechSupported, speakJapanese } from "@/lib/speech"
 
 type ButtonVariant = React.ComponentProps<typeof Button>["variant"]
 type ButtonSize = React.ComponentProps<typeof Button>["size"]
@@ -37,6 +37,8 @@ export function SpeakButton({
       cancelled = true
     }
   }, [])
+
+  React.useEffect(() => () => cancelJapaneseSpeech(), [text])
 
   const disabled = !speechSupported || !text?.trim()
 

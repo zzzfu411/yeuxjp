@@ -30,7 +30,7 @@ export function GrammarReferenceControls({
     Promise.resolve().then(() => {
       if (cancelled) return
       const parsedLevel = parseGrammarLevel(urlLevel)
-      if (parsedLevel) setActiveLevel(parsedLevel)
+      setActiveLevel(parsedLevel ?? "N5")
     })
 
     return () => {

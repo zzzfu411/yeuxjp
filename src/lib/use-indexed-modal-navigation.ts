@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
 
-export function useIndexedModalNavigation(itemCount: number) {
+export function useIndexedModalNavigation(itemCount: number, onNavigate?: () => void) {
   const [rawSelectedIndex, setRawSelectedIndex] = useState<number | null>(null)
   const selectedIndex =
     rawSelectedIndex === null || itemCount <= 0 ? null : Math.min(rawSelectedIndex, itemCount - 1)
@@ -11,24 +11,28 @@ export function useIndexedModalNavigation(itemCount: number) {
   const openAt = useCallback(
     (index: number) => {
       if (itemCount <= 0) return
+      onNavigate?.()
       setRawSelectedIndex(Math.max(0, Math.min(index, itemCount - 1)))
     },
-    [itemCount]
+    [itemCount, onNavigate]
   )
 
   const close = useCallback(() => {
+    onNavigate?.()
     setRawSelectedIndex(null)
-  }, [])
+  }, [onNavigate])
 
   const goNext = useCallback(() => {
     if (selectedIndex === null || itemCount <= 0) return
+    onNavigate?.()
     setRawSelectedIndex((selectedIndex + 1) % itemCount)
-  }, [itemCount, selectedIndex])
+  }, [itemCount, onNavigate, selectedIndex])
 
   const goPrev = useCallback(() => {
     if (selectedIndex === null || itemCount <= 0) return
+    onNavigate?.()
     setRawSelectedIndex((selectedIndex - 1 + itemCount) % itemCount)
-  }, [itemCount, selectedIndex])
+  }, [itemCount, onNavigate, selectedIndex])
 
   useEffect(() => {
     if (selectedIndex === null) return

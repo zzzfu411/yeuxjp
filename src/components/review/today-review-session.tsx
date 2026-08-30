@@ -168,7 +168,11 @@ export function TodayReviewSession({
       </ReviewPromptCard>
 
       {questionUsesTypedReview(data.question) ? (
-        <ReviewTypedAnswer disabled={Boolean(selected)} onSubmit={handleSelect} />
+        <ReviewTypedAnswer
+          key={`${currentKey}:${review.completionStats.answered}`}
+          disabled={Boolean(selected)}
+          onSubmit={handleSelect}
+        />
       ) : (
         <ReviewOptionGrid
           options={data.question.options}

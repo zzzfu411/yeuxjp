@@ -68,6 +68,7 @@ test("useLessonStepPractice owns lesson input state and guarded submit flows", (
   assert.match(source, /answerPendingRef\.current = current/)
   assert.match(source, /current\.type !== "multipleChoice" \|\| result/)
   assert.match(source, /current\.type !== "typing" && current\.type !== "dictation"/)
+  assert.match(source, /\|\| !typed\.trim\(\)/)
   assert.match(source, /current\.type !== "sentenceBuild" \|\| result/)
   assert.match(source, /setBuilt\(\(prev\) => \[\.\.\.prev, chunk\]\)/)
   assert.match(source, /setBuilt\(\(prev\) => prev\.slice\(0, -1\)\)/)

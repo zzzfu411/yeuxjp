@@ -129,7 +129,11 @@ export function MistakeReviewSession({
       </ReviewPromptCard>
 
       {questionUsesTypedReview(question) ? (
-        <ReviewTypedAnswer disabled={Boolean(selected)} onSubmit={handleSelect} />
+        <ReviewTypedAnswer
+          key={`${currentId}:${review.completionStats.answered}`}
+          disabled={Boolean(selected)}
+          onSubmit={handleSelect}
+        />
       ) : (
         <ReviewOptionGrid
           options={question.options}
