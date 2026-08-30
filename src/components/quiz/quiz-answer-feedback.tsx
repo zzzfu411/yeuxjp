@@ -11,7 +11,12 @@ function isVerbKind(value: unknown): value is ConjugationVerbMeta["kind"] {
 }
 
 function isVerbForm(value: unknown): value is VerbConjForm {
-  return value === "masu" || value === "nai" || value === "te" || value === "ta"
+  return value === "masu"
+    || value === "nai"
+    || value === "te"
+    || value === "ta"
+    || value === "potential"
+    || value === "causative"
 }
 
 export function QuizAnswerFeedback({

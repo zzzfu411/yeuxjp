@@ -17,6 +17,7 @@ test("mistake notebook hook delegates model and storage logic", () => {
   assert.match(source, /MISTAKE_NOTEBOOK_EVENT/)
   assert.match(source, /notifyMistakeNotebook/)
   assert.match(source, /runLearningStorageTransaction/)
+  assert.match(source, /queueLearningNotification\(\(\) => setList\(/)
   assert.match(source, /const current = readMistakeListResult\(storageKey\)/)
   assert.match(source, /if \(!current\.ok\) return false/)
   assert.match(source, /upsertWrongMistake\(current\.value, input, now\)/)

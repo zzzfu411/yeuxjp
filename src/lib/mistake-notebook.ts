@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
+import { LEARNING_STORE_EVENT, queueLearningNotification, runLearningStorageTransaction } from "@/lib/learning-store"
 import { clearSrs, gradeSrs, removeSrs } from "@/lib/srs"
 import { buildMistakeId, removeMistakeById, upsertWrongMistake, type MistakeItem, type RecordMistakeInput } from "@/lib/mistake-notebook-model"
 import {
@@ -76,7 +76,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
 
       if (!saved) return false
 
-      setList(next)
+      queueLearningNotification(() => setList(next))
       notifyMistakeNotebook(storageKey)
       return true
     },
@@ -91,7 +91,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
       if (next === current.value) {
         const saved = runLearningStorageTransaction(() => removeSrs(MISTAKE_SRS_STORAGE_KEY, id))
         if (!saved) return false
-        setList(current.value)
+        queueLearningNotification(() => setList(current.value))
         notifyMistakeNotebook(storageKey)
         return true
       }
@@ -102,7 +102,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
 
       if (!saved) return false
 
-      setList([...next])
+      queueLearningNotification(() => setList([...next]))
       notifyMistakeNotebook(storageKey)
       return true
     },
@@ -116,7 +116,7 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
     )
     if (!saved) return false
 
-    setList([])
+    queueLearningNotification(() => setList([]))
     notifyMistakeNotebook(storageKey)
     return true
   }, [storageKey])
