@@ -148,6 +148,42 @@ test("E2E harness only treats known browser request aborts as benign", () => {
   )
   assert.equal(
     isExpectedBrowserRequestAbort(makeRequest({
+      url: "http://127.0.0.1:3210/fonts/ma-shan-zheng/ma-shan-zheng-chinese-simplified-400-normal.woff2",
+      resourceType: "font",
+    })),
+    true
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({
+      url: "http://127.0.0.1:3210/fonts/lxgw/files/lxgwwenkaiscreen.woff2",
+      resourceType: "font",
+    })),
+    true
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({
+      url: "http://127.0.0.1:3210/fonts/caveat/caveat-latin-400-normal.woff2",
+      resourceType: "font",
+    })),
+    true
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({
+      url: "http://127.0.0.1:3210/fonts/ma-shan-zheng/ma-shan-zheng-chinese-simplified-400-normal.woff2",
+      resourceType: "font",
+      errorText: "net::ERR_FAILED",
+    })),
+    false
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({
+      url: "http://127.0.0.1:3210/fonts/ma-shan-zheng/ma-shan-zheng-chinese-simplified-400-normal.woff2",
+      resourceType: "script",
+    })),
+    false
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({
       url: "http://127.0.0.1:3210/_next/image?url=%2Fassets%2Fstates%2Fstate-complete.webp&w=384&q=75",
       resourceType: "image",
     })),

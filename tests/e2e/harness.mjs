@@ -163,13 +163,20 @@ export function isExpectedBrowserRequestAbort(request) {
     request.resourceType() === "font" &&
     requestUrl.pathname.startsWith("/_next/static/media/") &&
     (requestUrl.pathname.endsWith(".woff2") || requestUrl.pathname.endsWith(".woff"))
+  // Paper restyle also self-hosts public fonts (lxgw, caveat, ma-shan-zheng).
+  // Navigating away mid-load aborts those GETs the same way as Next media fonts.
+  const isPublicPaperFont =
+    request.method() === "GET" &&
+    request.resourceType() === "font" &&
+    requestUrl.pathname.startsWith("/fonts/") &&
+    (requestUrl.pathname.endsWith(".woff2") || requestUrl.pathname.endsWith(".woff"))
   // Decorative paper state images abort when the review flow navigates away.
   const isNextOptimizedImage =
     request.method() === "GET" &&
     request.resourceType() === "image" &&
     requestUrl.pathname === "/_next/image"
 
-  return isNextRscPrefetch || isAnimCjkProbe || isNextStaticChunk || isNextDevFont || isNextStaticFont || isNextOptimizedImage
+  return isNextRscPrefetch || isAnimCjkProbe || isNextStaticChunk || isNextDevFont || isNextStaticFont || isPublicPaperFont || isNextOptimizedImage
 }
 
 export function createPageIssueCollector({
