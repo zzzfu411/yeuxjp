@@ -16,7 +16,7 @@ const VOCAB_SRS_STORAGE_KEY = STORAGE_KEYS.SRS_VOCAB
 function ReviewSessionLoading() {
   return (
     <div className="container py-20 px-4 mx-auto max-w-lg text-center text-muted-foreground">
-      Loading review...
+      正在加载复习...
     </div>
   )
 }

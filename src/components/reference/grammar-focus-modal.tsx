@@ -100,7 +100,7 @@ export function GrammarFocusModal({
             <Button variant="ghost" onClick={onPrev} className="gap-2 pl-2" data-testid="grammar-modal-prev">
               <ChevronLeft className="w-5 h-5" /> 上一条
             </Button>
-            <div className="text-sm text-muted-foreground font-mono">
+            <div className="text-sm text-muted-foreground font-mono" data-testid="grammar-modal-position">
               {selectedPosition} / {total}
             </div>
             <Button variant="ghost" onClick={onNext} className="gap-2 pr-2" data-testid="grammar-modal-next">

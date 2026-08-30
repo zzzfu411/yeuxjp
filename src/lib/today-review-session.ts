@@ -4,6 +4,7 @@ import type { MistakeItem } from "@/lib/mistake-notebook-model"
 import type { Question, QuestionResult } from "@/lib/questions"
 import type { SrsResult } from "@/lib/srs-model"
 import { createSeededRandom } from "@/lib/seeded-random"
+import { mistakeReviewDeckLabel, mistakeReviewKind } from "@/lib/mistake-review-kind"
 import {
   getVocabReviewPromptModel,
   makeKanaReviewQuestion,
@@ -13,6 +14,8 @@ import {
   type ReviewDeck,
   type TodayReviewItem,
 } from "@/lib/review-questions"
+
+export { mistakeReviewDeckLabel, mistakeReviewKind }
 
 export type TodayReviewData = {
   deckLabel: string
@@ -46,6 +49,12 @@ function emptyResolution(overrides: Partial<TodayReviewItemResolution> = {}): To
   }
 }
 
+export function mistakeReviewSub(mistake: Pick<MistakeItem, "itemType" | "explanation">) {
+  if (mistake.explanation?.trim()) return mistake.explanation.trim()
+  if (mistake.itemType === "grammar") return "错题会留在今日队列，答对后才离开"
+  return undefined
+}
+
 export { createSeededRandom }
 
 export function getTodayReviewBatchCompletionTitle(remainingDueAfterBatch: number) {
@@ -66,11 +75,13 @@ export function resolveTodayReviewItemData({
   vocabulary,
   mistakes,
   seed = "",
+  showRomaji = false,
 }: {
   current: TodayReviewItem | null
   vocabulary: readonly Vocabulary[]
   mistakes: ReadonlyMap<string, MistakeItem>
   seed?: string
+  showRomaji?: boolean
 }): TodayReviewItemResolution {
   if (!current) return emptyResolution()
 
@@ -106,7 +117,7 @@ export function resolveTodayReviewItemData({
     const question = makeVocabReviewQuestion(vocabItem, vocabulary, random, vocabDirection)
     if (!question) return emptyResolution({ insufficientQuestionOptions: true })
 
-    const prompt = getVocabReviewPromptModel(vocabItem, vocabDirection)
+    const prompt = getVocabReviewPromptModel(vocabItem, vocabDirection, showRomaji)
     return {
       data: {
         deckLabel: "\u8bcd\u6c47",
@@ -127,9 +138,9 @@ export function resolveTodayReviewItemData({
 
   return {
     data: {
-      deckLabel: "\u9519\u9898",
+      deckLabel: mistakeReviewDeckLabel(mistake),
       prompt: mistake.questionText ?? mistake.questionAudio ?? "\uff08\u65e0\u9898\u5e72\uff09",
-      sub: mistake.type,
+      sub: mistakeReviewSub(mistake),
       audio: mistake.questionAudio,
       autoPlayAudio: Boolean(mistake.questionAudio),
       question: mistakeToQuestion(mistake),

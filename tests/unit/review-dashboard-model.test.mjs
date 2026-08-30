@@ -81,6 +81,8 @@ test("review dashboard model filters visible due ids and builds the today queue"
   assert.equal(dashboard.isFirstTime, false)
   assert.equal(dashboard.nextDueAt, now + 60_000)
   assert.deepEqual(dashboard.counts, { mistakesDue: 1, kanaDue: 3, vocabDue: 1 })
+  assert.deepEqual(dashboard.mistakeKindDue, { vocab: 0, grammar: 0, kana: 0, sentence: 0, other: 0 })
+  assert.equal(dashboard.mistakeKindDueLabel, "")
   assert.deepEqual(dashboard.totals, { kana: 3, vocab: 1, mistakes: 2, mastered: 4, learned: 2 })
 })
 
@@ -278,6 +280,43 @@ test("review dashboard offers independent enrollment for practiced hiragana and 
   assert.equal(dashboard.isFirstTime, false)
   assert.equal(dashboard.totalEnrolled, 0)
   assert.equal(dashboard.totalDue, 0)
+})
+
+test("review dashboard splits due mistakes by notebook kind without changing totals", () => {
+  const now = 1_700_000_000_000
+  const state = (dueAt) => ({ dueAt, box: 1, createdAt: now - 1, right: 0, wrong: 0 })
+
+  const dashboard = model.buildReviewDashboardModel({
+    masteredIds: [],
+    learnedIds: [],
+    mistakeIds: ["m-vocab", "m-grammar", "m-verb", "m-kana", "m-idle"],
+    mistakeItems: [
+      { id: "m-vocab", itemType: "vocab", type: "review:vocab" },
+      { id: "m-grammar", itemType: "grammar", type: "grammar-practice" },
+      { id: "m-verb", type: "verb-masu" },
+      { id: "m-kana", itemType: "kana", type: "kana" },
+      { id: "m-idle", itemType: "sentence", type: "particle" },
+    ],
+    kanaSrsMap: {},
+    kanaDueIds: [],
+    vocabSrsMap: {},
+    vocabDueIds: [],
+    mistakeSrsMap: {
+      "m-vocab": state(now - 10),
+      "m-grammar": state(now - 9),
+      "m-verb": state(now - 8),
+      "m-kana": state(now - 7),
+      "m-idle": state(now + 60_000),
+    },
+    mistakeDueIds: ["m-vocab", "m-grammar", "m-verb", "m-kana", "ghost"],
+    now,
+  })
+
+  assert.equal(dashboard.counts.mistakesDue, 4)
+  assert.deepEqual(dashboard.counts, { mistakesDue: 4, kanaDue: 0, vocabDue: 0 })
+  assert.deepEqual(dashboard.mistakeKindDue, { vocab: 1, grammar: 2, kana: 1, sentence: 0, other: 0 })
+  assert.equal(dashboard.mistakeKindDueLabel, "词汇 1 · 语法 2 · 假名 1")
+  assert.equal(dashboard.totalDue, 4)
 })
 
 test("review dashboard offers enrollment for notebook mistakes missing SRS records", () => {

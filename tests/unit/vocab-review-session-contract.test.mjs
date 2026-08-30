@@ -37,7 +37,7 @@ test("VocabReviewSession owns vocabulary loading, prompt, question, and SRS grad
   assert.match(source, /const direction = useMemo\(/)
   assert.match(source, /pickVocabReviewDirection\(createSeededRandom\(`\$\{reviewSeed\}:direction:\$\{item\.id\}`\)\)/)
   assert.match(source, /makeVocabReviewQuestion\(item, vocabulary\.data, createSeededRandom\(`\$\{reviewSeed\}:question:\$\{item\.id\}`\), direction\)/)
-  assert.match(source, /getVocabReviewPromptModel\(item, direction\)/)
+  assert.match(source, /getVocabReviewPromptModel\(item, direction, showRomaji\)/)
   assert.doesNotMatch(source, /makeVocabReviewQuestion\(item\.id, vocabulary\.data\)/)
   assert.match(source, /<VocabReviewPrompt\b/)
   assert.match(source, /ReviewLoadingState/)

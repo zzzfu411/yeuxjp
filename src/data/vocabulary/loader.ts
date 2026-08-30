@@ -15,6 +15,10 @@ export function loadVocabularyLevel(level: VocabLevel): Promise<Vocabulary[]> {
   if (cached) return cached
 
   const promise = vocabularyLevelLoaders[level]()
+    .then((items) => {
+      if (!Array.isArray(items)) throw new Error(`Vocabulary level ${level} did not load an array`)
+      return items.slice()
+    })
     .catch((error) => {
       vocabularyLevelPromises.delete(level)
       throw error

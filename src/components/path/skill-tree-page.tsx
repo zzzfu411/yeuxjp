@@ -6,24 +6,27 @@ import { Button } from "@/components/ui/button"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { cn } from "@/lib/utils"
 import { PathStarterLessons } from "@/components/path/path-starter-lessons"
+import { STARTER_LESSONS } from "@/data/lessons"
 import { SKILL_CATEGORY_LABEL, SKILL_TREE, SKILL_TREE_BY_CATEGORY, type SkillCategory } from "@/lib/skill-tree"
 import { useLearningRecommendation } from "@/lib/learning-recommendation"
+import { countLessonItemIds } from "@/lib/lesson-item-coverage"
 import {
   getPathMasterySummary,
   getSkillStatus,
 } from "@/lib/path-page-model"
 
 export function SkillTreePage() {
-  const { learning, kanaStats, vocabStats, nextSkillId, nextLesson, learningEntry } = useLearningRecommendation()
+  const { learning, kanaStats, vocabStats, nextSkillId, nextLesson, learningEntry, satisfiedLessonCount, course } = useLearningRecommendation()
   const masterySummary = useMemo(() => getPathMasterySummary(learning.items), [learning.items])
+  const courseVocabCount = useMemo(() => countLessonItemIds(STARTER_LESSONS, "vocab"), [])
 
   return (
     <div className="container py-6 px-4 mx-auto space-y-6 max-w-5xl mb-20">
       <div className="space-y-3 border-[3px] border-foreground bg-card p-5 shadow-hard">
         <h1 className="font-brush text-4xl tracking-tight">技能树</h1>
         <p className="text-muted-foreground max-w-3xl mx-auto">
-          按“能力”而不是按“章节”学习：先把 <GlossaryTerm termId="kana">假名</GlossaryTerm> 与读音打牢，再进入{" "}
-          <GlossaryTerm termId="particle">助词</GlossaryTerm> 和 <GlossaryTerm termId="conjugation">活用</GlossaryTerm>，最后提升语感。
+          主线是 175 天 N5→N2 课程；技能树用来补假名、词汇和专项弱项。先把 <GlossaryTerm termId="kana">假名</GlossaryTerm> 打牢，再进入{" "}
+          <GlossaryTerm termId="particle">助词</GlossaryTerm> 和 <GlossaryTerm termId="conjugation">活用</GlossaryTerm>。
         </p>
         <div className="flex items-center justify-center gap-2">
           <GlossaryButton className="h-auto px-3 py-2 border-[3px] border-foreground bg-card shadow-hard-sm hover:bg-primary">
@@ -51,14 +54,17 @@ export function SkillTreePage() {
         <PathStarterLessons completedLessonIds={learning.completedLessonIds} activeLessonId={nextLesson?.id} />
 
         <div className="border-[3px] border-foreground bg-card p-5 shadow-hard">
-          <div className="text-xs font-semibold text-muted-foreground tracking-wider">五维掌握度</div>
+          <div className="text-xs font-semibold text-muted-foreground tracking-wider">课表与掌握度</div>
           <div className="mt-4 space-y-4">
+            <Metric label="课表" value={`${satisfiedLessonCount}/${STARTER_LESSONS.length}`} />
+            <Metric label="课表词" value={`${courseVocabCount}`} />
+            <Metric label="生存词" value={`${vocabStats.survival.done}/${vocabStats.survival.total}`} />
             <Metric label="平均掌握" value={`${masterySummary.avg}%`} />
             <Metric label="输出能力" value={`${masterySummary.production}%`} />
             <Metric label="练习次数" value={`${masterySummary.attempts}`} />
           </div>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-            课程里的识别、听写、回忆、组句会逐步写入这里；只浏览内容不会虚增掌握度。
+            课表看天数，课表词是 175 天里真正出现的词条数，生存词看记住了多少。点完课不等于这些词已经掌握。
           </p>
         </div>
       </section>
@@ -78,7 +84,7 @@ export function SkillTreePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {list.map((skill) => {
-                const { status, badge } = getSkillStatus(skill.id, kanaStats, vocabStats)
+                const { status, badge } = getSkillStatus(skill.id, kanaStats, vocabStats, SKILL_TREE, course)
                 const isRecommended = skill.id === nextSkillId
 
                 return (

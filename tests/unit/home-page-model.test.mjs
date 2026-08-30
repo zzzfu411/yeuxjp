@@ -38,7 +38,10 @@ test("home page model counts both scripts of a as independent visible due work",
   assert.equal(home.nextLesson.id, lessons.STARTER_LESSONS[0].id)
   assert.equal(home.learningEntry.href, `/learn/${lessons.STARTER_LESSONS[0].id}`)
   assert.equal(home.completedCount, 0)
-  assert.deepEqual(home.weakest, { id: "hiragana:a", display: "あ (a)", label: "\u5047\u540d", score: 4 })
+  assert.deepEqual(home.weakest, { id: "hiragana:a", display: "あ (a)", label: "\u5047\u540d", score: 4, itemType: "kana" })
+  assert.equal(home.weakestHref, "/kana")
+  assert.equal(home.survivalDone, 0)
+  assert.equal(home.survivalTotal, 544)
 })
 
 test("home page model includes explicit mastered and learned ids in visible due work", () => {
@@ -54,6 +57,8 @@ test("home page model includes explicit mastered and learned ids in visible due 
   })
 
   assert.equal(home.totalDue, 2)
+  assert.equal(home.survivalDone, 1)
+  assert.equal(home.survivalTotal, 544)
 })
 
 test("home page model ignores stale vocabulary ids when counting due work", () => {
@@ -87,7 +92,8 @@ test("home page weakest item ignores stale vocabulary, non-reviewable kana, and 
     mistakeIds: [],
   })
 
-  assert.deepEqual(home.weakest, { id: "sur-g-2", display: "sur-g-2", label: "\u8bcd\u6c47", score: 24 })
+  assert.deepEqual(home.weakest, { id: "sur-g-2", display: "sur-g-2", label: "\u8bcd\u6c47", score: 24, itemType: "vocab" })
+  assert.equal(home.weakestHref, "/vocabulary")
 })
 
 test("home page model resolves completed starter courses to review and finds the weakest item", () => {
@@ -107,7 +113,8 @@ test("home page model resolves completed starter courses to review and finds the
   assert.equal(home.nextLesson, null)
   assert.equal(home.learningEntry.kind, "review")
   assert.equal(home.completedCount, lessons.STARTER_LESSONS.length)
-  assert.deepEqual(home.weakest, { id: "weak", display: "weak", label: "\u8bed\u6cd5", score: 30 })
+  assert.deepEqual(home.weakest, { id: "weak", display: "weak", label: "\u8bed\u6cd5", score: 30, itemType: "grammar" })
+  assert.equal(home.weakestHref, "/grammar")
 })
 
 test("home page model falls back to recommended skills after starter courses", () => {
@@ -132,4 +139,54 @@ test("home page model falls back to recommended skills after starter courses", (
   assert.equal(home.learningEntry.title, skill.title)
   assert.equal(home.learningEntry.subtitle, skill.short)
   assert.equal(home.learningEntry.href, skill.href)
+})
+
+test("home page model routes weakest practice by item type and counts survival vocab separately", () => {
+  assert.equal(model.getWeakestPracticeHref("kana"), "/kana")
+  assert.equal(model.getWeakestPracticeHref("vocab"), "/vocabulary")
+  assert.equal(model.getWeakestPracticeHref("grammar"), "/grammar")
+  assert.equal(model.getWeakestPracticeHref("sentence"), "/quiz?mode=particle")
+  assert.equal(model.getWeakestPracticeHref(undefined), "/quiz")
+
+  const home = model.buildHomePageModel({
+    completedLessonIds: new Set([lessons.STARTER_LESSONS[0].id]),
+    items: {},
+    learnedVocabIds: ["sur-g-1", "sur-g-2", "day-v-1"],
+    kanaDueIds: [],
+    vocabDueIds: [],
+    mistakeDueIds: [],
+    mistakeIds: [],
+  })
+
+  assert.equal(home.completedCount, 1)
+  assert.equal(home.survivalDone, 2)
+  assert.equal(home.survivalTotal, 544)
+  assert.equal(home.weakestHref, "/quiz")
+})
+
+test("home page model skips kana foundation when the profile already knows kana", () => {
+  const skipped = model.buildHomePageModel({
+    completedLessonIds: new Set(),
+    items: {},
+    kanaDueIds: [],
+    vocabDueIds: [],
+    mistakeDueIds: [],
+    mistakeIds: [],
+    kanaLevel: "solid",
+  })
+  const beginner = model.buildHomePageModel({
+    completedLessonIds: new Set(),
+    items: {},
+    kanaDueIds: [],
+    vocabDueIds: [],
+    mistakeDueIds: [],
+    mistakeIds: [],
+    kanaLevel: "some",
+  })
+
+  assert.equal(skipped.nextLesson.id, "day-22-wa-ga-no")
+  assert.equal(skipped.learningEntry.href, "/learn/day-22-wa-ga-no")
+  assert.equal(skipped.completedCount, 21)
+  assert.equal(beginner.nextLesson.id, lessons.STARTER_LESSONS[0].id)
+  assert.equal(beginner.completedCount, 0)
 })

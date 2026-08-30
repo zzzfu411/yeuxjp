@@ -56,10 +56,20 @@ test("grammar practice rejects questions that cannot be answered reliably", () =
 })
 
 test("every N5 grammar point exposes at least one valid practice question", () => {
-  assert.equal(grammarData.N5.length, 25)
+  assert.equal(grammarData.N5.length, 45)
   for (const grammarPoint of grammarData.N5) {
     const questions = practice.buildGrammarPracticeQuestions(grammarPoint)
     assert.ok(questions.length > 0, `${grammarPoint.id} should have a valid practice question`)
     assert.ok(questions.every((question) => question.itemId === grammarPoint.id))
+  }
+})
+
+test("every N4, N3, and N2 grammar point exposes at least one valid practice question", () => {
+  for (const level of ["N4", "N3", "N2"]) {
+    for (const grammarPoint of grammarData[level]) {
+      const questions = practice.buildGrammarPracticeQuestions(grammarPoint)
+      assert.ok(questions.length > 0, `${grammarPoint.id} should have a valid practice question`)
+      assert.ok(questions.every((question) => question.itemId === grammarPoint.id))
+    }
   }
 })

@@ -32,6 +32,8 @@ test("vocabulary loader reuses in-flight level loads", async () => {
 test("vocabulary loader evicts failed level loads before retry", () => {
   const source = fs.readFileSync(path.join(root, "src/data/vocabulary/loader.ts"), "utf8")
 
+  assert.match(source, /Array\.isArray\(items\)/)
+  assert.match(source, /items\.slice\(\)/)
   assert.match(source, /\.catch\(\(error\) => \{/)
   assert.match(source, /vocabularyLevelPromises\.delete\(level\)/)
   assert.match(source, /throw error/)

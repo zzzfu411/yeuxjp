@@ -27,9 +27,9 @@ test("LessonRunner restores answered practice state from persisted results", () 
 
   assert.match(source, /getLatestLessonStepAnswers/)
   assert.match(source, /getLatestLessonStepAnswers\(lesson\.id, lesson\.steps, results\)/)
+  assert.match(source, /mergeLessonStepAnswers/)
   assert.match(source, /persistedStepAnswers/)
-  assert.match(source, /getLessonAnsweredFromResults/)
-  assert.match(source, /getLessonAnsweredFromResults\(lesson\.id, lesson\.steps, results\)/)
+  assert.match(source, /getLessonAnsweredFromStepMap\(persistedStepAnswers\)/)
   assert.match(source, /answeredDraft/)
   assert.match(source, /\.\.\.restoredAnswered, \.\.\.answeredDraft\.answers/)
   assert.match(source, /setAnsweredForLesson/)
@@ -67,8 +67,8 @@ test("LessonRunner warns on locked direct lesson visits without auto-starting pr
 
   assert.match(state, /from "@\/lib\/learning-entry"/)
   assert.match(source, /from "@\/components\/lesson\/lesson-locked-preview"/)
-  assert.match(state, /isLessonUnlocked\(lesson, progress\.completedLessonIds\)/)
-  assert.match(state, /getNextLesson\(progress\.completedLessonIds\)/)
+  assert.match(state, /isLessonUnlocked\(lesson, progress\.completedLessonIds, kanaLevel\)/)
+  assert.match(state, /getNextLesson\(progress\.completedLessonIds, kanaLevel\)/)
   assert.match(state, /if \(!loaded\) return/)
   assert.match(state, /if \(!lessonUnlocked\) return/)
   assert.match(source, /<LessonLockedPreview recommendedLesson=\{recommendedLesson\} \/>/)
@@ -97,9 +97,13 @@ test("LessonRunner keeps locked lesson previews read-only", () => {
 
 test("LessonRunner exposes stable completed lesson follow-up targets", () => {
   const source = read("src/components/lesson/lesson-runner.tsx")
+  const recap = read("src/components/lesson/lesson-completion-recap.tsx")
   const navigation = read("src/components/lesson/lesson-navigation-bar.tsx")
 
-  assert.match(source, /data-testid="lesson-completed-summary"/)
+  assert.match(source, /from "@\/components\/lesson\/lesson-completion-recap"/)
+  assert.match(source, /<LessonCompletionRecap lesson=\{lesson\}/)
+  assert.match(recap, /data-testid="lesson-completed-summary"/)
+  assert.match(recap, /prefetch=\{false\}/)
   assert.match(source, /<LessonNavigationBar/)
   assert.match(navigation, /data-testid="lesson-review-link"/)
   assert.match(navigation, /data-testid="lesson-next-lesson-link"/)
@@ -173,7 +177,7 @@ test("lesson progress updates state only after storage writes succeed", () => {
   const progress = read("src/lib/learning-progress.ts")
 
   const guardedWrites = progress.match(/if \(!writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next, \{ expectedRaw: (?:current|currentResult)\.raw \}\)\) return false/g) ?? []
-  assert.equal(guardedWrites.length, 3)
+  assert.equal(guardedWrites.length, 4)
   assert.match(progress, /setLessons\(next\)/)
   assert.match(progress, /return true/)
   assert.doesNotMatch(progress, /writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next\) \? next : prev/)

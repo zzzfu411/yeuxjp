@@ -1,6 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { getNextLesson } from "@/data/lessons"
+import { useLearningProfile } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningStatus } from "@/lib/learning-status"
 import type { Question } from "@/lib/questions"
@@ -36,6 +38,11 @@ export function useQuizSession(mode: QuizMode) {
   const selectedOptionRef = useRef<string | null>(null)
   const mistakes = useMistakeNotebook()
   const learning = useLearningStatus()
+  const { profile } = useLearningProfile()
+  const nextLesson = useMemo(
+    () => getNextLesson(learning.completedLessonIds, profile?.kanaLevel),
+    [learning.completedLessonIds, profile?.kanaLevel]
+  )
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [emptyReason, setEmptyReason] = useState<QuizEmptyReason>("loading")
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
@@ -100,6 +107,8 @@ export function useQuizSession(mode: QuizMode) {
           kanaTargetPool,
           vocabBasePool,
           vocabTargetPool,
+          nextTrack: nextLesson?.track,
+          allLessonsDone: !nextLesson,
         }),
       lastQuestionKeyRef.current
     )
@@ -125,6 +134,7 @@ export function useQuizSession(mode: QuizMode) {
     kanaBasePool,
     kanaTargetPool,
     mode,
+    nextLesson,
     onlyUnlearnedVocab,
     onlyUnmasteredKana,
     vocabBasePool,

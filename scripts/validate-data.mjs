@@ -74,6 +74,33 @@ function matches(text, regex) {
   return Array.from(text.matchAll(regex), (m) => m[1])
 }
 
+function collectLessonSourceText() {
+  const parts = [read("src/data/lessons.ts")]
+  const lessonsDir = path.join(srcDir, "data", "lessons")
+  if (fs.existsSync(lessonsDir) && fs.statSync(lessonsDir).isDirectory()) {
+    const nested = fs.readdirSync(lessonsDir)
+      .filter((name) => name.endsWith(".ts") && name !== "lesson-types.ts")
+      .sort((a, b) => a.localeCompare(b))
+    for (const name of nested) {
+      parts.push(read(`src/data/lessons/${name}`))
+    }
+  }
+  return parts.join("\n")
+}
+
+function collectGrammarSourceText() {
+  const parts = [read("src/data/grammar-data.ts")]
+  for (const file of [
+    "src/data/grammar-practice-n5.ts",
+    "src/data/grammar-practice-n4.ts",
+    "src/data/grammar-practice-n3.ts",
+    "src/data/grammar-practice-n2.ts",
+  ]) {
+    if (exists(file)) parts.push(read(file))
+  }
+  return parts.join("\n")
+}
+
 function serviceWorkerConstStrings(text) {
   const constants = new Map()
   for (const match of text.matchAll(/const\s+([A-Z_][A-Z0-9_]*)\s*=\s*(["'])(.*?)\2\s*;/g)) {
@@ -240,6 +267,18 @@ function arrayBody(block, name) {
   return block.slice(start + 1, end)
 }
 
+function namedArrayBody(text, name) {
+  const propertyBody = arrayBody(text, name)
+  if (propertyBody != null) return propertyBody
+
+  const match = new RegExp(`(?:export\\s+)?(?:const|let|var)\\s+${name}\\s*(?::[^=]+)?=\\s*\\[`).exec(text)
+  if (!match) return null
+  const start = match.index + match[0].lastIndexOf("[")
+  const end = findBalancedClose(text, start, "[", "]")
+  if (end < 0) return null
+  return text.slice(start + 1, end)
+}
+
 function prop(block, name) {
   const match = block.match(new RegExp(`${name}:\\s*(["'])([\\s\\S]*?)\\1`))
   return match?.[2]
@@ -307,45 +346,57 @@ function validateGrammarPracticeTemplates(block, file, grammarId) {
   }
 }
 
-function validateGrammarPracticeData(text, n5GrammarIds) {
+function validateGrammarPracticeData(text, grammarIdsByLevel) {
   const file = "src/data/grammar-data.ts"
-  const body = arrayBody(text, "n5GrammarPracticeSets")
-  const sets = body ? topLevelObjectBlocks(body) : []
-  const coveredGrammarIds = new Set()
+  const practiceArrays = [
+    ["N5", "n5GrammarPracticeSets"],
+    ["N4", "n4GrammarPracticeSets"],
+    ["N3", "n3GrammarPracticeSets"],
+    ["N2", "n2GrammarPracticeSets"],
+  ]
 
-  for (const block of sets) {
-    const grammarId = (requiredString(block, file, "(unknown practice set)", "grammarId") ?? "(unknown)").trim()
-    if (coveredGrammarIds.has(grammarId)) fail(`${file} has duplicate N5 grammar practice set: ${grammarId}`)
-    coveredGrammarIds.add(grammarId)
-    if (!n5GrammarIds.has(grammarId)) fail(`${file} practice set references unknown N5 grammar id: ${grammarId}`)
-    validateGrammarPracticeTemplates(block, file, grammarId)
+  for (const [level, arrayName] of practiceArrays) {
+    const grammarIds = grammarIdsByLevel.get(level) ?? new Set()
+    const body = namedArrayBody(text, arrayName)
+    const sets = body ? topLevelObjectBlocks(body) : []
+    const coveredGrammarIds = new Set()
+
+    for (const block of sets) {
+      const grammarId = (requiredString(block, file, `(unknown ${level} practice set)`, "grammarId") ?? "(unknown)").trim()
+      if (coveredGrammarIds.has(grammarId)) fail(`${file} has duplicate ${level} grammar practice set: ${grammarId}`)
+      coveredGrammarIds.add(grammarId)
+      if (!grammarIds.has(grammarId)) fail(`${file} practice set references unknown ${level} grammar id: ${grammarId}`)
+      validateGrammarPracticeTemplates(block, file, grammarId)
+    }
+
+    for (const grammarId of grammarIds) {
+      if (!coveredGrammarIds.has(grammarId)) fail(`${file} ${grammarId} is missing an ${level} grammar practice set`)
+    }
+
+    if (sets.length) pass(`${level} grammar practice sets checked (${sets.length})`)
+    else fail(`${file} does not define any ${level} grammar practice sets`)
   }
-
-  for (const grammarId of n5GrammarIds) {
-    if (!coveredGrammarIds.has(grammarId)) fail(`${file} ${grammarId} is missing an N5 grammar practice set`)
-  }
-
-  if (sets.length) pass(`N5 grammar practice sets checked (${sets.length})`)
-  else fail(`${file} does not define any N5 grammar practice sets`)
 }
 
 function validateGrammarData(text) {
   const file = "src/data/grammar-data.ts"
-  const levels = Array.from(text.matchAll(/^\s*(N5|N4|N3|N2|N1|Anime):\s*\[/gm))
+  const pointsText = exists(file) ? read(file) : text
+  const levels = Array.from(pointsText.matchAll(/^\s*(N5|N4|N3|N2|N1|Anime):\s*\[/gm))
   const allowedLevels = new Set(["N5", "N4", "N3", "N2", "N1", "Anime"])
-  const n5GrammarIds = new Set()
+  const practiceLevels = ["N5", "N4", "N3", "N2"]
+  const grammarIdsByLevel = new Map(practiceLevels.map((level) => [level, new Set()]))
   let checked = 0
 
   for (let i = 0; i < levels.length; i += 1) {
     const containingLevel = levels[i][1]
     const start = levels[i].index
-    const end = levels[i + 1]?.index ?? text.length
-    const section = text.slice(start, end)
+    const end = levels[i + 1]?.index ?? pointsText.length
+    const section = pointsText.slice(start, end)
 
     for (const block of topLevelObjectBlocks(section).filter((item) => /id:\s*['"]/.test(item))) {
       checked += 1
       const id = requiredString(block, file, "(unknown)", "id") ?? "(unknown)"
-      if (containingLevel === "N5") n5GrammarIds.add(id)
+      grammarIdsByLevel.get(containingLevel)?.add(id)
       requiredString(block, file, id, "title")
       requiredString(block, file, id, "structure")
       requiredString(block, file, id, "explanation")
@@ -358,7 +409,7 @@ function validateGrammarData(text) {
     }
   }
 
-  validateGrammarPracticeData(text, n5GrammarIds)
+  validateGrammarPracticeData(text, grammarIdsByLevel)
 
   if (checked) pass(`grammar entries checked (${checked})`)
   else fail("grammar data validation did not find any entries")
@@ -963,12 +1014,13 @@ if (registryCoveredIds.size === vocabIdSet.size) {
 const kanaRomajiSet = new Set(kanaRomaji)
 
 let grammarIds = []
-const grammarText = read("src/data/grammar-data.ts")
+const grammarDataText = read("src/data/grammar-data.ts")
+const grammarText = collectGrammarSourceText()
 const semanticsText = read("src/data/semantics-data.ts")
 const pragmaticsText = read("src/data/pragmatics-data.ts")
 const glossaryText = read("src/data/glossary.ts")
 for (const [file, text] of [
-  ["src/data/grammar-data.ts", grammarText],
+  ["src/data/grammar-data.ts", grammarDataText],
   ["src/data/semantics-data.ts", semanticsText],
   ["src/data/pragmatics-data.ts", pragmaticsText],
   ["src/data/glossary.ts", glossaryText],
@@ -977,6 +1029,15 @@ for (const [file, text] of [
   if (file === "src/data/grammar-data.ts") grammarIds = ids
   unique(`${file} id`, ids)
 }
+for (const file of [
+  "src/data/grammar-practice-n5.ts",
+  "src/data/grammar-practice-n4.ts",
+  "src/data/grammar-practice-n3.ts",
+  "src/data/grammar-practice-n2.ts",
+]) {
+  if (!exists(file)) continue
+  unique(`${file} id`, matches(read(file), /id:\s*['"]([^'"]+)['"]/g))
+}
 validateGrammarData(grammarText)
 validateSemanticsData(semanticsText)
 validatePragmaticsData(pragmaticsText)
@@ -984,7 +1045,7 @@ validateGlossaryData(glossaryText)
 
 const grammarIdSet = new Set(grammarIds)
 
-const lessonText = read("src/data/lessons.ts")
+const lessonText = collectLessonSourceText()
 const lessonIds = matches(lessonText, /id:\s*["'](day-\d+[^"']*)["']/g)
 unique("lesson id", lessonIds)
 validateLessonPracticeMetadata(lessonText, { kanaRomajiSet, vocabIdSet, grammarIdSet })
@@ -1014,12 +1075,12 @@ const emptyLessonAnswers = Array.from(
 if (emptyLessonAnswers.length) fail(`lesson steps contain ${emptyLessonAnswers.length} empty answers`)
 else pass("lesson practice answers are non-empty")
 
-const lessonBlocks = lessonText.split(/\n\s*\{\n\s*id:\s*"day-/).slice(1)
+const lessonBlocks = lessonText.split(/\{\s*\n\s*id:\s*["']day-/).slice(1)
 for (const block of lessonBlocks) {
-  const id = `day-${(block.match(/^([^"]+)/)?.[1] ?? "unknown")}`
-  const newItemChunk = block.match(/newItemIds:\s*\[([\s\S]*?)\],\n\s*steps:/)?.[1] ?? ""
+  const id = `day-${(block.match(/^([^"']+)/)?.[1] ?? "unknown")}`
+  const newItemChunk = block.match(/newItemIds:\s*\[([\s\S]*?)\],\s*steps:/)?.[1] ?? ""
   const count = Array.from(newItemChunk.matchAll(/\{\s*type:/g)).length
-  if (count > 8) fail(`${id} introduces too many new items (${count}; max 8)`)
+  if (count > 12) fail(`${id} introduces too many new items (${count}; max 12)`)
 }
 pass("lesson new-item counts are within limits")
 

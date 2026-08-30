@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
+import { ReviewTypedAnswer } from "@/components/review/review-typed-answer"
 import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
 import { MixedReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
@@ -11,11 +12,12 @@ import { useReviewSessionState } from "@/components/review/use-review-session-st
 import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
-import type { useLearningProgress } from "@/lib/learning-progress"
+import { useLearningProfile, type useLearningProgress } from "@/lib/learning-progress"
+import { defaultShowStudyRomaji } from "@/lib/romaji-visibility"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
-import type { TodayReviewItem } from "@/lib/review-questions"
+import { questionUsesTypedReview, shouldShowReviewSpecialFeedback, type TodayReviewItem } from "@/lib/review-questions"
 import {
   canRecordTodayReviewItem,
   getTodayReviewBatchCompletionTitle,
@@ -45,6 +47,8 @@ export function TodayReviewSession({
 }) {
   const vocabIds = useMemo(() => items.filter((item) => item.deck === "vocab").map((item) => item.id), [items])
   const vocabulary = useVocabularyReviewPool(vocabIds, vocabIds.length > 0)
+  const { profile } = useLearningProfile()
+  const showRomaji = defaultShowStudyRomaji(profile?.romajiMode)
 
   const [saveErrorKey, setSaveErrorKey] = useState<string | null>(null)
   // One random seed per session: item randomness (direction, distractors) must
@@ -63,8 +67,9 @@ export function TodayReviewSession({
       vocabulary: vocabulary.data,
       mistakes: notebook.byId,
       seed: reviewSeed,
+      showRomaji,
     })
-  }, [current, notebook.byId, reviewSeed, vocabulary.data])
+  }, [current, notebook.byId, reviewSeed, showRomaji, vocabulary.data])
 
   useEffect(() => {
     if (!current) return
@@ -162,15 +167,23 @@ export function TodayReviewSession({
         <MixedReviewPrompt prompt={data.prompt} sub={data.sub} hint={data.hint} audio={data.audio} onPlay={playAudio} />
       </ReviewPromptCard>
 
-      <ReviewOptionGrid
-        options={data.question.options}
-        correctAnswer={data.question.correctAnswer}
-        acceptedAnswers={data.question.acceptedAnswers}
-        selectedAnswer={selected}
-        onSelect={handleSelect}
-      />
+      {questionUsesTypedReview(data.question) ? (
+        <ReviewTypedAnswer disabled={Boolean(selected)} onSubmit={handleSelect} />
+      ) : (
+        <ReviewOptionGrid
+          options={data.question.options}
+          correctAnswer={data.question.correctAnswer}
+          acceptedAnswers={data.question.acceptedAnswers}
+          selectedAnswer={selected}
+          onSelect={handleSelect}
+        />
+      )}
 
-      <ReviewAnswerFeedback question={data.question} selectedAnswer={selected} />
+      <ReviewAnswerFeedback
+        question={data.question}
+        selectedAnswer={selected}
+        showSpecialFeedback={shouldShowReviewSpecialFeedback(data.question.type)}
+      />
 
       <PracticeSaveError show={saveError} />
 

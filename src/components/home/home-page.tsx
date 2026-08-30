@@ -14,7 +14,7 @@ import { countTodayPracticeResults, getDailyPracticeTarget, millisecondsUntilNex
 import { STARTER_LESSONS } from "@/data/lessons"
 
 export function HomePage() {
-  const { profile, saveProfile } = useLearningProfile()
+  const { profile, loaded: profileLoaded, saveProfile } = useLearningProfile()
   const [profileSaveError, setProfileSaveError] = useState(false)
   const [currentLocalDay, setCurrentLocalDay] = useState(() => new Date())
   const { learning, recommendedSkill } = useLearningRecommendation()
@@ -55,6 +55,7 @@ export function HomePage() {
       vocabDueIds: vocabSrs.dueIds,
       mistakeDueIds: mistakeSrs.dueIds,
       mistakeIds: mistakes.byId.keys(),
+      kanaLevel: profile?.kanaLevel,
     })
   }, [
     kanaSrs.dueIds,
@@ -64,10 +65,11 @@ export function HomePage() {
     learning.masteredKanaIds,
     mistakeSrs.dueIds,
     mistakes.byId,
+    profile?.kanaLevel,
     recommendedSkill,
     vocabSrs.dueIds,
   ])
-  const { totalDue, nextLesson, learningEntry, completedCount, weakest } = homeModel
+  const { totalDue, nextLesson, learningEntry, completedCount, survivalDone, survivalTotal, weakest, weakestHref } = homeModel
   const todayPracticeCount = useMemo(
     () => countTodayPracticeResults(learning.results, currentLocalDay),
     [currentLocalDay, learning.results]
@@ -79,6 +81,7 @@ export function HomePage() {
     <div className="flex min-h-[calc(100vh-8rem)] flex-col gap-0 px-3 pb-4 lg:flex-row lg:px-4">
       <HomeNowPlaying
         profile={profile}
+        profileLoaded={profileLoaded}
         profileSaveError={profileSaveError}
         onSaveProfile={(input) => {
           const saved = saveProfile(input)
@@ -91,14 +94,16 @@ export function HomePage() {
         dailyGoalDone={dailyGoalDone}
         completedCount={completedCount}
         totalLessons={STARTER_LESSONS.length}
+        survivalDone={survivalDone}
+        survivalTotal={survivalTotal}
         streak={learning.streak}
         totalDue={totalDue}
       />
 
       <section className="flex min-h-0 min-w-0 flex-1 flex-col border-[3px] border-foreground bg-card">
         <header className="flex flex-wrap items-center gap-3 border-b-[3px] border-foreground bg-background px-4 py-3">
-          <span className="font-black tracking-widest">今 日 队 列</span>
-          <span className="text-xs font-extrabold text-muted-foreground">{STARTER_LESSONS.length} 天入门 · 到期 {totalDue}</span>
+          <span className="font-black tracking-widest">课 程 路 径</span>
+          <span className="text-xs font-extrabold text-muted-foreground">{STARTER_LESSONS.length} 天 N5–N2 · 到期 {totalDue}</span>
           <Link href="/path" className="ml-auto text-xs font-extrabold underline-offset-4 hover:underline">
             技能树 →
           </Link>
@@ -113,7 +118,7 @@ export function HomePage() {
             </div>
             <span className="border-[2px] border-foreground bg-primary px-2 py-1 text-xs font-black">开始复习</span>
           </Link>
-          <Link href="/quiz" className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-primary/40">
+          <Link href={weakestHref} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-primary/40">
             <div>
               <div className="text-xs font-extrabold text-muted-foreground">WEAK</div>
               <div className="font-black">薄弱项</div>

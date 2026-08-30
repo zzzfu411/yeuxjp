@@ -176,13 +176,34 @@ test("today review adapter resolves mistakes and preserves mistake history metad
 
   assert.equal(resolved.missingReviewEntry, false)
   assert.equal(resolved.insufficientQuestionOptions, false)
-  assert.equal(resolved.data.deckLabel, "错题")
+  assert.equal(resolved.data.deckLabel, "词汇错题")
   assert.equal(resolved.data.prompt, "（无题干）")
-  assert.equal(resolved.data.sub, "review:vocab")
+  assert.equal(resolved.data.sub, undefined)
   assert.equal(resolved.data.question.mistakeId, "m2")
   assert.equal(resolved.data.question.itemId, "v1")
   assert.equal(resolved.data.question.correctAnswer, "v1")
   assert.equal(resolved.data.question.options.some((option) => option.value === "v1"), true)
+})
+
+test("today review adapter labels grammar mistakes for the shared mistake deck", () => {
+  const item = mistake({
+    id: "g1",
+    type: "grammar-practice",
+    itemId: "n5-wa",
+    itemType: "grammar",
+    questionText: "私は___学生です。",
+    correctAnswer: "は",
+    explanation: "は标记主题。",
+  })
+  const resolved = today.resolveTodayReviewItemData({
+    current: { deck: "mistakes", id: "g1" },
+    vocabulary: vocabPool,
+    mistakes: new Map([["g1", item]]),
+  })
+
+  assert.equal(resolved.data.deckLabel, "语法错题")
+  assert.equal(resolved.data.sub, "は标记主题。")
+  assert.equal(resolved.data.question.itemType, "grammar")
 })
 
 test("today review adapter distinguishes missing records from undersized questions", () => {

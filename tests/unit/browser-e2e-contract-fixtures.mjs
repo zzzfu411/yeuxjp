@@ -80,6 +80,11 @@ export const requiredSelectors = [
     pattern: /data-testid="home-start-learning"/,
   },
   {
+    testId: "home-edit-profile",
+    source: "src/components/home/home-now-playing.tsx",
+    pattern: /data-testid="home-edit-profile"/,
+  },
+  {
     testId: "nav-start-learning",
     source: "src/components/layout/navbar.tsx",
     pattern: /data-testid="nav-start-learning"/,
@@ -96,6 +101,11 @@ export const requiredSelectors = [
   },
   {
     testId: "onboarding-always",
+    source: "src/components/home/onboarding-panel.tsx",
+    pattern: /data-testid=\{`onboarding-\$\{item\.value\}`\}/,
+  },
+  {
+    testId: "onboarding-hidden",
     source: "src/components/home/onboarding-panel.tsx",
     pattern: /data-testid=\{`onboarding-\$\{item\.value\}`\}/,
   },
@@ -181,7 +191,7 @@ export const requiredSelectors = [
   },
   {
     testId: "lesson-completed-summary",
-    source: "src/components/lesson/lesson-runner.tsx",
+    source: "src/components/lesson/lesson-completion-recap.tsx",
     pattern: /data-testid="lesson-completed-summary"/,
   },
   {
@@ -508,6 +518,11 @@ export const requiredSelectors = [
     testId: "grammar-modal-next",
     source: "src/components/reference/grammar-focus-modal.tsx",
     pattern: /data-testid="grammar-modal-next"/,
+  },
+  {
+    testId: "grammar-modal-position",
+    source: "src/components/reference/grammar-focus-modal.tsx",
+    pattern: /data-testid="grammar-modal-position"/,
   },
   {
     testId: "grammar-practice-start",

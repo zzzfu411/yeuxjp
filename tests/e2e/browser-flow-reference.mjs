@@ -8,22 +8,30 @@ export async function verifyReferenceKeyboardFlow(page, baseUrl) {
   await page.keyboard.press("Enter")
   await page.getByRole("dialog").waitFor({ state: "visible" })
   await page.waitForFunction(() => document.activeElement?.getAttribute("role") === "dialog")
-  await page.getByText(/1 \/ 25/).waitFor({ state: "visible" })
+  const position = page.getByTestId("grammar-modal-position")
+  await position.waitFor({ state: "visible" })
+  assert.match(await position.innerText(), /^1 \/ \d+$/)
 
   await page.keyboard.press("ArrowRight")
-  await page.getByText(/2 \/ 25/).waitFor({ state: "visible" })
+  await page.waitForFunction(() => {
+    const text = document.querySelector('[data-testid="grammar-modal-position"]')?.textContent?.trim() ?? ""
+    return /^2 \/ \d+$/.test(text)
+  })
 
   await page.getByTestId("grammar-modal-next").focus()
+  const focusedPosition = await position.innerText()
   await page.keyboard.press("ArrowRight")
-  await page.getByText(/2 \/ 25/).waitFor({ state: "visible" })
   assert.equal(
-    await page.getByText(/3 \/ 25/).isVisible(),
-    false,
+    await position.innerText(),
+    focusedPosition,
     "focused grammar modal controls should ignore global ArrowRight navigation"
   )
 
   await page.getByTestId("grammar-modal-prev").click()
-  await page.getByText(/1 \/ 25/).waitFor({ state: "visible" })
+  await page.waitForFunction(() => {
+    const text = document.querySelector('[data-testid="grammar-modal-position"]')?.textContent?.trim() ?? ""
+    return /^1 \/ \d+$/.test(text)
+  })
 
   await page.getByTestId("grammar-practice-start").click()
   await page.getByTestId("grammar-practice-answer-1").click()
@@ -46,6 +54,12 @@ export async function verifyReferenceKeyboardFlow(page, baseUrl) {
   assert.equal(grammarPracticeState.mistake?.mode, "recognition")
 
   await page.getByTestId("grammar-practice-next").click()
+  for (let remaining = 0; remaining < 8; remaining += 1) {
+    if (await page.getByTestId("grammar-practice-summary").isVisible()) break
+    await page.locator('[data-testid^="grammar-practice-answer-"]').first().click()
+    await page.getByTestId("grammar-practice-feedback").waitFor({ state: "visible" })
+    await page.getByTestId("grammar-practice-next").click()
+  }
   await page.getByTestId("grammar-practice-summary").waitFor({ state: "visible" })
 
   await page.keyboard.press("Escape")

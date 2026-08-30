@@ -60,7 +60,7 @@ export function LessonProgressSidebar({
             已完成本课，上次分数 {savedProgress.score ?? completionScore}。
           </div>
         )}
-        <div className="sr-only">Starter · Day {lessonPosition}/{STARTER_LESSONS.length}</div>
+        <div className="sr-only">N5–N2 · Day {lessonPosition}/{STARTER_LESSONS.length}</div>
       </div>
     </aside>
   )

@@ -14,6 +14,7 @@ import { GlossaryButton } from "@/components/ui/glossary"
 import { SpeechSettingsBar } from "@/components/ui/speech-preferences"
 import { NextStepCard } from "@/components/learning/next-step-card"
 import { QUIZ_MODE_OPTIONS, type QuizModeIcon } from "@/lib/quiz-mode-options"
+import { useLearningRecommendation } from "@/lib/learning-recommendation"
 import {
   parseQuizMode,
   type QuizMode,
@@ -25,7 +26,7 @@ const QuizRunner = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex justify-center py-20 text-muted-foreground">
-        Loading quiz...
+        正在加载测验...
       </div>
     ),
   }
@@ -33,8 +34,10 @@ const QuizRunner = dynamic(
 
 function QuizPageContent() {
   const searchParams = useSearchParams()
+  const { nextLesson } = useLearningRecommendation()
   const [mode, setMode] = useState<QuizMode | null>(null)
   const lastAutoMode = useRef<string | null>(null)
+  const showN4Quiz = !nextLesson || nextLesson.track !== "starter-45"
 
   const urlMode = searchParams.get("mode")
 
@@ -78,6 +81,7 @@ function QuizPageContent() {
               desc={option.description}
               icon={option.icon}
               testId={option.testId}
+              badge={option.mode === "verb-conjugation" && showN4Quiz ? "N4+" : undefined}
               onClick={() => setMode(option.mode)}
             />
           ))}
@@ -131,20 +135,27 @@ function ModeCard({
   icon,
   onClick,
   testId,
+  badge,
 }: {
   title: string
   desc: string
   icon: QuizModeIcon
   onClick: () => void
   testId: string
+  badge?: string
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       data-testid={testId}
-      className="flex flex-col items-center p-8 bg-card border-[3px] border-foreground shadow-hard hover:-translate-x-px hover:-translate-y-px cursor-pointer transition-transform group text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="relative flex flex-col items-center p-8 bg-card border-[3px] border-foreground shadow-hard hover:-translate-x-px hover:-translate-y-px cursor-pointer transition-transform group text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
+      {badge ? (
+        <span className="absolute right-3 top-3 border-[2px] border-foreground bg-primary px-2 py-0.5 text-[10px] font-black">
+          {badge}
+        </span>
+      ) : null}
       <div className="mb-6 p-4 bg-primary border-[3px] border-foreground shadow-hard-sm">
         <ModeIcon icon={icon} />
       </div>

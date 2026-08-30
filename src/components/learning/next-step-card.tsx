@@ -7,7 +7,7 @@ import { STARTER_LESSONS } from "@/data/lessons"
 import { useLearningRecommendation } from "@/lib/learning-recommendation"
 
 export function NextStepCard({ className }: { className?: string }) {
-  const { learning, learningEntry: entry } = useLearningRecommendation()
+  const { learningEntry: entry, satisfiedLessonCount } = useLearningRecommendation()
 
   return (
     <div
@@ -21,7 +21,7 @@ export function NextStepCard({ className }: { className?: string }) {
         <div className="text-lg font-bold">{entry.title}</div>
         <div className="text-sm text-muted-foreground">{entry.subtitle}</div>
         <div className="text-xs text-muted-foreground pt-1">
-          已完成 Starter {learning.completedLessonIds.size}/{STARTER_LESSONS.length}。旧的五十音/词汇标记仍会作为兜底推荐依据。
+          已完成 {satisfiedLessonCount}/{STARTER_LESSONS.length}（N5–N2）。旧的五十音/词汇标记仍会作为兜底推荐依据。
         </div>
       </div>
 

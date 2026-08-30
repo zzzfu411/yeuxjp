@@ -1,16 +1,12 @@
 import type { Lesson, LessonStep } from "@/data/lessons"
-import type { LessonProgressMap, PracticeResult } from "@/lib/learning-progress-model"
+import type { KanaLevel, LessonProgressMap, PracticeResult } from "@/lib/learning-progress-model"
+import { getNextCourseLesson as getNextUnsatisfiedCourseLesson } from "@/lib/lesson-skip"
 import { makeQuestionResult, type Question, type QuestionResult } from "@/lib/questions"
+import type { LessonStepAnswer, LessonStepAnswerMap } from "@/lib/lesson-step-answers"
 
 export type LessonPracticeStep = Extract<LessonStep, { itemId: string }>
-
-export interface PersistedLessonStepAnswer {
-  answer?: string
-  correct: boolean
-  createdAt: number
-}
-
-export type PersistedLessonStepAnswerMap = Record<string, PersistedLessonStepAnswer>
+export type PersistedLessonStepAnswer = LessonStepAnswer
+export type PersistedLessonStepAnswerMap = LessonStepAnswerMap
 
 export function lessonStepToQuestion(step: LessonPracticeStep): Question {
   if (step.type === "multipleChoice") {
@@ -107,12 +103,6 @@ export function getLessonCoursePosition(courseLessons: readonly Pick<Lesson, "id
   return index >= 0 ? index + 1 : 0
 }
 
-export function getNextCourseLesson<T extends Pick<Lesson, "id">>(courseLessons: readonly T[], lessonId: string): T | null {
-  const index = courseLessons.findIndex((item) => item.id === lessonId)
-  if (index < 0) return null
-  return courseLessons[index + 1] ?? null
-}
-
 export function isLessonReadOnly(loaded: boolean, lessonUnlocked: boolean) {
   return !loaded || !lessonUnlocked
 }
@@ -130,6 +120,8 @@ export function buildLessonRunnerViewModel({
   practiceSteps,
   loaded,
   lessonUnlocked,
+  completedLessonIds,
+  kanaLevel,
 }: {
   lesson: Lesson
   courseLessons: readonly Lesson[]
@@ -139,12 +131,16 @@ export function buildLessonRunnerViewModel({
   practiceSteps: number
   loaded: boolean
   lessonUnlocked: boolean
+  completedLessonIds?: ReadonlySet<string>
+  kanaLevel?: KanaLevel | null
 }) {
   const correctCount = countCorrectLessonAnswers(answered)
+  const satisfiedLessonIds = new Set(completedLessonIds)
+  satisfiedLessonIds.add(lesson.id)
 
   return {
     lessonPosition: getLessonCoursePosition(courseLessons, lesson.id),
-    nextLesson: getNextCourseLesson(courseLessons, lesson.id),
+    nextLesson: getNextUnsatisfiedCourseLesson(courseLessons, satisfiedLessonIds, kanaLevel),
     stepProgress: calculateLessonStepProgress(stepIndex, lesson.steps.length),
     correctCount,
     completionScore: calculateLessonCompletionScore(correctCount, practiceSteps),
@@ -179,19 +175,20 @@ export function getLatestLessonStepAnswers(
   return Object.fromEntries(latestByStep)
 }
 
+export function getLessonAnsweredFromStepMap(answers: PersistedLessonStepAnswerMap) {
+  const answered: Record<string, boolean> = {}
+  for (const [stepId, result] of Object.entries(answers)) {
+    answered[stepId] = result.correct
+  }
+  return answered
+}
+
 export function getLessonAnsweredFromResults(
   lessonId: string,
   steps: readonly LessonStep[],
   results: readonly PracticeResult[]
 ) {
-  const latestByStep = getLatestLessonStepAnswers(lessonId, steps, results)
-  const answered: Record<string, boolean> = {}
-
-  for (const [stepId, result] of Object.entries(latestByStep)) {
-    answered[stepId] = result.correct
-  }
-
-  return answered
+  return getLessonAnsweredFromStepMap(getLatestLessonStepAnswers(lessonId, steps, results))
 }
 
 export interface LessonResumeProgress {

@@ -12,6 +12,8 @@ import {
   shouldShowWrongAnswerIcon,
 } from "@/lib/answer-option-feedback"
 import { isQuestionAnswerCorrect } from "@/lib/questions"
+import { useLearningProfile } from "@/lib/learning-progress"
+import { defaultShowRomaji } from "@/lib/romaji-visibility"
 import { cn } from "@/lib/utils"
 
 export function LessonStepBody({
@@ -45,6 +47,9 @@ export function LessonStepBody({
   onPlay: (text: string) => void
   readOnly?: boolean
 }) {
+  const { profile } = useLearningProfile()
+  const showRomaji = defaultShowRomaji(profile?.romajiMode)
+
   if (step.type === "explain") {
     return (
       <div className="space-y-5">
@@ -66,7 +71,7 @@ export function LessonStepBody({
     return (
       <div className="rounded-2xl border bg-muted/20 p-6 text-center">
         <div className="text-3xl font-bold leading-relaxed sm:text-4xl">{step.japanese}</div>
-        {step.romaji ? <div className="mt-2 text-sm text-muted-foreground">{step.romaji}</div> : null}
+        {showRomaji && step.romaji ? <div className="mt-2 text-sm text-muted-foreground">{step.romaji}</div> : null}
         <div className="mt-4 text-lg font-medium">{step.meaning}</div>
         {step.note ? <div className="mt-3 text-sm text-muted-foreground">{step.note}</div> : null}
       </div>

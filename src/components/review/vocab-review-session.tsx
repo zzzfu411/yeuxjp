@@ -15,7 +15,9 @@ import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
+import { useLearningProfile } from "@/lib/learning-progress"
 import { getVocabReviewPromptModel, makeVocabReviewQuestion, pickVocabReviewDirection } from "@/lib/review-questions"
+import { defaultShowStudyRomaji } from "@/lib/romaji-visibility"
 import { createSeededRandom } from "@/lib/seeded-random"
 
 export function VocabReviewSession({
@@ -32,6 +34,8 @@ export function VocabReviewSession({
   srs: ReturnType<typeof useSrsDeck>
 }) {
   const vocabulary = useVocabularyReviewPool(ids, ids.length > 0)
+  const { profile } = useLearningProfile()
+  const showRomaji = defaultShowStudyRomaji(profile?.romajiMode)
   const [saveError, setSaveError] = useState(false)
   // One random seed per session keeps direction/options deterministic when
   // memo inputs regain new references mid-session.
@@ -50,7 +54,7 @@ export function VocabReviewSession({
     () => (item ? makeVocabReviewQuestion(item, vocabulary.data, createSeededRandom(`${reviewSeed}:question:${item.id}`), direction) : null),
     [direction, item, reviewSeed, vocabulary.data]
   )
-  const promptModel = item ? getVocabReviewPromptModel(item, direction) : null
+  const promptModel = item ? getVocabReviewPromptModel(item, direction, showRomaji) : null
   const missingReviewEntry = !!currentId && !item
   const insufficientQuestionOptions = !!item && !question
 

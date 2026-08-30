@@ -32,6 +32,8 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
     await mobilePage.getByTestId("nav-start-learning").click()
     await mobilePage.waitForURL(/\/path$/)
     await mobilePage.getByTestId("path-next-learning").waitFor({ state: "visible" })
+    assert.ok(await mobilePage.getByText("课表", { exact: true }).isVisible(), "mobile path should show course progress")
+    assert.ok(await mobilePage.getByText("生存词", { exact: true }).isVisible(), "mobile path should show survival vocabulary progress")
     await assertNoHorizontalOverflow(mobilePage, "mobile path route after header CTA")
 
     await mobilePage.getByTestId("speech-controls-open").click()
@@ -65,6 +67,11 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
 
     await mobilePage.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
     await mobilePage.getByTestId("quiz-mode-hiragana-romaji").waitFor({ state: "visible" })
+    await mobilePage.getByTestId("quiz-mode-verb-conjugation").waitFor({ state: "visible" })
+    assert.ok(
+      await mobilePage.getByText("可能形、使役形").isVisible(),
+      "mobile quiz should advertise potential and causative verb forms"
+    )
     await mobilePage.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
     await mobilePage.getByTestId("review-today-empty").waitFor({ state: "visible" })
     await mobilePage.goto(`${baseUrl}/grammar`, { waitUntil: "networkidle" })

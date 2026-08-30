@@ -11,7 +11,12 @@ export type SkillId =
   | "particles-basic"
   | "verbs-conjugation"
   | "vocab-survival"
+  | "vocab-daily"
+  | "vocab-fluent"
   | "grammar-n5"
+  | "grammar-n4"
+  | "grammar-n3"
+  | "grammar-n2"
   | "pragmatics"
   | "semantics"
 
@@ -117,15 +122,42 @@ export const SKILL_TREE: SkillNode[] = [
     prerequisites: ["kana-seion"],
     glossary: ["jlpt"],
   },
+  {
+    id: "grammar-n4",
+    category: "sentence",
+    title: "N4 语法（条件、可能、授受、语态）",
+    short: "たら/ば、ことができる、てあげる、受身使役等日常句型。",
+    href: "/grammar?level=N4",
+    prerequisites: ["grammar-n5"],
+    glossary: ["jlpt"],
+  },
+  {
+    id: "grammar-n3",
+    category: "sentence",
+    title: "N3 语法（说明、立场、书面连接）",
+    short: "はず/わけ、にとって、ために、使役被动等。",
+    href: "/grammar?level=N3",
+    prerequisites: ["grammar-n4"],
+    glossary: ["jlpt"],
+  },
+  {
+    id: "grammar-n2",
+    category: "sentence",
+    title: "N2 语法（书面、新闻、商务连接）",
+    short: "べき、わけではない、をめぐって、一方等。",
+    href: "/grammar?level=N2",
+    prerequisites: ["grammar-n3"],
+    glossary: ["jlpt"],
+  },
 
   {
     id: "verbs-conjugation",
     category: "verbs",
-    title: "动词活用（ます/ない/て/た）",
-    short: "用少量常用动词练活用，快速上手日常表达。",
+    title: "动词活用（基本形 + 可能/使役）",
+    short: "N5 ます/ない/て/た，加上 N4 可能形、使役形。",
     href: "/quiz?mode=verb-conjugation",
     prerequisites: ["kana-seion"],
-    glossary: ["conjugation", "masu-kei", "nai-kei", "te-kei", "ta-kei", "jishokei"],
+    glossary: ["conjugation", "masu-kei", "nai-kei", "te-kei", "ta-kei", "kanou-kei", "shieki-kei", "jishokei"],
   },
 
   {
@@ -135,6 +167,24 @@ export const SKILL_TREE: SkillNode[] = [
     short: "优先学“立刻能开口/能看懂”的词汇。",
     href: "/vocabulary?level=survival",
     prerequisites: ["kana-seion"],
+    glossary: ["jlpt"],
+  },
+  {
+    id: "vocab-daily",
+    category: "vocab",
+    title: "日常词汇（N4–N3）",
+    short: "工作、学校、连接词和基础敬语。",
+    href: "/vocabulary?level=daily",
+    prerequisites: ["vocab-survival"],
+    glossary: ["jlpt"],
+  },
+  {
+    id: "vocab-fluent",
+    category: "vocab",
+    title: "书面/商务词汇（N2）",
+    short: "新闻、商务和书面连接词。",
+    href: "/vocabulary?level=fluent",
+    prerequisites: ["vocab-daily"],
     glossary: ["jlpt"],
   },
 

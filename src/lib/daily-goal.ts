@@ -1,5 +1,11 @@
 import { todayKey, type PracticeResult } from "@/lib/learning-progress-model"
 
+const SELF_ASSESSMENT_ANSWERS = new Set(["again", "hard", "good"])
+
+export function isSelfAssessmentPracticeResult(result: Pick<PracticeResult, "itemType" | "mode" | "answer">) {
+  return result.itemType === "vocab" && result.mode === "meaning" && typeof result.answer === "string" && SELF_ASSESSMENT_ANSWERS.has(result.answer)
+}
+
 export function countTodayPracticeResults(results: readonly PracticeResult[], today: Date = new Date()) {
   const currentKey = todayKey(today)
   if (!currentKey) return 0
@@ -7,6 +13,7 @@ export function countTodayPracticeResults(results: readonly PracticeResult[], to
   let count = 0
   for (const result of results) {
     if (typeof result.createdAt !== "number" || !Number.isFinite(result.createdAt)) continue
+    if (isSelfAssessmentPracticeResult(result)) continue
     if (todayKey(new Date(result.createdAt)) === currentKey) count += 1
   }
   return count

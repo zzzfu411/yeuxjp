@@ -65,6 +65,9 @@ test("lesson progress normalization keeps resume fields compatible", () => {
         currentStepIndex: 2.9,
         lastStepId: "recognize-a",
         updatedAt: 3,
+        stepAnswers: {
+          "recognize-a": { correct: true, answer: "a", createdAt: 2 },
+        },
       },
       stale: { lessonId: 123 },
       mismatch: {
@@ -87,6 +90,9 @@ test("lesson progress normalization keeps resume fields compatible", () => {
       currentStepIndex: 2,
       lastStepId: "recognize-a",
       updatedAt: 3,
+      stepAnswers: {
+        "recognize-a": { correct: true, answer: "a", createdAt: 2 },
+      },
     },
   })
 })

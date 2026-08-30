@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import type { VocabLevel } from "@/data/vocabulary/types"
 import { DEFAULT_VOCABULARY_LEVEL, isVocabLevel } from "@/data/vocabulary/levels"
+import { useLearningProfile } from "@/lib/learning-progress"
+import { defaultShowStudyRomaji, nextRomajiVisibility } from "@/lib/romaji-visibility"
 
 function parseVocabularyLevel(value: string | null): VocabLevel | null {
   return isVocabLevel(value) ? value : null
@@ -11,11 +13,13 @@ function parseVocabularyLevel(value: string | null): VocabLevel | null {
 
 export function useVocabularyPageControls() {
   const searchParams = useSearchParams()
+  const { profile } = useLearningProfile()
   const [currentLevel, setCurrentLevel] = useState<VocabLevel>(DEFAULT_VOCABULARY_LEVEL)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [onlyUnlearned, setOnlyUnlearned] = useState(false)
-  const [showRomaji, setShowRomaji] = useState(true)
+  const [romajiOverride, setRomajiOverride] = useState<boolean | null>(null)
+  const showRomaji = romajiOverride ?? defaultShowStudyRomaji(profile?.romajiMode)
 
   const urlLevel = searchParams.get("level")
 
@@ -48,8 +52,8 @@ export function useVocabularyPageControls() {
   }, [])
 
   const handleToggleShowRomaji = useCallback(() => {
-    setShowRomaji((value) => !value)
-  }, [])
+    setRomajiOverride((value) => nextRomajiVisibility(value, profile?.romajiMode, defaultShowStudyRomaji))
+  }, [profile?.romajiMode])
 
   const scrollToCategory = useCallback((category: string) => {
     setActiveCategory(category)

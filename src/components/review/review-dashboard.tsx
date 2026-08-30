@@ -23,6 +23,7 @@ export interface ReviewDashboardProps {
     kanaDue: number
     vocabDue: number
   }
+  mistakeKindDueLabel?: string
   kana: {
     due: number
     total: number
@@ -60,6 +61,7 @@ export function ReviewDashboard({
   nextDueAt,
   todayQueueLength,
   counts,
+  mistakeKindDueLabel = "",
   kana,
   vocab,
   mistakes,
@@ -140,28 +142,36 @@ export function ReviewDashboard({
 
         <ReviewDeckCard
           title="错题本"
-          desc="每次答错都会自动加入；复习后会被排到更后面。"
+          desc="假名、词汇、语法和造句答错都会进来；复习对了才会拉长间隔。"
           due={mistakes.due}
           total={mistakes.total}
           onStart={mistakes.onStart}
           startDisabled={!mistakes.due}
           startTestId="review-start-mistakes"
           extra={
-            mistakes.enrollMissing > 0 ? (
-              <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={mistakes.onEnrollMissing}>
-                初始化复习（{mistakes.enrollMissing}）
-              </Button>
-            ) : mistakes.total ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="rounded-full"
-                data-testid="mistakes-clear"
-                onClick={requestClearMistakes}
-              >
-                清空错题本
-              </Button>
+            mistakes.enrollMissing > 0 || mistakes.total ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {mistakeKindDueLabel ? (
+                  <div className="text-xs text-muted-foreground">到期 {mistakeKindDueLabel}</div>
+                ) : null}
+                {mistakes.enrollMissing > 0 ? (
+                  <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={mistakes.onEnrollMissing}>
+                    初始化复习（{mistakes.enrollMissing}）
+                  </Button>
+                ) : null}
+                {mistakes.total ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full"
+                    data-testid="mistakes-clear"
+                    onClick={requestClearMistakes}
+                  >
+                    清空错题本
+                  </Button>
+                ) : null}
+              </div>
             ) : (
               <div className="text-xs text-muted-foreground">暂无错题</div>
             )

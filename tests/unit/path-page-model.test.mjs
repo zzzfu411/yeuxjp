@@ -50,6 +50,55 @@ test("path page model recommends the next skill from shared thresholds", () => {
   assert.equal(model.getRecommendedSkillId(kanaStats({ special: stat(0, 2) }), vocabStats()), "kana-sokuon")
   assert.equal(model.getRecommendedSkillId(kanaStats(), vocabStats({ survival: stat(120, 505) })), "vocab-survival")
   assert.equal(model.getRecommendedSkillId(kanaStats(), vocabStats()), "particles-basic")
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats(), vocabStats(), { nextTrack: "starter-45" }),
+    "grammar-n5"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats(), vocabStats(), { nextTrack: "n4-core" }),
+    "grammar-n4"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats(), vocabStats({ daily: stat(10, 297) }), { allLessonsDone: true }),
+    "vocab-daily"
+  )
+  assert.equal(model.getRecommendedSkillId(kanaStats({ seion: stat(50, 100) }), vocabStats()), "kana-seion")
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats({ seion: stat(50, 100) }), vocabStats(), { kanaLevel: "solid" }),
+    "particles-basic"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats({ seion: stat(50, 100) }), vocabStats(), { kanaLevel: "some" }),
+    "kana-seion"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats({ seion: stat(60, 100) }), vocabStats(), { kanaLevel: "some" }),
+    "particles-basic"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats({ seion: stat(60, 100) }), vocabStats(), { kanaLevel: "none" }),
+    "kana-seion"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats(), vocabStats({ survival: stat(150, 505) })),
+    "particles-basic"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats(), vocabStats({ survival: stat(150, 505) }), { goal: "travel" }),
+    "vocab-survival"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats(), vocabStats(), { goal: "media", allLessonsDone: true }),
+    "pragmatics"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats(), vocabStats({ survival: stat(100, 505) })),
+    "vocab-survival"
+  )
+  assert.equal(
+    model.getRecommendedSkillId(kanaStats(), vocabStats({ survival: stat(100, 505) }), { goal: "jlpt" }),
+    "particles-basic"
+  )
 })
 
 test("path page model soft-locks skills and formats progress badges", () => {
@@ -90,6 +139,33 @@ test("path page model soft-locks skills and formats progress badges", () => {
     model.isSkillUnlocked("listen-kana", kanaStats({ seion: { done: 100, total: 100, ratio: Number.POSITIVE_INFINITY } }), vocabStats()),
     false
   )
+  assert.equal(model.isSkillUnlocked("grammar-n4", kanaStats(), vocabStats()), false)
+  assert.equal(model.isSkillUnlocked("grammar-n4", kanaStats(), vocabStats(), undefined, { nextTrack: "starter-45" }), false)
+  assert.equal(model.isSkillUnlocked("grammar-n4", kanaStats(), vocabStats(), undefined, { nextTrack: "n4-core" }), true)
+  assert.equal(model.isSkillUnlocked("grammar-n2", kanaStats(), vocabStats(), undefined, { nextTrack: "n4-core" }), false)
+  assert.equal(model.isSkillUnlocked("grammar-n2", kanaStats(), vocabStats(), undefined, { allLessonsDone: true }), true)
+  assert.deepEqual(model.getSkillStatus("grammar-n4", kanaStats(), vocabStats(), undefined, { nextTrack: "starter-45" }), {
+    status: "locked",
+    badge: "先完成 N5 课表",
+  })
+  assert.deepEqual(model.getSkillStatus("grammar-n5", kanaStats(), vocabStats(), undefined, { nextTrack: "starter-45" }), {
+    status: "in-progress",
+    badge: "当前阶段",
+  })
+  assert.deepEqual(model.getSkillStatus("grammar-n4", kanaStats(), vocabStats(), undefined, { nextTrack: "n4-core" }), {
+    status: "in-progress",
+    badge: "当前阶段",
+  })
+  assert.deepEqual(model.getSkillStatus("grammar-n5", kanaStats(), vocabStats(), undefined, { nextTrack: "n4-core" }), {
+    status: "done",
+    badge: "课表已过该阶段",
+  })
+  assert.deepEqual(model.getSkillStatus("grammar-n2", kanaStats(), vocabStats(), undefined, { allLessonsDone: true }), {
+    status: "done",
+    badge: "课表已过该阶段",
+  })
+  assert.equal(model.isSkillUnlocked("pragmatics", lockedKana, vocabStats()), false)
+  assert.equal(model.isSkillUnlocked("pragmatics", kanaStats(), vocabStats()), true)
 })
 
 test("path page model summarizes five-dimension mastery", () => {
@@ -176,8 +252,12 @@ test("path and next-step surfaces consume the shared recommendation hook", () =>
   }
 
   assert.match(pathPage, /from "@\/lib\/path-page-model"/)
-  assert.match(pathPage, /getSkillStatus\(skill\.id, kanaStats, vocabStats\)/)
+  assert.match(pathPage, /getSkillStatus\(skill\.id, kanaStats, vocabStats, SKILL_TREE, course\)/)
   assert.match(pathPage, /getPathMasterySummary\(learning\.items\)/)
+  assert.match(pathPage, /课表/)
+  assert.match(pathPage, /生存词/)
+  assert.match(pathPage, /vocabStats\.survival/)
+  assert.match(pathPage, /STARTER_LESSONS\.length/)
   assert.match(pathPage, /from "@\/components\/path\/path-starter-lessons"/)
   assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
   assert.doesNotMatch(pathPage, /STARTER_LESSONS\.slice/)
@@ -191,8 +271,8 @@ test("PathStarterLessons renders the complete starter course", () => {
   assert.match(source, /activeLessonId: string \| null \| undefined/)
   assert.match(source, /STARTER_LESSONS\.map/)
   assert.doesNotMatch(source, /STARTER_LESSONS\.slice/)
-  assert.match(source, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId\)/)
+  assert.match(source, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId, kanaLevel\)/)
   assert.match(source, /getLessonEntryBadge\(status\)/)
-  assert.match(source, /completedLessonIds\.size/)
+  assert.match(source, /countSatisfiedLessons/)
   assert.match(source, /STARTER_LESSONS\.length/)
 })

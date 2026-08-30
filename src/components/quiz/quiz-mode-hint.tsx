@@ -1,9 +1,21 @@
 "use client"
 
+import { useMemo } from "react"
 import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
+import { getNextLesson } from "@/data/lessons"
+import { useLearningProfile } from "@/lib/learning-progress"
+import { useLearningStatus } from "@/lib/learning-status"
 import type { QuizMode } from "@/lib/quiz-generators"
+import { verbConjFormsForCourse, VERB_CONJ_FORMS } from "@/lib/verb-conjugation"
 
 export function QuizModeHint({ mode }: { mode: QuizMode }) {
+  const learning = useLearningStatus()
+  const { profile } = useLearningProfile()
+  const nextLesson = useMemo(
+    () => getNextLesson(learning.completedLessonIds, profile?.kanaLevel),
+    [learning.completedLessonIds, profile?.kanaLevel]
+  )
+  const includeN4VerbForms = verbConjFormsForCourse(nextLesson?.track, !nextLesson) === VERB_CONJ_FORMS
   let content
 
   if (mode === "hiragana-romaji") {
@@ -27,11 +39,19 @@ export function QuizModeHint({ mode }: { mode: QuizMode }) {
       </>
     )
   } else if (mode === "verb-conjugation") {
-    content = (
+    content = includeN4VerbForms ? (
       <>
         <GlossaryTerm termId="conjugation">活用</GlossaryTerm>：动词变形练习。本模式会随机抽{" "}
         <GlossaryTerm termId="masu-kei">ます形</GlossaryTerm> / <GlossaryTerm termId="nai-kei">ない形</GlossaryTerm> /{" "}
-        <GlossaryTerm termId="te-kei">て形</GlossaryTerm> / <GlossaryTerm termId="ta-kei">た形</GlossaryTerm>。
+        <GlossaryTerm termId="te-kei">て形</GlossaryTerm> / <GlossaryTerm termId="ta-kei">た形</GlossaryTerm>，以及 N4 的{" "}
+        <GlossaryTerm termId="kanou-kei">可能形</GlossaryTerm> / <GlossaryTerm termId="shieki-kei">使役形</GlossaryTerm>。
+      </>
+    ) : (
+      <>
+        <GlossaryTerm termId="conjugation">活用</GlossaryTerm>：动词变形练习。当前课表阶段抽{" "}
+        <GlossaryTerm termId="masu-kei">ます形</GlossaryTerm> / <GlossaryTerm termId="nai-kei">ない形</GlossaryTerm> /{" "}
+        <GlossaryTerm termId="te-kei">て形</GlossaryTerm> / <GlossaryTerm termId="ta-kei">た形</GlossaryTerm>。进入 N4 后会加入{" "}
+        <GlossaryTerm termId="kanou-kei">可能形</GlossaryTerm> / <GlossaryTerm termId="shieki-kei">使役形</GlossaryTerm>。
       </>
     )
   } else if (mode === "audio-sokuon") {

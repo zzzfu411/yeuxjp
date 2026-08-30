@@ -5,6 +5,7 @@ import {
   findSkillNode,
   getKanaSkillStats,
   getRecommendedSkillId,
+  type CourseRecommendationHint,
   type PathKanaStats,
   type PathVocabStats,
 } from "@/lib/path-page-model"
@@ -24,16 +25,25 @@ export function buildLearningRecommendationModel({
   learnedVocabIds,
   nextLesson,
   skillTree,
+  goal,
+  kanaLevel,
 }: {
   kana: readonly Kana[]
   isKanaMastered: (romaji: string) => boolean
   learnedVocabIds: Iterable<string>
   nextLesson: LearningEntryLesson | null
   skillTree?: readonly SkillNode[]
+  goal?: CourseRecommendationHint["goal"]
+  kanaLevel?: CourseRecommendationHint["kanaLevel"]
 }): LearningRecommendationModel {
   const kanaStats = getKanaSkillStats(kana, isKanaMastered)
   const vocabStats = summarizeLearnedVocabIds(learnedVocabIds)
-  const nextSkillId = getRecommendedSkillId(kanaStats, vocabStats)
+  const nextSkillId = getRecommendedSkillId(kanaStats, vocabStats, {
+    nextTrack: nextLesson?.track,
+    allLessonsDone: !nextLesson,
+    goal,
+    kanaLevel,
+  })
   const recommendedSkill = findSkillNode(nextSkillId, skillTree)
 
   return {

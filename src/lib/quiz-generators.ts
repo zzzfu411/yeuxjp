@@ -9,6 +9,7 @@ import {
 } from "@/lib/quiz-question-builders"
 import type { QuizMode } from "@/lib/quiz-types"
 import type { Question } from "@/lib/questions"
+import { verbConjFormsForCourse } from "@/lib/verb-conjugation"
 
 export { LONG_VOWEL_MINIMAL_PAIRS, PARTICLE_QUESTIONS, SOKUON_MINIMAL_PAIRS } from "@/lib/quiz-data"
 export { filterUnlearnedVocab, filterUnmasteredKana, getKanaPool } from "@/lib/quiz-pools"
@@ -22,6 +23,8 @@ export function generateQuizQuestion({
   vocabBasePool,
   vocabTargetPool,
   random = Math.random,
+  nextTrack,
+  allLessonsDone = false,
 }: {
   mode: QuizMode
   kanaBasePool: Kana[]
@@ -29,6 +32,8 @@ export function generateQuizQuestion({
   vocabBasePool: Vocabulary[]
   vocabTargetPool: Vocabulary[]
   random?: () => number
+  nextTrack?: string | null
+  allLessonsDone?: boolean
 }): Question | null {
   if (mode === "hiragana-romaji" || mode === "audio-kana") {
     return generateKanaQuizQuestion({
@@ -45,7 +50,9 @@ export function generateQuizQuestion({
     return generateAudioContrastQuestion(mode, random)
   }
 
-  if (mode === "verb-conjugation") return generateVerbConjugationQuestion(random)
+  if (mode === "verb-conjugation") {
+    return generateVerbConjugationQuestion(random, verbConjFormsForCourse(nextTrack, allLessonsDone))
+  }
 
   return generateVocabularyQuizQuestion({
     mode,

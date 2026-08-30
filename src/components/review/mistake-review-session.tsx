@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
 import { ReviewOptionGrid } from "@/components/review/review-option-grid"
+import { ReviewTypedAnswer } from "@/components/review/review-typed-answer"
 import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback"
 import { MistakeReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
@@ -15,7 +16,7 @@ import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
-import { mistakeToQuestion } from "@/lib/review-questions"
+import { mistakeToQuestion, questionUsesTypedReview } from "@/lib/review-questions"
 
 export function MistakeReviewSession({
   ids,
@@ -127,13 +128,17 @@ export function MistakeReviewSession({
         />
       </ReviewPromptCard>
 
-      <ReviewOptionGrid
-        options={question.options}
-        correctAnswer={correct}
-        acceptedAnswers={question.acceptedAnswers}
-        selectedAnswer={selected}
-        onSelect={handleSelect}
-      />
+      {questionUsesTypedReview(question) ? (
+        <ReviewTypedAnswer disabled={Boolean(selected)} onSubmit={handleSelect} />
+      ) : (
+        <ReviewOptionGrid
+          options={question.options}
+          correctAnswer={correct}
+          acceptedAnswers={question.acceptedAnswers}
+          selectedAnswer={selected}
+          onSelect={handleSelect}
+        />
+      )}
 
       <ReviewAnswerFeedback
         question={question}

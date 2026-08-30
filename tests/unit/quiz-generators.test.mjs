@@ -199,3 +199,27 @@ test("audio contrast and verb conjugation modes include explanations or audio", 
   assert.match(verb.questionText, /（吃）/)
   assert.doesNotMatch(verb.questionText, /\{verb\.meaning\}/)
 })
+
+test("verb conjugation quiz withholds potential and causative until N4", () => {
+  const n5 = quiz.generateQuizQuestion({
+    mode: "verb-conjugation",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    nextTrack: "starter-45",
+    random: () => 0.7,
+  })
+  const n4 = quiz.generateQuizQuestion({
+    mode: "verb-conjugation",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: vocab,
+    vocabTargetPool: vocab,
+    nextTrack: "n4-core",
+    random: () => 0.7,
+  })
+
+  assert.equal(n5.meta.askedForm.id, "te")
+  assert.equal(n4.meta.askedForm.id, "potential")
+})

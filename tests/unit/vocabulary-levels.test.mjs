@@ -9,9 +9,9 @@ test("vocabulary level registry exposes stable ids, default, metadata, and count
   assert.equal(levels.DEFAULT_VOCABULARY_LEVEL, "survival")
   assert.deepEqual(levels.VOCABULARY_LEVEL_METADATA.map((level) => level.id), Array.from(levels.VOCABULARY_LEVEL_IDS))
   assert.deepEqual(Object.keys(levels.vocabLevelCounts), Array.from(levels.VOCABULARY_LEVEL_IDS))
-  assert.equal(levels.vocabLevelCounts.survival, 505)
-  assert.equal(levels.vocabLevelCounts.daily, 240)
-  assert.equal(levels.vocabLevelCounts.fluent, 195)
+  assert.equal(levels.vocabLevelCounts.survival, 544)
+  assert.equal(levels.vocabLevelCounts.daily, 297)
+  assert.equal(levels.vocabLevelCounts.fluent, 225)
 })
 
 test("vocabulary level registry validates URL level values", () => {

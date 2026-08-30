@@ -5,7 +5,7 @@ import { pickRandomListItem, pickUniqueQuestionOptions, shuffleList } from "@/li
 import { LONG_VOWEL_MINIMAL_PAIRS, PARTICLE_QUESTIONS, SOKUON_MINIMAL_PAIRS } from "@/lib/quiz-data"
 import type { QuizMode } from "@/lib/quiz-types"
 import type { Question } from "@/lib/questions"
-import { VERB_CONJ_FORMS, VERB_CONJ_VERBS, conjugateVerb, explainConjugation } from "@/lib/verb-conjugation"
+import { VERB_CONJ_N5_FORMS, VERB_CONJ_VERBS, conjugateVerb, explainConjugation, type VerbConjForm } from "@/lib/verb-conjugation"
 
 type RandomFn = () => number
 type MinimalPair = { plain: string; special: string }
@@ -101,13 +101,17 @@ export function generateAudioContrastQuestion(
   }
 }
 
-export function generateVerbConjugationQuestion(random: RandomFn = Math.random): Question {
+export function generateVerbConjugationQuestion(
+  random: RandomFn = Math.random,
+  forms: readonly { id: VerbConjForm; label: string }[] = VERB_CONJ_N5_FORMS
+): Question {
+  const pool = forms.length ? forms : VERB_CONJ_N5_FORMS
   const verb = randomItem(VERB_CONJ_VERBS, random)
-  const form = randomItem(VERB_CONJ_FORMS, random)
+  const form = randomItem(pool, random)
   const correct = conjugateVerb(verb.dict, verb.kind, form.id)
   const optionSet = new Set<string>([correct])
 
-  for (const f of VERB_CONJ_FORMS) {
+  for (const f of pool) {
     if (f.id !== form.id) optionSet.add(conjugateVerb(verb.dict, verb.kind, f.id))
   }
 

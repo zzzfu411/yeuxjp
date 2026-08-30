@@ -15,6 +15,7 @@ import {
   type PracticeResult,
   type UserProfile,
 } from "@/lib/learning-progress-model"
+import { applyLessonStepAnswer, type LessonStepAnswer } from "@/lib/lesson-step-answers"
 import { includesProgressStorageKey, isProfileStorageKey, isProgressStorageKey } from "@/lib/learning-progress-keys"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import {
@@ -43,11 +44,14 @@ function readUserProfile() {
 
 export function useLearningProfile() {
   const [profile, setProfileState] = useState<UserProfile | null>(null)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     Promise.resolve().then(() => {
-      if (!cancelled) setProfileState(readUserProfile())
+      if (cancelled) return
+      setProfileState(readUserProfile())
+      setLoaded(true)
     })
 
     const sync = (event: Event) => {
@@ -93,7 +97,7 @@ export function useLearningProfile() {
     return true
   }, [])
 
-  return { profile, saveProfile }
+  return { profile, loaded, saveProfile }
 }
 
 export function useLearningProgress() {
@@ -174,6 +178,7 @@ export function useLearningProgress() {
         score: typeof score === "number" ? clampScore(score) : undefined,
         currentStepIndex: current?.currentStepIndex,
         lastStepId: current?.lastStepId,
+        stepAnswers: current?.stepAnswers,
         updatedAt: now,
       },
     }
@@ -199,9 +204,20 @@ export function useLearningProgress() {
         score: current.score,
         currentStepIndex: normalizeStepIndex(currentStepIndex),
         lastStepId: lastStepId || current.lastStepId,
+        stepAnswers: current.stepAnswers,
         updatedAt: now,
       },
     }
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: currentResult.raw })) return false
+    setLessons(next)
+    return true
+  }, [])
+
+  const saveLessonStepAnswer = useCallback((lessonId: string, stepId: string, answer: LessonStepAnswer) => {
+    const currentResult = readLessonProgressMapResult()
+    if (!currentResult.ok) return false
+    const next = applyLessonStepAnswer(currentResult.value, lessonId, stepId, answer, Date.now())
+    if (!next) return false
     if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: currentResult.raw })) return false
     setLessons(next)
     return true
@@ -265,6 +281,7 @@ export function useLearningProgress() {
     startLesson,
     completeLesson,
     saveLessonPosition,
+    saveLessonStepAnswer,
     recordPractice,
   }
 }

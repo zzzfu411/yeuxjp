@@ -88,6 +88,12 @@ export async function verifyDueReviewFlow(page, baseUrl) {
   await seedMixedReviewState(page, baseUrl)
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.getByTestId("review-due-state").waitFor({ state: "visible" })
+  await page.getByTestId("review-today-due").waitFor({ state: "visible" })
+  assert.match(
+    await page.getByTestId("mistakes-clear").locator("..").innerText(),
+    /到期 假名 1/,
+    "mistake deck should split due mistakes by kind"
+  )
   await page.getByTestId("review-start-today").click()
 
   await page.getByTestId("review-answer-i").click()

@@ -46,6 +46,8 @@ test("VocabularyFocusModal owns focused vocabulary card controls", () => {
   assert.doesNotMatch(source, /className="absolute inset-0 flex flex-col items-center justify-center/)
   assert.match(source, /data-testid="vocabulary-learned-toggle"/)
   assert.match(source, /VocabularySelfAssessmentControls/)
+  assert.match(source, /VocabCourseAppearances/)
+  assert.match(source, /vocabId=\{vocab\.id\}/)
   assert.match(source, /value=\{assessment\}/)
   assert.match(source, /onSelect=\{onSelfAssess\}/)
   assert.match(source, /<PracticeSaveError show=\{saveError\} \/>/)

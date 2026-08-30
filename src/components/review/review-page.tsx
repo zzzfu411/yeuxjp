@@ -20,7 +20,7 @@ const ReviewRunner = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex justify-center py-20 text-muted-foreground">
-        Loading review...
+        正在加载复习...
       </div>
     ),
   }
@@ -43,6 +43,7 @@ export function ReviewPage() {
       learnedIds: learning.learnedVocabIds,
       items: learning.items,
       mistakeIds: mistakes.byId.keys(),
+      mistakeItems: mistakes.list,
       kanaSrsMap: kanaSrs.map,
       kanaDueIds: kanaSrs.dueIds,
       vocabSrsMap: vocabSrs.map,
@@ -55,6 +56,7 @@ export function ReviewPage() {
     learning.learnedVocabIds,
     learning.items,
     mistakes.byId,
+    mistakes.list,
     kanaSrs.map,
     kanaSrs.dueIds,
     vocabSrs.map,
@@ -85,6 +87,7 @@ export function ReviewPage() {
       nextDueAt={dashboard.nextDueAt}
       todayQueueLength={dashboard.todayQueue.length}
       counts={dashboard.counts}
+      mistakeKindDueLabel={dashboard.mistakeKindDueLabel}
       kana={{
         due: dashboard.counts.kanaDue,
         total: dashboard.totals.kana,

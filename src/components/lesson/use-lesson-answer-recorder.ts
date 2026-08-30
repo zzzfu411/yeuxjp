@@ -41,6 +41,13 @@ export function useLessonAnswerRecorder({
     })) {
       return null
     }
+    if (shouldRecord && !progress.saveLessonStepAnswer(lessonId, step.id, {
+      answer: result.selectedAnswer,
+      correct: result.correct,
+      createdAt: result.answeredAt,
+    })) {
+      return null
+    }
 
     setAnswered((prev) => ({ ...prev, [step.id]: result.correct }))
     return result

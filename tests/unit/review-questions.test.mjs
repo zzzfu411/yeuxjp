@@ -108,6 +108,35 @@ test("mistakeToQuestion preserves answers and de-duplicates options", () => {
   ])
 })
 
+test("typed review is used when a production mistake has no distractors", () => {
+  const base = {
+    id: "type-1",
+    type: "lesson:typing",
+    itemId: "sur-g-1",
+    itemType: "vocab",
+    mode: "recall",
+    questionText: "输入“你好”",
+    correctAnswer: "こんにちは",
+    options: [{ value: "こんにちは", display: "こんにちは" }],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  }
+  const typed = review.mistakeToQuestion(base)
+  const withWrong = review.mistakeToQuestion({
+    ...base,
+    id: "type-2",
+    lastWrongAnswer: "こんばんは",
+  })
+
+  assert.equal(review.questionUsesTypedReview(typed), true)
+  assert.equal(review.questionUsesTypedReview(withWrong), false)
+  assert.ok(withWrong.options.some((option) => option.value === "こんばんは"))
+  assert.equal(review.shouldShowReviewSpecialFeedback("particle"), true)
+  assert.equal(review.shouldShowReviewSpecialFeedback("verb-conjugation"), true)
+  assert.equal(review.shouldShowReviewSpecialFeedback("review:kana"), false)
+})
+
 test("mistakeToQuestion keeps legacy mistakes compatible without progress metadata", () => {
   const question = review.mistakeToQuestion({
     id: "legacy",
@@ -341,6 +370,9 @@ test("vocabulary review prompt models hide answer-revealing audio and text per d
   assert.equal(meaning.sub, "みず")
   assert.equal(meaning.audio, "みず")
   assert.equal(meaning.autoPlayAudio, true)
+
+  const meaningWithRomaji = review.getVocabReviewPromptModel(item, "meaning", true)
+  assert.equal(meaningWithRomaji.sub, "みず · mizu")
 
   const recall = review.getVocabReviewPromptModel(item, "recall")
   assert.equal(recall.display, "水")

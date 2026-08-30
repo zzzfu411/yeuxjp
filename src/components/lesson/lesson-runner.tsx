@@ -1,10 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, Sparkles, Volume2 } from "lucide-react"
+import { ArrowLeft, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { isPracticeStep, STARTER_LESSONS, type Lesson, type LessonStep } from "@/data/lessons"
 import { speakJapaneseRepeated } from "@/lib/speech"
+import { LessonCompletionRecap } from "@/components/lesson/lesson-completion-recap"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
 import { LessonProgressSidebar } from "@/components/lesson/lesson-progress-sidebar"
@@ -106,7 +107,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
             </Link>
           </Button>
           <div className="text-xs font-semibold text-muted-foreground">
-            Starter · Day {lessonPosition}/{STARTER_LESSONS.length} · {lesson.estimatedMinutes} 分钟
+            N5–N2 · Day {lessonPosition}/{STARTER_LESSONS.length} · {lesson.estimatedMinutes} 分钟
           </div>
         </div>
 
@@ -169,14 +170,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
 
             <PracticeSaveError show={saveError} />
 
-            {current.type === "summary" && hasCompletedLesson ? (
-              <div className="mt-5 rounded-2xl border bg-primary/10 p-5" data-testid="lesson-completed-summary">
-                <div className="flex items-center gap-2 font-semibold">
-                  <Sparkles className="h-4 w-4" />
-                  课程已完成，掌握度已写入今日学习记录。
-                </div>
-              </div>
-            ) : null}
+            {current.type === "summary" && hasCompletedLesson ? <LessonCompletionRecap lesson={lesson} /> : null}
 
             <LessonNavigationBar
               current={current}

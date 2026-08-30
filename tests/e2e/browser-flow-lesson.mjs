@@ -63,6 +63,16 @@ export async function verifyLessonFlow(page, baseUrl) {
   await page.keyboard.press("ArrowRight")
   await page.getByTestId("onboarding-save").click()
   await page.getByTestId("home-start-learning").waitFor({ state: "visible" })
+  assert.match(
+    await page.getByText("课表", { exact: true }).locator("xpath=..").innerText(),
+    /0\/175/,
+    "home should show course progress separately from vocabulary mastery"
+  )
+  assert.match(
+    await page.getByText("生存词", { exact: true }).locator("xpath=..").innerText(),
+    /0\/544/,
+    "home should show survival vocabulary mastery separately from course progress"
+  )
   const savedProfile = await readJsonStorage(page, E2E_STORAGE_KEYS.USER_PROFILE)
   assert.equal(savedProfile?.goal, "travel", "onboarding should persist the selected learning goal")
   assert.equal(savedProfile?.kanaLevel, "some", "onboarding should persist the selected kana level")
@@ -170,6 +180,17 @@ export async function verifyLessonFlow(page, baseUrl) {
   await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-completed-summary").waitFor({ state: "visible" })
+  const completedSummary = page.getByTestId("lesson-completed-summary")
+  assert.match(
+    await completedSummary.innerText(),
+    /本课词汇掌握/,
+    "completed lesson recap should show this lesson's vocabulary mastery"
+  )
+  await completedSummary.getByText("こんにちは").waitFor({ state: "visible" })
+  assert.ok(
+    await completedSummary.getByRole("link", { name: /用闪卡把本课词评成记住/ }).isVisible(),
+    "completed lesson recap should send learners to vocabulary flashcards"
+  )
   const completedLessonProgress = await readJsonStorage(page, E2E_STORAGE_KEYS.LESSON_PROGRESS)
   assert.equal(
     completedLessonProgress?.["day-1-a-row-hello"]?.status,
@@ -183,16 +204,38 @@ export async function verifyLessonFlow(page, baseUrl) {
     "completed first lesson should link to the next starter lesson"
   )
   await page.goto(baseUrl, { waitUntil: "networkidle" })
+  assert.match(
+    await page.getByText("课表", { exact: true }).locator("xpath=..").innerText(),
+    /1\/175/,
+    "home course progress should increment after completing day 1"
+  )
   assert.equal(
     await page.getByTestId("home-start-learning").getAttribute("href"),
     "/learn/day-2-ka-row-thanks",
     "home start learning should recommend the next unlocked lesson after completing day 1"
   )
+  await page.getByTestId("home-edit-profile").click()
+  await page.getByTestId("onboarding-hidden").click()
+  await page.getByTestId("onboarding-save").click()
+  await page.getByTestId("home-edit-profile").waitFor({ state: "visible" })
+  const editedProfile = await readJsonStorage(page, E2E_STORAGE_KEYS.USER_PROFILE)
+  assert.equal(editedProfile?.romajiMode, "hidden", "home profile editor should persist a later romaji change")
+  assert.equal(editedProfile?.goal, "travel", "home profile editor should keep the existing learning goal")
   await page.goto(`${baseUrl}/path`, { waitUntil: "networkidle" })
   assert.equal(
     await page.getByTestId("path-next-learning").getAttribute("href"),
     "/learn/day-2-ka-row-thanks",
     "path next step should recommend the next unlocked lesson after completing day 1"
+  )
+  assert.match(
+    await page.getByText("课表", { exact: true }).locator("xpath=..").innerText(),
+    /1\/175/,
+    "path should show course progress separately from vocabulary mastery"
+  )
+  assert.match(
+    await page.getByText("生存词", { exact: true }).locator("xpath=..").innerText(),
+    /0\/544/,
+    "path should show survival vocabulary mastery separately from course progress"
   )
   await verifyLessonGeneratedReviewQueue(page, baseUrl)
 

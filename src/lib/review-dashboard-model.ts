@@ -1,6 +1,13 @@
 import { buildTodayReviewQueue, type TodayReviewItem } from "@/lib/review-questions"
 import { getNextSrsDueAt, type SrsMap } from "@/lib/srs-model"
 import type { ItemProgressMap } from "@/lib/learning-progress-model"
+import type { MistakeItem } from "@/lib/mistake-notebook-model"
+import {
+  countDueMistakesByKind,
+  emptyReviewMistakeKindDue,
+  formatMistakeKindDue,
+  type ReviewMistakeKindDue,
+} from "@/lib/mistake-review-kind"
 import {
   buildReviewVisibleIdSet,
   filterReviewableKanaIds,
@@ -35,6 +42,7 @@ export type ReviewDashboardModelInput = {
   vocabDueIds: readonly string[]
   mistakeSrsMap: SrsMap
   mistakeDueIds: readonly string[]
+  mistakeItems?: Iterable<Pick<MistakeItem, "id" | "itemType" | "type">>
   now?: number
 }
 
@@ -51,6 +59,8 @@ export type ReviewDashboardModel = {
   isFirstTime: boolean
   nextDueAt: number | null
   counts: ReviewDashboardCounts
+  mistakeKindDue: ReviewMistakeKindDue
+  mistakeKindDueLabel: string
   totals: ReviewDashboardTotals
 }
 
@@ -89,6 +99,7 @@ export function buildReviewDashboardModel({
   vocabDueIds,
   mistakeSrsMap,
   mistakeDueIds,
+  mistakeItems,
   now,
 }: ReviewDashboardModelInput): ReviewDashboardModel {
   const mastered = idsToSet(masteredIds)
@@ -127,6 +138,10 @@ export function buildReviewDashboardModel({
     kanaDue: reviewableKanaDueIds.length,
     vocabDue: visibleVocabDueIds.length,
   }
+  const mistakeKindDue = mistakeItems == null
+    ? emptyReviewMistakeKindDue()
+    : countDueMistakesByKind(dueMistakeIds, mistakeItems)
+  const mistakeKindDueLabel = formatMistakeKindDue(mistakeKindDue)
 
   return {
     dueMistakeIds,
@@ -141,6 +156,8 @@ export function buildReviewDashboardModel({
     isFirstTime: totals.kana + totals.vocab + totals.mistakes === 0 && visibleKanaIds.size === 0 && visibleVocabIds.size === 0,
     nextDueAt: getNextSrsDueAt([visibleKanaSrsMap, visibleVocabSrsMap, visibleMistakeSrsMap], now),
     counts,
+    mistakeKindDue,
+    mistakeKindDueLabel,
     totals,
   }
 }

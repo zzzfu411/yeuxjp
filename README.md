@@ -1,10 +1,10 @@
 # Yasashi Japanese
 
-Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana, vocabulary, grammar, semantic nuance, pragmatics, quizzes, a 30-day starter path, local progress tracking, SRS review, and a mistake notebook. Course practice, quiz practice, and review now share the same question/result rules so progress, SRS enrollment, and mistake recording stay consistent across pages.
+Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana, vocabulary, grammar, semantic nuance, pragmatics, quizzes, a 175-day N5→N2 path, local progress tracking, SRS review, and a mistake notebook. Course practice, quiz practice, and review now share the same question/result rules so progress, SRS enrollment, and mistake recording stay consistent across pages. The course is a 175-day N5→N2 path (days 1–45 N5, 46–90 N4, 91–135 N3, 136–175 N2), not a complete official JLPT dump.
 
 ![Yasashi Japanese home](docs/screenshots/home.jpg)
 
-*Home — a paper-style player with today's 30-day queue, daily goal, streak, and the next lesson to play.*
+*Home — a paper-style player with today's course queue, daily goal, streak, and the next lesson to play.*
 
 ![Kana chart](docs/screenshots/kana.jpg)
 
@@ -12,15 +12,15 @@ Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana
 
 ![Guided lesson](docs/screenshots/lesson.jpg)
 
-*Lesson — a guided day on the 30-day path, with examples, audio, and step progress.*
+*Lesson — a guided day on the 175-day N5→N2 path, with examples, audio, and step progress.*
 
 ![Kana quiz](docs/screenshots/quiz.jpg)
 
 *Quiz — look at a kana, pick the reading; also covers particles, verbs, and vocabulary.*
 
-![30-day skill tree](docs/screenshots/path.jpg)
+![175-day skill tree](docs/screenshots/path.jpg)
 
-*30-day path — starter days, next-lesson recommendation, and five-dimension mastery.*
+*175-day path — N5→N2 days, next-lesson recommendation, and five-dimension mastery.*
 
 ![SRS review desk](docs/screenshots/review.jpg)
 
@@ -82,13 +82,13 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 - AnimCJK stroke-order animation loaded from `web/public/animcjk/kana`.
 - Vocabulary cards grouped by level and category, with search, learned-state tracking, TTS, and three-way flashcard self-grading (`again` / `hard` / `good`). Self-grading records meaning practice and vocabulary SRS in one managed transaction without changing the learner's explicit mastered toggle or creating an objective mistake-notebook entry.
 - Grammar, semantics, and pragmatics reference pages.
-- Grammar reference keeps its static page shell server-rendered, with level selection, search, speech controls, modal navigation, and focused N5 practice sessions isolated in client components.
+- Grammar reference keeps its static page shell server-rendered, with level selection, search, speech controls, modal navigation, and focused N5–N2 practice sessions isolated in client components.
 - Quiz modes for kana recognition, audio recognition, sokuon/long-vowel contrast, particles, verb conjugation, and vocabulary meaning.
 - Local SRS review for kana, vocabulary, and mistakes, with today queue priority of mistakes first and due-time sorting for kana/vocabulary.
-- A 30-day starter path with practice steps, step feedback, local progress, SRS enrollment for correct kana/vocab practice, and automatic mistake notebook capture for wrong answers. Days 1-14 cover partial kana plus survival phrases and core particles; days 15-30 complete all hiragana rows, dakuon, core yoon, katakana recognition, and additional N5 sentence patterns, with pure-review checkpoint lessons at day 20 and day 30.
+- A 175-day N5→N2 path with practice steps, step feedback, local progress, SRS enrollment for correct kana/vocab practice, and automatic mistake notebook capture for wrong answers. Days 1–45 are N5: 1–21 complete hiragana (seion, dakuon, yoon, sokuon) plus katakana and long vowels, with checkpoints; 22–40 cover the N5 sentence skeleton (particles, ます/て/た/ない, adjectives, こそあど, questions, counters); 41–45 are survival scenes and graduation. Days 46–90 are N4, 91–135 N3, and 136–175 N2. UI course length still comes from `STARTER_LESSONS.length`; this is not a complete official JLPT dump.
 - Vocabulary review questions rotate between meaning recognition, Chinese-to-Japanese recall, and audio-only listening directions; the today review queue is capped per session (mistakes first) so batch-marked words cannot flood a single review run.
 - Survival greetings and high-frequency verbs ship with polite-form example sentences rendered on flashcards and in the vocabulary focus modal; the vocabulary toolbar can hide romaji to train direct kana reading.
-- All 25 N5 grammar points include plain-language explanations, common-pitfall notes, and at least one focused recognition question in the grammar modal. Grammar answers use the shared question/result rules: every attempt updates practice progress, and wrong answers enter the mistake notebook without enrolling grammar into the kana/vocabulary SRS decks.
+- All 45 N5 grammar points, plus the N4/N3/N2 points on the 175-day path, include focused recognition questions in the grammar modal. N5 entries also have plain-language explanations and common-pitfall notes. Grammar answers use the shared question/result rules: every attempt updates practice progress, and wrong answers enter the mistake notebook without enrolling grammar into the kana/vocabulary SRS decks.
 - The home page turns the onboarding minutes-per-day preference into a daily practice target with a progress bar based on today's recorded practice.
 - Shared learning-session helpers in `web/src/lib/learning-session.ts` and shared question helpers in `web/src/lib/questions.ts`.
 - Learning backup/restore/reset helpers in `web/src/lib/learning-store.ts`; storage keys remain compatible with existing localStorage data. New exports use backup schema v3, while v1/v2 backups remain importable and are normalized to script-aware kana state. Restore rejects unknown/non-string entries, invalid timestamps, malformed managed values, and files larger than 2 MB before mutation, then shows the backup time and data-category count and requires explicit confirmation. A valid empty backup is identified as destructive because confirming it clears current learning data.
@@ -105,8 +105,8 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 ## Extending Content
 
 - Add vocabulary to `web/src/data/vocabulary/survival.ts`, `daily.ts`, or `fluent.ts`.
-- Add grammar to `web/src/data/grammar-data.ts`. Every N5 grammar point must also have a matching entry in `n5GrammarPracticeSets`; template ids, prompts, answers, and at least two unique options are required, and the answer must appear in the options.
-- Add lesson steps to `web/src/data/lessons.ts` and run `npm run validate:data`.
+- Add grammar to `web/src/data/grammar-data.ts`. Every N5–N2 grammar point must also have a matching entry in `n5GrammarPracticeSets`, `n4GrammarPracticeSets`, `n3GrammarPracticeSets`, or `n2GrammarPracticeSets` for its level; template ids, prompts, answers, and at least two unique options are required, and the answer must appear in the options.
+- Add lesson steps to `web/src/data/lessons.ts` or `web/src/data/lessons/*.ts` and run `npm run validate:data`.
 - Practice steps should include stable `itemId`, `itemType`, and `mode` fields so progress/SRS/mistake recording can identify the learned item.
 - Reviewable kana practice uses `hiragana:<romaji>` or `katakana:<romaji>` item IDs. Phonology exercises that represent a whole word, such as `sokuon:きって`, keep their scoped custom IDs and do not enroll the single-kana SRS deck.
 - Do not recreate `web/src/data/vocab-data.ts`, `kanaHira.json`, or `kanaKata.json`; validation fails if those legacy sources return.

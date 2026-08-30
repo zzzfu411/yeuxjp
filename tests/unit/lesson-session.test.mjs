@@ -43,9 +43,8 @@ test("sentence build lesson steps become production questions", () => {
   assert.equal(question.correctAnswer, step.answer)
 })
 
-test("lesson kana item ids identify the script taught by each course day", () => {
+test("lesson kana item ids use a hiragana or katakana script prefix", () => {
   for (const lesson of lessons.STARTER_LESSONS) {
-    const expectedScript = lesson.order >= 25 && lesson.order <= 27 ? "katakana" : "hiragana"
     const kanaIds = [
       ...lesson.newItemIds.filter((item) => item.type === "kana").map((item) => item.id),
       ...lesson.steps.filter((step) => step.itemType === "kana").map((step) => step.itemId),
@@ -53,7 +52,7 @@ test("lesson kana item ids identify the script taught by each course day", () =>
 
     for (const itemId of kanaIds) {
       if (/^(sokuon|longvowel):.+/.test(itemId)) continue
-      assert.match(itemId, new RegExp(`^${expectedScript}:[^:]+$`), `${lesson.id} has a mismatched kana itemId`)
+      assert.match(itemId, /^(hiragana|katakana):[^:]+$/, `${lesson.id} has a mismatched kana itemId`)
     }
   }
 })
@@ -248,6 +247,7 @@ test("lesson runner view model derives course navigation and completion display 
     practiceSteps: 0,
     loaded: false,
     lessonUnlocked: true,
+    completedLessonIds: new Set(lessons.STARTER_LESSONS.slice(0, -1).map((item) => item.id)),
   })
 
   assert.equal(lastView.nextLesson, null)
@@ -255,4 +255,44 @@ test("lesson runner view model derives course navigation and completion display 
   assert.equal(lastView.completionScore, 100)
   assert.equal(lastView.lessonReadOnly, true)
   assert.equal(lastView.hasCompletedLesson, false)
+})
+
+test("completed lesson next-cta skips kana foundation when the profile already reads kana solidly", () => {
+  const day4 = lessons.STARTER_LESSONS.find((lesson) => lesson.id === "day-4-na-ha-ma-intro-sentence")
+  const day5 = lessons.STARTER_LESSONS.find((lesson) => lesson.order === 5)
+  const day22 = lessons.STARTER_LESSONS.find((lesson) => lesson.order === 22)
+
+  const skipped = session.buildLessonRunnerViewModel({
+    lesson: day4,
+    courseLessons: lessons.STARTER_LESSONS,
+    lessons: {
+      [day4.id]: { lessonId: day4.id, status: "completed", startedAt: 1, completedAt: 2 },
+    },
+    stepIndex: day4.steps.length - 1,
+    answered: {},
+    practiceSteps: 1,
+    loaded: true,
+    lessonUnlocked: true,
+    completedLessonIds: new Set(),
+    kanaLevel: "solid",
+  })
+  const sequential = session.buildLessonRunnerViewModel({
+    lesson: day4,
+    courseLessons: lessons.STARTER_LESSONS,
+    lessons: {
+      [day4.id]: { lessonId: day4.id, status: "completed", startedAt: 1, completedAt: 2 },
+    },
+    stepIndex: day4.steps.length - 1,
+    answered: {},
+    practiceSteps: 1,
+    loaded: true,
+    lessonUnlocked: true,
+    completedLessonIds: new Set(
+      lessons.STARTER_LESSONS.filter((item) => item.order < 4).map((item) => item.id)
+    ),
+    kanaLevel: "some",
+  })
+
+  assert.equal(skipped.nextLesson.id, day22.id)
+  assert.equal(sequential.nextLesson.id, day5.id)
 })

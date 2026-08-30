@@ -9,6 +9,7 @@ test("getNextLesson returns null after every starter lesson is complete", () => 
   const completed = new Set(lessons.STARTER_LESSONS.map((lesson) => lesson.id))
 
   assert.equal(lessons.getNextLesson(completed), null)
+  assert.equal(lessons.getNextLesson(completed, "solid"), null)
 })
 
 test("lesson entry status respects prerequisites before exposing course links", () => {
@@ -23,6 +24,21 @@ test("lesson entry status respects prerequisites before exposing course links", 
   completed.add(first.id)
   assert.equal(entry.getLessonEntryStatus(first, completed, second.id), "done")
   assert.equal(entry.getLessonEntryStatus(second, completed, second.id), "active")
+})
+
+test("solid kana marks foundation lessons skipped and unlocks Day 22", () => {
+  const day1 = lessons.STARTER_LESSONS[0]
+  const day22 = lessons.STARTER_LESSONS.find((lesson) => lesson.id === "day-22-wa-ga-no")
+  const day23 = lessons.STARTER_LESSONS.find((lesson) => lesson.order === 23)
+  const empty = new Set()
+
+  assert.equal(entry.getLessonEntryStatus(day1, empty, day1.id, "some"), "active")
+  assert.equal(entry.getLessonEntryStatus(day22, empty, day1.id, "some"), "locked")
+  assert.equal(entry.getLessonEntryStatus(day1, empty, day22.id, "solid"), "skipped")
+  assert.equal(entry.getLessonEntryStatus(day22, empty, day22.id, "solid"), "active")
+  assert.equal(entry.getLessonEntryStatus(day23, empty, day22.id, "solid"), "locked")
+  assert.equal(entry.isLessonUnlocked(day22, empty, "solid"), true)
+  assert.equal(entry.getLessonEntryBadge("skipped"), "\u5df2\u8df3\u8fc7")
 })
 
 test("resolveLearningEntry prefers lessons, falls back to skills, then review", () => {

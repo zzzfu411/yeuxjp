@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import type { MistakeItem } from "@/lib/mistake-notebook"
+import { mistakeReviewDeckLabel } from "@/lib/today-review-session"
 
 interface RecentMistakesProps {
   mistakes: MistakeItem[]
@@ -21,7 +22,7 @@ export function RecentMistakes({ mistakes, onRemove }: RecentMistakesProps) {
           <div key={mistake.id} className="flex items-start justify-between gap-3 border-[2px] border-foreground bg-background p-4" data-testid={`recent-mistake-${mistake.id}`}>
             <div className="min-w-0">
               <div className="text-xs text-muted-foreground">
-                {mistake.type} · 错 {mistake.wrongCount} 次
+                {mistakeReviewDeckLabel(mistake)} · 错 {mistake.wrongCount} 次
               </div>
               <div className="text-sm font-medium break-words">{mistake.questionText ?? mistake.questionAudio ?? "（无题干）"}</div>
             </div>

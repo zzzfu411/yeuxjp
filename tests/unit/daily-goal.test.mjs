@@ -22,6 +22,26 @@ test("countTodayPracticeResults only counts results created today", () => {
   assert.equal(count, 2)
 })
 
+test("countTodayPracticeResults ignores vocabulary self-assessment ratings", () => {
+  const today = new Date("2026-07-12T10:00:00Z")
+  const todayTs = today.getTime()
+  const count = dailyGoal.countTodayPracticeResults(
+    [
+      { itemId: "sur-g-1", itemType: "vocab", mode: "meaning", correct: true, answer: "good", createdAt: todayTs },
+      { itemId: "sur-g-1", itemType: "vocab", mode: "meaning", correct: false, answer: "again", createdAt: todayTs },
+      { itemId: "sur-g-2", itemType: "vocab", mode: "meaning", correct: true, answer: "水", createdAt: todayTs },
+      { itemId: "hiragana:a", itemType: "kana", mode: "recognition", correct: true, createdAt: todayTs },
+    ],
+    today
+  )
+
+  assert.equal(count, 2)
+  assert.equal(
+    dailyGoal.isSelfAssessmentPracticeResult({ itemType: "vocab", mode: "meaning", answer: "hard" }),
+    true
+  )
+})
+
 test("countTodayPracticeResults returns zero for an invalid today date", () => {
   const count = dailyGoal.countTodayPracticeResults(
     [{ id: "r1", itemId: "a", itemType: "kana", mode: "recognition", correct: true, createdAt: Date.now() }],

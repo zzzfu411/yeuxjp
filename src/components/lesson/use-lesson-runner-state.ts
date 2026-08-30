@@ -2,30 +2,36 @@
 
 import { useCallback, useEffect, useMemo, useState, type SetStateAction } from "react"
 import { STARTER_LESSONS, getNextLesson, type Lesson } from "@/data/lessons"
-import { useLearningProgress } from "@/lib/learning-progress"
+import { useLearningProgress, useLearningProfile } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { isLessonUnlocked } from "@/lib/learning-entry"
 import {
   buildLessonRunnerViewModel,
   countPracticeSteps,
   getLatestLessonStepAnswers,
-  getLessonAnsweredFromResults,
+  getLessonAnsweredFromStepMap,
   resolveLessonResumeStepIndex,
 } from "@/lib/lesson-session"
+import { mergeLessonStepAnswers } from "@/lib/lesson-step-answers"
 
 export function useLessonRunnerState(lesson: Lesson) {
   const progress = useLearningProgress()
+  const { profile } = useLearningProfile()
   const mistakes = useMistakeNotebook()
   const { lessons, results, loaded, startLesson, completeLesson, saveLessonPosition } = progress
   const [manualStep, setManualStep] = useState<{ lessonId: string; index: number } | null>(null)
   const [answeredDraft, setAnsweredDraft] = useState<{ lessonId: string; answers: Record<string, boolean> } | null>(null)
   const [saveError, setSaveError] = useState(false)
   const savedLessonProgress = lessons[lesson.id]
+  const kanaLevel = profile?.kanaLevel
   const lessonUnlocked = useMemo(() => {
     if (!loaded) return true
-    return isLessonUnlocked(lesson, progress.completedLessonIds)
-  }, [lesson, loaded, progress.completedLessonIds])
-  const recommendedLesson = useMemo(() => getNextLesson(progress.completedLessonIds), [progress.completedLessonIds])
+    return isLessonUnlocked(lesson, progress.completedLessonIds, kanaLevel)
+  }, [kanaLevel, lesson, loaded, progress.completedLessonIds])
+  const recommendedLesson = useMemo(
+    () => getNextLesson(progress.completedLessonIds, kanaLevel),
+    [kanaLevel, progress.completedLessonIds]
+  )
 
   useEffect(() => {
     if (!loaded) return
@@ -55,11 +61,14 @@ export function useLessonRunnerState(lesson: Lesson) {
   const isLast = stepIndex === lesson.steps.length - 1
   const practiceSteps = useMemo(() => countPracticeSteps(lesson.steps), [lesson.steps])
   const persistedStepAnswers = useMemo(() => {
-    return getLatestLessonStepAnswers(lesson.id, lesson.steps, results)
-  }, [lesson.id, lesson.steps, results])
+    return mergeLessonStepAnswers(
+      savedLessonProgress?.stepAnswers,
+      getLatestLessonStepAnswers(lesson.id, lesson.steps, results)
+    )
+  }, [lesson.id, lesson.steps, results, savedLessonProgress?.stepAnswers])
   const restoredAnswered = useMemo(() => {
-    return getLessonAnsweredFromResults(lesson.id, lesson.steps, results)
-  }, [lesson.id, lesson.steps, results])
+    return getLessonAnsweredFromStepMap(persistedStepAnswers)
+  }, [persistedStepAnswers])
 
   const answered = useMemo(() => {
     if (answeredDraft?.lessonId !== lesson.id) return restoredAnswered
@@ -90,8 +99,10 @@ export function useLessonRunnerState(lesson: Lesson) {
       practiceSteps,
       loaded,
       lessonUnlocked,
+      completedLessonIds: progress.completedLessonIds,
+      kanaLevel,
     })
-  }, [answered, lesson, lessons, loaded, lessonUnlocked, practiceSteps, stepIndex])
+  }, [answered, kanaLevel, lesson, lessons, loaded, lessonUnlocked, practiceSteps, progress.completedLessonIds, stepIndex])
 
   const setManualStepIndex = useCallback(
     (index: number) => {

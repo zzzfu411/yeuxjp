@@ -5,6 +5,7 @@ import type { Vocabulary } from "@/data/vocabulary/types"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
+import { VocabCourseAppearances } from "@/components/vocabulary/vocab-course-appearances"
 import { VocabularySelfAssessmentControls } from "@/components/vocabulary/vocabulary-self-assessment-controls"
 import type { VocabularySelfAssessment } from "@/lib/vocabulary-self-assessment"
 
@@ -94,6 +95,7 @@ export function VocabularyFocusModal({
                   <div className="space-y-1">
                     <p className="text-4xl font-bold text-primary">{vocab.meaning}</p>
                     {showRomaji && <p className="text-xl text-muted-foreground font-serif italic">{vocab.romaji}</p>}
+                    <VocabCourseAppearances vocabId={vocab.id} />
                   </div>
                   {vocab.exampleSentences?.[0] && (
                     <div className="rounded-xl border bg-background/70 px-4 py-3 text-left space-y-1">

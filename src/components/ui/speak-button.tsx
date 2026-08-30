@@ -26,7 +26,19 @@ export function SpeakButton({
   size = "icon",
   className,
 }: SpeakButtonProps) {
-  const disabled = !isSpeechSupported() || !text?.trim()
+  const [speechSupported, setSpeechSupported] = React.useState(true)
+
+  React.useEffect(() => {
+    let cancelled = false
+    Promise.resolve().then(() => {
+      if (!cancelled) setSpeechSupported(isSpeechSupported())
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const disabled = !speechSupported || !text?.trim()
 
   return (
     <Button

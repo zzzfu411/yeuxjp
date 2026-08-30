@@ -35,7 +35,7 @@ export const QUIZ_MODE_OPTIONS = [
   {
     mode: "verb-conjugation",
     title: "动词活用",
-    description: "ます/ない/て形选择题",
+    description: "ます/ない/て/た，以及可能形、使役形",
     icon: "refresh",
     testId: "quiz-mode-verb-conjugation",
   },

@@ -165,6 +165,20 @@ export const GLOSSARY: GlossaryEntry[] = [
     short: "过去/完成常用形（…た）。",
     examples: [{ jp: "たべた / のんだ / いった", note: "经常和 て形 成对学习" }],
   },
+  {
+    id: "kanou-kei",
+    term: "可能形（かのうけい）",
+    category: "grammar",
+    short: "表示“能做”：一段 られる，五段改え段＋る，する→できる。",
+    examples: [{ jp: "たべられる / かける / できる", note: "一段 られる 和被动同形，课堂里先按“能做”记" }],
+  },
+  {
+    id: "shieki-kei",
+    term: "使役形（しえきけい）",
+    category: "grammar",
+    short: "表示“让/叫别人做”：一段 させる，五段あ段＋せる，する→させる。",
+    examples: [{ jp: "たべさせる / かかせる / させる", note: "使役对象常用 に 或 を" }],
+  },
 
   {
     id: "jlpt",

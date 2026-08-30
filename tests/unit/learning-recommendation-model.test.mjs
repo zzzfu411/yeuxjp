@@ -14,7 +14,7 @@ const kana = [
 const learnedSurvivalIds = [
   ...Array.from({ length: 30 }, (_, index) => `sur-g-${index + 1}`),
   ...Array.from({ length: 81 }, (_, index) => `sur-v-${index + 1}`),
-  ...Array.from({ length: 19 }, (_, index) => `sur-adj-${index + 1}`),
+  ...Array.from({ length: 26 }, (_, index) => `sur-adj-${index + 1}`),
 ]
 
 test("learning recommendation model prefers the next starter lesson over the skill fallback", () => {
@@ -38,13 +38,13 @@ test("learning recommendation model falls back to the recommended skill after le
     isKanaMastered: () => true,
     learnedVocabIds: learnedSurvivalIds,
     nextLesson: null,
-    skillTree: [{ id: "particles-basic", title: "Particles", short: "Basic particles", href: "/quiz?mode=particle" }],
+    skillTree: [{ id: "vocab-daily", title: "Daily", short: "Daily words", href: "/vocabulary?level=daily" }],
   })
 
-  assert.equal(model.nextSkillId, "particles-basic")
-  assert.equal(model.vocabStats.survival.done, 130)
+  assert.equal(model.nextSkillId, "vocab-daily")
+  assert.equal(model.vocabStats.survival.done, 137)
   assert.equal(model.learningEntry.kind, "skill")
-  assert.equal(model.learningEntry.href, "/quiz?mode=particle")
+  assert.equal(model.learningEntry.href, "/vocabulary?level=daily")
 })
 
 test("learning recommendation model uses review when the recommended skill is unavailable", () => {
@@ -56,7 +56,7 @@ test("learning recommendation model uses review when the recommended skill is un
     skillTree: [],
   })
 
-  assert.equal(model.nextSkillId, "particles-basic")
+  assert.equal(model.nextSkillId, "vocab-daily")
   assert.equal(model.recommendedSkill, null)
   assert.equal(model.learningEntry.kind, "review")
   assert.equal(model.learningEntry.href, "/review")

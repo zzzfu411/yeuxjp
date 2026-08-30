@@ -1,4 +1,5 @@
 import { normalizeKanaPracticeRecord, normalizeKanaPracticeResultItemId } from "@/lib/kana-id"
+import { normalizeLessonStepAnswerMap, type LessonStepAnswerMap } from "@/lib/lesson-step-answers"
 export type LearningGoal = "balanced" | "travel" | "jlpt" | "media"
 export type KanaLevel = "none" | "some" | "solid"
 export type RomajiMode = "always" | "practice" | "hidden"
@@ -20,6 +21,7 @@ export interface LessonProgress {
   currentStepIndex?: number
   lastStepId?: string
   updatedAt?: number
+  stepAnswers?: LessonStepAnswerMap
 }
 export type PracticeItemType = "kana" | "vocab" | "grammar" | "sentence" | "lesson"
 export type PracticeMode = "recognition" | "listening" | "meaning" | "recall" | "production"
@@ -148,6 +150,8 @@ export function normalizeLessonProgressMap(input: unknown, now = Date.now()): Le
     if (typeof obj.updatedAt === "number" && Number.isFinite(obj.updatedAt)) {
       normalized.updatedAt = obj.updatedAt
     }
+    const stepAnswers = normalizeLessonStepAnswerMap(obj.stepAnswers)
+    if (stepAnswers) normalized.stepAnswers = stepAnswers
     out[lessonId] = normalized
   }
   return out
@@ -288,12 +292,6 @@ export function normalizeStepIndex(stepIndex: number) {
 
 export function averageMastery(item?: ItemProgress) {
   if (!item) return 0
-  const scores = [
-    masteryScore(item.recognition),
-    masteryScore(item.listening),
-    masteryScore(item.meaning),
-    masteryScore(item.recall),
-    masteryScore(item.production),
-  ]
+  const scores = [item.recognition, item.listening, item.meaning, item.recall, item.production].map(masteryScore)
   return Math.round(scores.reduce((total, score) => total + score, 0) / scores.length)
 }

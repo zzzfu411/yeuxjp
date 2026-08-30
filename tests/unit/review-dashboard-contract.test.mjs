@@ -33,6 +33,8 @@ test("review page delegates dashboard surfaces while keeping SRS/session wiring"
   assert.match(page, /masteredIds: learning\.masteredKanaIds/)
   assert.match(page, /learnedIds: learning\.learnedVocabIds/)
   assert.match(page, /mistakeIds: mistakes\.byId\.keys\(\)/)
+  assert.match(page, /mistakeItems: mistakes\.list/)
+  assert.match(page, /mistakeKindDueLabel=\{dashboard\.mistakeKindDueLabel\}/)
   assert.match(page, /const \[reviewSaveError, setReviewSaveError\] = useState\(false\)/)
   assert.match(page, /const startSession = \(nextSession: ReviewSession\) => \{/)
   assert.match(page, /setReviewSaveError\(false\)/)
@@ -73,6 +75,8 @@ test("ReviewDashboard owns review landing UI and delegates formatting to pure mo
   assert.match(source, /<FirstReviewBanner/)
   assert.match(source, /<ReviewStreakBanner/)
   assert.match(source, /<TodayReviewPanel/)
+  assert.match(source, /到期 \{mistakeKindDueLabel\}/)
+  assert.match(source, /data-testid="mistakes-clear"/)
   assert.match(source, /from "@\/components\/review\/review-deck-card"/)
   assert.match(source, /from "@\/components\/review\/recent-mistakes"/)
   assert.match(source, /from "@\/components\/practice\/practice-save-error"/)
@@ -118,6 +122,7 @@ test("review banners own first-time, streak, and today review surfaces", () => {
   assert.match(source, /"review-scheduled-empty-state"/)
   assert.match(source, /todayQueueLength \? "review-today-due" : "review-today-empty"/)
   assert.match(source, /data-testid="review-start-today"/)
+  assert.match(source, /错题 \{counts\.mistakesDue\} · 假名 \{counts\.kanaDue\} · 单词 \{counts\.vocabDue\}/)
 })
 
 test("review banners prioritize above-the-fold state artwork with bounded sizes", () => {

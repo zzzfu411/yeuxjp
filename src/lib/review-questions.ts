@@ -123,7 +123,15 @@ export function ensureQuestionOptions(question: Pick<Question, "correctAnswer" |
   return options
 }
 
+export { questionUsesTypedReview, shouldShowReviewSpecialFeedback, uniqueQuestionOptionCount } from "@/lib/review-typed-question"
+
 export function mistakeToQuestion(item: MistakeItem): Question {
+  const options = ensureQuestionOptions(item)
+  const lastWrong = item.lastWrongAnswer?.trim()
+  if (lastWrong && !options.some((option) => normalizeAnswer(option.value) === normalizeAnswer(lastWrong))) {
+    options.push({ value: lastWrong, display: lastWrong })
+  }
+
   return {
     type: item.type,
     mistakeId: item.id,
@@ -136,7 +144,7 @@ export function mistakeToQuestion(item: MistakeItem): Question {
     acceptedAnswers: item.acceptedAnswers,
     correctDisplay: item.correctDisplay,
     explanation: item.explanation,
-    options: ensureQuestionOptions(item),
+    options,
     meta: item.meta,
   }
 }
@@ -190,7 +198,11 @@ export type VocabReviewPromptModel = {
   autoPlayAudio: boolean
 }
 
-export function getVocabReviewPromptModel(item: Vocabulary, direction: VocabReviewDirection): VocabReviewPromptModel {
+export function getVocabReviewPromptModel(
+  item: Vocabulary,
+  direction: VocabReviewDirection,
+  showRomaji = false
+): VocabReviewPromptModel {
   if (direction === "recall") {
     return {
       display: item.meaning,
@@ -208,9 +220,10 @@ export function getVocabReviewPromptModel(item: Vocabulary, direction: VocabRevi
     }
   }
 
+  const subParts = [item.kanji ? item.kana : null, showRomaji ? item.romaji : null].filter(Boolean)
   return {
     display: item.kanji ?? item.kana,
-    sub: item.kanji ? item.kana : undefined,
+    sub: subParts.length ? subParts.join(" · ") : undefined,
     hint: "选择正确的中文意思",
     audio: item.kana,
     autoPlayAudio: true,

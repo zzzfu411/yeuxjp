@@ -103,7 +103,7 @@ test("home and review dashboard surfaces do not import eager vocabulary datasets
     /@\/data\/vocabulary\/(?:survival|daily|fluent)/,
     /vocabByLevel/,
     /vocabData/,
-    /survivalVocab|dailyVocab|fluentVocab/,
+    /\b(?:survivalVocab|dailyVocab|fluentVocab)\b/,
   ]
 
   for (const file of surfaceFiles) {

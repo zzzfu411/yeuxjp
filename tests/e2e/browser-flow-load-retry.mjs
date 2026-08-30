@@ -3,9 +3,9 @@ import { seedMixedReviewState } from "./browser-fixtures.mjs"
 
 const FLUENT_REVIEW_ID = "flu-abs-1"
 const VOCABULARY_CHUNK_MARKERS = {
-  survival: ["survivalVocab", "sur-g-1"],
-  daily: ["dailyVocab", "day-v-1"],
-  fluent: ["fluentVocab", "flu-abs-1"],
+  survival: { exportName: "survivalVocab", tokens: ['"survivalVocab"', "sur-g-1"] },
+  daily: { exportName: "dailyVocab", tokens: ['"dailyVocab"', "day-v-1"] },
+  fluent: { exportName: "fluentVocab", tokens: ['"fluentVocab"', "flu-abs-1"] },
 }
 
 function escapeRegExp(value) {
@@ -52,12 +52,30 @@ function findExpressionEnd(source, startIndex) {
 
 function makeTransientFailingVocabularyChunk(source, exportName, level) {
   const rewritten =
-    rewriteMinifiedVocabularyChunk(source, exportName, level) ??
-    rewriteDevVocabularyChunk(source, exportName, level)
+    rewriteDevConstToArmedProxy(source, exportName, level) ??
+    rewriteDevVocabularyChunk(source, exportName, level) ??
+    rewriteMinifiedVocabularyChunk(source, exportName, level)
   if (!rewritten) {
     throw new Error(`Could not find ${exportName} export call in vocabulary chunk`)
   }
   return rewritten
+}
+
+// Turbopack dev binds `const name = [...]` as a live export. Wrap the array in
+// a proxy that throws once after module evaluation, so import() succeeds, the
+// loader's first read fails, and retry can read the same module.
+function rewriteDevConstToArmedProxy(source, exportName, level) {
+  const pattern = new RegExp(`const ${escapeRegExp(exportName)} = \\[`)
+  const match = pattern.exec(source)
+  if (!match || match.index == null) return null
+
+  const dataStart = match.index + match[0].length - 1
+  const dataEnd = findExpressionEnd(source, dataStart)
+  if (dataEnd < 0) return null
+
+  const dataExpression = source.slice(dataStart, dataEnd)
+  const replacement = `const ${exportName} = (()=>{let armed=false;queueMicrotask(()=>{armed=true});const data=${dataExpression};return new Proxy(data,{get(t,p,r){if(armed){armed=false;throw new Error("E2E transient vocabulary load failure: ${level}");}return Reflect.get(t,p,r);}})})()`
+  return `${source.slice(0, match.index)}${replacement}${source.slice(dataEnd)}`
 }
 
 // Production chunks inline the dataset: X.s(["name",0,[...]])
@@ -125,7 +143,7 @@ async function failNextVocabularyLoad(page, level) {
   const marker = VOCABULARY_CHUNK_MARKERS[level]
   if (!marker) throw new Error(`Unknown vocabulary level for load failure: ${level}`)
 
-  const exportName = marker[0]
+  const { exportName, tokens } = marker
   let failed = false
 
   // Earlier flows in this shared browser context usually already loaded the
@@ -147,7 +165,7 @@ async function failNextVocabularyLoad(page, level) {
 
     const response = await route.fetch()
     const body = await response.text()
-    if (!marker.every((item) => body.includes(item))) {
+    if (!tokens.every((item) => body.includes(item))) {
       await route.fulfill({ response, body })
       return
     }
@@ -163,6 +181,9 @@ async function failNextVocabularyLoad(page, level) {
     await route.fulfill({
       status: 200,
       contentType: "application/javascript; charset=utf-8",
+      headers: {
+        "cache-control": "no-store",
+      },
       body: makeTransientFailingVocabularyChunk(body, exportName, level),
     })
     await page.unroute(VOCABULARY_CHUNK_ROUTE_PATTERN, handler)
