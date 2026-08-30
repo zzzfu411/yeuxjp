@@ -20,15 +20,24 @@ export function SemanticsReferenceDetailPage({ selectedItemId }: SemanticsRefere
   if (selectedIndex === null || !selectedPoint) return null
 
   return (
-    <div className="container py-10 px-4 mx-auto max-w-4xl min-h-[70vh]">
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight flex items-center justify-center gap-3">
-          <BrainCircuit className="w-8 h-8 text-primary" />
-          Nuance Lab
+    <div className="paper-wrap min-h-[70vh] max-w-4xl py-10">
+      <div className="paper-sheet relative mx-auto max-w-2xl space-y-3 px-6 py-10 text-center sm:px-10">
+        <span className="paper-tape" aria-hidden="true" />
+        <p className="eyebrow">意味 · Nuance notes</p>
+        <h1 className="flex items-center justify-center gap-3 font-brush text-4xl font-normal">
+          <BrainCircuit className="h-7 w-7 text-muted-foreground" />
+          语义辨析
         </h1>
-        <p className="text-muted-foreground text-lg">{selectedPoint.title}</p>
-        <Link href="/semantics" className={buttonVariants({ variant: "outline" })}>
-          Back to all nuance cards
+        <p className="font-scribble text-xl text-muted-foreground">Nuance Lab</p>
+        <p className="pt-2 text-lg text-foreground/80">{selectedPoint.title}</p>
+        <Link
+          href="/semantics"
+          className={buttonVariants({
+            variant: "ghost",
+            className: "mt-3 rounded-none border-0 border-b border-dashed border-border bg-transparent px-1 font-normal shadow-none hover:translate-y-0 hover:border-accent hover:bg-transparent",
+          })}
+        >
+          返回语义纸笺
         </Link>
         <span className="sr-only">{selectedPoint.id}</span>
       </div>

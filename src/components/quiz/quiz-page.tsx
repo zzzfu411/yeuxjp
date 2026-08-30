@@ -65,15 +65,16 @@ function QuizPageContent() {
 
   if (!mode) {
     return (
-      <div className="container py-20 px-4 mx-auto max-w-4xl flex flex-col items-center space-y-10 animate-in fade-in slide-in-from-bottom-4">
-        <div className="text-center space-y-4">
-          <h1 className="font-brush text-4xl">选择测验模式</h1>
-          <p className="text-muted-foreground text-lg">Choose how you want to test your skills today.</p>
+      <div className="paper-wrap flex flex-col items-center space-y-10 py-12 sm:py-16 animate-in fade-in slide-in-from-bottom-4">
+        <div className="space-y-3 text-center">
+          <div className="eyebrow">小試 · Quiz</div>
+          <h1 className="font-brush text-4xl sm:text-5xl"><span className="inkline">选择测验模式</span></h1>
+          <p className="font-scribble text-lg text-muted-foreground">Choose a page from today&apos;s practice book.</p>
         </div>
 
         <SpeechSettingsBar className="w-full" />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+        <section aria-label="测验模式" className="paper-sheet grid w-full grid-cols-1 gap-x-8 px-5 py-3 md:grid-cols-2">
           {QUIZ_MODE_OPTIONS.map((option) => (
             <ModeCard
               key={option.mode}
@@ -85,10 +86,10 @@ function QuizPageContent() {
               onClick={() => setMode(option.mode)}
             />
           ))}
-        </div>
+        </section>
 
         <div className="text-sm text-muted-foreground">
-          不懂术语？<GlossaryButton className="h-auto px-2 py-1 rounded-md">术语表</GlossaryButton>
+          不懂术语？<GlossaryButton className="h-auto px-2 py-1">术语表</GlossaryButton>
         </div>
 
         <NextStepCard className="max-w-4xl" />
@@ -113,7 +114,7 @@ export function QuizPage() {
 }
 
 function ModeIcon({ icon }: { icon: QuizModeIcon }) {
-  const className = "w-8 h-8 text-primary"
+  const className = "h-7 w-7 text-foreground/60 transition-colors group-hover:text-accent"
 
   switch (icon) {
     case "ear":
@@ -149,18 +150,20 @@ function ModeCard({
       type="button"
       onClick={onClick}
       data-testid={testId}
-      className="relative flex flex-col items-center p-8 bg-card border-[3px] border-foreground shadow-hard hover:-translate-x-px hover:-translate-y-px cursor-pointer transition-transform group text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="ledger-row group relative flex min-h-28 cursor-pointer items-center gap-4 px-3 py-5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       {badge ? (
-        <span className="absolute right-3 top-3 border-[2px] border-foreground bg-primary px-2 py-0.5 text-[10px] font-black">
+        <span className="seal-stamp absolute right-3 top-3 text-xs">
           {badge}
         </span>
       ) : null}
-      <div className="mb-6 p-4 bg-primary border-[3px] border-foreground shadow-hard-sm">
+      <div className="grid h-12 w-12 shrink-0 place-items-center border border-dashed border-border/70 bg-primary/5">
         <ModeIcon icon={icon} />
       </div>
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-muted-foreground text-center">{desc}</p>
+      <div className="min-w-0 pr-8">
+        <h3 className="font-brush text-2xl">{title}</h3>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">{desc}</p>
+      </div>
     </button>
   )
 }

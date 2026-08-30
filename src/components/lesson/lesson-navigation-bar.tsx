@@ -29,18 +29,18 @@ export function LessonNavigationBar({
   stepIndex: number
 }) {
   return (
-    <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t pt-5">
-      <Button type="button" variant="outline" className="gap-2 rounded-full" onClick={onBack} disabled={stepIndex === 0}>
+    <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border/40 pt-5">
+      <Button type="button" variant="outline" className="gap-2" onClick={onBack} disabled={stepIndex === 0}>
         <ArrowLeft className="h-4 w-4" />
         上一步
       </Button>
 
       {current.type === "summary" && hasCompletedLesson ? (
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" className="rounded-full">
+          <Button asChild variant="outline">
             <Link href="/review" data-testid="lesson-review-link">去复习</Link>
           </Button>
-          <Button asChild className="gap-2 rounded-full">
+          <Button asChild className="gap-2">
             <Link href={nextLesson ? `/learn/${nextLesson.id}` : "/"} data-testid="lesson-next-lesson-link">
               {nextLesson ? "下一课" : "回到首页"}
               <ArrowRight className="h-4 w-4" />
@@ -50,7 +50,7 @@ export function LessonNavigationBar({
       ) : (
         <Button
           type="button"
-          className="gap-2 rounded-full"
+          className="gap-2"
           data-testid="lesson-next"
           onClick={onNext}
           disabled={!loaded || (!lessonUnlocked && isLast) || (lessonUnlocked && isPracticeStep(current) && !result)}

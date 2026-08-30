@@ -102,7 +102,7 @@ export function KanaPageSections({
   }
 
   return (
-    <div className="w-full space-y-10 flex flex-col items-center">
+    <div className="flex w-full flex-col items-center space-y-14">
       <KanaLearningSection
         banner="all"
         title="清音 + 浊音/半浊音"

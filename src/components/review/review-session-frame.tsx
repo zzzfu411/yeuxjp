@@ -17,9 +17,9 @@ export function ReviewSessionFrame({
   testId?: string
 }) {
   return (
-    <div className="container py-10 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6 mb-20" data-testid={testId}>
-      <div className="w-full flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 text-muted-foreground">
+    <div className="container py-10 px-4 mx-auto max-w-lg mb-20 flex flex-col items-center space-y-6" data-testid={testId}>
+      <div className="flex w-full items-center justify-between border-b border-dashed border-border/60 pb-3">
+        <Button variant="ghost" size="sm" onClick={onExit} className="gap-2 px-2 text-muted-foreground shadow-none">
           <ArrowLeft className="w-4 h-4" /> 返回
         </Button>
         {headerRight}
@@ -37,9 +37,10 @@ export function ReviewPromptCard({
   minHeightClassName?: string
 }) {
   return (
-    <div className={cn("w-full flex flex-col items-center justify-center py-10 bg-card border rounded-xl shadow-sm relative", minHeightClassName)}>
+    <section className={cn("paper-sheet relative flex w-full flex-col items-center justify-center px-5 py-10", minHeightClassName)}>
+      <span className="paper-tape" aria-hidden />
       {children}
-    </div>
+    </section>
   )
 }
 

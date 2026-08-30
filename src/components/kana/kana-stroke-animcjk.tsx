@@ -73,15 +73,15 @@ export function KanaStrokeAnimCJK({
   if (!svgs) {
     return (
       <div className={cn("flex items-center justify-center", className)}>
-        <div className="w-full max-w-[16rem] aspect-square rounded-2xl border-2 border-dashed border-muted-foreground/20 animate-pulse" />
+        <div className="aspect-square w-full max-w-[16rem] animate-pulse border border-dashed border-muted-foreground/20" />
       </div>
     )
   }
 
   return (
-    <div className={cn("kana-animcjk-wrapper w-full h-full flex flex-col items-stretch gap-3 text-foreground", className)}>
+    <div className={cn("kana-animcjk-wrapper flex h-full w-full flex-col items-stretch gap-3 text-foreground", className)}>
       {/* Animation surface */}
-      <div className="relative flex-1 min-h-0 flex items-stretch gap-1.5">
+      <div className="relative flex min-h-0 flex-1 items-stretch gap-1.5">
         {svgs.map((svg, i) => {
           const original = parts[i]
           const isSmall = original in SMALL_KANA_MAP

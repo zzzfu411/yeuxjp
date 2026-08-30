@@ -56,12 +56,13 @@ export function VocabularyFocusModal({
     <Modal
       isOpen={vocab !== null}
       onClose={onClose}
-      className="max-w-xl h-[70vh] flex flex-col p-0 overflow-hidden rounded-2xl"
+      className="paper-sheet flex h-[min(76vh,46rem)] max-w-xl flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
     >
       {vocab && (
         <>
+          <span className="paper-tape top-0" aria-hidden="true" />
           <h2 id={titleId} className="sr-only">
             {vocab.kanji || vocab.kana}
           </h2>
@@ -71,37 +72,39 @@ export function VocabularyFocusModal({
           <div
             role="button"
             tabIndex={0}
-            className="group relative min-h-0 flex-1 cursor-pointer overflow-y-auto overscroll-contain bg-gradient-to-b from-card to-secondary/10 text-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="group relative min-h-0 flex-1 cursor-pointer overflow-y-auto overscroll-contain bg-transparent text-inherit outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             onClick={onFlip}
             onKeyDown={handleCardKeyDown}
             aria-pressed={flipped}
             data-testid="vocabulary-focus-card"
           >
-            <div className="flex min-h-full flex-col items-center justify-center p-6 text-center sm:p-8">
+            <div className="flex min-h-full flex-col items-center justify-center p-6 text-center sm:p-9">
               {!flipped ? (
-                <div className="animate-in fade-in zoom-in duration-200 space-y-6">
+                <div className="animate-in fade-in zoom-in space-y-7 duration-200">
                   <div className="space-y-2">
-                    <h2 className="font-jp text-6xl sm:text-7xl font-bold text-foreground tracking-tight">{vocab.kanji || vocab.kana}</h2>
-                    {vocab.kanji && <p className="text-2xl text-muted-foreground/80 font-medium">{vocab.kana}</p>}
+                    <p className="eyebrow">ことば · Word</p>
+                    <h2 className="font-jp text-6xl font-medium text-foreground sm:text-7xl">{vocab.kanji || vocab.kana}</h2>
+                    {vocab.kanji && <p className="text-2xl text-muted-foreground/80">{vocab.kana}</p>}
                   </div>
-                  <div className="mt-8 flex justify-center opacity-50 transition-opacity group-hover:opacity-100">
-                    <div className="bg-background/80 backdrop-blur px-4 py-1.5 rounded-full text-xs font-medium text-muted-foreground shadow-sm flex items-center gap-2 border">
-                      <RotateCw className="w-3 h-3" /> 点击或按空格翻面
+                  <div className="flex justify-center opacity-60 transition-opacity group-hover:opacity-100">
+                    <div className="font-scribble flex items-center gap-2 border-b border-dashed border-border/70 px-1 pb-1 text-sm text-muted-foreground">
+                      <RotateCw className="h-3 w-3" /> 点击或按空格翻面
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="animate-in fade-in zoom-in duration-200 space-y-6 w-full max-w-sm">
+                <div className="animate-in fade-in zoom-in w-full max-w-sm space-y-6 duration-200">
                   <div className="space-y-1">
-                    <p className="text-4xl font-bold text-primary">{vocab.meaning}</p>
-                    {showRomaji && <p className="text-xl text-muted-foreground font-serif italic">{vocab.romaji}</p>}
+                    <p className="eyebrow">释义 · Meaning</p>
+                    <p className="text-4xl font-semibold text-accent">{vocab.meaning}</p>
+                    {showRomaji && <p className="font-scribble text-xl text-muted-foreground">{vocab.romaji}</p>}
                     <VocabCourseAppearances vocabId={vocab.id} />
                   </div>
                   {vocab.exampleSentences?.[0] && (
-                    <div className="rounded-xl border bg-background/70 px-4 py-3 text-left space-y-1">
-                      <p className="text-base text-foreground leading-relaxed">{vocab.exampleSentences[0].japanese}</p>
+                    <div className="ledger-row space-y-1 border-y border-border/45 px-4 py-3 text-left">
+                      <p className="text-base leading-relaxed text-foreground">{vocab.exampleSentences[0].japanese}</p>
                       {showRomaji && vocab.exampleSentences[0].romaji && (
-                        <p className="text-xs text-muted-foreground font-serif italic">{vocab.exampleSentences[0].romaji}</p>
+                        <p className="font-scribble text-sm text-muted-foreground">{vocab.exampleSentences[0].romaji}</p>
                       )}
                       <p className="text-sm text-muted-foreground">{vocab.exampleSentences[0].meaning}</p>
                     </div>
@@ -109,7 +112,7 @@ export function VocabularyFocusModal({
                   <div className="pt-2">
                     <Button
                       size="lg"
-                      className="w-full rounded-full gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                      className="w-full gap-2 border border-border/60 bg-transparent text-foreground shadow-none transition-colors hover:translate-x-0 hover:translate-y-0 hover:bg-muted/40 hover:shadow-none"
                       onClick={(event) => {
                         event.stopPropagation()
                         onPlay()
@@ -124,7 +127,7 @@ export function VocabularyFocusModal({
                     <Button
                       size="lg"
                       variant={learned ? "default" : "secondary"}
-                      className="w-full rounded-full gap-2"
+                      className="w-full gap-2 border border-border/60 bg-transparent text-foreground shadow-none hover:translate-x-0 hover:translate-y-0 hover:bg-muted/40 hover:shadow-none aria-pressed:border-accent aria-pressed:text-accent"
                       onClick={(event) => {
                         event.stopPropagation()
                         onToggleLearned()
@@ -141,15 +144,15 @@ export function VocabularyFocusModal({
             </div>
           </div>
 
-          <div className="p-4 bg-background border-t flex justify-between items-center shrink-0 select-none">
-            <Button variant="ghost" size="sm" onClick={onPrev} className="gap-1 pl-2 text-muted-foreground hover:text-foreground">
-              <ChevronLeft className="w-4 h-4" /> 上一条
+          <div className="flex shrink-0 select-none items-center justify-between border-t border-border/50 bg-card/70 p-4">
+            <Button variant="ghost" size="sm" onClick={onPrev} className="gap-1 border-0 bg-transparent pl-2 text-muted-foreground shadow-none hover:translate-x-0 hover:translate-y-0 hover:border-0 hover:bg-transparent hover:text-foreground hover:shadow-none">
+              <ChevronLeft className="h-4 w-4" /> 上一条
             </Button>
-            <div className="text-xs font-mono text-muted-foreground bg-secondary px-3 py-1 rounded-full">
+            <div className="font-scribble text-base text-muted-foreground">
               {(selectedIndex ?? 0) + 1} / {total}
             </div>
-            <Button variant="ghost" size="sm" onClick={onNext} className="gap-1 pr-2 text-muted-foreground hover:text-foreground">
-              下一条 <ChevronRight className="w-4 h-4" />
+            <Button variant="ghost" size="sm" onClick={onNext} className="gap-1 border-0 bg-transparent pr-2 text-muted-foreground shadow-none hover:translate-x-0 hover:translate-y-0 hover:border-0 hover:bg-transparent hover:text-foreground hover:shadow-none">
+              下一条 <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </>

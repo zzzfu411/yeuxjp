@@ -16,9 +16,9 @@ const iconByRating = {
 } as const
 
 const selectedClassByRating = {
-  again: "border-red-300 bg-red-50 text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300",
-  hard: "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200",
-  good: "border-green-300 bg-green-50 text-green-700 dark:border-green-900/70 dark:bg-green-950/30 dark:text-green-300",
+  again: "border-accent bg-accent/[0.05] text-accent",
+  hard: "border-accent bg-accent/[0.05] text-accent",
+  good: "border-accent bg-accent/[0.05] text-accent",
 } as const
 
 export function VocabularySelfAssessmentControls({
@@ -29,8 +29,11 @@ export function VocabularySelfAssessmentControls({
   onSelect: (rating: VocabularySelfAssessment) => void
 }) {
   return (
-    <div className="space-y-3">
-      <div className="text-sm font-semibold text-foreground">这次记得吗？</div>
+    <div className="space-y-3 border-t border-border/40 pt-5">
+      <div>
+        <span className="eyebrow">记忆 · Recall</span>
+        <span className="ml-2 text-sm text-foreground">这次记得吗？</span>
+      </div>
       <div className="grid grid-cols-3 gap-2" role="group" aria-label="本次词汇回忆自评">
         {VOCABULARY_SELF_ASSESSMENT_OPTIONS.map((option) => {
           const Icon = iconByRating[option.id]
@@ -41,7 +44,7 @@ export function VocabularySelfAssessmentControls({
               type="button"
               variant="outline"
               className={cn(
-                "h-auto min-h-16 flex-col gap-1 px-2 py-3 whitespace-normal disabled:opacity-50",
+                "ledger-row h-auto min-h-16 flex-col gap-1 whitespace-normal rounded-none border-0 border-b border-border/50 bg-transparent px-2 py-3 font-normal shadow-none hover:translate-x-0 hover:translate-y-0 hover:bg-muted/35 hover:shadow-none disabled:opacity-50",
                 selected && "disabled:opacity-100",
                 selected && selectedClassByRating[option.id]
               )}

@@ -134,13 +134,13 @@ export function Modal({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6",
+        "fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6",
         isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300"
       )}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-background/75 backdrop-blur-[2px]"
         onClick={onClose}
         aria-hidden
       />
@@ -154,7 +154,7 @@ export function Modal({
         aria-describedby={ariaDescribedBy}
         tabIndex={-1}
         className={cn(
-          "relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-sm border-[3px] border-foreground bg-card text-card-foreground shadow-hard outline-none",
+          "paper-sheet relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-sm text-card-foreground outline-none",
           "transform transition-all duration-300",
           isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4",
           className

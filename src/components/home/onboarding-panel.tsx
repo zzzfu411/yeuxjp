@@ -38,18 +38,18 @@ export function OnboardingPanel({
   const [minutesPerDay, setMinutesPerDay] = useState(initial?.minutesPerDay ?? 10)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <div className="text-xs font-semibold tracking-wider text-muted-foreground">
+        <div className="eyebrow">
           {initial ? "学习设置" : "首次学习设置"}
         </div>
-        <div className="mt-1 text-xl font-bold">先定一条适合你的路线</div>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">设置只保存在本机，之后可以继续使用旧的五十音、词汇和测验页面。</p>
+        <div className="mt-2 text-lg font-semibold">先定一条适合你的路线</div>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">只记在这台设备上，随时可以回来修改。</p>
       </div>
 
-      <div className="space-y-2">
-        <div className="text-sm font-semibold">学习目标</div>
-        <div className="grid gap-2">
+      <div>
+        <div className="mb-2 text-sm font-semibold">学习目标</div>
+        <div className="border-y border-border/40">
           {goalOptions.map((item) => (
             <button
               key={item.value}
@@ -58,12 +58,15 @@ export function OnboardingPanel({
               data-testid={`onboarding-goal-${item.value}`}
               onClick={() => setGoal(item.value)}
               className={cn(
-                "border-[2px] border-foreground p-3 text-left transition hover:bg-primary/40",
-                goal === item.value && "bg-primary"
+                "ledger-row block w-full border-b border-border/30 px-2 py-3 text-left transition-colors last:border-b-0 hover:bg-muted/30",
+                goal === item.value && "border-l-2 border-l-accent bg-accent/[0.06] pl-[calc(0.5rem-2px)]"
               )}
             >
-              <div className="text-sm font-semibold">{item.label}</div>
-              <div className="text-xs text-muted-foreground">{item.desc}</div>
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm font-semibold">{item.label}</span>
+                {goal === item.value ? <span className="font-scribble text-sm text-accent">chosen</span> : null}
+              </div>
+              <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.desc}</div>
             </button>
           ))}
         </div>
@@ -73,14 +76,14 @@ export function OnboardingPanel({
         <SelectPills label="假名基础" value={kanaLevel} options={kanaOptions} onChange={(value) => setKanaLevel(value as KanaLevel)} />
         <SelectPills label="罗马音" value={romajiMode} options={romajiOptions} onChange={(value) => setRomajiMode(value as RomajiMode)} />
       </div>
-      <p className="text-xs leading-relaxed text-muted-foreground">
+      <p className="-mt-3 text-xs leading-relaxed text-muted-foreground">
         {kanaOptions.find((item) => item.value === kanaLevel)?.desc}
       </p>
 
-      <div className="border-[2px] border-foreground bg-background p-3">
+      <div className="border-y border-border/40 py-3">
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-semibold">每天学习时长</span>
-          <span className="text-muted-foreground">{minutesPerDay} 分钟</span>
+          <span className="font-scribble text-base text-muted-foreground">{minutesPerDay} 分钟</span>
         </div>
         <input
           aria-label="每天学习时长"
@@ -91,7 +94,7 @@ export function OnboardingPanel({
           step={5}
           value={minutesPerDay}
           onChange={(event) => setMinutesPerDay(Number(event.target.value))}
-          className="w-full accent-primary"
+          className="w-full accent-accent"
         />
       </div>
 
@@ -121,7 +124,7 @@ function SelectPills({
   return (
     <div className="space-y-2">
       <div className="text-sm font-semibold">{label}</div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-x-3 gap-y-2">
         {options.map((item) => (
           <button
             key={item.value}
@@ -130,8 +133,10 @@ function SelectPills({
             data-testid={`onboarding-${item.value}`}
             onClick={() => onChange(item.value)}
             className={cn(
-              "border-[2px] border-foreground px-3 py-1.5 text-xs font-extrabold transition",
-              value === item.value ? "bg-primary text-foreground" : "bg-card text-muted-foreground hover:bg-primary/40"
+              "border-b px-0.5 py-1 text-xs font-semibold transition-colors",
+              value === item.value
+                ? "border-accent text-accent"
+                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
             )}
           >
             {item.label}

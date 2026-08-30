@@ -15,7 +15,7 @@ function ReviewAudioButton({
       type="button"
       variant="outline"
       size="icon"
-      className="w-20 h-20 rounded-full border-4"
+      className="h-20 w-20 border border-dashed border-foreground/40 bg-transparent shadow-none hover:border-accent/70 hover:bg-accent/5"
       aria-label="播放复习音频"
       onClick={() => onPlay(text)}
     >
@@ -40,8 +40,8 @@ export function MixedReviewPrompt({
   return (
     <>
       {audio ? <ReviewAudioButton text={audio} onPlay={onPlay} /> : null}
-      <div className="mt-6 text-center space-y-2 px-6">
-        <div className="text-4xl font-bold leading-snug break-words">{prompt}</div>
+      <div className="mt-6 space-y-2 px-6 text-center">
+        <div className="break-words font-jp text-4xl font-semibold leading-snug">{prompt}</div>
         {sub ? <div className="text-sm text-muted-foreground">{sub}</div> : null}
         {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
       </div>
@@ -63,7 +63,7 @@ export function KanaReviewPrompt({
       <ReviewAudioButton text={glyph} onPlay={onPlay} />
 
       <div className="mt-6 text-center">
-        <div className="text-7xl font-bold leading-none">{glyph}</div>
+        <div className="font-jp text-7xl font-semibold leading-none">{glyph}</div>
         <div className="mt-2 text-sm text-muted-foreground">{script === "hiragana" ? "平假名" : "片假名"}</div>
         <div className="mt-3 text-xs text-muted-foreground">选择正确的罗马音</div>
       </div>
@@ -88,8 +88,8 @@ export function VocabReviewPrompt({
     <>
       {audio ? <ReviewAudioButton text={audio} onPlay={onPlay} /> : null}
 
-      <div className="mt-6 text-center space-y-2 px-6">
-        <div className="text-6xl font-bold leading-tight break-words">{display}</div>
+      <div className="mt-6 space-y-2 px-6 text-center">
+        <div className="break-words font-jp text-6xl font-semibold leading-tight">{display}</div>
         {sub ? <div className="text-xl text-muted-foreground">{sub}</div> : null}
         <div className="text-xs text-muted-foreground">{hint}</div>
       </div>
@@ -120,8 +120,8 @@ export function MistakeReviewPrompt({
   }
 
   return (
-    <div className="text-center space-y-3 px-6">
-      <div className="text-3xl font-bold leading-snug break-words">{questionText ?? "（无题干）"}</div>
+    <div className="space-y-3 px-6 text-center">
+      <div className="break-words font-jp text-3xl font-semibold leading-snug">{questionText ?? "（无题干）"}</div>
       <div className="text-xs text-muted-foreground">{type}</div>
     </div>
   )

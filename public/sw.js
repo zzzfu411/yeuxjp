@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v8";
+const CACHE_VERSION = "v9";
 const SHELL_CACHE_NAME = `yasashi-shell-${CACHE_VERSION}`;
 const NAVIGATION_CACHE_NAME = `yasashi-navigation-${CACHE_VERSION}`;
 const RUNTIME_CACHE_NAME = `yasashi-runtime-${CACHE_VERSION}`;
@@ -32,6 +32,9 @@ const RUNTIME_ASSETS = [
   "/icons/icon-512.png",
   "/brand/logo-mark.svg",
   "/brand/logo-wordmark.svg",
+  "/assets/hero/yasashi-inkstone-cover.webp",
+  "/assets/brand/yasashi-og.webp",
+  "/assets/stamps/kana-seal-a.png",
   "/assets/hero/hero-watercolor.webp",
   "/assets/hero/hero-watercolor@2x.webp",
   "/assets/hero/hero-watercolor-dark.webp",

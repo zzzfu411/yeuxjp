@@ -32,13 +32,13 @@ export function ConfirmActionDialog({
     <Modal
       isOpen={open}
       onClose={onCancel}
-      className="max-w-md rounded-2xl p-0"
+      className="max-w-md p-0"
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
     >
       <div className="space-y-6 p-6" data-testid={testId}>
         <div className="flex items-start gap-4 pr-8">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-destructive/30 bg-destructive/10 text-destructive">
             <AlertTriangle className="h-5 w-5" aria-hidden="true" />
           </div>
           <div className="space-y-2">
@@ -55,7 +55,6 @@ export function ConfirmActionDialog({
           <Button
             type="button"
             variant="outline"
-            className="rounded-full"
             data-testid={`${testId}-cancel`}
             onClick={onCancel}
           >
@@ -64,7 +63,6 @@ export function ConfirmActionDialog({
           <Button
             type="button"
             variant="destructive"
-            className="rounded-full"
             data-testid={`${testId}-confirm`}
             onClick={onConfirm}
           >

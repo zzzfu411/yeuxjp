@@ -13,7 +13,7 @@ const KanaStrokeAnimCJK = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full w-full items-center justify-center rounded-2xl border bg-muted/30 text-sm text-muted-foreground">
+      <div className="flex h-full w-full items-center justify-center border-y border-border/40 bg-muted/20 text-sm text-muted-foreground">
         加载笔顺动画...
       </div>
     ),
@@ -64,19 +64,19 @@ export function KanaDetailModal({
   const titleId = "kana-detail-modal-title"
 
   return (
-    <Modal isOpen={selectedIndex !== null} onClose={onClose} className="max-w-md" ariaLabelledBy={titleId}>
+    <Modal isOpen={selectedIndex !== null} onClose={onClose} className="max-w-md paper-sheet" ariaLabelledBy={titleId}>
       {kana && (
-        <div className="flex flex-col h-full">
+        <div className="flex h-full flex-col">
           <h2 id={titleId} className="sr-only">
             {currentChar ? `${currentChar} ${kana.romaji}` : kana.romaji}
           </h2>
-          <div className="flex-1 p-8 flex flex-col items-center justify-center space-y-8">
-            <div className="text-sm font-mono text-muted-foreground uppercase tracking-[0.2em]">
+          <div className="flex flex-1 flex-col items-center justify-center space-y-7 px-5 py-8 sm:px-8">
+            <div className="font-scribble text-lg text-muted-foreground">
               {kana.romaji}
             </div>
 
             {isWriting && currentChar ? (
-              <div className={cn("h-72 flex items-stretch justify-center", isComboChar ? "w-[22rem]" : "w-64")}>
+              <div className={cn("flex h-64 w-full items-stretch justify-center sm:h-72", isComboChar ? "max-w-[22rem]" : "max-w-64")}>
                 <KanaStrokeAnimCJK
                   char={currentChar}
                   label={`笔顺：${kana.romaji}`}
@@ -84,17 +84,17 @@ export function KanaDetailModal({
                 />
               </div>
             ) : (
-              <div className="relative w-64 h-56 flex items-center justify-center bg-secondary/30 rounded-[2rem] border-4 border-background shadow-inner overflow-hidden">
+              <div className="relative flex aspect-square w-full max-w-64 items-center justify-center overflow-hidden border-y border-border/40 bg-muted/15">
                 <span
                   className={cn(
-                    "font-bold text-foreground leading-none pb-4 whitespace-nowrap",
-                    isComboChar ? "text-[5.5rem] tracking-tight" : "text-[9rem]"
+                    "font-jp whitespace-nowrap pb-3 font-semibold leading-none text-foreground",
+                    isComboChar ? "text-[5.25rem]" : "text-[8.5rem]"
                   )}
                 >
                   {mode === "hiragana" ? kana.hiragana : kana.katakana}
                 </span>
                 {!isComboChar && (
-                  <span className="absolute top-4 left-5 text-5xl text-muted-foreground/10 font-serif font-black select-none">
+                  <span className="font-jp absolute left-4 top-4 select-none text-5xl text-muted-foreground/10">
                     {mode === "hiragana" ? kana.katakana : kana.hiragana}
                   </span>
                 )}
@@ -103,7 +103,7 @@ export function KanaDetailModal({
 
             {isCheckingStrokeResource ? (
               <div
-                className="rounded-xl border bg-muted/30 px-4 py-3 text-center text-sm text-muted-foreground"
+                className="border-y border-border/35 bg-muted/15 px-4 py-3 text-center text-sm text-muted-foreground"
                 aria-live="polite"
               >
                 正在确认 AnimCJK 笔顺资源，确认可用后会显示笔顺入口。
@@ -112,15 +112,15 @@ export function KanaDetailModal({
 
             {isMissingStrokeResource ? (
               <div
-                className="rounded-xl border bg-muted/30 px-4 py-3 text-center text-sm text-muted-foreground"
+                className="border-y border-border/35 bg-muted/15 px-4 py-3 text-center text-sm text-muted-foreground"
                 aria-live="polite"
               >
                 当前字符暂无可用 AnimCJK 笔顺资源，仍可朗读和标记掌握。
               </div>
             ) : null}
 
-            <div className="w-full space-y-3">
-              <div className="flex gap-3 w-full">
+            <div className="w-full space-y-3 border-t border-border/35 pt-5">
+              <div className="flex w-full gap-3">
                 <Button
                   size="lg"
                   className="flex-1"
@@ -161,11 +161,11 @@ export function KanaDetailModal({
             </div>
           </div>
 
-          <div className="p-4 border-t bg-muted/30 flex justify-between items-center shrink-0">
+          <div className="flex shrink-0 items-center justify-between border-t border-border/40 bg-muted/15 p-4">
             <Button variant="ghost" size="icon" aria-label="上一个假名" onClick={onPrev}>
               <ChevronLeft className="w-6 h-6" />
             </Button>
-            <div className="text-xs font-mono text-muted-foreground">
+            <div className="font-scribble text-sm text-muted-foreground">
               {(selectedIndex ?? 0) + 1} / {total}
             </div>
             <Button variant="ghost" size="icon" aria-label="下一个假名" onClick={onNext}>

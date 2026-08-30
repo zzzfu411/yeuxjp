@@ -40,14 +40,14 @@ export function KanaLearningSection({
   descriptionClassName,
 }: KanaLearningSectionProps) {
   return (
-    <div className={cn("w-full space-y-6 flex flex-col items-center", className)}>
+    <section className={cn("flex w-full flex-col items-center space-y-7", className)}>
       {banner && <KanaBanner banner={banner} />}
 
       {(title || description) && (
-        <div className={cn("text-center space-y-2 max-w-2xl mx-auto", copyClassName)}>
+        <div className={cn("mx-auto max-w-2xl space-y-2 text-center", copyClassName)}>
           {title && <h2 className="text-lg font-bold">{title}</h2>}
           {description && (
-            <div className={cn("text-xs text-muted-foreground leading-relaxed", descriptionClassName)}>
+            <div className={cn("text-xs leading-relaxed text-muted-foreground", descriptionClassName)}>
               {description}
             </div>
           )}
@@ -63,6 +63,6 @@ export function KanaLearningSection({
         isMastered={isMastered}
         onToggleMastered={onToggleMastered}
       />
-    </div>
+    </section>
   )
 }

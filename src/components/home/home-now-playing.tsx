@@ -1,5 +1,6 @@
 import { useState } from "react"
 import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 import { OnboardingPanel } from "@/components/home/onboarding-panel"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import type { LearningEntry } from "@/lib/learning-entry"
@@ -41,33 +42,39 @@ export function HomeNowPlaying({
   const showOnboarding = profileLoaded && (!profile || editingProfile)
 
   return (
-    <aside className="flex w-full shrink-0 flex-col items-center border-[3px] border-foreground bg-card px-4 py-6 lg:w-[320px] lg:border-r-0">
-      <div className="flex h-40 w-40 items-center justify-center border-[5px] border-foreground bg-muted shadow-hard">
-        <span className="font-jp text-6xl text-accent">あ</span>
+    <aside className="paper-slip relative w-full px-5 py-6 sm:px-6">
+      <span className="paper-tape" aria-hidden="true" />
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow">次の一頁</p>
+          <p className="font-scribble mt-1 text-base text-muted-foreground">Now studying</p>
+        </div>
+        <span className="seal-stamp font-jp flex h-11 w-11 items-center justify-center text-2xl text-accent" aria-hidden="true">
+          あ
+        </span>
       </div>
-      <div className="mt-4 text-center font-black leading-tight">{learningEntry.title}</div>
-      <p className="mt-1 max-w-[16rem] text-center text-xs font-semibold text-muted-foreground">
+
+      <h3 className="mt-6 text-xl font-semibold leading-snug">{learningEntry.title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
         {learningEntry.subtitle}
       </p>
 
       {profileLoaded ? (
-        <>
-          <Link
-            href={learningEntry.href}
-            data-testid="home-start-learning"
-            className="mt-5 flex h-14 w-14 items-center justify-center border-[3px] border-foreground bg-destructive text-2xl text-white shadow-hard-sm hover:-translate-x-px hover:-translate-y-px"
-            aria-label={learningEntry.cta}
-          >
-            ▶
-          </Link>
-          <div className="mt-2 text-xs font-extrabold">{learningEntry.cta}</div>
-        </>
+        <Link
+          href={learningEntry.href}
+          data-testid="home-start-learning"
+          className="group mt-5 inline-flex items-center gap-2 border-b border-accent/50 pb-1 text-sm font-semibold text-accent"
+          aria-label={learningEntry.cta}
+        >
+          {learningEntry.cta}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+        </Link>
       ) : (
-        <div className="mt-5 text-xs font-extrabold text-muted-foreground">正在读取学习设置...</div>
+        <div className="mt-5 text-xs text-muted-foreground">正在读取学习设置...</div>
       )}
 
       {showOnboarding ? (
-        <div className="mt-5 w-full">
+        <div className="mt-6 border-t border-border/50 pt-6">
           <OnboardingPanel
             key={profile ? `edit-${profile.updatedAt}` : "create"}
             initial={profile}
@@ -81,7 +88,7 @@ export function HomeNowPlaying({
             <button
               type="button"
               data-testid="home-edit-profile-cancel"
-              className="mt-2 w-full text-xs font-extrabold underline-offset-4 hover:underline"
+              className="font-scribble mt-3 w-full text-sm text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground"
               onClick={() => setEditingProfile(false)}
             >
               取消
@@ -91,37 +98,37 @@ export function HomeNowPlaying({
         </div>
       ) : profileLoaded ? (
         <>
-          <div className="mt-4 w-full max-w-[16rem]">
-            <div className="mb-1 flex justify-between text-[10px] font-extrabold tracking-wide text-muted-foreground">
+          <div className="mt-7 border-t border-border/50 pt-5">
+            <div className="mb-2 flex justify-between text-xs text-muted-foreground">
               <span>{dailyGoalDone ? "今日完成" : "今日进度"}</span>
-              <span>
+              <span className="font-scribble text-sm">
                 {todayPracticeCount}/{dailyTarget}
               </span>
             </div>
             <div
-              className="h-2.5 border-[2px] border-foreground bg-muted"
+              className="h-1 overflow-hidden bg-muted"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={dailyTarget}
               aria-valuenow={Math.min(todayPracticeCount, dailyTarget)}
               aria-label="今日练习进度"
             >
-              <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+              <div className="h-full bg-accent/75" style={{ width: `${progress}%` }} />
             </div>
           </div>
-          <div className="mt-5 grid w-full grid-cols-2 gap-2 text-center">
+          <div className="mt-5 border-y border-border/40">
             <MiniStat label="课表" value={`${completedCount}/${totalLessons}`} />
             <MiniStat label="生存词" value={`${survivalDone}/${survivalTotal}`} />
             <MiniStat label="连续" value={`${streak}天`} />
             <MiniStat label="到期" value={`${totalDue}`} />
           </div>
-          <p className="mt-3 max-w-[16rem] text-center text-[10px] font-semibold text-muted-foreground">
+          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
             {profile ? profileSummary(profile) : null}
           </p>
           <button
             type="button"
             data-testid="home-edit-profile"
-            className="mt-2 text-xs font-extrabold underline-offset-4 hover:underline"
+            className="font-scribble mt-2 text-sm text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground"
             onClick={() => setEditingProfile(true)}
           >
             改设置
@@ -142,9 +149,9 @@ function profileSummary(profile: UserProfile) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-[2px] border-foreground bg-background px-1 py-2">
-      <div className="text-[10px] font-extrabold text-muted-foreground">{label}</div>
-      <div className="text-sm font-black">{value}</div>
+    <div className="ledger-row flex items-baseline justify-between gap-4 border-b border-border/30 px-1 py-2.5 last:border-b-0">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="font-scribble text-base font-semibold">{value}</div>
     </div>
   )
 }

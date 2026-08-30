@@ -29,11 +29,11 @@ export function HomeStarterLessons({
   const [openOverrides, setOpenOverrides] = useState<Partial<Record<LessonTrack, boolean>>>({})
 
   if (!profileLoaded) {
-    return <div className="px-4 py-6 text-sm font-semibold text-muted-foreground">正在读取课表...</div>
+    return <div className="px-3 py-8 text-sm text-muted-foreground">正在读取课表...</div>
   }
 
   return (
-    <div>
+    <div className="border-y border-border/50">
       {STARTER_LESSONS.map((lesson, index) => {
         const status = getLessonEntryStatus(lesson, completedLessonIds, activeLessonId, kanaLevel)
         const done = status === "done"
@@ -49,21 +49,21 @@ export function HomeStarterLessons({
           ? countPhaseProgress(STARTER_LESSONS, completedLessonIds, lesson.track, kanaLevel)
           : null
         const className = cn(
-          "flex items-center gap-3 border-b-[2px] border-foreground px-4 py-3",
-          !locked && "hover:bg-primary/35",
-          active && "bg-primary/50",
-          done && "bg-background",
-          skipped && "bg-muted/40",
-          locked && "opacity-55"
+          "ledger-row group flex items-center gap-4 border-b border-border/35 px-2 py-3.5 transition-colors",
+          !locked && "hover:bg-muted/35",
+          active && "border-l-2 border-l-accent bg-accent/[0.06] pl-[calc(0.5rem-2px)]",
+          done && "text-foreground/75",
+          skipped && "bg-muted/20",
+          locked && "cursor-default opacity-45"
         )
         const body = (
           <>
-            <span className="w-8 shrink-0 font-black text-muted-foreground">{String(lesson.order).padStart(2, "0")}</span>
+            <span className="font-scribble w-9 shrink-0 text-base text-muted-foreground">{String(lesson.order).padStart(2, "0")}</span>
             <div className="min-w-0 flex-1">
-              <div className="truncate font-black">{title}</div>
-              <div className="truncate text-xs font-semibold text-muted-foreground">{lesson.subtitle}</div>
+              <div className="truncate text-sm font-semibold sm:text-base">{title}</div>
+              <div className="mt-0.5 truncate text-xs text-muted-foreground">{lesson.subtitle}</div>
             </div>
-            <span className="shrink-0 border-[2px] border-foreground px-2 py-0.5 text-[10px] font-extrabold">
+            <span className={cn("font-scribble shrink-0 text-sm text-muted-foreground", active && "text-accent")}>
               {getLessonEntryBadge(status)}
             </span>
           </>
@@ -82,13 +82,13 @@ export function HomeStarterLessons({
                     [lesson.track]: !(current[lesson.track] ?? lesson.track === activePhase.track),
                   }))
                 }
-                className="flex w-full items-center justify-between gap-3 border-b-[3px] border-foreground bg-muted px-4 py-2 text-left"
+                className="flex w-full items-center justify-between gap-3 border-b border-border/50 bg-muted/20 px-2 py-3 text-left hover:bg-muted/35"
               >
                 <div>
-                  <div className="text-[10px] font-extrabold tracking-wider text-muted-foreground">{phase.range}</div>
-                  <div className="font-black">{phase.label}</div>
+                  <div className="eyebrow">{phase.range}</div>
+                  <div className="mt-0.5 font-semibold">{phase.label}</div>
                 </div>
-                <div className="text-xs font-extrabold text-muted-foreground">
+                <div className="font-scribble text-sm text-muted-foreground">
                   {progress.done}/{progress.total} {phaseOpen ? "▾" : "▸"}
                 </div>
               </button>

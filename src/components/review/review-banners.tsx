@@ -8,7 +8,8 @@ import type { ReviewDashboardProps } from "@/components/review/review-dashboard"
 
 export function FirstReviewBanner() {
   return (
-    <div className="relative w-full hard-panel overflow-hidden flex flex-col sm:flex-row items-center gap-6 p-6 sm:pr-8" data-testid="review-empty-state">
+    <div className="paper-sheet relative flex w-full flex-col items-center gap-6 p-6 sm:flex-row sm:pr-8" data-testid="review-empty-state">
+      <span className="paper-tape" aria-hidden />
       <div className="relative w-40 h-32 shrink-0 sm:w-48 sm:h-40">
         <Image
           src="/assets/states/state-empty.webp"
@@ -19,19 +20,20 @@ export function FirstReviewBanner() {
           priority
         />
       </div>
-      <div className="flex-1 text-center sm:text-left space-y-2">
-        <div className="text-lg font-bold">还没有复习内容</div>
+      <div className="flex-1 space-y-2 text-center sm:text-left">
+        <div className="eyebrow">First review</div>
+        <div className="font-brush text-2xl">还没有复习内容</div>
         <p className="text-sm text-muted-foreground leading-relaxed">
           SRS（间隔重复）会在你<span className="font-semibold text-foreground">标记「已掌握」</span>的假名 / 单词上自动入册。
           先去学几个再回来吧。
         </p>
-        <div className="flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
-          <Button asChild size="sm" className="rounded-full gap-1.5">
+        <div className="flex flex-wrap justify-center gap-2 pt-2 sm:justify-start">
+          <Button asChild size="sm" className="gap-1.5">
             <Link href="/kana">
               去学五十音 <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-full">
+          <Button asChild variant="outline" size="sm">
             <Link href="/vocabulary">浏览单词卡</Link>
           </Button>
         </div>
@@ -51,7 +53,7 @@ export function ReviewStreakBanner({
 }) {
   return (
     <div
-      className="relative w-full hard-panel overflow-hidden bg-primary/20"
+      className="paper-sheet relative w-full overflow-hidden"
       data-testid={totalDue > 0 ? "review-due-state" : "review-scheduled-empty-state"}
     >
       <Image
@@ -59,15 +61,15 @@ export function ReviewStreakBanner({
         alt=""
         fill
         sizes="(max-width: 896px) 100vw, 896px"
-        className="object-cover object-right opacity-90"
+        className="object-cover object-right opacity-30 mix-blend-multiply dark:opacity-20 dark:mix-blend-screen"
         aria-hidden
         priority
       />
-      <div className="relative grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-center p-6 sm:pr-10">
+      <div className="relative grid grid-cols-1 items-center gap-4 p-6 sm:grid-cols-[1fr_auto] sm:pr-10">
         <div className="space-y-1">
-          <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">今日复习</div>
-          <div className="text-2xl sm:text-3xl font-bold text-foreground">
-            <span className="text-primary">{totalDue}</span> 张到期
+          <div className="eyebrow">今日复习 · Today</div>
+          <div className="font-brush text-3xl text-foreground sm:text-4xl">
+            <span className="text-accent">{totalDue}</span> 张到期
             <span className="text-base font-normal text-muted-foreground"> · 共 {totalEnrolled} 张</span>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -92,11 +94,11 @@ export function TodayReviewPanel({
 }) {
   return (
     <div
-      className="hard-panel p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      className="paper-sheet flex flex-col gap-4 border-l-2 border-l-accent/50 p-5 sm:flex-row sm:items-center sm:justify-between"
       data-testid={todayQueueLength ? "review-today-due" : "review-today-empty"}
     >
       <div className="space-y-1">
-        <div className="text-lg font-bold">今日复习流</div>
+        <div className="font-brush text-2xl">今日复习流</div>
         <p className="text-sm text-muted-foreground leading-relaxed">
           自动混合到期假名、词汇和错题，先处理最容易遗忘的内容。完成后会同步更新新的掌握度模型。
         </p>
@@ -106,15 +108,15 @@ export function TodayReviewPanel({
         </div>
       </div>
       {todayQueueLength ? (
-        <Button type="button" className="rounded-full" data-testid="review-start-today" onClick={onStartToday}>
+        <Button type="button" data-testid="review-start-today" onClick={onStartToday}>
           开始今日复习
         </Button>
       ) : (
         <div className="flex flex-wrap gap-2 sm:justify-end">
-          <Button asChild variant="outline" className="rounded-full">
+          <Button asChild variant="outline">
             <Link href="/quiz">立即练习</Link>
           </Button>
-          <Button asChild className="rounded-full">
+          <Button asChild>
             <Link href="/path">继续课程</Link>
           </Button>
         </div>

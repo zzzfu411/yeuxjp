@@ -31,20 +31,21 @@ export function PragmaticsReferencePage({
   )
 
   return (
-    <div className="container py-10 px-4 mx-auto space-y-12 max-w-4xl mb-20">
+    <div className="paper-wrap mb-20 max-w-4xl space-y-12 py-10">
       {enableQueryRedirect && (
         <Suspense fallback={null}>
           <ReferenceQueryRedirect basePath="/pragmatics" validIds={pragmaticsData.map((scenario) => scenario.id)} />
         </Suspense>
       )}
 
-      <div className="text-center space-y-4">
-        <h1 className="font-brush text-4xl tracking-tight flex items-center justify-center gap-3">
-          <Users className="w-8 h-8 text-primary" />
+      <div className="space-y-2 text-center">
+        <p className="eyebrow">場面 · Context notes</p>
+        <h1 className="flex items-center justify-center gap-3 font-brush text-4xl">
+          <Users className="h-7 w-7 text-muted-foreground" />
           情境模拟
           <span className="sr-only">Context Dojo</span>
         </h1>
-        <p className="text-muted-foreground text-lg">选择一个情境进行挑战。</p>
+        <p className="text-sm text-muted-foreground">选择一个情境，读一页对话。</p>
       </div>
 
       <div className="grid gap-8">
@@ -52,10 +53,11 @@ export function PragmaticsReferencePage({
           <Link
             key={scenario.id}
             href={pragmaticsItemHref(index)}
-            className="hard-panel space-y-4 border-l-[6px] border-l-primary p-5 hover:bg-primary/20"
+            className="paper-slip relative space-y-4 border-l-2 border-l-accent/45 p-6"
           >
+            <span className="paper-tape" aria-hidden="true" />
             <div>
-              <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-sm mb-1">
+              <div className="mb-1 flex items-center gap-2 text-sm text-accent">
                 <MessageCircle className="w-4 h-4" />
                 场景：{scenario.situation}
               </div>
@@ -65,7 +67,7 @@ export function PragmaticsReferencePage({
 
             <div className="flex gap-2 opacity-60">
               {scenario.responses.slice(0, 2).map((response, responseIndex) => (
-                <div key={responseIndex} className="text-xs bg-muted px-2 py-1 rounded border">
+                <div key={responseIndex} className="border-b border-dashed border-border px-2 py-1 text-xs">
                   {response.expression}
                 </div>
               ))}

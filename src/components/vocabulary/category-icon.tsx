@@ -3,9 +3,8 @@
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 
-// Only the 5 high-priority categories have artwork (P2 minimum delivery from
-// docs/ASSETS_REQUEST.md). Anything not in this map falls back to a styled
-// "#" chip so the page stays consistent visually.
+// These five category illustrations are intentionally kept as the vocabulary
+// ledger's visual index; unillustrated categories use a small ink seal.
 const CATEGORY_ICON_MAP: Record<string, string> = {
   greetings: "/assets/vocab-categories/greetings.webp",
   food: "/assets/vocab-categories/food.webp",
@@ -28,13 +27,12 @@ interface CategoryIconProps {
 
 export function CategoryIcon({ category, size = 32, className, fallback = true }: CategoryIconProps) {
   const src = CATEGORY_ICON_MAP[category]
-  const dimensionClass = `w-[${size}px] h-[${size}px]`
 
   if (src) {
     return (
       <span
         className={cn(
-          "inline-block shrink-0 overflow-hidden rounded-full ring-1 ring-border/60 bg-card",
+          "inline-block shrink-0 overflow-hidden rounded-[2px] border border-border/45 bg-card opacity-[0.86] shadow-paper-soft",
           className
         )}
         style={{ width: size, height: size }}
@@ -44,7 +42,7 @@ export function CategoryIcon({ category, size = 32, className, fallback = true }
           alt=""
           width={size * 2}
           height={size * 2}
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover saturate-[0.7] mix-blend-multiply dark:invert dark:grayscale dark:contrast-125 dark:opacity-75 dark:mix-blend-screen"
         />
       </span>
     )
@@ -55,8 +53,7 @@ export function CategoryIcon({ category, size = 32, className, fallback = true }
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center shrink-0 rounded-full bg-primary/10 text-primary/70 font-black",
-        dimensionClass,
+        "seal-stamp inline-flex shrink-0 items-center justify-center bg-transparent p-0",
         className
       )}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.55) }}

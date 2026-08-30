@@ -3,9 +3,9 @@ export type AnswerOptionFeedback = "idle" | "correct" | "wrong" | "dimmed"
 const ANSWER_OPTION_CLASS_NAMES: Record<AnswerOptionFeedback, string> = {
   idle: "",
   correct:
-    "bg-green-100 border-green-500 text-green-700 hover:bg-green-100 dark:bg-green-900/30 dark:border-green-500 dark:text-green-400",
+    "border-primary/45 bg-primary/10 text-foreground hover:bg-primary/10 dark:border-primary/45 dark:bg-primary/10 dark:text-foreground",
   wrong:
-    "bg-red-100 border-red-500 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:border-red-500 dark:text-red-400",
+    "border-destructive/65 bg-destructive/10 text-foreground hover:bg-destructive/10 dark:border-destructive/65 dark:bg-destructive/10 dark:text-foreground",
   dimmed: "opacity-50",
 }
 

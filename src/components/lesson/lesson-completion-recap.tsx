@@ -43,7 +43,8 @@ export function LessonCompletionRecap({ lesson }: { lesson: Lesson }) {
   const vocabWords = vocabState.key === vocabIdKey ? vocabState.words : []
 
   return (
-    <div className="mt-5 rounded-2xl border bg-primary/10 p-5" data-testid="lesson-completed-summary">
+    <div className="paper-slip relative mt-8 p-5" data-testid="lesson-completed-summary">
+      <span className="paper-tape" aria-hidden="true" />
       <div className="flex items-center gap-2 font-semibold">
         <Sparkles className="h-4 w-4" />
         课程已完成，掌握度已写入今日学习记录。
@@ -68,7 +69,7 @@ export function LessonCompletionRecap({ lesson }: { lesson: Lesson }) {
       <Link
         href={recap.href}
         prefetch={false}
-        className="mt-3 inline-flex text-sm font-extrabold underline-offset-4 hover:underline"
+        className="mt-3 inline-flex border-b border-accent text-sm font-semibold text-accent"
       >
         {recap.cta}
       </Link>

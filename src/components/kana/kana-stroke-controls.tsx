@@ -29,8 +29,8 @@ export function KanaStrokeControls({
   const isFinished = activeStroke > totalStrokes
 
   return (
-    <div className="flex items-center justify-between gap-2 px-1">
-      <div className="text-[11px] font-mono text-muted-foreground tabular-nums select-none" data-testid="kana-stroke-progress">
+    <div className="flex items-center justify-between gap-2 border-t border-border/35 px-1 pt-3">
+      <div className="font-scribble select-none text-sm tabular-nums text-muted-foreground" data-testid="kana-stroke-progress">
         {Math.min(activeStroke, totalStrokes)} / {totalStrokes}
       </div>
       <div className="flex items-center gap-1">
@@ -54,7 +54,7 @@ export function KanaStrokeControls({
         </ControlBtn>
         <ControlBtn onClick={onCycleSpeed} aria-label={`速度：${speedLabel}`} data-testid="kana-stroke-speed">
           <Gauge className="w-3.5 h-3.5" />
-          <span className="text-[10px] font-mono ml-0.5">{speedLabel}</span>
+          <span className="font-scribble ml-0.5 text-xs">{speedLabel}</span>
         </ControlBtn>
       </div>
     </div>

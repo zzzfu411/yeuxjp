@@ -121,7 +121,7 @@ export function KanaReviewSession({
   return (
     <ReviewSessionFrame
       onExit={onExit}
-      headerRight={<div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>}
+      headerRight={<div className="font-scribble text-sm text-muted-foreground">剩余: {review.remainingCount}</div>}
     >
 
       <ReviewPromptCard>

@@ -78,10 +78,11 @@ export function ReviewDashboard({
   }
 
   return (
-    <div className="container py-10 px-4 mx-auto max-w-4xl space-y-8 mb-20">
-      <div className="text-center space-y-2">
-        <h1 className="font-brush text-4xl tracking-tight">复习台</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="paper-wrap mb-20 space-y-10 py-10 sm:py-14">
+      <div className="mx-auto max-w-3xl space-y-2 text-center">
+        <div className="eyebrow">復習 · Review</div>
+        <h1 className="font-brush text-4xl font-normal sm:text-5xl"><span className="inkline">复习台</span></h1>
+        <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">
           只覆盖 <span className="font-semibold text-foreground">假名 / 单词 / 错题本</span>：把“学过但会忘”系统性解决。
         </p>
       </div>
@@ -92,7 +93,7 @@ export function ReviewDashboard({
         <ReviewStreakBanner totalDue={totalDue} totalEnrolled={totalEnrolled} nextDueLabel={nextDueLabel} />
       )}
 
-      <SpeechSettingsBar showQuizOptions className="max-w-3xl mx-auto" />
+      <SpeechSettingsBar showQuizOptions className="mx-auto max-w-3xl" />
 
       <TodayReviewPanel
         todayQueueLength={todayQueueLength}
@@ -101,7 +102,7 @@ export function ReviewDashboard({
         onStartToday={onStartToday}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section aria-label="复习卡组" className="grid grid-cols-1 gap-5 pt-2 md:grid-cols-3">
         <ReviewDeckCard
           title="假名复习"
           desc="看假名选罗马音；错了会回到队列末尾。"
@@ -112,7 +113,7 @@ export function ReviewDashboard({
           startTestId="review-start-kana"
           extra={
             kana.enrollMissing > 0 ? (
-              <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={kana.onEnrollMissing}>
+              <Button type="button" variant="outline" size="sm" onClick={kana.onEnrollMissing}>
                 初始化复习（{kana.enrollMissing}）
               </Button>
             ) : (
@@ -131,7 +132,7 @@ export function ReviewDashboard({
           startTestId="review-start-vocab"
           extra={
             vocab.enrollMissing > 0 ? (
-              <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={vocab.onEnrollMissing}>
+              <Button type="button" variant="outline" size="sm" onClick={vocab.onEnrollMissing}>
                 初始化复习（{vocab.enrollMissing}）
               </Button>
             ) : (
@@ -155,7 +156,7 @@ export function ReviewDashboard({
                   <div className="text-xs text-muted-foreground">到期 {mistakeKindDueLabel}</div>
                 ) : null}
                 {mistakes.enrollMissing > 0 ? (
-                  <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={mistakes.onEnrollMissing}>
+                  <Button type="button" variant="outline" size="sm" onClick={mistakes.onEnrollMissing}>
                     初始化复习（{mistakes.enrollMissing}）
                   </Button>
                 ) : null}
@@ -164,7 +165,7 @@ export function ReviewDashboard({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="rounded-full"
+                    className="text-accent hover:border-accent/40 hover:bg-accent/5"
                     data-testid="mistakes-clear"
                     onClick={requestClearMistakes}
                   >
@@ -177,7 +178,7 @@ export function ReviewDashboard({
             )
           }
         />
-      </div>
+      </section>
 
       <PracticeSaveError show={mistakes.saveError} />
 

@@ -43,27 +43,25 @@ export function KanaBanner({ banner, className }: KanaBannerProps) {
   return (
     <div
       className={cn(
-        "relative mx-auto h-28 w-full max-w-3xl overflow-hidden border-[3px] border-foreground shadow-hard sm:h-36",
+        "paper-slip relative mx-auto min-h-32 w-full max-w-3xl overflow-hidden",
         className
       )}
     >
-      <Image
-        src={meta.src}
-        alt=""
-        fill
-        sizes="(max-width: 768px) 100vw, 768px"
-        className="object-cover"
-        priority={banner === "seion"}
-      />
-      {/* Readability scrim — fades from solid background-ish color on the left
-          into transparent on the right so artwork on the right stays visible. */}
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-background/0"
-      />
-      <div className="relative h-full flex flex-col justify-center px-5 sm:px-7">
-        <div className="text-base sm:text-lg font-bold text-foreground">{meta.title}</div>
-        <div className="text-xs sm:text-sm text-muted-foreground max-w-[60%] leading-relaxed">
+      <span className="paper-tape" aria-hidden="true" />
+      <div className="absolute inset-y-0 right-0 w-[44%] opacity-65 dark:opacity-45">
+        <Image
+          src={meta.src}
+          alt=""
+          fill
+          sizes="(max-width: 768px) 44vw, 338px"
+          className="object-cover mix-blend-multiply dark:mix-blend-screen dark:invert"
+          priority={banner === "seion"}
+        />
+      </div>
+      <div className="relative flex min-h-32 w-[68%] flex-col justify-center px-5 py-6 sm:px-7">
+        <div className="eyebrow">かな練習</div>
+        <h2 className="mt-1 text-base font-semibold sm:text-lg">{meta.title}</h2>
+        <div className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
           {meta.sub}
         </div>
       </div>

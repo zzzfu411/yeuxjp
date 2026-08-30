@@ -136,13 +136,16 @@ export function SpeechSettingsBar({
   ]
 
   return (
-    <div className={cn("hard-panel w-full space-y-3 p-4", className)}>
+    <div className={cn("paper-sheet w-full space-y-4 p-4 sm:p-5", className)}>
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-foreground">听力设置</div>
+        <div>
+          <div className="eyebrow">听力 · Listening</div>
+          <div className="text-sm font-semibold text-foreground">听力设置</div>
+        </div>
         <Button
           variant="ghost"
           size="sm"
-          className="text-muted-foreground"
+          className="rounded-none border-0 border-b border-dashed border-border/70 bg-transparent px-1 font-normal text-muted-foreground shadow-none hover:translate-y-0 hover:border-accent hover:bg-transparent hover:text-accent"
           data-testid="speech-preferences-reset"
           onClick={resetPrefs}
         >
@@ -150,50 +153,66 @@ export function SpeechSettingsBar({
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="text-xs text-muted-foreground w-16">语速</div>
-        {rateOptions.map((opt) => (
-          <Button
-            key={opt.value}
-            type="button"
-            variant={prefs.rate === opt.value ? "default" : "outline"}
-            size="sm"
-            className="rounded-full"
-            data-testid={`speech-rate-${String(opt.value).replace(".", "-")}`}
-            onClick={() => savePatch({ rate: opt.value })}
-          >
-            {opt.label}
-          </Button>
-        ))}
-        <div className="text-xs text-muted-foreground ml-1 font-mono">{prefs.rate.toFixed(2)}x</div>
+      <div className="ledger-row flex flex-wrap items-center gap-2 border-b border-border/45 pb-3">
+        <div className="w-16 text-xs text-muted-foreground">语速</div>
+        <div className="flex" role="group" aria-label="朗读语速">
+          {rateOptions.map((opt, index) => (
+            <Button
+              key={opt.value}
+              type="button"
+              variant="outline"
+              size="sm"
+              className={cn(
+                "rounded-none border-border/55 bg-transparent font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
+                index > 0 && "-ml-px",
+                prefs.rate === opt.value && "z-[1] border-accent bg-accent/[0.05] text-accent"
+              )}
+              data-testid={`speech-rate-${String(opt.value).replace(".", "-")}`}
+              onClick={() => savePatch({ rate: opt.value })}
+              aria-pressed={prefs.rate === opt.value}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
+        <div className="font-scribble ml-1 text-sm text-muted-foreground">{prefs.rate.toFixed(2)}x</div>
       </div>
 
       {showQuizOptions && (
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="text-xs text-muted-foreground w-16">重复</div>
-          {[1, 2, 3].map((n) => (
-            <Button
-              key={n}
-              type="button"
-              variant={prefs.repeat === n ? "default" : "outline"}
-              size="sm"
-              className="rounded-full"
-              data-testid={`speech-repeat-${n}`}
-              onClick={() => savePatch({ repeat: n as 1 | 2 | 3 })}
-            >
-              x{n}
-            </Button>
-          ))}
-
-          <div className="w-4" />
+        <div className="ledger-row flex flex-wrap items-center gap-2 border-b border-border/45 pb-3">
+          <div className="w-16 text-xs text-muted-foreground">重复</div>
+          <div className="flex" role="group" aria-label="朗读重复次数">
+            {[1, 2, 3].map((n, index) => (
+              <Button
+                key={n}
+                type="button"
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "rounded-none border-border/55 bg-transparent font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
+                  index > 0 && "-ml-px",
+                  prefs.repeat === n && "z-[1] border-accent bg-accent/[0.05] text-accent"
+                )}
+                data-testid={`speech-repeat-${n}`}
+                onClick={() => savePatch({ repeat: n as 1 | 2 | 3 })}
+                aria-pressed={prefs.repeat === n}
+              >
+                x{n}
+              </Button>
+            ))}
+          </div>
 
           <Button
             type="button"
-            variant={prefs.autoPlay ? "secondary" : "outline"}
+            variant="outline"
             size="sm"
-            className="rounded-full"
+            className={cn(
+              "ml-2 rounded-sm border-border/55 bg-transparent font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
+              prefs.autoPlay && "border-accent bg-accent/[0.05] text-accent"
+            )}
             data-testid="speech-autoplay-toggle"
             onClick={() => savePatch({ autoPlay: !prefs.autoPlay })}
+            aria-pressed={prefs.autoPlay}
           >
             {prefs.autoPlay ? "自动播放：开" : "自动播放：关"}
           </Button>

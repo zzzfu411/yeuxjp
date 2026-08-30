@@ -21,138 +21,135 @@ export function SkillTreePage() {
   const courseVocabCount = useMemo(() => countLessonItemIds(STARTER_LESSONS, "vocab"), [])
 
   return (
-    <div className="container py-6 px-4 mx-auto space-y-6 max-w-5xl mb-20">
-      <div className="space-y-3 border-[3px] border-foreground bg-card p-5 shadow-hard">
-        <h1 className="font-brush text-4xl tracking-tight">技能树</h1>
-        <p className="text-muted-foreground max-w-3xl mx-auto">
-          主线是 175 天 N5→N2 课程；技能树用来补假名、词汇和专项弱项。先把 <GlossaryTerm termId="kana">假名</GlossaryTerm> 打牢，再进入{" "}
-          <GlossaryTerm termId="particle">助词</GlossaryTerm> 和 <GlossaryTerm termId="conjugation">活用</GlossaryTerm>。
-        </p>
-        <div className="flex items-center justify-center gap-2">
-          <GlossaryButton className="h-auto px-3 py-2 border-[3px] border-foreground bg-card shadow-hard-sm hover:bg-primary">
-            不懂术语？打开术语表
-          </GlossaryButton>
-        </div>
-      </div>
-
-      {/* Next recommended */}
-      <div className="border-[3px] border-foreground bg-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-hard">
-        <div className="space-y-1">
-          <div className="text-xs font-semibold text-muted-foreground tracking-wider">下一步推荐</div>
-          <div className="text-lg font-bold">{learningEntry.title}</div>
-          <div className="text-sm text-muted-foreground">{learningEntry.subtitle}</div>
-          <div className="text-xs text-muted-foreground pt-1">
-            新路线优先按课程完成和五维掌握度推荐；旧的五十音/词汇标记继续作为兜底依据。
+    <div className="paper-wrap px-3 py-8 sm:px-5 sm:py-12">
+      <article className="paper-sheet mx-auto mb-16 max-w-6xl px-5 py-8 sm:px-8 lg:px-12">
+        <header className="border-b border-border/50 pb-7">
+          <p className="eyebrow">学び帖 · Course index</p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <h1 className="inkline font-brush text-4xl sm:text-5xl">学习路径</h1>
+              <p className="font-scribble mt-1 text-lg text-muted-foreground">one page, one day</p>
+            </div>
+            <GlossaryButton className="h-auto border-0 bg-transparent px-0 py-1 text-sm text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground">
+              打开术语笺
+            </GlossaryButton>
           </div>
-        </div>
-        <Button asChild>
-          <Link href={learningEntry.href} data-testid="path-next-learning">{learningEntry.cta}</Link>
-        </Button>
-      </div>
-
-      <section className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
-        <PathStarterLessons completedLessonIds={learning.completedLessonIds} activeLessonId={nextLesson?.id} />
-
-        <div className="border-[3px] border-foreground bg-card p-5 shadow-hard">
-          <div className="text-xs font-semibold text-muted-foreground tracking-wider">课表与掌握度</div>
-          <div className="mt-4 space-y-4">
-            <Metric label="课表" value={`${satisfiedLessonCount}/${STARTER_LESSONS.length}`} />
-            <Metric label="课表词" value={`${courseVocabCount}`} />
-            <Metric label="生存词" value={`${vocabStats.survival.done}/${vocabStats.survival.total}`} />
-            <Metric label="平均掌握" value={`${masterySummary.avg}%`} />
-            <Metric label="输出能力" value={`${masterySummary.production}%`} />
-            <Metric label="练习次数" value={`${masterySummary.attempts}`} />
-          </div>
-          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-            课表看天数，课表词是 175 天里真正出现的词条数，生存词看记住了多少。点完课不等于这些词已经掌握。
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground">
+            主线是 175 天 N5→N2 课程；旁注用来补假名、词汇和专项弱项。先把 <GlossaryTerm termId="kana">假名</GlossaryTerm> 写稳，再进入{" "}
+            <GlossaryTerm termId="particle">助词</GlossaryTerm> 与 <GlossaryTerm termId="conjugation">活用</GlossaryTerm>。
           </p>
-        </div>
-      </section>
+        </header>
 
-      {/* Skill groups */}
-      {(Object.keys(SKILL_CATEGORY_LABEL) as SkillCategory[]).map((cat) => {
-        const list = SKILL_TREE_BY_CATEGORY[cat]
-        if (!list.length) return null
-        return (
-          <section key={cat} className="space-y-4">
-            <div className="flex items-center gap-3">
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                {SKILL_CATEGORY_LABEL[cat]}
-              </h2>
-              <div className="h-px bg-border flex-1" />
+        <section className="paper-slip relative my-9 flex flex-col items-start justify-between gap-5 px-5 py-6 sm:flex-row sm:items-center sm:px-7" aria-labelledby="next-entry-title">
+          <span className="paper-tape" aria-hidden="true" />
+          <div>
+            <p className="eyebrow">下一页 · Next</p>
+            <h2 id="next-entry-title" className="mt-2 text-xl font-semibold">{learningEntry.title}</h2>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{learningEntry.subtitle}</p>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              依课表完成度与五维掌握度续写；既有五十音与词汇标记仍会保留。
+            </p>
+          </div>
+          <Button asChild className="shrink-0">
+            <Link href={learningEntry.href} data-testid="path-next-learning">{learningEntry.cta}</Link>
+          </Button>
+        </section>
+
+        <section className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.45fr)_minmax(15rem,0.55fr)]" aria-label="课表与学习记录">
+          <PathStarterLessons completedLessonIds={learning.completedLessonIds} activeLessonId={nextLesson?.id} />
+
+          <aside className="border-l border-border/45 pl-5 lg:sticky lg:top-28">
+            <p className="eyebrow inkline">课表与掌握度</p>
+            <div className="mt-3 border-y border-border/40">
+              <Metric label="课表" value={`${satisfiedLessonCount}/${STARTER_LESSONS.length}`} />
+              <Metric label="课表词" value={`${courseVocabCount}`} />
+              <Metric label="生存词" value={`${vocabStats.survival.done}/${vocabStats.survival.total}`} />
+              <Metric label="平均掌握" value={`${masterySummary.avg}%`} />
+              <Metric label="输出能力" value={`${masterySummary.production}%`} />
+              <Metric label="练习次数" value={`${masterySummary.attempts}`} />
             </div>
+            <p className="mt-4 text-xs leading-6 text-muted-foreground">
+              课表记日数，课表词记课程里出现的词条，生存词记已经认得的词。翻完一课，不等于已经写进记忆。
+            </p>
+          </aside>
+        </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {list.map((skill) => {
-                const { status, badge } = getSkillStatus(skill.id, kanaStats, vocabStats, SKILL_TREE, course)
-                const isRecommended = skill.id === nextSkillId
+        <div className="mt-14 space-y-12">
+          {(Object.keys(SKILL_CATEGORY_LABEL) as SkillCategory[]).map((cat) => {
+            const list = SKILL_TREE_BY_CATEGORY[cat]
+            if (!list.length) return null
+            return (
+              <section key={cat} aria-labelledby={`skill-group-${cat}`}>
+                <div className="mb-3 flex items-baseline gap-3">
+                  <h2 id={`skill-group-${cat}`} className="text-base font-semibold">{SKILL_CATEGORY_LABEL[cat]}</h2>
+                  <span className="font-scribble text-sm text-muted-foreground">practice notes</span>
+                </div>
 
-                return (
-                  <div
-                    key={skill.id}
-                    className={cn(
-                      "border-[3px] border-foreground bg-card p-5 shadow-hard flex flex-col gap-3",
-                      status === "locked" && "opacity-60",
-                      isRecommended && "bg-primary/40"
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="text-lg font-bold">{skill.title}</div>
-                        <div className="text-sm text-muted-foreground leading-relaxed">{skill.short}</div>
-                      </div>
-                      {badge && (
-                        <div
-                          className={cn(
-                            "text-xs font-extrabold px-3 py-1 border-[2px] border-foreground whitespace-nowrap",
-                            status === "done" && "bg-green-100 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-900/40 dark:text-green-300",
-                            status === "in-progress" && "bg-primary/10 border-primary/20 text-primary",
-                            status === "locked" && "bg-muted border-border text-muted-foreground",
-                            status === "available" && "bg-secondary/40 border-border text-muted-foreground"
-                          )}
-                        >
-                          {badge}
+                <div className="border-y border-border/45">
+                  {list.map((skill, index) => {
+                    const { status, badge } = getSkillStatus(skill.id, kanaStats, vocabStats, SKILL_TREE, course)
+                    const isRecommended = skill.id === nextSkillId
+
+                    return (
+                      <div
+                        key={skill.id}
+                        className={cn(
+                          "ledger-row grid gap-4 border-b border-border/35 px-2 py-5 last:border-b-0 sm:grid-cols-[2rem_minmax(0,1fr)_auto] sm:items-start",
+                          status === "locked" && "opacity-50",
+                          isRecommended && "border-l-2 border-l-accent bg-accent/[0.05] pl-[calc(0.5rem-2px)]"
+                        )}
+                      >
+                        <span className="font-scribble text-base text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                            <h3 className="text-base font-semibold">{skill.title}</h3>
+                            {badge ? (
+                              <span className={cn("font-scribble text-sm text-muted-foreground", isRecommended && "text-accent")}>
+                                {badge}
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{skill.short}</p>
+                          {skill.prerequisites?.length ? (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              前置：{skill.prerequisites.map((p, idx) => (
+                                <span key={p}>
+                                  {idx > 0 ? "、" : ""}
+                                  {SKILL_TREE.find((s) => s.id === p)?.title ?? p}
+                                </span>
+                              ))}
+                            </p>
+                          ) : null}
                         </div>
-                      )}
-                    </div>
 
-                    {skill.prerequisites?.length ? (
-                      <div className="text-xs text-muted-foreground">
-                        前置：{skill.prerequisites.map((p, idx) => (
-                          <span key={p}>
-                            {idx > 0 ? "、" : ""}
-                            {SKILL_TREE.find((s) => s.id === p)?.title ?? p}
-                          </span>
-                        ))}
+                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={skill.href}>{status === "locked" ? "查看内容" : "去学习"}</Link>
+                          </Button>
+                          {!!skill.glossary?.length && (
+                            <GlossaryButton termId={skill.glossary[0]} className="h-9 px-2 py-1 text-xs">
+                              相关术语
+                            </GlossaryButton>
+                          )}
+                        </div>
                       </div>
-                    ) : null}
-
-                    <div className="flex flex-wrap items-center gap-2 pt-1">
-                      <Button asChild variant="outline">
-                        <Link href={skill.href}>{status === "locked" ? "查看内容" : "去学习"}</Link>
-                      </Button>
-                      {!!skill.glossary?.length && (
-                        <GlossaryButton termId={skill.glossary[0]} className="h-auto px-2 py-1 rounded-md">
-                          相关术语
-                        </GlossaryButton>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-        )
-      })}
+                    )
+                  })}
+                </div>
+              </section>
+            )
+          })}
+        </div>
+      </article>
     </div>
   )
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-[2px] border-foreground bg-background px-4 py-3">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-lg font-bold">{value}</span>
+    <div className="ledger-row flex items-baseline justify-between gap-3 border-b border-border/30 px-1 py-3 last:border-b-0">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="font-scribble text-lg font-semibold">{value}</span>
     </div>
   )
 }

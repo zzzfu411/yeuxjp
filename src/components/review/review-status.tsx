@@ -8,7 +8,7 @@ import type { ReviewCompletionStats } from "@/lib/review-session"
 export function ReviewLoadingState({ label }: { label: string }) {
   return (
     <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-4">
-      <div className="w-full max-w-[16rem] aspect-square rounded-2xl border-2 border-dashed border-muted-foreground/20 animate-pulse" />
+      <div className="paper-sheet aspect-square w-full max-w-[16rem] animate-pulse border-dashed opacity-50" />
       <div className="text-sm text-muted-foreground">{label}</div>
     </div>
   )
@@ -27,17 +27,17 @@ export function ReviewErrorState({
 }) {
   return (
     <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-5 text-center">
-      <div className="rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4">
-        <div className="text-lg font-semibold text-destructive">{title}</div>
+      <div className="paper-slip border-destructive/30 bg-destructive/5 px-5 py-4">
+        <div className="font-brush text-2xl text-destructive">{title}</div>
         <div className="mt-2 text-sm text-muted-foreground">{message}</div>
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         {onRetry ? (
-          <Button type="button" className="rounded-full" onClick={onRetry} data-testid="review-retry-load">
+          <Button type="button" onClick={onRetry} data-testid="review-retry-load">
             重试加载
           </Button>
         ) : null}
-        <Button type="button" variant="outline" className="rounded-full" onClick={onExit}>
+        <Button type="button" variant="outline" onClick={onExit}>
           返回复习
         </Button>
       </div>
@@ -92,8 +92,9 @@ export function ReviewDone({
           priority
         />
       </div>
-      <div className="text-center space-y-2">
-        <div className="text-2xl font-bold">{title}</div>
+      <div className="space-y-2 text-center">
+        <div className="eyebrow">Review complete</div>
+        <div className="font-brush text-3xl">{title}</div>
         <div className="text-sm text-muted-foreground">
           {stats
             ? `本轮 ${stats.answered}/${stats.initial} 题已处理，正确率 ${accuracy ?? 0}%，重排 ${stats.repeated} 项。`
@@ -106,8 +107,8 @@ export function ReviewDone({
         ) : null}
       </div>
       <div className="flex gap-2">
-        <Button onClick={onExit} className="rounded-full">返回</Button>
-        <Button asChild variant="outline" className="rounded-full">
+        <Button onClick={onExit}>返回</Button>
+        <Button asChild variant="outline">
           <Link href="/path">打开技能树</Link>
         </Button>
       </div>

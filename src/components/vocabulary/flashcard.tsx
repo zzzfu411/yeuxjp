@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Vocabulary } from "@/data/vocabulary/types"
 import { cn } from "@/lib/utils"
 import { CheckCircle2, Volume2, RotateCw, Maximize2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { speakJapanese } from "@/lib/speech"
 
 interface FlashcardProps {
@@ -45,33 +44,35 @@ export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true 
     <div
       role="button"
       tabIndex={0}
-      className="group relative w-full h-64 sm:h-80 perspective-1000 cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm"
+      className="group paper-slip relative h-64 w-full cursor-pointer text-left perspective-1000 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-72"
       onClick={() => setIsFlipped(!isFlipped)}
       onKeyDown={handleKeyDown}
       aria-pressed={isFlipped}
       aria-label={`${vocab.kanji || vocab.kana}，${isFlipped ? `释义：${vocab.meaning}` : "点击翻面查看释义"}`}
     >
+      <span className="paper-tape" aria-hidden="true" />
       {learned && (
-        <div className="absolute bottom-2 left-2 z-10 opacity-70" title="已掌握">
-          <CheckCircle2 className="w-4 h-4 text-primary" />
+        <div className="seal-stamp pointer-events-none absolute bottom-3 left-3 z-20 gap-1 text-xs" title="已掌握">
+          <CheckCircle2 className="h-3 w-3" />
+          熟
         </div>
       )}
       <div className={cn(
-        "relative w-full h-full transition-all duration-500 transform preserve-3d",
+        "relative h-full w-full transform preserve-3d transition-all duration-500",
         isFlipped ? "rotate-y-180" : ""
       )}>
-        {/* Front */}
         <div
-          className="absolute w-full h-full backface-hidden hard-panel flex flex-col items-center justify-center p-6 text-center"
+          className="absolute inset-0 flex h-full w-full flex-col items-center justify-center bg-card/20 p-6 text-center backface-hidden"
           aria-hidden={isFlipped}
         >
-          <div className="font-jp text-3xl sm:text-4xl font-bold mb-4 text-foreground">{vocab.kanji || vocab.kana}</div>
-          {vocab.kanji && <div className="text-lg text-muted-foreground">{vocab.kana}</div>}
-          
-          <div className="absolute bottom-3 right-3 text-muted-foreground/30">
-            <RotateCw className="w-4 h-4" />
+          <span className="font-scribble absolute left-4 top-4 text-sm text-muted-foreground/70">ことば</span>
+          <div className="font-jp text-4xl font-medium text-foreground sm:text-5xl">{vocab.kanji || vocab.kana}</div>
+          {vocab.kanji && <div className="mt-3 text-lg text-muted-foreground">{vocab.kana}</div>}
+
+          <div className="font-scribble absolute bottom-3 right-4 flex items-center gap-1 text-sm text-muted-foreground/55">
+            <RotateCw className="h-3 w-3" aria-hidden="true" /> flip
           </div>
-          
+
           <button
             type="button"
             aria-label={`放大查看 ${vocab.kanji || vocab.kana}`}
@@ -79,39 +80,35 @@ export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true 
             onKeyDown={stopCardKeyDown}
             tabIndex={isFlipped ? -1 : 0}
             data-testid={`vocabulary-expand-${vocab.id}`}
-            className="absolute top-3 right-3 p-2 text-muted-foreground/30 hover:text-primary transition-colors hover:bg-muted rounded-full"
+            className="absolute right-3 top-3 p-2 text-muted-foreground/45 transition-colors hover:text-foreground"
           >
-            <Maximize2 className="w-4 h-4" />
+            <Maximize2 className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Back */}
         <div
-          className="absolute w-full h-full backface-hidden hard-panel rotate-y-180 flex flex-col items-center justify-center p-6 text-center"
+          className="absolute inset-0 flex h-full w-full rotate-y-180 flex-col items-center justify-center bg-card/20 px-5 py-6 text-center backface-hidden"
           aria-hidden={!isFlipped}
         >
-          <div className="text-2xl font-bold text-primary mb-2">{vocab.meaning}</div>
-          {showRomaji && <div className="text-lg text-muted-foreground font-medium mb-2">{vocab.romaji}</div>}
+          <div className="text-2xl font-semibold text-accent">{vocab.meaning}</div>
+          {showRomaji && <div className="font-scribble mt-1 text-lg text-muted-foreground">{vocab.romaji}</div>}
           {example && (
-            <div className="mb-3 px-2 space-y-0.5">
-              <div className="text-sm text-foreground/90 leading-snug">{example.japanese}</div>
-              <div className="text-xs text-muted-foreground leading-snug">{example.meaning}</div>
+            <div className="ledger-row mt-4 w-full border-y border-border/40 px-2 py-3">
+              <div className="line-clamp-2 text-sm leading-snug text-foreground/90">{example.japanese}</div>
+              <div className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">{example.meaning}</div>
             </div>
           )}
 
-          <div className="flex gap-4">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handlePlay}
-              onKeyDown={stopCardKeyDown}
-              tabIndex={isFlipped ? 0 : -1}
-              className="rounded-full"
-              aria-label={`朗读 ${vocab.kana}`}
-            >
-              <Volume2 className="w-6 h-6 text-primary" />
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={handlePlay}
+            onKeyDown={stopCardKeyDown}
+            tabIndex={isFlipped ? 0 : -1}
+            className="mt-3 inline-flex h-9 w-9 items-center justify-center text-muted-foreground transition-colors hover:text-accent"
+            aria-label={`朗读 ${vocab.kana}`}
+          >
+            <Volume2 className="h-5 w-5" />
+          </button>
 
           <button
             type="button"
@@ -120,9 +117,9 @@ export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true 
             onKeyDown={stopCardKeyDown}
             tabIndex={isFlipped ? 0 : -1}
             data-testid={`vocabulary-expand-back-${vocab.id}`}
-            className="absolute top-3 right-3 p-2 text-muted-foreground/30 hover:text-primary transition-colors hover:bg-muted rounded-full"
+            className="absolute right-3 top-3 p-2 text-muted-foreground/45 transition-colors hover:text-foreground"
           >
-            <Maximize2 className="w-4 h-4" />
+            <Maximize2 className="h-4 w-4" />
           </button>
         </div>
       </div>

@@ -16,14 +16,14 @@ export function PracticeSaveError({
   return (
     <div
       role="alert"
-      className="hard-panel w-full border-foreground bg-amber-50 p-4 text-sm leading-relaxed text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"
+      className="ledger-row w-full border border-accent/45 border-l-2 border-l-accent bg-accent/[0.045] p-4 text-sm leading-relaxed text-foreground"
       data-testid="practice-save-error"
     >
       <div className="flex items-start gap-2">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
         <div>
           <div className="font-semibold">{title}</div>
-          <div className="mt-1 text-amber-800 dark:text-amber-100/80">{description}</div>
+          <div className="mt-1 text-muted-foreground">{description}</div>
         </div>
       </div>
     </div>

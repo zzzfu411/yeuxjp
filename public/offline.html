@@ -3,15 +3,25 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Yasashi Japanese 离线中</title>
-    <meta name="theme-color" content="#facc15" />
+    <title>優しい Yasashi · 离线中</title>
+    <meta name="theme-color" content="#d8d3cc" />
     <style>
       :root {
-        color-scheme: light dark;
-        font-family: "DM Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
-        background: #fdf6e3;
-        color: #1a1a2e;
+        color-scheme: light;
+        --paper: #d8d3cc;
+        --paper-hi: #e7e3db;
+        --paper-lo: #c6c0b6;
+        --ink: #1b1815;
+        --ink-soft: #3b352f;
+        --line: rgba(27, 24, 21, 0.28);
+        --seal: #8c3a2c;
+        --shadow: 0 16px 34px rgba(46, 39, 31, 0.16);
+        font-family: "LXGW WenKai Screen", "KaiTi", "STKaiti", serif;
+        background: var(--paper);
+        color: var(--ink);
       }
+
+      * { box-sizing: border-box; }
 
       body {
         min-height: 100vh;
@@ -19,71 +29,88 @@
         display: grid;
         place-items: center;
         padding: 24px;
+        background:
+          radial-gradient(120% 120% at 50% 30%, var(--paper-hi) 0, var(--paper) 46%, var(--paper-lo) 100%),
+          radial-gradient(70% 60% at 82% 88%, rgba(90, 78, 60, 0.1), transparent 60%);
       }
 
       main {
-        width: min(100%, 440px);
-        border: 3px solid #1a1a2e;
-        background: #fffef9;
-        padding: 28px;
-        box-shadow: 4px 4px 0 #1a1a2e;
+        position: relative;
+        width: min(100%, 460px);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        background: color-mix(in srgb, var(--paper-hi) 88%, transparent);
+        padding: 36px 32px;
+        box-shadow: var(--shadow);
+      }
+
+      main::before {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        width: 88px;
+        height: 24px;
+        transform: translateX(-50%) rotate(-3deg);
+        border-inline: 1px dashed rgba(150, 132, 84, 0.3);
+        background: rgba(206, 188, 138, 0.46);
+        content: "";
       }
 
       h1 {
-        margin: 0 0 10px;
-        font-size: 24px;
-        font-weight: 900;
-        letter-spacing: -0.04em;
-        line-height: 1.2;
+        margin: 0 0 12px;
+        font-size: 28px;
+        font-weight: 400;
+        line-height: 1.3;
+      }
+
+      h1 small {
+        display: block;
+        margin-top: 2px;
+        color: var(--ink-soft);
+        font-size: 16px;
       }
 
       p {
         margin: 0;
-        color: #555570;
-        line-height: 1.7;
-        font-weight: 600;
+        color: var(--ink-soft);
+        line-height: 1.85;
       }
 
       a {
         display: inline-flex;
-        margin-top: 20px;
-        color: inherit;
-        font-weight: 800;
-        border: 3px solid #1a1a2e;
-        background: #facc15;
-        padding: 8px 14px;
-        box-shadow: 3px 3px 0 #1a1a2e;
+        margin-top: 24px;
+        border-bottom: 1px solid var(--seal);
+        color: var(--seal);
+        padding: 4px 1px;
         text-decoration: none;
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
-          background: #000;
-          color: #f0f0f0;
+          color-scheme: dark;
+          --paper: #2a2733;
+          --paper-hi: #332f3f;
+          --paper-lo: #221f2b;
+          --ink: #d9d4c9;
+          --ink-soft: #c3bdb0;
+          --line: rgba(217, 212, 201, 0.28);
+          --seal: #cf7a63;
+          --shadow: 0 16px 34px rgba(0, 0, 0, 0.44);
         }
 
-        main {
-          border-color: #2a2a2a;
-          background: #050505;
-          box-shadow: 4px 4px 0 #173a52;
+        body {
+          background:
+            radial-gradient(120% 120% at 50% 30%, var(--paper-hi) 0, var(--paper) 46%, var(--paper-lo) 100%),
+            radial-gradient(70% 60% at 82% 88%, rgba(0, 0, 0, 0.24), transparent 60%);
         }
 
-        p {
-          color: #a3a3a3;
-        }
-
-        a {
-          background: #173a52;
-          color: #f0f4f8;
-          border-color: #2a2a2a;
-          box-shadow: 3px 3px 0 #0c1e2b;
-        }
+        main::before { background: rgba(206, 188, 138, 0.3); }
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>当前离线</h1>
+      <h1>当前离线 <small>offline note</small></h1>
       <p>已缓存的页面和笔顺资源仍可使用；新的课程内容需要网络恢复后再加载。学习进度不会被 service worker 缓存或覆盖。</p>
       <a href="/">回到首页</a>
     </main>

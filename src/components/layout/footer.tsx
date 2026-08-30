@@ -1,15 +1,13 @@
 export function Footer() {
   return (
-    <footer className="border-t-[3px] border-foreground py-8">
-      <div className="container mx-auto flex flex-col items-center gap-3 px-4 text-center">
-        <span className="font-brush text-accent border-2 border-accent/70 px-2 py-0.5 -rotate-3 text-lg">
-          優しい
-        </span>
-        <p className="text-sm font-semibold text-muted-foreground">
-          YASASHI! · 纸面日语学习机
+    <footer className="mt-14 border-t border-border/30 py-9">
+      <div className="paper-wrap flex flex-col items-center gap-2 text-center">
+        <span className="seal-stamp text-lg">優</span>
+        <p className="text-sm text-muted-foreground">
+          優しい <span className="font-scribble">Yasashi Japanese</span>
         </p>
-        <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Yasashi Japanese
+        <p className="font-scribble text-sm text-muted-foreground">
+          paper, ink, and a little practice · {new Date().getFullYear()}
         </p>
       </div>
     </footer>

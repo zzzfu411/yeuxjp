@@ -111,8 +111,8 @@ export function MistakeReviewSession({
       testId="mistake-review-session"
       headerRight={
         <div className="flex items-center gap-2">
-          <div className="text-xs text-muted-foreground font-mono">剩余: {review.remainingCount}</div>
-          <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={handleRemove}>
+          <div className="font-scribble text-sm text-muted-foreground">剩余: {review.remainingCount}</div>
+          <Button type="button" variant="ghost" size="sm" className="px-2 text-muted-foreground hover:text-accent" onClick={handleRemove}>
             移除
           </Button>
         </div>

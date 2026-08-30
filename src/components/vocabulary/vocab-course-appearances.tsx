@@ -24,14 +24,14 @@ export function VocabCourseAppearances({ vocabId }: { vocabId: string }) {
   if (!appearances.length) return null
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2" data-testid="vocab-course-appearances">
+    <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1" data-testid="vocab-course-appearances">
       {appearances.map((item) => (
         <Link
           key={item.id}
           href={`/learn/${item.id}`}
           prefetch={false}
           onClick={(event) => event.stopPropagation()}
-          className="border-[2px] border-foreground bg-background px-2 py-0.5 text-[11px] font-extrabold hover:bg-primary/40"
+          className="font-scribble border-b border-dashed border-border/70 px-0.5 text-sm text-muted-foreground transition-colors hover:border-accent hover:text-accent"
         >
           课表 Day {item.order}
         </Link>

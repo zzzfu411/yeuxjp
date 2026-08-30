@@ -55,9 +55,9 @@ export function LessonStepBody({
       <div className="space-y-5">
         <p className="text-lg leading-8 text-foreground">{step.body}</p>
         {step.bullets?.length ? (
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="border-y border-border/40">
             {step.bullets.map((bullet) => (
-              <div key={bullet} className="rounded-xl border bg-muted/20 p-3 text-sm text-muted-foreground">
+              <div key={bullet} className="ledger-row border-b border-border/30 px-2 py-3 text-sm text-muted-foreground last:border-b-0">
                 {bullet}
               </div>
             ))}
@@ -69,8 +69,8 @@ export function LessonStepBody({
 
   if (step.type === "example") {
     return (
-      <div className="rounded-2xl border bg-muted/20 p-6 text-center">
-        <div className="text-3xl font-bold leading-relaxed sm:text-4xl">{step.japanese}</div>
+      <div className="border-y border-border/40 bg-primary/[0.035] p-7 text-center">
+        <div className="font-jp text-3xl font-semibold leading-relaxed sm:text-4xl">{step.japanese}</div>
         {showRomaji && step.romaji ? <div className="mt-2 text-sm text-muted-foreground">{step.romaji}</div> : null}
         <div className="mt-4 text-lg font-medium">{step.meaning}</div>
         {step.note ? <div className="mt-3 text-sm text-muted-foreground">{step.note}</div> : null}
@@ -82,12 +82,12 @@ export function LessonStepBody({
     return (
       <div className="space-y-5">
         {step.audioText ? (
-          <Button type="button" variant="outline" className="gap-2 rounded-full" onClick={() => onPlay(step.audioText!)}>
+          <Button type="button" variant="outline" className="gap-2" onClick={() => onPlay(step.audioText!)}>
             <Headphones className="h-4 w-4" />
             播放题目
           </Button>
         ) : null}
-        <div className="rounded-2xl border bg-muted/20 p-5 text-xl font-semibold leading-relaxed">{step.prompt}</div>
+        <div className="border-l-2 border-accent/45 bg-primary/[0.035] p-5 text-xl font-semibold leading-relaxed">{step.prompt}</div>
         <div className="grid gap-3 sm:grid-cols-2">
           {step.options.map((option) => {
             const feedback = getAnswerOptionFeedback({
@@ -101,7 +101,7 @@ export function LessonStepBody({
                 type="button"
                 variant="outline"
                 className={cn(
-                  "min-h-14 justify-start whitespace-normal rounded-xl px-4 py-3 text-left text-base",
+                  "min-h-14 justify-start whitespace-normal rounded-sm px-4 py-3 text-left text-base",
                   getAnswerOptionClassName(feedback)
                 )}
                 aria-label={getAnswerOptionAriaLabel(option, feedback)}
@@ -125,19 +125,19 @@ export function LessonStepBody({
     return (
       <div className="space-y-5">
         {step.type === "dictation" ? (
-          <Button type="button" variant="outline" className="gap-2 rounded-full" onClick={() => onPlay(step.audioText)}>
+          <Button type="button" variant="outline" className="gap-2" onClick={() => onPlay(step.audioText)}>
             <Headphones className="h-4 w-4" />
             播放听写
           </Button>
         ) : null}
-        <div className="rounded-2xl border bg-muted/20 p-5 text-lg font-semibold leading-relaxed">{step.prompt}</div>
+        <div className="border-l-2 border-accent/45 bg-primary/[0.035] p-5 text-lg font-semibold leading-relaxed">{step.prompt}</div>
         {step.hint ? <div className="text-sm text-muted-foreground">提示：{step.hint}</div> : null}
         <div className="flex flex-col gap-3 sm:flex-row">
           <Input
             value={typed}
             onChange={(event) => onTyped(event.target.value)}
             placeholder="输入假名或答案"
-            className="h-12 rounded-xl text-lg"
+            className="h-12 text-lg"
             data-testid="lesson-typing-input"
             disabled={readOnly || !!result}
             onKeyDown={(event) => {
@@ -146,7 +146,7 @@ export function LessonStepBody({
           />
           <Button
             type="button"
-            className="h-12 rounded-xl"
+            className="h-12"
             data-testid="lesson-submit-typing"
             onClick={onSubmitTyping}
             disabled={readOnly || !typed.trim() || !!result}
@@ -162,11 +162,11 @@ export function LessonStepBody({
     const usedCount = (chunk: string) => built.filter((item) => item === chunk).length
     return (
       <div className="space-y-5">
-        <div className="rounded-2xl border bg-muted/20 p-5">
+        <div className="border-l-2 border-accent/45 bg-primary/[0.035] p-5">
           <div className="text-lg font-semibold">{step.prompt}</div>
           <div className="mt-2 text-sm text-muted-foreground">{step.meaning}</div>
         </div>
-        <div className="min-h-16 rounded-2xl border bg-background p-4 text-xl font-semibold">
+        <div className="paper-sheet min-h-16 p-4 text-xl font-semibold shadow-none">
           {built.length ? built.join(" ") : <span className="text-sm font-normal text-muted-foreground">点击下方词块组句</span>}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -178,7 +178,7 @@ export function LessonStepBody({
                 key={`${chunk}-${idx}`}
                 type="button"
                 variant="outline"
-                className="rounded-full"
+                className="rounded-sm"
                 onClick={() => onPickChunk(chunk)}
                 disabled={disabled}
                 data-testid={`lesson-sentence-chunk-${idx}`}
@@ -189,16 +189,15 @@ export function LessonStepBody({
           })}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" className="gap-2 rounded-full" onClick={onUndoChunk} disabled={readOnly || !built.length || !!result}>
+          <Button type="button" variant="outline" className="gap-2" onClick={onUndoChunk} disabled={readOnly || !built.length || !!result}>
             <RotateCcw className="h-4 w-4" />
             撤销
           </Button>
-          <Button type="button" variant="ghost" className="rounded-full" onClick={onResetChunks} disabled={readOnly || !built.length || !!result}>
+          <Button type="button" variant="ghost" onClick={onResetChunks} disabled={readOnly || !built.length || !!result}>
             清空
           </Button>
           <Button
             type="button"
-            className="rounded-full"
             onClick={onSubmitSentence}
             disabled={readOnly || !built.length || !!result}
             data-testid="lesson-submit-sentence"
@@ -213,9 +212,9 @@ export function LessonStepBody({
   return (
     <div className="space-y-5">
       <p className="text-lg leading-8">{step.body}</p>
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="border-y border-border/40">
         {step.reviewItems.map((item) => (
-          <div key={item} className="rounded-xl border bg-muted/20 p-3 text-sm font-medium">
+          <div key={item} className="ledger-row border-b border-border/30 px-2 py-3 text-sm font-medium last:border-b-0">
             {item}
           </div>
         ))}
