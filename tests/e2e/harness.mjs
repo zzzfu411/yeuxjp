@@ -157,8 +157,19 @@ export function isExpectedBrowserRequestAbort(request) {
     request.method() === "GET" &&
     request.resourceType() === "font" &&
     requestUrl.pathname.startsWith("/__nextjs_font/")
+  // Paper UI loads LXGW via Next static media; navigating away mid-load aborts it.
+  const isNextStaticFont =
+    request.method() === "GET" &&
+    request.resourceType() === "font" &&
+    requestUrl.pathname.startsWith("/_next/static/media/") &&
+    (requestUrl.pathname.endsWith(".woff2") || requestUrl.pathname.endsWith(".woff"))
+  // Decorative paper state images abort when the review flow navigates away.
+  const isNextOptimizedImage =
+    request.method() === "GET" &&
+    request.resourceType() === "image" &&
+    requestUrl.pathname === "/_next/image"
 
-  return isNextRscPrefetch || isAnimCjkProbe || isNextStaticChunk || isNextDevFont
+  return isNextRscPrefetch || isAnimCjkProbe || isNextStaticChunk || isNextDevFont || isNextStaticFont || isNextOptimizedImage
 }
 
 export function createPageIssueCollector({

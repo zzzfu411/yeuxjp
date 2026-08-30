@@ -140,6 +140,20 @@ test("E2E harness only treats known browser request aborts as benign", () => {
     false
   )
   assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({
+      url: "http://127.0.0.1:3210/_next/static/media/lxgwwenkaiscreen-subset-104.eb8cabd2.woff2",
+      resourceType: "font",
+    })),
+    true
+  )
+  assert.equal(
+    isExpectedBrowserRequestAbort(makeRequest({
+      url: "http://127.0.0.1:3210/_next/image?url=%2Fassets%2Fstates%2Fstate-complete.webp&w=384&q=75",
+      resourceType: "image",
+    })),
+    true
+  )
+  assert.equal(
     isExpectedBrowserRequestAbort(makeRequest({ url: "http://127.0.0.1:3210/review?_rsc=abc", errorText: "net::ERR_FAILED" })),
     false
   )
