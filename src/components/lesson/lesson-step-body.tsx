@@ -101,7 +101,7 @@ export function LessonStepBody({
                 type="button"
                 variant="outline"
                 className={cn(
-                  "min-h-14 justify-start whitespace-normal rounded-sm px-4 py-3 text-left text-base",
+                  "min-h-14 h-auto justify-start whitespace-normal rounded-sm px-4 py-3 text-left text-base",
                   getAnswerOptionClassName(feedback)
                 )}
                 aria-label={getAnswerOptionAriaLabel(option, feedback)}
