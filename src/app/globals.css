@@ -379,8 +379,9 @@
   }
 
   .cover-art {
-    width: min(76vmin, 680px);
-    aspect-ratio: 1;
+    width: min(76vmin, 680px, max(0px, calc(112svh - 18rem)), 100%);
+    max-width: 100%;
+    aspect-ratio: 4 / 3;
     object-fit: contain;
     opacity: 0.9;
     mix-blend-mode: multiply;
@@ -495,7 +496,9 @@
   .site-main { padding-top: 4.35rem; }
   .paper-cover { margin-top: -4.35rem; }
   .paper-wrap { width: min(calc(100% - 1.25rem), 1120px); }
-  .cover-art { width: min(88vmin, 560px); }
+  .cover-art {
+    width: min(88vmin, 560px, max(0px, calc(112svh - 18rem)), 100%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

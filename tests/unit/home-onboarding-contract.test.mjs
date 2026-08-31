@@ -66,6 +66,16 @@ test("home hero images use bounded responsive sizes for LCP", () => {
   assert.match(page, /href=\{weakestHref\}/)
 })
 
+test("home cover art preserves its sheet ratio and fits short viewports", () => {
+  const page = read("src/components/home/home-page.tsx")
+  const styles = read("src/app/globals.css")
+
+  assert.match(page, /className="mx-auto flex min-w-0 w-full max-w-4xl flex-col items-center"/)
+  assert.match(styles, /\.cover-art\s*\{[\s\S]*?aspect-ratio:\s*4\s*\/\s*3;/)
+  assert.match(styles, /\.cover-art\s*\{[\s\S]*?max-width:\s*100%;/)
+  assert.match(styles, /calc\(112svh - 18rem\)/)
+})
+
 test("HomeStarterLessons owns starter lesson cards and locked card behavior", () => {
   const source = read("src/components/home/home-starter-lessons.tsx")
 

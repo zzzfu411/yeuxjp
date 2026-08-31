@@ -82,13 +82,13 @@ export function HomePage() {
   return (
     <div className="paper-wrap">
       <section className="paper-cover px-5 py-16 text-center" aria-labelledby="home-cover-title">
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-center">
+        <div className="mx-auto flex min-w-0 w-full max-w-4xl flex-col items-center">
           <p className="eyebrow">やさしい日本語</p>
           <h1 id="home-cover-title" className="mt-3 font-brush text-5xl font-normal sm:text-6xl">
             優しい
           </h1>
           <p className="font-scribble mt-1 text-xl text-muted-foreground">Yasashi Japanese</p>
-          <div className="cover-art relative mt-4 aspect-[4/3] w-[min(84vw,48rem)]">
+          <div className="cover-art relative mt-4">
             <Image
               src="/assets/hero/yasashi-inkstone-cover.webp"
               alt="砚台、毛笔与假名练习纸组成的水墨画"

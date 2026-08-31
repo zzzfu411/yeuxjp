@@ -70,7 +70,8 @@ const RUNTIME_PATH_PREFIXES = [
   "/animcjk/",
   "/assets/",
   "/brand/",
-  "/icons/"
+  "/icons/",
+  "/fonts/"
 ];
 
 self.addEventListener("install", (event) => {
@@ -142,7 +143,8 @@ function getAssetCacheName(request, requestUrl) {
 
   const isAnimCjkSvg = requestUrl.pathname.startsWith("/animcjk/") &&
     requestUrl.pathname.endsWith(".svg");
-  if (RUNTIME_ASSET_PATHS.has(requestUrl.pathname) || isAnimCjkSvg || request.destination === "image") {
+  const isFontAsset = requestUrl.pathname.startsWith("/fonts/");
+  if (RUNTIME_ASSET_PATHS.has(requestUrl.pathname) || isAnimCjkSvg || isFontAsset || request.destination === "image") {
     return RUNTIME_CACHE_NAME;
   }
 
