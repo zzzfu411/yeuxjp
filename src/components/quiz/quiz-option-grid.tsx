@@ -52,8 +52,8 @@ export function QuizOptionGrid({
             data-testid={`${testIdPrefix}-${index}`}
           >
             {option.display}
-            {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
-            {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
+            {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 h-5 w-5 shrink-0" />}
+            {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 h-5 w-5 shrink-0" />}
           </Button>
         )
       })}

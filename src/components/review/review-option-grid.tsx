@@ -24,7 +24,7 @@ export function ReviewOptionGrid({
   acceptedAnswers,
   selectedAnswer,
   onSelect,
-  optionClassName = "h-16 text-base font-medium leading-tight",
+  optionClassName = "text-base font-medium leading-tight",
 }: {
   options: ReviewOption[]
   correctAnswer: string
@@ -62,8 +62,8 @@ export function ReviewOptionGrid({
             data-testid={`review-answer-${option.value}`}
           >
             {option.display}
-            {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 w-5 h-5" />}
-            {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 w-5 h-5" />}
+            {shouldShowCorrectAnswerIcon(feedback) && <CheckCircle2 className="ml-2 h-5 w-5 shrink-0" />}
+            {shouldShowWrongAnswerIcon(feedback) && <XCircle className="ml-2 h-5 w-5 shrink-0" />}
           </Button>
         )
       })}

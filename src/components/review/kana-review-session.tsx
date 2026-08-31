@@ -134,7 +134,7 @@ export function KanaReviewSession({
         acceptedAnswers={question.acceptedAnswers}
         selectedAnswer={selected}
         onSelect={handleSelect}
-        optionClassName="h-16 text-lg font-medium"
+        optionClassName="text-lg font-medium"
       />
 
       <ReviewAnswerFeedback
