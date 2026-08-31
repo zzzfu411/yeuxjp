@@ -64,6 +64,40 @@ test("data validation checks lesson practice metadata and references", () => {
   assert.doesNotMatch(source, /max 8/)
 })
 
+test("data validation makes course grammar coverage and intentional exclusions explicit", async () => {
+  const validator = await import(pathToFileURL(path.join(root, "scripts/validate-data.mjs")).href)
+
+  const lessonText = `
+    newItemIds: [
+      { id: "n5-wa", type: "grammar", source: "course" },
+      { type: "vocab", id: "sur-p-1" },
+    ],
+    steps: [],
+    newItemIds: [{ type: "grammar", id: "n4-tara" }],
+    steps: [],
+  `
+  const refs = validator.extractLessonNewItemRefs(lessonText)
+  assert.deepEqual(refs, [
+    { type: "grammar", id: "n5-wa" },
+    { type: "vocab", id: "sur-p-1" },
+    { type: "grammar", id: "n4-tara" },
+  ])
+
+  const grammarIdsByLevel = new Map([
+    ["N5", new Set(["n5-wa"])],
+    ["N4", new Set(["n4-tara", "n4-reference-only"])],
+  ])
+  assert.deepEqual(
+    validator.findMissingCourseGrammarIds(grammarIdsByLevel, refs, new Set(["n4-reference-only"])),
+    []
+  )
+  assert.deepEqual(
+    validator.findMissingCourseGrammarIds(grammarIdsByLevel, refs, new Set()),
+    ["n4-reference-only"]
+  )
+  assert.deepEqual([...validator.COURSE_GRAMMAR_EXCLUSIONS].sort(), ["n4-te-iru", "n4-te-kudasai"])
+})
+
 test("lesson kana validation rejects bare romaji while accepting canonical and custom phonology ids", async () => {
   const validator = await import(pathToFileURL(path.join(root, "scripts/validate-data.mjs")).href)
   const knownRomaji = new Set(["a", "sokuon"])

@@ -26,10 +26,13 @@ function assertPathsDoNotMatch(pattern, paths) {
   }
 }
 
-test("GitHub Actions workflow runs merge and release quality gates", () => {
+function readWorkflow() {
   assert.equal(fs.existsSync(workflowPath), true)
+  return fs.readFileSync(workflowPath, "utf8")
+}
 
-  const workflow = fs.readFileSync(workflowPath, "utf8")
+test("GitHub Actions workflow runs merge and release quality gates", () => {
+  const workflow = readWorkflow()
 
   assert.match(workflow, /name: Quality Gates/)
   assert.match(workflow, /pull_request:/)
@@ -50,34 +53,19 @@ test("GitHub Actions workflow runs merge and release quality gates", () => {
   assert.match(workflow, /github\.event_name == 'workflow_dispatch' && inputs\.release/)
 })
 
-test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impacting changes", () => {
-  assert.equal(fs.existsSync(workflowPath), true)
-
-  const workflow = fs.readFileSync(workflowPath, "utf8")
+test("PWA changes use conservative source, public, and tooling coverage", () => {
+  const workflow = readWorkflow()
 
   assert.match(workflow, /detect-pwa-changes:/)
   assert.match(workflow, /pwa-check:/)
   assert.match(workflow, /needs: detect-pwa-changes/)
   assert.match(workflow, /needs\.detect-pwa-changes\.outputs\.pwa == 'true'/)
-  assert.match(workflow, /public\/\(sw\\\.js/)
-  assert.match(workflow, /manifest\\\.webmanifest/)
-  assert.match(workflow, /offline\\\.html/)
-  assert.match(workflow, /apple-touch-icon\\\.png/)
-  assert.match(workflow, /favicon\\\.ico/)
-  assert.match(workflow, /icons\//)
-  assert.match(workflow, /brand\//)
-  assert.match(workflow, /assets\//)
-  assert.match(workflow, /animcjk\//)
-  assert.match(workflow, /src\/app\/\(globals\\\.css\|layout\\\.tsx\|page\\\.tsx\|\(path\|grammar\|learn\|kana\|vocabulary\|quiz\|review\|semantics\|pragmatics\)\/\.\*\)/)
-  assert.match(workflow, /src\/components\/\(home\|path\|layout\|learning\|lesson\|kana\|vocabulary\|quiz\|review\|reference\|ui\)\/\.\*/)
-  assert.match(workflow, /src\/components\/\(mode-toggle\|theme-provider\|pwa-register\)\\\.tsx/)
-  assert.match(workflow, /src\/lib\/\(animcjk\|answer-option-feedback[\s\S]*\|dev-log[\s\S]*\|glossary-model[\s\S]*\|managed-learning[\s\S]*\|progress-list-storage[\s\S]*\|path[\s\S]*\|skill-tree[\s\S]*\|utils[\s\S]*\|vocabulary\)\.\*\\\.ts/)
-  assert.match(workflow, /src\/data\/\(lessons\\\.ts\|kana-data\\\.ts\|vocabulary\/\.\*\|glossary\\\.ts\|grammar-data\\\.ts\|semantics-data\\\.ts\|pragmatics-data\\\.ts\)/)
-  assert.match(workflow, /tests\/e2e\/\(pwa-offline\\\.mjs\|harness\\\.mjs\|storage-keys\\\.mjs\|browser-fixtures\\\.mjs\|browser-fixture-\.\*\\\.mjs\)/)
-  assert.match(workflow, /package\\\.json/)
-  assert.match(workflow, /package-lock\\\.json/)
-  assert.match(workflow, /next\\\.config\\\.\.\*/)
-  assert.match(workflow, /scripts\/\(build\|build-lock\)\\\.mjs/)
+  assert.ok(workflow.includes("public/.*"))
+  assert.ok(workflow.includes("src/.*"))
+  assert.ok(workflow.includes("scripts/.*"))
+  assert.ok(workflow.includes("tests/e2e/.*"))
+  assert.ok(workflow.includes(".github/workflows/.*"))
+  assert.ok(workflow.includes("components\\.json"))
   assert.match(workflow, /run: npm run e2e:install:ci/)
   assert.match(workflow, /run: npm run e2e:pwa:required/)
   assert.doesNotMatch(workflow, /run: npm run e2e:pwa\s*$/m)
@@ -88,6 +76,8 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
     "public/manifest.webmanifest",
     "public/offline.html",
     "public/icons/icon-192.png",
+    "public/fonts/ma-shan-zheng/font.woff2",
+    "public/assets/brand/yasashi-og.webp",
     "public/assets/kana/kana-seion.webp",
     "public/assets/review/review-streak.webp",
     "public/animcjk/kana/12354.svg",
@@ -95,6 +85,7 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
     "src/app/path/page.tsx",
     "src/app/grammar/page.tsx",
     "src/app/kana/page.tsx",
+    "src/components/home/home-page.tsx",
     "src/components/path/skill-tree-page.tsx",
     "src/components/learning/next-step-card.tsx",
     "src/components/kana/kana-page.tsx",
@@ -110,6 +101,7 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
     "src/lib/glossary-model.ts",
     "src/lib/path-page-model.ts",
     "src/lib/skill-tree.ts",
+    "src/lib/today-review-session.ts",
     "src/lib/learning-session.ts",
     "src/lib/learning-status.ts",
     "src/lib/learning-store.ts",
@@ -126,6 +118,8 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
     "src/lib/utils.ts",
     "src/data/glossary.ts",
     "src/data/vocabulary/daily.ts",
+    "src/data/lessons/days-46-90.ts",
+    "src/data/grammar-practice-n4.ts",
     "tests/e2e/pwa-offline.mjs",
     "tests/e2e/harness.mjs",
     "tests/e2e/storage-keys.mjs",
@@ -135,47 +129,46 @@ test("GitHub Actions workflow automatically runs strict PWA gates for PWA-impact
     "tailwind.config.ts",
     "eslint.config.mjs",
     "tsconfig.json",
+    "scripts/validate-data.mjs",
     "scripts/build.mjs",
     "scripts/build-lock.mjs",
+    "package.json",
     "package-lock.json",
+    ".github/workflows/quality.yml",
   ])
   assertPathsDoNotMatch(pwa, [
     "README.md",
-    "tests/e2e/browser-flow-lesson.mjs",
-    "tests/e2e/browser-flow-pwa.mjs",
+    "docs/screenshots/home.jpg",
+    "tests/unit/learning-store.test.mjs",
   ])
 })
 
-test("GitHub Actions workflow automatically runs strict browser gates for learning-flow changes", () => {
-  assert.equal(fs.existsSync(workflowPath), true)
-
-  const workflow = fs.readFileSync(workflowPath, "utf8")
+test("Browser changes use conservative source and harness coverage", () => {
+  const workflow = readWorkflow()
 
   assert.match(workflow, /detect-browser-changes:/)
   assert.match(workflow, /browser: \$\{\{ steps\.filter\.outputs\.browser \}\}/)
   assert.match(workflow, /browser-check:/)
   assert.match(workflow, /needs: detect-browser-changes/)
   assert.match(workflow, /needs\.detect-browser-changes\.outputs\.browser == 'true'/)
-  assert.match(workflow, /src\/app\/\(globals\\\.css\|layout\\\.tsx\|page\\\.tsx\|\(path\|learn\|kana\|vocabulary\|quiz\|review\|grammar\|semantics\|pragmatics\)\/\.\*\)/)
-  assert.match(workflow, /src\/components\/\(home\|path\|layout\|learning\|lesson\|practice\|kana\|vocabulary\|quiz\|review\|reference\|ui\)\/\.\*/)
-  assert.match(workflow, /src\/components\/\(mode-toggle\|theme-provider\|pwa-register\)\\\.tsx/)
-  assert.match(workflow, /src\/lib\/\(animcjk\|answer-option-feedback[\s\S]*\|dev-log[\s\S]*\|glossary-model[\s\S]*\|managed-learning[\s\S]*\|progress-list-storage[\s\S]*\|path[\s\S]*\|skill-tree[\s\S]*\|utils[\s\S]*\|vocabulary\)\.\*\\\.ts/)
-  assert.match(workflow, /src\/data\/\(lessons\\\.ts\|kana-data\\\.ts\|vocabulary\/\.\*\|glossary\\\.ts\|grammar-data\\\.ts\|semantics-data\\\.ts\|pragmatics-data\\\.ts\)/)
-  assert.match(workflow, /tests\/e2e\/\(browser\\\.mjs\|browser-\.\*\\\.mjs\|harness\\\.mjs\|storage-keys\\\.mjs\)/)
-  assert.match(workflow, /package\\\.json/)
-  assert.match(workflow, /package-lock\\\.json/)
-  assert.match(workflow, /next\\\.config\\\.\.\*/)
-  assert.match(workflow, /scripts\/\(build\|build-lock\)\\\.mjs/)
+  assert.ok(workflow.includes("public/.*"))
+  assert.ok(workflow.includes("src/.*"))
+  assert.ok(workflow.includes("scripts/.*"))
+  assert.ok(workflow.includes("tests/e2e/.*"))
+  assert.ok(workflow.includes(".github/workflows/.*"))
+  assert.ok(workflow.includes("components\\.json"))
   assert.match(workflow, /run: npm run e2e:install:ci/)
   assert.match(workflow, /run: npm run e2e:browser:required/)
   assert.doesNotMatch(workflow, /run: npm run e2e:browser\s*$/m)
 
   const { browser } = extractChangeFilters(workflow)
   assertPathsMatch(browser, [
+    "src/app/page.tsx",
     "src/app/layout.tsx",
     "src/app/path/page.tsx",
     "src/app/grammar/page.tsx",
     "src/app/kana/page.tsx",
+    "src/components/lesson/lesson-runner.tsx",
     "src/components/path/skill-tree-page.tsx",
     "src/components/learning/next-step-card.tsx",
     "src/components/kana/kana-page.tsx",
@@ -206,6 +199,10 @@ test("GitHub Actions workflow automatically runs strict browser gates for learni
     "src/lib/utils.ts",
     "src/data/glossary.ts",
     "src/data/vocabulary/daily.ts",
+    "src/data/lessons/days-136-175.ts",
+    "src/data/grammar-practice-types.ts",
+    "public/fonts/lxgw/lxgwwenkaiscreen.css",
+    "tests/e2e/browser-flow-quiz.mjs",
     "tests/e2e/browser.mjs",
     "tests/e2e/browser-flow-lesson.mjs",
     "tests/e2e/browser-flow-pwa.mjs",
@@ -221,10 +218,11 @@ test("GitHub Actions workflow automatically runs strict browser gates for learni
     "scripts/build.mjs",
     "scripts/build-lock.mjs",
     "package-lock.json",
+    ".github/workflows/quality.yml",
   ])
   assertPathsDoNotMatch(browser, [
     "README.md",
-    "public/offline.html",
-    "public/icons/icon-192.png",
+    "docs/screenshots/home.jpg",
+    "tests/unit/learning-store.test.mjs",
   ])
 })

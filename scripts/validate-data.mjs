@@ -413,6 +413,8 @@ function validateGrammarData(text) {
 
   if (checked) pass(`grammar entries checked (${checked})`)
   else fail("grammar data validation did not find any entries")
+
+  return grammarIdsByLevel
 }
 
 function validateSemanticsData(text) {
@@ -546,6 +548,76 @@ function validateLessonPracticeMetadata(lessonText, { kanaRomajiSet, vocabIdSet,
 
   if (checked) pass(`lesson practice metadata checked (${checked})`)
   else fail("lesson practice metadata did not find any practice steps")
+}
+
+// These two N4 entries refine concepts already taught by the N5 path. They remain
+// available in the reference/practice library, but are intentionally not new
+// course items. Keeping the exception explicit makes any future path omission
+// visible to the validator instead of silently growing.
+export const COURSE_GRAMMAR_EXCLUSIONS = new Set(["n4-te-iru", "n4-te-kudasai"])
+
+export function extractLessonNewItemRefs(lessonText) {
+  const refs = []
+
+  for (const match of lessonText.matchAll(/newItemIds\s*:\s*\[/g)) {
+    if (match.index == null) continue
+    const start = match.index + match[0].lastIndexOf("[")
+    const end = findBalancedClose(lessonText, start, "[", "]")
+    if (end < 0) continue
+
+    const body = lessonText.slice(start + 1, end)
+    for (const block of topLevelObjectBlocks(body)) {
+      const type = /\btype\s*:\s*["'](kana|vocab|grammar|sentence)["']/.exec(block)?.[1]
+      const id = /\bid\s*:\s*["']([^"']+)["']/.exec(block)?.[1]
+      if (type && id) refs.push({ type, id })
+    }
+  }
+
+  return refs
+}
+
+export function findMissingCourseGrammarIds(grammarIdsByLevel, lessonRefs, exclusions = COURSE_GRAMMAR_EXCLUSIONS) {
+  const excluded = exclusions instanceof Set ? exclusions : new Set(exclusions ?? [])
+  const introduced = new Set(lessonRefs.filter((ref) => ref.type === "grammar").map((ref) => ref.id))
+  const missing = []
+
+  for (const level of ["N5", "N4", "N3", "N2"]) {
+    for (const id of grammarIdsByLevel.get(level) ?? []) {
+      if (!introduced.has(id) && !excluded.has(id)) missing.push(id)
+    }
+  }
+
+  return missing.sort()
+}
+
+function validateCourseGrammarCoverage(grammarIdsByLevel, lessonText) {
+  const lessonRefs = extractLessonNewItemRefs(lessonText)
+  const exclusions = COURSE_GRAMMAR_EXCLUSIONS
+  const coreIds = new Set(
+    ["N5", "N4", "N3", "N2"].flatMap((level) => Array.from(grammarIdsByLevel.get(level) ?? []))
+  )
+  const introducedCoreIds = new Set(
+    lessonRefs
+      .filter((ref) => ref.type === "grammar" && coreIds.has(ref.id))
+      .map((ref) => ref.id)
+  )
+  const unknownExclusions = Array.from(exclusions).filter((id) => !coreIds.has(id)).sort()
+  const alreadyIntroduced = Array.from(exclusions).filter((id) => introducedCoreIds.has(id)).sort()
+  const missing = findMissingCourseGrammarIds(grammarIdsByLevel, lessonRefs, exclusions)
+
+  if (unknownExclusions.length) {
+    fail(`course grammar exclusions reference unknown core grammar ids: ${unknownExclusions.join(", ")}`)
+  }
+  if (alreadyIntroduced.length) {
+    fail(`course grammar exclusions are no longer needed because the ids are introduced: ${alreadyIntroduced.join(", ")}`)
+  }
+  if (missing.length) {
+    fail(`course grammar path is missing core grammar ids: ${missing.join(", ")}`)
+  }
+
+  if (!unknownExclusions.length && !alreadyIntroduced.length && !missing.length) {
+    pass(`course grammar path coverage checked (${introducedCoreIds.size}/${coreIds.size}; ${exclusions.size} explicit reference-only exclusions)`)
+  }
 }
 
 function validatePwaManifest() {
@@ -1038,7 +1110,7 @@ for (const file of [
   if (!exists(file)) continue
   unique(`${file} id`, matches(read(file), /id:\s*['"]([^'"]+)['"]/g))
 }
-validateGrammarData(grammarText)
+const grammarIdsByLevel = validateGrammarData(grammarText)
 validateSemanticsData(semanticsText)
 validatePragmaticsData(pragmaticsText)
 validateGlossaryData(glossaryText)
@@ -1049,6 +1121,7 @@ const lessonText = collectLessonSourceText()
 const lessonIds = matches(lessonText, /id:\s*["'](day-\d+[^"']*)["']/g)
 unique("lesson id", lessonIds)
 validateLessonPracticeMetadata(lessonText, { kanaRomajiSet, vocabIdSet, grammarIdSet })
+validateCourseGrammarCoverage(grammarIdsByLevel, lessonText)
 
 const lessonIdSet = new Set(lessonIds)
 const prereqIds = matches(lessonText, /prerequisites:\s*\[([^\]]*)\]/g)
