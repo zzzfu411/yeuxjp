@@ -36,6 +36,8 @@ test("review page delegates dashboard surfaces while keeping SRS/session wiring"
   assert.match(page, /mistakeItems: mistakes\.list/)
   assert.match(page, /mistakeKindDueLabel=\{dashboard\.mistakeKindDueLabel\}/)
   assert.match(page, /const \[reviewSaveError, setReviewSaveError\] = useState\(false\)/)
+  assert.match(page, /const loaded = learning\.loaded && mistakes\.loaded && kanaSrs\.loaded && vocabSrs\.loaded && mistakeSrs\.loaded/)
+  assert.match(page, /if \(!loaded\)/)
   assert.match(page, /const startSession = \(nextSession: ReviewSession\) => \{/)
   assert.match(page, /setReviewSaveError\(false\)/)
   assert.match(page, /runLearningStorageTransaction\(\(\) => enrollMissingReviewItems\(dashboard\.kanaEnrollMissing, kanaSrs\.enroll\)\)/)

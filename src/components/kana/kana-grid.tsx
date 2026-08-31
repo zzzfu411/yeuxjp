@@ -5,7 +5,7 @@ import { Kana } from "@/data/kana-data"
 import { KanaCard } from "./kana-card"
 import { cn } from "@/lib/utils"
 import { KanaDetailModal } from "./kana-detail-modal"
-import { speakJapanese } from "@/lib/speech"
+import { cancelJapaneseSpeech, speakJapanese } from "@/lib/speech"
 import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
 import { makeKanaId, type KanaId, type KanaScript } from "@/lib/kana-id"
 import {
@@ -38,12 +38,15 @@ export function KanaGrid({
   isMastered,
   onToggleMastered,
 }: KanaGridProps) {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const [selectedRomaji, setSelectedRomaji] = useState<string | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isWriting, setIsWriting] = useState(false)
   const [strokeAvailability, setStrokeAvailability] = useState<Record<string, StrokeAvailability>>({})
-  
-  const selectedKana = selectedIndex !== null ? data[selectedIndex] : null
+
+  const selectedIndex = selectedRomaji === null
+    ? null
+    : data.findIndex((item) => item.romaji === selectedRomaji)
+  const selectedKana = selectedIndex !== null && selectedIndex >= 0 ? data[selectedIndex] : null
   const selectedKanaId = selectedKana ? makeKanaId(mode, selectedKana.romaji) : null
   const learned = selectedKanaId ? (isMastered?.(selectedKanaId) ?? false) : false
   
@@ -56,20 +59,39 @@ export function KanaGrid({
 
   // 导航逻辑
   const handleNext = useCallback(() => {
-    if (selectedIndex === null) return
+    if (selectedIndex === null || selectedIndex < 0 || data.length === 0) return
+    cancelJapaneseSpeech()
+    setIsPlaying(false)
     setIsWriting(false)
-    setSelectedIndex((prev) => (prev! + 1) % data.length)
-  }, [selectedIndex, data.length])
+    setSelectedRomaji(data[(selectedIndex + 1) % data.length].romaji)
+  }, [data, selectedIndex])
 
   const handlePrev = useCallback(() => {
-    if (selectedIndex === null) return
+    if (selectedIndex === null || selectedIndex < 0 || data.length === 0) return
+    cancelJapaneseSpeech()
+    setIsPlaying(false)
     setIsWriting(false)
-    setSelectedIndex((prev) => (prev! - 1 + data.length) % data.length)
-  }, [selectedIndex, data.length])
+    setSelectedRomaji(data[(selectedIndex - 1 + data.length) % data.length].romaji)
+  }, [data, selectedIndex])
+
+  useEffect(() => {
+    if (selectedRomaji === null || selectedIndex !== -1) return
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
+      cancelJapaneseSpeech()
+      setIsPlaying(false)
+      setSelectedRomaji(null)
+      setIsWriting(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [selectedIndex, selectedRomaji])
 
   // 键盘支持
   useEffect(() => {
-    if (selectedIndex === null) return
+    if (selectedIndex === null || selectedIndex < 0) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!shouldHandleGlobalShortcutEvent(e)) return
@@ -106,7 +128,7 @@ export function KanaGrid({
   }, [currentChar, strokeAvailability])
 
   useEffect(() => {
-    if (selectedIndex === null) return
+    if (selectedIndex === null || selectedIndex < 0) return
 
     const indexes = getAdjacentKanaIndexes(selectedIndex, data.length)
 
@@ -157,7 +179,7 @@ export function KanaGrid({
                       mastered={itemId ? (isMastered?.(itemId) ?? false) : false}
                       onClick={() => {
                         setIsWriting(false)
-                        setSelectedIndex(data.indexOf(item))
+                        setSelectedRomaji(item.romaji)
                       }} 
                     />
                   ) : (
@@ -174,7 +196,7 @@ export function KanaGrid({
         mode={mode}
         currentChar={currentChar}
         currentStrokeAvailability={currentStrokeAvailability}
-        selectedIndex={selectedIndex}
+        selectedIndex={selectedKana ? selectedIndex : null}
         total={data.length}
         isWriting={isWriting}
         isPlaying={isPlaying}
@@ -183,7 +205,9 @@ export function KanaGrid({
         learned={learned}
         canToggleMastered={!!onToggleMastered}
         onClose={() => {
-          setSelectedIndex(null)
+          cancelJapaneseSpeech()
+          setIsPlaying(false)
+          setSelectedRomaji(null)
           setIsWriting(false)
         }}
         onPrev={handlePrev}

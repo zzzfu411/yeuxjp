@@ -1,10 +1,11 @@
 "use client"
 
+import { useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { isPracticeStep, STARTER_LESSONS, type Lesson, type LessonStep } from "@/data/lessons"
-import { speakJapaneseRepeated } from "@/lib/speech"
+import { cancelJapaneseSpeech, speakJapaneseRepeated } from "@/lib/speech"
 import { LessonCompletionRecap } from "@/components/lesson/lesson-completion-recap"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
 import { LessonStepBody } from "@/components/lesson/lesson-step-body"
@@ -79,6 +80,8 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
   })
 
   const playAudio = (text: string) => speakJapaneseRepeated(text, { repeat: 1, gapMs: 200 })
+
+  useEffect(() => () => cancelJapaneseSpeech(), [current.id, lesson.id])
 
   const goNext = () => {
     if (!loaded) return

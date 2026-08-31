@@ -98,6 +98,37 @@ export function recordQuestionPractice({
   }))
 }
 
+export function recordLessonQuestionPractice({
+  progress,
+  notebook,
+  result,
+  lessonId,
+  lessonStepId,
+}: {
+  progress: LearningProgressApi
+  notebook?: MistakeNotebookApi
+  result: QuestionResult
+  lessonId: string
+  lessonStepId: string
+}) {
+  return runLearningStorageTransaction(() => {
+    const recorded = recordQuestionPracticeWithoutTransaction({
+      progress,
+      notebook,
+      result,
+      lessonId,
+      lessonStepId,
+    })
+    if (!recorded) return false
+
+    return progress.saveLessonStepAnswer(lessonId, lessonStepId, {
+      answer: result.selectedAnswer,
+      correct: result.correct,
+      createdAt: result.answeredAt,
+    })
+  })
+}
+
 export function recordQuestionPracticeWithoutTransaction({
   progress,
   notebook,

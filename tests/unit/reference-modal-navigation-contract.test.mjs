@@ -12,7 +12,7 @@ function read(relPath) {
 test("reference modal navigation hook owns selected index and arrow-key behavior", () => {
   const source = read("src/lib/use-indexed-modal-navigation.ts")
 
-  assert.match(source, /export function useIndexedModalNavigation\(itemCount: number\)/)
+  assert.match(source, /export function useIndexedModalNavigation\(itemCount: number, onNavigate\?: \(\) => void\)/)
   assert.match(source, /useState<number \| null>\(null\)/)
   assert.match(source, /rawSelectedIndex === null \|\| itemCount <= 0/)
   assert.match(source, /openAt/)
@@ -315,14 +315,11 @@ test("vocabulary page keeps card-specific flip behavior while sharing indexed na
   const source = read("src/components/vocabulary/vocabulary-page.tsx")
 
   assert.match(source, /from "@\/lib\/use-indexed-modal-navigation"/)
-  assert.match(source, /useIndexedModalNavigation\(currentData\.length\)/)
-  assert.match(source, /onExpand=\{\(index\) => \{/)
-  assert.match(source, /openAt\(index\)/)
+  assert.match(source, /useIndexedModalNavigation\(currentData\.length, resetFocusedCard\)/)
+  assert.match(source, /onExpand=\{openAt\}/)
   assert.match(source, /onClose=\{resetSelection\}/)
-  assert.match(source, /onNext=\{handleNext\}/)
-  assert.match(source, /onPrev=\{handlePrev\}/)
-  assert.match(source, /goNext\(\)/)
-  assert.match(source, /goPrev\(\)/)
+  assert.match(source, /onNext=\{goNext\}/)
+  assert.match(source, /onPrev=\{goPrev\}/)
   assert.match(source, /setIsModalFlipped\(false\)/)
   assert.doesNotMatch(source, /window\.addEventListener\("keydown", handleKeyDown\)/)
   assert.doesNotMatch(source, /shouldHandleGlobalShortcut\(e\.target\)/)

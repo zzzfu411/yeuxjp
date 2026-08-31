@@ -36,6 +36,8 @@ test("QuizAnswerFeedback owns particle, conjugation, explanation, and mistake pr
   assert.match(source, /href="\/review"/)
   assert.match(source, /isVerbKind/)
   assert.match(source, /isVerbForm/)
+  assert.match(source, /value === "potential"/)
+  assert.match(source, /value === "causative"/)
 })
 
 test("special quiz feedback uses normalized answer checking", () => {

@@ -36,6 +36,7 @@ export function ReviewPage() {
 
   const [session, setSession] = useState<ReviewSession | null>(null)
   const [reviewSaveError, setReviewSaveError] = useState(false)
+  const loaded = learning.loaded && mistakes.loaded && kanaSrs.loaded && vocabSrs.loaded && mistakeSrs.loaded
 
   const dashboard = useMemo(() => {
     return buildReviewDashboardModel({
@@ -67,6 +68,14 @@ export function ReviewPage() {
 
   if (session) {
     return <ReviewRunner session={session} onExit={() => setSession(null)} notebook={mistakes} />
+  }
+
+  if (!loaded) {
+    return (
+      <div className="flex justify-center py-20 text-muted-foreground" role="status">
+        正在加载复习...
+      </div>
+    )
   }
 
   const startSession = (nextSession: ReviewSession) => {

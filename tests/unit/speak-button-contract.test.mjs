@@ -14,5 +14,7 @@ test("SpeakButton defaults to localized accessible copy", () => {
 
   assert.match(source, /aria-label=\{label \?\? "朗读"\}/)
   assert.match(source, /title=\{label \?\? "朗读"\}/)
+  assert.match(source, /cancelJapaneseSpeech/)
+  assert.match(source, /React\.useEffect\(\(\) => \(\) => cancelJapaneseSpeech\(\), \[text\]\)/)
   assert.doesNotMatch(source, /Pronounce/)
 })

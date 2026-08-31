@@ -14,6 +14,8 @@ const FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(", ")
 
+const openModalStack: HTMLDivElement[] = []
+
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
@@ -79,12 +81,18 @@ export function Modal({
   // Esc to close, trap tab focus, and focus dialog on open.
   React.useEffect(() => {
     if (!isOpen) return
+    const dialog = dialogRef.current
+    if (!dialog) return
+
+    openModalStack.push(dialog)
     // Defer focus until after animation kicks in.
     const focusTimer = setTimeout(() => {
-      dialogRef.current?.focus()
+      dialog.focus()
     }, 50)
 
     const onKey = (e: KeyboardEvent) => {
+      if (openModalStack.at(-1) !== dialog) return
+
       if (e.key === "Escape") {
         e.stopPropagation()
         onClose()
@@ -94,9 +102,6 @@ export function Modal({
       if (e.key !== "Tab") {
         return
       }
-
-      const dialog = dialogRef.current
-      if (!dialog) return
 
       const focusableElements = getFocusableElements()
       if (focusableElements.length === 0) {
@@ -122,12 +127,14 @@ export function Modal({
         firstElement.focus()
       }
     }
-    window.addEventListener("keydown", onKey)
+    window.addEventListener("keydown", onKey, true)
     return () => {
       clearTimeout(focusTimer)
-      window.removeEventListener("keydown", onKey)
+      window.removeEventListener("keydown", onKey, true)
+      const stackIndex = openModalStack.lastIndexOf(dialog)
+      if (stackIndex >= 0) openModalStack.splice(stackIndex, 1)
     }
-  }, [getFocusableElements, isOpen, onClose])
+  }, [getFocusableElements, isOpen, onClose, show])
 
   if (!show) return null
 

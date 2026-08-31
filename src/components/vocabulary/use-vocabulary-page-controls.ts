@@ -29,7 +29,8 @@ export function useVocabularyPageControls() {
     Promise.resolve().then(() => {
       if (cancelled) return
       const parsedLevel = parseVocabularyLevel(urlLevel)
-      if (parsedLevel) setCurrentLevel(parsedLevel)
+      setCurrentLevel(parsedLevel ?? DEFAULT_VOCABULARY_LEVEL)
+      setActiveCategory(null)
     })
 
     return () => {

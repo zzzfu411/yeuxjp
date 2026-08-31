@@ -3,6 +3,7 @@ import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const session = await loadTsModule("src/lib/learning-session.ts")
+const storeFacade = await loadTsModule("src/lib/learning-store.ts")
 const progressModel = await loadTsModule("src/lib/learning-progress-model.ts")
 const learningStorage = await loadTsModule("src/lib/learning-storage.ts")
 const questions = await loadTsModule("src/lib/questions.ts")
@@ -88,6 +89,55 @@ test("review enrollment failure rolls back direct practice recording", () => {
   assert.equal(map.has(storage.STORAGE_KEYS.PRACTICE_RESULTS), false)
   assert.equal(map.has(storage.STORAGE_KEYS.ITEM_PROGRESS), false)
   assert.equal(map.has(storage.STORAGE_KEYS.SRS_KANA), false)
+})
+
+test("lesson step-answer failure rolls back practice and mistake writes", () => {
+  const { map } = installLocalStorage()
+  map.set(storage.STORAGE_KEYS.PRACTICE_RESULTS, "[]")
+  map.set(storage.STORAGE_KEYS.ITEM_PROGRESS, "{}")
+  map.set(storage.STORAGE_KEYS.MISTAKES, "[]")
+  map.set(storage.STORAGE_KEYS.LESSON_PROGRESS, '{"lesson-1":{"lessonId":"lesson-1","status":"started"}}')
+
+  const saved = session.recordLessonQuestionPractice({
+    progress: {
+      recordPractice: () => {
+        storeFacade.writeManagedLearningStorage(storage.STORAGE_KEYS.PRACTICE_RESULTS, '[{"itemId":"hiragana:a"}]')
+        storeFacade.writeManagedLearningStorage(storage.STORAGE_KEYS.ITEM_PROGRESS, '{"hiragana:a":{"attempts":1}}')
+        return true
+      },
+      saveLessonStepAnswer: () => {
+        storeFacade.writeManagedLearningStorage(storage.STORAGE_KEYS.LESSON_PROGRESS, '{"lesson-1":{"lessonId":"lesson-1","status":"started","stepAnswers":{"step-1":{"correct":false}}}}')
+        return false
+      },
+    },
+    notebook: {
+      recordWrong: () => {
+        storeFacade.writeManagedLearningStorage(storage.STORAGE_KEYS.MISTAKES, '[{"id":"mistake-1"}]')
+        return true
+      },
+    },
+    result: {
+      question: {
+        type: "lesson:multipleChoice",
+        itemId: "hiragana:a",
+        itemType: "kana",
+        mode: "recognition",
+        correctAnswer: "a",
+        options: [{ value: "a", display: "a" }],
+      },
+      selectedAnswer: "i",
+      correct: false,
+      answeredAt: 123,
+    },
+    lessonId: "lesson-1",
+    lessonStepId: "step-1",
+  })
+
+  assert.equal(saved, false)
+  assert.equal(map.get(storage.STORAGE_KEYS.PRACTICE_RESULTS), "[]")
+  assert.equal(map.get(storage.STORAGE_KEYS.ITEM_PROGRESS), "{}")
+  assert.equal(map.get(storage.STORAGE_KEYS.MISTAKES), "[]")
+  assert.equal(map.get(storage.STORAGE_KEYS.LESSON_PROGRESS), '{"lesson-1":{"lessonId":"lesson-1","status":"started"}}')
 })
 
 test("successful correct practice records progress and enrolls review", () => {

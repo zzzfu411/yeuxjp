@@ -4,7 +4,7 @@ import { useCallback, type Dispatch, type SetStateAction } from "react"
 import type { LessonStep } from "@/data/lessons"
 import { isPracticeStep } from "@/data/lessons"
 import type { useLearningProgress } from "@/lib/learning-progress"
-import { recordQuestionPractice } from "@/lib/learning-session"
+import { recordLessonQuestionPractice } from "@/lib/learning-session"
 import {
   resolveLessonStepSubmission,
   type PersistedLessonStepAnswerMap,
@@ -32,19 +32,12 @@ export function useLessonAnswerRecorder({
 
     const { result, shouldRecord } = resolveLessonStepSubmission(step, answer, persistedAnswers[step.id])
 
-    if (shouldRecord && !recordQuestionPractice({
+    if (shouldRecord && !recordLessonQuestionPractice({
       progress,
       notebook,
       result,
       lessonId,
       lessonStepId: step.id,
-    })) {
-      return null
-    }
-    if (shouldRecord && !progress.saveLessonStepAnswer(lessonId, step.id, {
-      answer: result.selectedAnswer,
-      correct: result.correct,
-      createdAt: result.answeredAt,
     })) {
       return null
     }
