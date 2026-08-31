@@ -70,15 +70,8 @@ export function ReviewPage() {
     return <ReviewRunner session={session} onExit={() => setSession(null)} notebook={mistakes} />
   }
 
-  if (!loaded) {
-    return (
-      <div className="flex justify-center py-20 text-muted-foreground" role="status">
-        正在加载复习...
-      </div>
-    )
-  }
-
   const startSession = (nextSession: ReviewSession) => {
+    if (!loaded) return
     setReviewSaveError(false)
     setSession(nextSession)
   }
@@ -89,6 +82,13 @@ export function ReviewPage() {
   const clearMistakes = () => setReviewSaveError(!mistakes.clear())
 
   return (
+    <>
+      {!loaded ? (
+        <div className="flex justify-center py-20 text-muted-foreground" role="status">
+          正在加载复习...
+        </div>
+      ) : null}
+      <div hidden={!loaded}>
     <ReviewDashboard
       isFirstTime={dashboard.isFirstTime}
       totalDue={dashboard.totalDue}
@@ -130,5 +130,7 @@ export function ReviewPage() {
         remainingDueAfterBatch: Math.max(0, dashboard.totalDue - dashboard.todayQueue.length),
       })}
     />
+      </div>
+    </>
   )
 }

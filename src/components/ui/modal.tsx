@@ -82,16 +82,15 @@ export function Modal({
   React.useEffect(() => {
     if (!isOpen) return
     const dialog = dialogRef.current
-    if (!dialog) return
-
-    openModalStack.push(dialog)
+    if (dialog) openModalStack.push(dialog)
     // Defer focus until after animation kicks in.
     const focusTimer = setTimeout(() => {
-      dialog.focus()
+      dialogRef.current?.focus()
     }, 50)
 
     const onKey = (e: KeyboardEvent) => {
-      if (openModalStack.at(-1) !== dialog) return
+      const dialog = dialogRef.current
+      if (dialog && openModalStack.length > 0 && openModalStack.at(-1) !== dialog) return
 
       if (e.key === "Escape") {
         e.stopPropagation()
@@ -102,6 +101,8 @@ export function Modal({
       if (e.key !== "Tab") {
         return
       }
+
+      if (!dialog) return
 
       const focusableElements = getFocusableElements()
       if (focusableElements.length === 0) {
@@ -131,8 +132,10 @@ export function Modal({
     return () => {
       clearTimeout(focusTimer)
       window.removeEventListener("keydown", onKey, true)
-      const stackIndex = openModalStack.lastIndexOf(dialog)
-      if (stackIndex >= 0) openModalStack.splice(stackIndex, 1)
+      if (dialog) {
+        const stackIndex = openModalStack.lastIndexOf(dialog)
+        if (stackIndex >= 0) openModalStack.splice(stackIndex, 1)
+      }
     }
   }, [getFocusableElements, isOpen, onClose, show])
 
