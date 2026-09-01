@@ -244,6 +244,7 @@
 
   .paper-slip {
     position: relative;
+    min-width: 0;
     border: 1px solid var(--ink-ghost);
     border-radius: var(--radius);
     background-color: color-mix(in srgb, var(--paper-hi) 90%, transparent);

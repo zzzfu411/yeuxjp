@@ -156,6 +156,14 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
     await mobilePage.goto(baseUrl, { waitUntil: "networkidle" })
     await mobilePage.locator("#home-cover-title").waitFor({ state: "visible" })
     await assertCoverCopyBelowNavbar(mobilePage, "short mobile home cover")
+
+    await mobilePage.setViewportSize({ width: 280, height: 500 })
+    await mobilePage.goto(`${baseUrl}/path`, { waitUntil: "networkidle" })
+    await mobilePage.getByTestId("path-next-learning").waitFor({ state: "visible" })
+    await assertNoHorizontalOverflow(mobilePage, "narrow path route")
+    await mobilePage.goto(`${baseUrl}/semantics`, { waitUntil: "networkidle" })
+    await mobilePage.getByText("知る vs 分かる").first().waitFor({ state: "visible" })
+    await assertNoHorizontalOverflow(mobilePage, "narrow semantics route")
   } finally {
     await mobileContext.close()
   }
