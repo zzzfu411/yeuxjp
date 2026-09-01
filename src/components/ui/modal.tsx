@@ -38,7 +38,10 @@ export function Modal({
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
   const onCloseRef = React.useRef(onClose)
-  onCloseRef.current = onClose
+
+  React.useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   const getFocusableElements = React.useCallback(() => {
     if (!dialogRef.current) return []
