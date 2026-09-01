@@ -25,7 +25,7 @@ function installFakeSpeech() {
   return { spoken, synth }
 }
 
-const { spoken } = installFakeSpeech()
+const { spoken, synth } = installFakeSpeech()
 const speech = await loadTsModule("src/lib/speech.ts")
 
 function sleep(ms) {
@@ -97,4 +97,19 @@ test("speakJapanese interrupts and invalidates an in-flight sequence chain", () 
   spoken[0].onend()
   assert.equal(spoken.length, 2, "the interrupted sequence must not enqueue its second repeat")
   assert.equal(spoken[1].text, "いぬ")
+})
+
+test("stale button cleanup cannot cancel newer speech playback", () => {
+  spoken.length = 0
+
+  const first = speech.speakJapanese("一")
+  const second = speech.speakJapanese("二")
+  const cancelCountBeforeStaleCleanup = synth.cancelCount
+
+  speech.cancelJapaneseSpeech(first)
+  assert.equal(synth.cancelCount, cancelCountBeforeStaleCleanup)
+  assert.equal(spoken.length, 2)
+
+  speech.cancelJapaneseSpeech(second)
+  assert.equal(synth.cancelCount, cancelCountBeforeStaleCleanup + 1)
 })

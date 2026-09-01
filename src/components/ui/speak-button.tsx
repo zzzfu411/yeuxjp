@@ -28,6 +28,8 @@ export function SpeakButton({
 }: SpeakButtonProps) {
   const [speechSupported, setSpeechSupported] = React.useState(true)
   const playingRef = React.useRef(false)
+  const utteranceRef = React.useRef<SpeechSynthesisUtterance | null>(null)
+  const playbackIdRef = React.useRef(0)
 
   React.useEffect(() => {
     let cancelled = false
@@ -40,9 +42,12 @@ export function SpeakButton({
   }, [])
 
   React.useEffect(() => () => {
-    if (!playingRef.current) return
+    const utterance = utteranceRef.current
+    utteranceRef.current = null
+    playbackIdRef.current += 1
+    if (!playingRef.current || !utterance) return
     playingRef.current = false
-    cancelJapaneseSpeech()
+    cancelJapaneseSpeech(utterance)
   }, [text])
 
   const disabled = !speechSupported || !text?.trim()
@@ -57,16 +62,23 @@ export function SpeakButton({
         className
       )}
       onClick={() => {
+        const playbackId = playbackIdRef.current + 1
+        playbackIdRef.current = playbackId
         playingRef.current = true
         const utterance = speakJapanese(text, {
           rate,
           onEnd: () => {
+            if (playbackIdRef.current !== playbackId) return
             playingRef.current = false
+            utteranceRef.current = null
           },
           onError: () => {
+            if (playbackIdRef.current !== playbackId) return
             playingRef.current = false
+            utteranceRef.current = null
           },
         })
+        utteranceRef.current = utterance
         if (!utterance) playingRef.current = false
       }}
       disabled={disabled}
