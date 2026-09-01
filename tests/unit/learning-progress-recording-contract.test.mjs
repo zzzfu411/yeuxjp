@@ -36,6 +36,7 @@ test("learning progress treats practice history and item progress as one write",
   assert.match(source, /queueLearningNotification\(\(\) => \{/)
   assert.match(source, /setResults\(nextResults\)/)
   assert.match(source, /setItems\(nextItems\)/)
+  assert.match(source, /queueLearningNotification\(\(\) => setLessons\(next\)\)/)
   assert.match(source, /if \(!saved\) return false/)
   assert.match(source, /return true/)
 })

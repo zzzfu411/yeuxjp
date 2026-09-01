@@ -52,6 +52,7 @@ export function HomeNowPlaying({
           sizes="160px"
           className="object-cover dark:opacity-0"
           priority
+          unoptimized
         />
         <Image
           src="/assets/hero/hero-watercolor-dark.webp"
@@ -60,6 +61,7 @@ export function HomeNowPlaying({
           sizes="160px"
           className="object-cover opacity-0 dark:opacity-100"
           priority
+          unoptimized
         />
       </div>
       <div className="mt-4 text-center font-black leading-tight">{learningEntry.title}</div>

@@ -66,18 +66,6 @@ export function ReviewPage() {
     mistakeSrs.dueIds,
   ])
 
-  if (session) {
-    return <ReviewRunner session={session} onExit={() => setSession(null)} notebook={mistakes} />
-  }
-
-  if (!loaded) {
-    return (
-      <div className="flex justify-center py-20 text-muted-foreground" role="status">
-        正在加载复习...
-      </div>
-    )
-  }
-
   const startSession = (nextSession: ReviewSession) => {
     setReviewSaveError(false)
     setSession(nextSession)
@@ -88,47 +76,60 @@ export function ReviewPage() {
   const removeMistake = (id: string) => setReviewSaveError(!mistakes.remove(id))
   const clearMistakes = () => setReviewSaveError(!mistakes.clear())
 
+  if (session) {
+    return <ReviewRunner session={session} onExit={() => setSession(null)} notebook={mistakes} />
+  }
+
   return (
-    <ReviewDashboard
-      isFirstTime={dashboard.isFirstTime}
-      totalDue={dashboard.totalDue}
-      totalEnrolled={dashboard.totalEnrolled}
-      nextDueAt={dashboard.nextDueAt}
-      todayQueueLength={dashboard.todayQueue.length}
-      counts={dashboard.counts}
-      mistakeKindDueLabel={dashboard.mistakeKindDueLabel}
-      kana={{
-        due: dashboard.counts.kanaDue,
-        total: dashboard.totals.kana,
-        mastered: dashboard.totals.mastered,
-        enrollMissing: dashboard.kanaEnrollMissing.length,
-        onStart: () => startSession({ deck: "kana", ids: dashboard.reviewableKanaDueIds }),
-        onEnrollMissing: enrollKanaMissing,
-      }}
-      vocab={{
-        due: dashboard.counts.vocabDue,
-        total: dashboard.totals.vocab,
-        learned: dashboard.totals.learned,
-        enrollMissing: dashboard.vocabEnrollMissing.length,
-        onStart: () => startSession({ deck: "vocab", ids: dashboard.vocabDueIds }),
-        onEnrollMissing: enrollVocabMissing,
-      }}
-      mistakes={{
-        due: dashboard.counts.mistakesDue,
-        total: dashboard.totals.mistakes,
-        enrollMissing: dashboard.mistakeEnrollMissing.length,
-        recent: mistakes.list,
-        saveError: reviewSaveError,
-        onStart: () => startSession({ deck: "mistakes", ids: dashboard.dueMistakeIds }),
-        onEnrollMissing: enrollMistakeMissing,
-        onClear: clearMistakes,
-        onRemove: removeMistake,
-      }}
-      onStartToday={() => startSession({
-        deck: "today",
-        items: dashboard.todayQueue,
-        remainingDueAfterBatch: Math.max(0, dashboard.totalDue - dashboard.todayQueue.length),
-      })}
-    />
+    <>
+      {!loaded ? (
+        <div className="flex justify-center py-20 text-muted-foreground" role="status">
+          正在加载复习...
+        </div>
+      ) : null}
+      <div hidden={!loaded}>
+        <ReviewDashboard
+          isFirstTime={dashboard.isFirstTime}
+          totalDue={dashboard.totalDue}
+          totalEnrolled={dashboard.totalEnrolled}
+          nextDueAt={dashboard.nextDueAt}
+          todayQueueLength={dashboard.todayQueue.length}
+          counts={dashboard.counts}
+          mistakeKindDueLabel={dashboard.mistakeKindDueLabel}
+          kana={{
+            due: dashboard.counts.kanaDue,
+            total: dashboard.totals.kana,
+            mastered: dashboard.totals.mastered,
+            enrollMissing: dashboard.kanaEnrollMissing.length,
+            onStart: () => startSession({ deck: "kana", ids: dashboard.reviewableKanaDueIds }),
+            onEnrollMissing: enrollKanaMissing,
+          }}
+          vocab={{
+            due: dashboard.counts.vocabDue,
+            total: dashboard.totals.vocab,
+            learned: dashboard.totals.learned,
+            enrollMissing: dashboard.vocabEnrollMissing.length,
+            onStart: () => startSession({ deck: "vocab", ids: dashboard.vocabDueIds }),
+            onEnrollMissing: enrollVocabMissing,
+          }}
+          mistakes={{
+            due: dashboard.counts.mistakesDue,
+            total: dashboard.totals.mistakes,
+            enrollMissing: dashboard.mistakeEnrollMissing.length,
+            recent: mistakes.list,
+            saveError: reviewSaveError,
+            onStart: () => startSession({ deck: "mistakes", ids: dashboard.dueMistakeIds }),
+            onEnrollMissing: enrollMistakeMissing,
+            onClear: clearMistakes,
+            onRemove: removeMistake,
+          }}
+          onStartToday={() => startSession({
+            deck: "today",
+            items: dashboard.todayQueue,
+            remainingDueAfterBatch: Math.max(0, dashboard.totalDue - dashboard.todayQueue.length),
+          })}
+        />
+      </div>
+    </>
   )
 }

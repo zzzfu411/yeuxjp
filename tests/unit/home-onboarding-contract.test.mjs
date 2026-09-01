@@ -59,6 +59,7 @@ test("home hero images use bounded responsive sizes for LCP", () => {
   assert.match(nowPlaying, /src="\/assets\/hero\/hero-watercolor\.webp"/)
   assert.match(nowPlaying, /src="\/assets\/hero\/hero-watercolor-dark\.webp"/)
   assert.match(nowPlaying, /sizes="160px"/)
+  assert.match(nowPlaying, /unoptimized/)
   assert.match(nowPlaying, /data-testid="home-start-learning"/)
   assert.match(nowPlaying, /font-jp/)
   assert.match(nowPlaying, /label="课表"/)

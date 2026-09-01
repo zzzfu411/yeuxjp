@@ -27,6 +27,7 @@ export function SpeakButton({
   className,
 }: SpeakButtonProps) {
   const [speechSupported, setSpeechSupported] = React.useState(true)
+  const playingRef = React.useRef(false)
 
   React.useEffect(() => {
     let cancelled = false
@@ -38,7 +39,11 @@ export function SpeakButton({
     }
   }, [])
 
-  React.useEffect(() => () => cancelJapaneseSpeech(), [text])
+  React.useEffect(() => () => {
+    if (!playingRef.current) return
+    playingRef.current = false
+    cancelJapaneseSpeech()
+  }, [text])
 
   const disabled = !speechSupported || !text?.trim()
 
@@ -48,7 +53,19 @@ export function SpeakButton({
       variant={variant}
       size={size}
       className={cn("rounded-full", className)}
-      onClick={() => speakJapanese(text, { rate })}
+      onClick={() => {
+        playingRef.current = true
+        const utterance = speakJapanese(text, {
+          rate,
+          onEnd: () => {
+            playingRef.current = false
+          },
+          onError: () => {
+            playingRef.current = false
+          },
+        })
+        if (!utterance) playingRef.current = false
+      }}
       disabled={disabled}
       aria-label={label ?? "朗读"}
       title={label ?? "朗读"}

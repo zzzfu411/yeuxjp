@@ -10,7 +10,7 @@ export function ModeToggle() {
   return (
     <button
       type="button"
-      aria-label="切换浅色 / 黑夜"
+      aria-label="Toggle theme"
       title="切换浅色 / 黑夜"
       className="relative inline-flex h-10 w-10 items-center justify-center border-[3px] border-foreground bg-card text-foreground shadow-hard-sm transition-transform hover:-translate-x-px hover:-translate-y-px hover:bg-primary"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
