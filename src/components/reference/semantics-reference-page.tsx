@@ -53,7 +53,7 @@ export function SemanticsReferencePage({
           <Link
             key={point.id}
             href={semanticsItemHref(index)}
-            className="paper-slip group relative overflow-hidden"
+            className="paper-slip group relative"
           >
             <span className="paper-tape" aria-hidden="true" />
             <div className="flex flex-col justify-between gap-4 border-b border-border/35 p-6 md:flex-row md:items-center">
