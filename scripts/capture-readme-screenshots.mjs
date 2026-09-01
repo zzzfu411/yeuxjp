@@ -87,12 +87,12 @@ function seedLearnerState() {
       ]
     })
   )
-  lessons["day-5-dakuon-yes-no"] = {
-    lessonId: "day-5-dakuon-yes-no",
+  lessons["day-5-se-so-te-to"] = {
+    lessonId: "day-5-se-so-te-to",
     status: "started",
     startedAt: daysAgo(0, 9),
     currentStepIndex: 1,
-    lastStepId: "hello-example",
+    lastStepId: "ohayou-example",
     updatedAt: now,
   }
 
@@ -140,7 +140,7 @@ function seedLearnerState() {
     for (let i = 0; i < count; i++) {
       const itemId = practiceIds[i % practiceIds.length]
       results.push({
-        lessonId: day === 0 ? "day-5-dakuon-yes-no" : completedLessons[Math.min(day, completedLessons.length - 1)],
+        lessonId: day === 0 ? "day-5-se-so-te-to" : completedLessons[Math.min(day, completedLessons.length - 1)],
         itemId,
         itemType: itemId.startsWith("sur-") ? "vocab" : "kana",
         mode: i % 2 === 0 ? "recognition" : "meaning",
@@ -278,24 +278,38 @@ async function main() {
   await page.goto(`${BASE_URL}/`, { waitUntil: "networkidle" })
   await page.evaluate(seedLearnerState)
   await page.reload({ waitUntil: "networkidle" })
-  await shot(page, "home.jpg", { waitFor: '[data-testid="home-start-learning"]' })
+  await page.setViewportSize({ width: 1440, height: 1100 })
+  await page.locator('[data-testid="home-start-learning"]').first().waitFor({ state: "visible", timeout: 15_000 })
+  await page.locator('[data-testid="course-phase-n5"]').first().waitFor({ state: "visible", timeout: 15_000 })
+  await page.evaluate(() => {
+    const notebook = document.querySelector("#study-notebook")
+    if (!notebook) return
+    const top = notebook.getBoundingClientRect().top + window.scrollY
+    window.scrollTo(0, Math.max(0, top - 88))
+  })
+  await shot(page, "home.jpg", {
+    waitFor: "#study-notebook",
+    extraWait: 600,
+  })
+
+  await page.setViewportSize({ width: 1440, height: 1300 })
+  await page.goto(`${BASE_URL}/kana`, { waitUntil: "networkidle" })
+  await shot(page, "kana.jpg", { waitFor: '[data-testid="kana-card-a"]', extraWait: 600 })
 
   await page.setViewportSize({ width: 1440, height: 1100 })
-  await page.goto(`${BASE_URL}/kana`, { waitUntil: "networkidle" })
-  await shot(page, "kana.jpg", { waitFor: '[data-testid="kana-card-a"]', extraWait: 400 })
+  await page.goto(`${BASE_URL}/quiz?mode=hiragana-romaji`, { waitUntil: "networkidle" })
+  await shot(page, "quiz.jpg", { waitFor: '[data-testid="quiz-question-text"]', extraWait: 400 })
+
+  await page.setViewportSize({ width: 1440, height: 1100 })
+  await page.goto(`${BASE_URL}/path`, { waitUntil: "networkidle" })
+  await shot(page, "path.jpg", { waitFor: '[data-testid="path-next-learning"]', extraWait: 400 })
 
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto(`${BASE_URL}/quiz?mode=hiragana-romaji`, { waitUntil: "networkidle" })
-  await shot(page, "quiz.jpg", { waitFor: '[data-testid="quiz-question-text"]' })
-
-  await page.goto(`${BASE_URL}/path`, { waitUntil: "networkidle" })
-  await shot(page, "path.jpg", { waitFor: '[data-testid="path-next-learning"]' })
-
   await page.goto(`${BASE_URL}/review`, { waitUntil: "networkidle" })
-  await shot(page, "review.jpg", { waitFor: '[data-testid="review-today-due"]' })
+  await shot(page, "review.jpg", { waitFor: '[data-testid="review-today-due"]', extraWait: 400 })
 
-  await page.goto(`${BASE_URL}/learn/day-5-dakuon-yes-no`, { waitUntil: "networkidle" })
-  await shot(page, "lesson.jpg", { waitFor: "h2", extraWait: 400 })
+  await page.goto(`${BASE_URL}/learn/day-5-se-so-te-to`, { waitUntil: "networkidle" })
+  await shot(page, "lesson.jpg", { waitFor: "h2", extraWait: 600 })
 
   await browser.close()
 }

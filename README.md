@@ -4,7 +4,7 @@ Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana
 
 ![Yasashi Japanese home](docs/screenshots/home.jpg)
 
-*Home — a paper-style player with today's course queue, daily goal, streak, and the next lesson to play.*
+*Home — a paper study notebook with the next lesson, daily goal, streak, and the 175-day N5–N2 course index.*
 
 ![Kana chart](docs/screenshots/kana.jpg)
 
@@ -20,7 +20,7 @@ Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana
 
 ![175-day skill tree](docs/screenshots/path.jpg)
 
-*175-day path — N5→N2 days, next-lesson recommendation, and five-dimension mastery.*
+*175-day path — paper course index for N5→N2 days, next-lesson card, and mastery stats.*
 
 ![SRS review desk](docs/screenshots/review.jpg)
 
