@@ -100,32 +100,32 @@ export function speakJapanese(text: string, options: SpeakOptions = {}) {
   if (!text?.trim()) return null
 
   const synth = window.speechSynthesis
+  const generation = options.cancel !== false ? nextSpeechGeneration() : speechGeneration
   if (options.cancel !== false) {
-    nextSpeechGeneration()
     activeUtterance = null
     synth.cancel()
   }
   const utterance = new SpeechSynthesisUtterance(text)
   applyUtteranceDefaults(utterance, options)
-
   const voices = synth.getVoices?.() ?? []
   const voice = pickJapaneseVoice(voices)
   if (voice) utterance.voice = voice
-
   if (options.onStart) utterance.onstart = options.onStart
   utterance.onend = () => {
+    if (generation !== speechGeneration) return
     if (activeUtterance === utterance) activeUtterance = null
     options.onEnd?.()
   }
   utterance.onerror = (event) => {
+    if (generation !== speechGeneration) return
     if (activeUtterance === utterance) activeUtterance = null
     options.onError?.(event)
   }
-
   activeUtterance = utterance
   synth.speak(utterance)
   return utterance
 }
+
 export type SpeakSequenceOptions = SpeakOptions & {
   gapMs?: number
 }
@@ -137,11 +137,11 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
   if (!cleaned.length) return null
 
   const synth = window.speechSynthesis
-  if (options.cancel !== false) {
-    synth.cancel()
-    activeUtterance = null
-  }
   const generation = nextSpeechGeneration()
+  if (options.cancel !== false) {
+    activeUtterance = null
+    synth.cancel()
+  }
 
   const voices = synth.getVoices?.() ?? []
   const voice = pickJapaneseVoice(voices)

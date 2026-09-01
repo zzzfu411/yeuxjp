@@ -136,6 +136,30 @@ test("vocabulary quiz generators return meaning questions", () => {
   assert.equal(question.options.length, 4)
 })
 
+test("vocabulary meaning questions de-duplicate visible meanings", () => {
+  const duplicateMeaningVocab = [
+    { id: "v1", kana: "やすむ", romaji: "yasumu", meaning: "休息", category: "verbs", level: "survival" },
+    { id: "v2", kana: "やすみ", romaji: "yasumi", meaning: "休息", category: "time", level: "survival" },
+    { id: "v3", kana: "みず", romaji: "mizu", meaning: "水", category: "food", level: "survival" },
+    { id: "v4", kana: "ちゃ", romaji: "cha", meaning: "茶", category: "food", level: "survival" },
+    { id: "v5", kana: "パン", romaji: "pan", meaning: "面包", category: "food", level: "survival" },
+  ]
+
+  const question = quiz.generateQuizQuestion({
+    mode: "meaning-vocab",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: duplicateMeaningVocab,
+    vocabTargetPool: [duplicateMeaningVocab[0]],
+    random: () => 0,
+  })
+
+  assert.equal(question.correctAnswer, "v1")
+  assert.equal(question.options.length, 4)
+  assert.equal(new Set(question.options.map((option) => option.display)).size, question.options.length)
+  assert.ok(question.options.some((option) => option.value === "v1"))
+})
+
 test("vocabulary quiz generators require enough unique options", () => {
   const smallVocab = vocab.slice(0, 3)
   const question = quiz.generateQuizQuestion({

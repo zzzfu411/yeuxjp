@@ -99,6 +99,30 @@ test("speakJapanese interrupts and invalidates an in-flight sequence chain", () 
   assert.equal(spoken[1].text, "いぬ")
 })
 
+test("stale standalone callbacks cannot finish newer speech playback", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapanese("一", {
+    onEnd: () => callbacks.push("first-end"),
+    onError: () => callbacks.push("first-error"),
+  })
+  const second = speech.speakJapanese("二", {
+    onEnd: () => callbacks.push("second-end"),
+    onError: () => callbacks.push("second-error"),
+  })
+
+  assert.equal(spoken.length, 2)
+
+  // Cancellation can deliver a late completion/error event for the old utterance.
+  first.onend()
+  first.onerror(new Error("canceled"))
+  assert.deepEqual(callbacks, [], "stale callbacks must not end replacement playback")
+
+  second.onend()
+  assert.deepEqual(callbacks, ["second-end"])
+})
+
 test("stale button cleanup cannot cancel newer speech playback", () => {
   spoken.length = 0
 

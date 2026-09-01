@@ -74,6 +74,9 @@ test("home cover art preserves its sheet ratio and fits short viewports", () => 
   assert.match(styles, /\.cover-art\s*\{[\s\S]*?aspect-ratio:\s*4\s*\/\s*3;/)
   assert.match(styles, /\.cover-art\s*\{[\s\S]*?max-width:\s*100%;/)
   assert.match(styles, /calc\(112svh - 18rem\)/)
+  assert.match(styles, /@media \(max-height: 560px\)[\s\S]*?\.cover-scroll \{ display: none; \}/)
+  assert.match(styles, /@media \(max-height: 420px\)[\s\S]*?\.paper-cover \{[\s\S]*?height: auto;[\s\S]*?padding-block: 1rem;/)
+  assert.match(styles, /width: min\(62vmin, 190px, 100%\)/)
 })
 
 test("HomeStarterLessons owns starter lesson cards and locked card behavior", () => {
