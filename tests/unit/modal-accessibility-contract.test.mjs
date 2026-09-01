@@ -23,8 +23,10 @@ test("Modal traps keyboard focus while preserving escape close behavior", () => 
   assert.match(source, /lastElement\.focus\(\)/)
   assert.match(source, /firstElement\.focus\(\)/)
   assert.match(source, /const openModalStack: HTMLDivElement\[\] = \[\]/)
-  assert.match(source, /openModalStack\.at\(-1\) !== dialog/)
+  assert.match(source, /onCloseRef/)
+  assert.match(source, /openModalStack\.length > 0 && openModalStack\.at\(-1\) !== dialog/)
   assert.match(source, /addEventListener\("keydown", onKey, true\)/)
+  assert.doesNotMatch(source, /\[getFocusableElements, isOpen, onClose, show\]/)
 })
 
 test("Modal exposes labelledby and describedby hooks to callers", () => {

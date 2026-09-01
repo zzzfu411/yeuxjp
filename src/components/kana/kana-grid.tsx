@@ -155,6 +155,13 @@ export function KanaGrid({
     if (!utterance) setIsPlaying(false)
   }
 
+  const handleClose = useCallback(() => {
+    cancelJapaneseSpeech()
+    setIsPlaying(false)
+    setSelectedRomaji(null)
+    setIsWriting(false)
+  }, [])
+
   return (
     <>
       <div className="mx-auto flex w-full max-w-3xl flex-col border-y border-border/40 pb-0">
@@ -204,12 +211,7 @@ export function KanaGrid({
         isComboChar={isComboChar}
         learned={learned}
         canToggleMastered={!!onToggleMastered}
-        onClose={() => {
-          cancelJapaneseSpeech()
-          setIsPlaying(false)
-          setSelectedRomaji(null)
-          setIsWriting(false)
-        }}
+        onClose={handleClose}
         onPrev={handlePrev}
         onNext={handleNext}
         onPlay={handlePlay}

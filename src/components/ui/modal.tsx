@@ -37,6 +37,8 @@ export function Modal({
   const previousOverflow = React.useRef<string | null>(null)
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
+  const onCloseRef = React.useRef(onClose)
+  onCloseRef.current = onClose
 
   const getFocusableElements = React.useCallback(() => {
     if (!dialogRef.current) return []
@@ -90,11 +92,11 @@ export function Modal({
 
     const onKey = (e: KeyboardEvent) => {
       const dialog = dialogRef.current
-      if (dialog && openModalStack.length > 0 && openModalStack.at(-1) !== dialog) return
+      if (openModalStack.length > 0 && openModalStack.at(-1) !== dialog) return
 
       if (e.key === "Escape") {
         e.stopPropagation()
-        onClose()
+        onCloseRef.current()
         return
       }
 
@@ -137,7 +139,7 @@ export function Modal({
         if (stackIndex >= 0) openModalStack.splice(stackIndex, 1)
       }
     }
-  }, [getFocusableElements, isOpen, onClose, show])
+  }, [getFocusableElements, isOpen, show])
 
   if (!show) return null
 
