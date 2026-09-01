@@ -501,6 +501,11 @@
   }
 }
 
+/* Leave the fixed chrome a clear strip above the cover copy in short windows. */
+@media (max-height: 640px) {
+  .paper-cover { margin-top: 0; }
+}
+
 /* Keep the cover legible when a short viewport would otherwise crush the art. */
 @media (max-height: 560px) {
   .cover-scroll { display: none; }

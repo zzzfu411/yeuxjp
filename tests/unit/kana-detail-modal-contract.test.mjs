@@ -19,6 +19,7 @@ test("KanaGrid delegates kana detail modal rendering to KanaDetailModal", () => 
   assert.match(source, /data\.findIndex\(\(item\) => item\.romaji === selectedRomaji\)/)
   assert.match(source, /selectedKana \? selectedIndex : null/)
   assert.match(source, /e\.preventDefault\(\)/)
+  assert.match(source, /useEffect\(\(\) => \{[\s\S]*?return \(\) => cancelJapaneseSpeech\(\)[\s\S]*?\}, \[\]\)/)
   assert.match(source, /<KanaDetailModal\b/)
   assert.match(source, /onToggleWriting=\{\(\) => setIsWriting\(\(prev\) => !prev\)\}/)
   assert.doesNotMatch(source, /<Modal\b/)

@@ -38,6 +38,8 @@ test("useVocabularyPageControls owns URL level and vocabulary toolbar state", ()
   assert.match(source, /setOnlyUnlearned\(\(value\) => !value\)/)
   assert.match(source, /const scrollToCategory = useCallback/)
   assert.match(source, /document\.getElementById\(`cat-\$\{category\}`\)/)
+  assert.match(source, /const VOCABULARY_CATEGORY_SCROLL_OFFSET = 320/)
+  assert.match(source, /- VOCABULARY_CATEGORY_SCROLL_OFFSET/)
   assert.match(source, /behavior: "smooth"/)
 })
 

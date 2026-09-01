@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -22,7 +22,13 @@ export function Navbar() {
   const pathname = usePathname()
   const coverRoute = pathname === "/"
   const [pastCover, setPastCover] = useState(!coverRoute)
+  const activeLinkRef = useRef<HTMLAnchorElement | null>(null)
   const coverAtTop = coverRoute && !pastCover
+
+  useEffect(() => {
+    if (coverAtTop) return
+    activeLinkRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" })
+  }, [pathname, coverAtTop])
 
   useEffect(() => {
     if (!coverRoute) return
@@ -59,6 +65,7 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
+                ref={active ? activeLinkRef : undefined}
                 className={cn(
                   "nav-signpost shrink-0 whitespace-nowrap text-sm text-muted-foreground",
                   active && "is-active text-foreground"

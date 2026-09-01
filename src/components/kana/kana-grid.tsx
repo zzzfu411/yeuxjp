@@ -57,6 +57,10 @@ export function KanaGrid({
   const hasStrokes = !!currentChar && currentStrokeAvailability === "available"
   const isComboChar = (currentChar?.length ?? 0) > 1
 
+  useEffect(() => {
+    return () => cancelJapaneseSpeech()
+  }, [])
+
   // 导航逻辑
   const handleNext = useCallback(() => {
     if (selectedIndex === null || selectedIndex < 0 || data.length === 0) return

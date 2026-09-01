@@ -110,7 +110,7 @@ export function speakJapanese(text: string, options: SpeakOptions = {}) {
   const voices = synth.getVoices?.() ?? []
   const voice = pickJapaneseVoice(voices)
   if (voice) utterance.voice = voice
-  if (options.onStart) utterance.onstart = options.onStart
+  if (options.onStart) utterance.onstart = () => { if (generation === speechGeneration) options.onStart?.() }
   utterance.onend = () => {
     if (generation !== speechGeneration) return
     if (activeUtterance === utterance) activeUtterance = null
@@ -165,7 +165,7 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
     if (voice) utterance.voice = voice
 
     if (!first) first = utterance
-    if (index === 0 && options.onStart) utterance.onstart = options.onStart
+    if (index === 0 && options.onStart) utterance.onstart = () => { if (generation === speechGeneration) options.onStart?.() }
 
     utterance.onerror = (event) => {
       if (generation !== speechGeneration) return

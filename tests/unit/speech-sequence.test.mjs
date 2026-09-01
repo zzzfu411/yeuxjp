@@ -123,6 +123,34 @@ test("stale standalone callbacks cannot finish newer speech playback", () => {
   assert.deepEqual(callbacks, ["second-end"])
 })
 
+test("stale onstart callbacks cannot start replaced speech playback", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapanese("一", { onStart: () => callbacks.push("first-start") })
+  const second = speech.speakJapanese("二", { onStart: () => callbacks.push("second-start") })
+
+  first.onstart()
+  assert.deepEqual(callbacks, [], "a replaced utterance must not report a late start")
+
+  second.onstart()
+  assert.deepEqual(callbacks, ["second-start"])
+})
+
+test("stale sequence onstart callbacks cannot start replaced playback", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapaneseSequence(["一", "二"], { onStart: () => callbacks.push("first-start") })
+  const second = speech.speakJapaneseSequence(["三"], { onStart: () => callbacks.push("second-start") })
+
+  first.onstart()
+  assert.deepEqual(callbacks, [], "a replaced sequence must not report a late start")
+
+  second.onstart()
+  assert.deepEqual(callbacks, ["second-start"])
+})
+
 test("stale button cleanup cannot cancel newer speech playback", () => {
   spoken.length = 0
 
