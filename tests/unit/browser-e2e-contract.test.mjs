@@ -717,6 +717,11 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
   assert.match(e2e, /getByText\("Know \(Data\)"\)/)
   assert.match(e2e, /function assertNoHorizontalOverflow/)
   assert.match(e2e, /scrollWidth <= size\.clientWidth \+ 1/)
+  assert.match(e2e, /setViewportSize\(\{ width: 280, height: 500 \}\)/)
+  assert.match(e2e, /getByRole\("heading", \{ name: "一页一课，循序展卷" \}\)/)
+  assert.match(e2e, /narrow path route/)
+  assert.match(e2e, /getByRole\("heading", \{ name: \/语义辨析\/ \}\)/)
+  assert.match(e2e, /narrow semantics route/)
   assert.match(e2e, /mobileContext\.close\(\)/)
 })
 
