@@ -71,10 +71,12 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
   }, [selectedAnswer])
 
   const advance = useCallback(() => {
+    // Consume the answer token synchronously so rapid activations cannot process two queue items.
+    if (!answerPendingRef.current || lastAnswerCorrect === null) return
+    answerPendingRef.current = false
     setQueue((prev) => advanceReviewQueue(prev, lastAnswerCorrect))
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
-    answerPendingRef.current = false
   }, [lastAnswerCorrect])
 
   const dropCurrent = useCallback(() => {

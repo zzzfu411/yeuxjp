@@ -22,7 +22,7 @@ test("useKanaPageControls owns URL parsing and kana toolbar state", () => {
   assert.match(source, /const \[onlyUnmastered, setOnlyUnmastered\] = useState\(false\)/)
   assert.match(source, /urlMode === "hiragana" \|\| urlMode === "katakana"/)
   assert.match(source, /parseKanaSet\(urlSet\)/)
-  assert.match(source, /if \(parsedSet\) setKanaSet\(parsedSet\)/)
+  assert.match(source, /setKanaSet\(parsedSet \?\? "seion"\)/)
   assert.match(source, /cancelled = true/)
   assert.match(source, /const toggleShowRomaji = useCallback/)
   assert.match(source, /setRomajiOverride\(\(value\) => nextRomajiVisibility\(value, profile\?\.romajiMode, defaultShowStudyRomaji\)\)/)

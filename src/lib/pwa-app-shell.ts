@@ -20,6 +20,7 @@ const WARMABLE_PATH_PREFIXES = [
   "/assets/",
   "/brand/",
   "/icons/",
+  "/fonts/",
 ]
 
 function isWarmableUrl(url: URL, origin: string) {

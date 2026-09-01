@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { LEARNING_STORE_EVENT, queueLearningNotification } from "@/lib/learning-store"
 import { createSrsState, isDue, type SrsMap, type SrsResult } from "@/lib/srs-model"
 import {
   canStoreSrsId,
@@ -30,10 +30,12 @@ export { clearSrs, enrollSrs, gradeExistingSrs, gradeSrs, hasSrs, removeSrs, set
 export function useSrsDeck(storageKey: string) {
   const [map, setMap] = useState<SrsMap>(() => ({}))
   const [now, setNow] = useState(0)
+  const [loaded, setLoaded] = useState(false)
 
   const refreshDeck = useCallback(() => {
     setMap(readSrsMap(storageKey))
     setNow(Date.now())
+    setLoaded(true)
   }, [storageKey])
 
   useEffect(() => {
@@ -89,16 +91,20 @@ export function useSrsDeck(storageKey: string) {
       const current = readSrsMapResult(storageKey)
       if (!current.ok) return false
       if (current.value[id]) {
-        setMap(current.value)
-        setNow(Date.now())
+        queueLearningNotification(() => {
+          setMap(current.value)
+          setNow(Date.now())
+        })
         return true
       }
       const now = Date.now()
       const next = { ...current.value, [id]: createSrsState(now) }
       if (!writeSrsMap(storageKey, next, { expectedRaw: current.raw })) return false
       notifySrs(storageKey)
-      setMap(filterSrsMapForStorage(storageKey, next))
-      setNow(now)
+      queueLearningNotification(() => {
+        setMap(filterSrsMapForStorage(storageKey, next))
+        setNow(now)
+      })
       return true
     },
     [storageKey]
@@ -109,16 +115,20 @@ export function useSrsDeck(storageKey: string) {
       const current = readSrsMapResult(storageKey)
       if (!current.ok) return false
       if (!current.value[id]) {
-        setMap(current.value)
-        setNow(Date.now())
+        queueLearningNotification(() => {
+          setMap(current.value)
+          setNow(Date.now())
+        })
         return true
       }
       const next = { ...current.value }
       delete next[id]
       if (!writeSrsMap(storageKey, next, { expectedRaw: current.raw })) return false
       notifySrs(storageKey)
-      setMap(next)
-      setNow(Date.now())
+      queueLearningNotification(() => {
+        setMap(next)
+        setNow(Date.now())
+      })
       return true
     },
     [storageKey]
@@ -127,7 +137,7 @@ export function useSrsDeck(storageKey: string) {
   const grade = useCallback(
     (id: string, result: SrsResult) => {
       if (!gradeSrs(storageKey, id, result)) return false
-      refreshDeck()
+      queueLearningNotification(refreshDeck)
       return true
     },
     [refreshDeck, storageKey]
@@ -136,7 +146,7 @@ export function useSrsDeck(storageKey: string) {
   const gradeExisting = useCallback(
     (id: string, result: SrsResult) => {
       if (!gradeExistingSrs(storageKey, id, result)) return false
-      refreshDeck()
+      queueLearningNotification(refreshDeck)
       return true
     },
     [refreshDeck, storageKey]
@@ -147,10 +157,12 @@ export function useSrsDeck(storageKey: string) {
   const clear = useCallback(() => {
     if (!writeSrsMap(storageKey, {}, { replaceInvalid: true })) return false
     notifySrs(storageKey)
-    setMap({})
-    setNow(Date.now())
+    queueLearningNotification(() => {
+      setMap({})
+      setNow(Date.now())
+    })
     return true
   }, [storageKey])
 
-  return { map, dueIds, enroll, remove, grade, gradeExisting, has, clear }
+  return { map, dueIds, loaded, enroll, remove, grade, gradeExisting, has, clear }
 }

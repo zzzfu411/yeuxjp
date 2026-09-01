@@ -1,8 +1,8 @@
 "use client"
 
-import { useMemo, useRef, useState, useCallback, Suspense } from "react"
+import { useMemo, useRef, useState, useCallback, useEffect, Suspense } from "react"
 import type { VocabLevel } from "@/data/vocabulary/types"
-import { speakJapanese } from "@/lib/speech"
+import { cancelJapaneseSpeech, speakJapanese } from "@/lib/speech"
 import { useLearningStatus } from "@/lib/learning-status"
 import {
   filterVocabularyItems,
@@ -76,15 +76,6 @@ function VocabularyPageContent() {
   const [isModalFlipped, setIsModalFlipped] = useState(false)
   const [selfAssessment, setSelfAssessment] = useState<VocabularySelfAssessment | null>(null)
   const selfAssessmentLockedRef = useRef(false)
-  const {
-    selectedIndex,
-    openAt,
-    close,
-    goNext,
-    goPrev,
-  } = useIndexedModalNavigation(currentData.length)
-  const selectedVocab = selectedIndex !== null ? currentData[selectedIndex] ?? null : null
-  const selectedKana = selectedVocab?.kana
 
   const resetFocusedCard = useCallback(() => {
     setIsModalFlipped(false)
@@ -93,10 +84,25 @@ function VocabularyPageContent() {
     selfAssessmentLockedRef.current = false
   }, [])
 
+  const {
+    selectedIndex,
+    openAt,
+    close,
+    goNext,
+    goPrev,
+  } = useIndexedModalNavigation(currentData.length, resetFocusedCard)
+  const selectedVocab = selectedIndex !== null ? currentData[selectedIndex] ?? null : null
+  const selectedKana = selectedVocab?.kana
+
   const resetSelection = useCallback(() => {
     close()
-    resetFocusedCard()
-  }, [close, resetFocusedCard])
+  }, [close])
+
+  useEffect(() => {
+    close()
+  }, [close, currentLevel])
+
+  useEffect(() => () => cancelJapaneseSpeech(), [selectedVocab?.id])
 
   const handleLevelChange = useCallback((level: VocabLevel) => {
     setVocabularyLevel(level)
@@ -136,17 +142,6 @@ function VocabularyPageContent() {
       resetSelection()
     }
   }, [isLearnedId, onlyUnlearned, resetSelection, selectedVocab, toggleLearnedId])
-
-  // Handlers
-  const handleNext = useCallback(() => {
-    goNext()
-    resetFocusedCard()
-  }, [goNext, resetFocusedCard])
-
-  const handlePrev = useCallback(() => {
-    goPrev()
-    resetFocusedCard()
-  }, [goPrev, resetFocusedCard])
 
   const handlePlay = useCallback(() => {
     if (!selectedKana) return
@@ -232,10 +227,7 @@ function VocabularyPageContent() {
           showRomaji={showRomaji}
           isLearnedId={isLearnedId}
           onRetry={vocabulary.retry}
-          onExpand={(index) => {
-            openAt(index)
-            resetFocusedCard()
-          }}
+          onExpand={openAt}
         />
 
         <NextStepCard className="mt-12" />
@@ -252,8 +244,8 @@ function VocabularyPageContent() {
         showRomaji={showRomaji}
         onClose={resetSelection}
         onFlip={() => setIsModalFlipped((prev) => !prev)}
-        onNext={handleNext}
-        onPrev={handlePrev}
+        onNext={goNext}
+        onPrev={goPrev}
         onPlay={handlePlay}
         onSelfAssess={handleSelfAssessment}
         onToggleLearned={handleToggleLearned}

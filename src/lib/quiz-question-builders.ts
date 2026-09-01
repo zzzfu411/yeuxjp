@@ -153,7 +153,9 @@ export function generateVocabularyQuizQuestion({
   const options = pickUniqueQuestionOptions({
     target,
     pool: basePool,
-    getValue: (entry) => entry.id,
+    // Learners choose by the visible meaning, so equivalent meanings must not
+    // appear as separate buttons even when they come from distinct vocab ids.
+    getValue: (entry) => entry.meaning,
     random,
   })
   if (!options) return null

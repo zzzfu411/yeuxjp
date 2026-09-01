@@ -45,3 +45,15 @@ test("ReviewOptionGrid owns review option feedback visuals", () => {
   assert.match(source, /aria-pressed=\{selectedAnswer === option\.value\}/)
   assert.match(source, /data-testid=\{`review-answer-\$\{option\.value\}`\}/)
 })
+
+test("ReviewOptionGrid keeps wrapping heights instead of a later h-16 override", () => {
+  const source = read("src/components/review/review-option-grid.tsx")
+  const kana = read("src/components/review/kana-review-session.tsx")
+
+  assert.match(source, /min-h-16/)
+  assert.match(source, /h-auto/)
+  assert.match(source, /whitespace-normal/)
+  assert.match(source, /shrink-0/)
+  assert.doesNotMatch(source, /optionClassName = "h-16/)
+  assert.doesNotMatch(kana, /optionClassName="h-16/)
+})

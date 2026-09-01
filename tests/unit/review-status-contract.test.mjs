@@ -34,6 +34,15 @@ test("review status owns completion and loading surfaces", () => {
   assert.match(source, /onClick=\{onRetry\}/)
 })
 
+test("review completion copy distinguishes attempts from initial items", () => {
+  const source = read("src/components/review/review-status.tsx")
+
+  assert.match(
+    source,
+    /`本轮作答 \$\{stats\.answered\} 次，通过 \$\{stats\.correct\}\/\$\{stats\.initial\} 项，正确率 \$\{accuracy \?\? 0\}%，重排 \$\{stats\.repeated\} 次。`/
+  )
+})
+
 test("review vocabulary hook owns scoped vocabulary loading", () => {
   const source = read("src/components/review/review-vocabulary.ts")
 

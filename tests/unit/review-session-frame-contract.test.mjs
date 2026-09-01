@@ -49,6 +49,14 @@ test("mistake review session exposes a stable browser test id", () => {
   assert.match(source, /testId="mistake-review-session"/)
 })
 
+test("typed review answers remount after a successful attempt", () => {
+  const today = read("src/components/review/today-review-session.tsx")
+  const mistakes = read("src/components/review/mistake-review-session.tsx")
+
+  assert.match(today, /key=\{`\$\{currentKey\}:\$\{review\.completionStats\.answered\}`\}/)
+  assert.match(mistakes, /key=\{`\$\{currentId\}:\$\{review\.completionStats\.answered\}`\}/)
+})
+
 test("review sessions delegate repeated queue state to useReviewSessionState", () => {
   const source = reviewSessionSources()
 

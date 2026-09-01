@@ -62,7 +62,7 @@ test("kana page delegates reusable data derivation to kana-page-model", () => {
   assert.match(source, /useKanaPageControls\(\)/)
   assert.match(controls, /useSearchParams\(\)/)
   assert.match(controls, /parseKanaSet\(urlSet\)/)
-  assert.match(controls, /setMode\(urlMode\)/)
+  assert.match(controls, /setMode\(urlMode === "hiragana" \|\| urlMode === "katakana" \? urlMode : "hiragana"\)/)
   assert.match(controls, /setRomajiOverride\(\(value\) => nextRomajiVisibility\(value, profile\?\.romajiMode, defaultShowStudyRomaji\)\)/)
   assert.match(controls, /setOnlyUnmastered\(\(value\) => !value\)/)
   assert.match(source, /from "@\/components\/kana\/use-kana-page-data"/)

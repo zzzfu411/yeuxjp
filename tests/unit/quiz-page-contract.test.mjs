@@ -30,6 +30,8 @@ test("quiz route is a server shell around the quiz page client island", () => {
   assert.match(page, /useLearningRecommendation\(\)/)
   assert.match(page, /N4\+/)
   assert.match(page, /<QuizRunner/)
+  assert.match(page, /key=\{mode\}/)
+  assert.match(page, /setMode\(null\)/)
   assert.match(page, /data-testid=\{testId\}/)
   assert.doesNotMatch(page, /import \{ QuizRunner \}/)
 })

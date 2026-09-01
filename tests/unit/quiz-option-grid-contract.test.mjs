@@ -43,3 +43,13 @@ test("QuizOptionGrid owns quiz option feedback visuals", () => {
   assert.match(source, /CheckCircle2/)
   assert.match(source, /XCircle/)
 })
+
+test("QuizOptionGrid keeps wrapping heights and shrink-0 answer icons", () => {
+  const source = read("src/components/quiz/quiz-option-grid.tsx")
+
+  assert.match(source, /min-h-16/)
+  assert.match(source, /h-auto/)
+  assert.match(source, /whitespace-normal/)
+  assert.match(source, /shrink-0/)
+  assert.doesNotMatch(source, /(?<!min-)h-16/)
+})

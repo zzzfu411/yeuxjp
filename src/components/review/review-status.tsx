@@ -97,7 +97,7 @@ export function ReviewDone({
         <div className="font-brush text-3xl">{title}</div>
         <div className="text-sm text-muted-foreground">
           {stats
-            ? `本轮 ${stats.answered}/${stats.initial} 题已处理，正确率 ${accuracy ?? 0}%，重排 ${stats.repeated} 项。`
+            ? `本轮作答 ${stats.answered} 次，通过 ${stats.correct}/${stats.initial} 项，正确率 ${accuracy ?? 0}%，重排 ${stats.repeated} 次。`
             : "今天的任务完成啦。也可以去技能树继续推进。"}
         </div>
         {stats ? (

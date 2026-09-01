@@ -53,6 +53,16 @@ test("LessonStepBody owns lesson step interaction surfaces", () => {
   assert.doesNotMatch(source, /isSelected && !isCorrect/)
 })
 
+test("LessonStepBody keeps multiple-choice options wrapping instead of clipping", () => {
+  const source = read("src/components/lesson/lesson-step-body.tsx")
+
+  assert.match(source, /min-h-14/)
+  assert.match(source, /h-auto/)
+  assert.match(source, /whitespace-normal/)
+  assert.match(source, /shrink-0/)
+  assert.doesNotMatch(source, /(?<!min-)h-14/)
+})
+
 test("LessonStepBody supports read-only lesson preview controls", () => {
   const source = read("src/components/lesson/lesson-step-body.tsx")
 

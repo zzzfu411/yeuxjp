@@ -18,6 +18,7 @@ export function useVocabProgress(
 ) {
   const [learned, setLearned] = useState<Set<string>>(() => new Set())
   const [excluded, setExcluded] = useState<Set<string>>(() => new Set())
+  const [loaded, setLoaded] = useState(false)
   const readLearned = useCallback(() => {
     const result = readProgressListResult(storageKey, STORAGE_LABEL)
     return { ...result, value: filterKnownVocabularyIds(result.value) }
@@ -34,11 +35,13 @@ export function useVocabProgress(
       if (cancelled) return
       setLearned(new Set(readLearned().value))
       setExcluded(new Set(readExcluded().value))
+      setLoaded(true)
     })
 
     const sync = () => {
       setLearned(new Set(readLearned().value))
       setExcluded(new Set(readExcluded().value))
+      setLoaded(true)
     }
 
     const onStorage = (event: StorageEvent) => {
@@ -156,5 +159,5 @@ export function useVocabProgress(
     return false
   }, [exclusionStorageKey, learned, readExcluded, storageKey])
 
-  return { learned, excluded, isLearnedId, setLearnedId, toggleLearnedId, clearLearned }
+  return { learned, excluded, loaded, isLearnedId, setLearnedId, toggleLearnedId, clearLearned }
 }

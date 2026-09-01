@@ -48,6 +48,7 @@ export function useLearningStatus() {
 
   return {
     ...learning,
+    loaded: learning.loaded && kanaProgress.loaded && vocabProgress.loaded,
     masteredKanaIds: status.masteredKanaIds,
     learnedVocabIds: status.learnedVocabIds,
     isKanaMastered,

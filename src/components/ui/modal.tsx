@@ -14,6 +14,8 @@ const FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(", ")
 
+const openModalStack: HTMLDivElement[] = []
+
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
@@ -35,6 +37,11 @@ export function Modal({
   const previousOverflow = React.useRef<string | null>(null)
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
+  const onCloseRef = React.useRef(onClose)
+
+  React.useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   const getFocusableElements = React.useCallback(() => {
     if (!dialogRef.current) return []
@@ -79,15 +86,20 @@ export function Modal({
   // Esc to close, trap tab focus, and focus dialog on open.
   React.useEffect(() => {
     if (!isOpen) return
+    const dialog = dialogRef.current
+    if (dialog) openModalStack.push(dialog)
     // Defer focus until after animation kicks in.
     const focusTimer = setTimeout(() => {
       dialogRef.current?.focus()
     }, 50)
 
     const onKey = (e: KeyboardEvent) => {
+      const dialog = dialogRef.current
+      if (openModalStack.length > 0 && openModalStack.at(-1) !== dialog) return
+
       if (e.key === "Escape") {
         e.stopPropagation()
-        onClose()
+        onCloseRef.current()
         return
       }
 
@@ -95,7 +107,6 @@ export function Modal({
         return
       }
 
-      const dialog = dialogRef.current
       if (!dialog) return
 
       const focusableElements = getFocusableElements()
@@ -122,12 +133,16 @@ export function Modal({
         firstElement.focus()
       }
     }
-    window.addEventListener("keydown", onKey)
+    window.addEventListener("keydown", onKey, true)
     return () => {
       clearTimeout(focusTimer)
-      window.removeEventListener("keydown", onKey)
+      window.removeEventListener("keydown", onKey, true)
+      if (dialog) {
+        const stackIndex = openModalStack.lastIndexOf(dialog)
+        if (stackIndex >= 0) openModalStack.splice(stackIndex, 1)
+      }
     }
-  }, [getFocusableElements, isOpen, onClose])
+  }, [getFocusableElements, isOpen, show])
 
   if (!show) return null
 

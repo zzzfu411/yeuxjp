@@ -36,6 +36,7 @@ export function ReviewPage() {
 
   const [session, setSession] = useState<ReviewSession | null>(null)
   const [reviewSaveError, setReviewSaveError] = useState(false)
+  const loaded = learning.loaded && mistakes.loaded && kanaSrs.loaded && vocabSrs.loaded && mistakeSrs.loaded
 
   const dashboard = useMemo(() => {
     return buildReviewDashboardModel({
@@ -70,6 +71,7 @@ export function ReviewPage() {
   }
 
   const startSession = (nextSession: ReviewSession) => {
+    if (!loaded) return
     setReviewSaveError(false)
     setSession(nextSession)
   }
@@ -80,6 +82,13 @@ export function ReviewPage() {
   const clearMistakes = () => setReviewSaveError(!mistakes.clear())
 
   return (
+    <>
+      {!loaded ? (
+        <div className="flex justify-center py-20 text-muted-foreground" role="status">
+          正在加载复习...
+        </div>
+      ) : null}
+      <div hidden={!loaded}>
     <ReviewDashboard
       isFirstTime={dashboard.isFirstTime}
       totalDue={dashboard.totalDue}
@@ -121,5 +130,7 @@ export function ReviewPage() {
         remainingDueAfterBatch: Math.max(0, dashboard.totalDue - dashboard.todayQueue.length),
       })}
     />
+      </div>
+    </>
   )
 }

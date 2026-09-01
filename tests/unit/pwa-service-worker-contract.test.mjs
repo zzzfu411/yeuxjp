@@ -8,6 +8,7 @@ const root = path.resolve(import.meta.dirname, "..", "..")
 const sw = fs.readFileSync(path.join(root, "public/sw.js"), "utf8")
 const layout = fs.readFileSync(path.join(root, "src/app/layout.tsx"), "utf8")
 const register = fs.readFileSync(path.join(root, "src/components/pwa-register.tsx"), "utf8")
+const themeProvider = fs.readFileSync(path.join(root, "src/components/theme-provider.tsx"), "utf8")
 const appShellHelper = fs.readFileSync(path.join(root, "src/lib/pwa-app-shell.ts"), "utf8")
 const pwaNavigation = fs.readFileSync(path.join(root, "src/lib/pwa-navigation.ts"), "utf8")
 const pwaE2e = fs.readFileSync(path.join(root, "tests/e2e/pwa-offline.mjs"), "utf8")
@@ -31,6 +32,11 @@ test("PWA registers a production service worker and exposes install metadata", (
   assert.match(layout, /<PwaRegister \/>/)
   assert.match(register, /process\.env\.NODE_ENV !== "production"/)
   assert.match(register, /navigator\.serviceWorker\.register\("\/sw\.js"\)/)
+  assert.match(themeProvider, /useTheme/)
+  assert.match(themeProvider, /querySelectorAll<HTMLMetaElement>\('meta\[name="theme-color"\]'\)/)
+  assert.match(themeProvider, /light: "#d8d3cc"/)
+  assert.match(themeProvider, /dark: "#2a2733"/)
+  assert.doesNotMatch(themeProvider, /#facc15|#000000/)
   assert.equal(manifest.id, "/")
   assert.equal(manifest.start_url, "/")
   assert.equal(manifest.scope, "/")
@@ -80,6 +86,7 @@ test("PWA registration surfaces service worker updates without forcing a reload"
   assert.match(appShellHelper, /link\[href\]/)
   assert.match(appShellHelper, /document\.images/)
   assert.match(appShellHelper, /url\.origin === origin/)
+  assert.match(appShellHelper, /"\/fonts\/"/)
   assert.match(appShellHelper, /new MessageChannel\(\)/)
   assert.match(appShellHelper, /worker\.postMessage\(\{ type: PWA_WARM_CURRENT_PAGE_MESSAGE, urls \}, \[channel\.port2\]\)/)
 })
@@ -189,6 +196,8 @@ test("service worker partitions startup, navigation, and runtime media caches wi
   assert.match(sw, /"\/assets\/"/)
   assert.match(sw, /"\/icons\/"/)
   assert.match(sw, /"\/brand\/"/)
+  assert.match(sw, /"\/fonts\/"/)
+  assert.match(sw, /requestUrl\.pathname\.startsWith\("\/fonts\/"\)/)
   assert.match(sw, /cacheFirstAsset\(request, requestUrl\)/)
   assert.match(sw, /cache\.match\(request, \{ ignoreVary: true \}\)/)
   assert.match(sw, /if \(cached\) return cached/)
@@ -314,6 +323,7 @@ test("service worker warms current-page Next resources into shell and images int
         "https://example.test/_next/static/css/app.css",
         "https://example.test/_next/image?url=%2Fassets%2Fhero.webp&w=1200&q=75",
         "https://example.test/animcjk/kana/12354.svg",
+        "https://example.test/fonts/lxgw/lxgwwenkaiscreen.css",
         "https://other.test/tracker.js",
       ],
     },
@@ -329,6 +339,7 @@ test("service worker warms current-page Next resources into shell and images int
     { cache: "yasashi-shell-v9", url: "https://example.test/_next/static/css/app.css" },
     { cache: "yasashi-runtime-v9", url: "https://example.test/_next/image?url=%2Fassets%2Fhero.webp&w=1200&q=75" },
     { cache: "yasashi-runtime-v9", url: "https://example.test/animcjk/kana/12354.svg" },
+    { cache: "yasashi-runtime-v9", url: "https://example.test/fonts/lxgw/lxgwwenkaiscreen.css" },
   ])
   assert.ok(fetchCalls.every((call) => call.cache === "reload" && call.credentials === "same-origin"))
   assert.equal(reply.type, "CURRENT_PAGE_WARMED")
@@ -979,15 +990,23 @@ test("service worker caches only allowlisted static assets", async () => {
   }
 
   assert.equal(await requestAsset("https://example.test/assets/kana/kana-seion.webp", "image"), "network:https://example.test/assets/kana/kana-seion.webp")
+  assert.equal(await requestAsset("https://example.test/fonts/lxgw/lxgwwenkaiscreen.css", "style"), "network:https://example.test/fonts/lxgw/lxgwwenkaiscreen.css")
+  assert.equal(await requestAsset("https://example.test/fonts/lxgw/files/lxgwwenkaiscreen-subset-4.woff2", "font"), "network:https://example.test/fonts/lxgw/files/lxgwwenkaiscreen-subset-4.woff2")
   assert.equal(await requestAsset("https://example.test/uploads/large.png", "image"), "network:https://example.test/uploads/large.png")
   assert.equal(await requestAsset("https://example.test/api/file.js", "script"), "network:https://example.test/api/file.js")
 
   assert.deepEqual(fetchCalls, [
     "https://example.test/assets/kana/kana-seion.webp",
+    "https://example.test/fonts/lxgw/lxgwwenkaiscreen.css",
+    "https://example.test/fonts/lxgw/files/lxgwwenkaiscreen-subset-4.woff2",
     "https://example.test/uploads/large.png",
     "https://example.test/api/file.js",
   ])
-  assert.deepEqual(putCalls, [{ cache: "yasashi-runtime-v9", url: "https://example.test/assets/kana/kana-seion.webp" }])
+  assert.deepEqual(putCalls, [
+    { cache: "yasashi-runtime-v9", url: "https://example.test/assets/kana/kana-seion.webp" },
+    { cache: "yasashi-runtime-v9", url: "https://example.test/fonts/lxgw/lxgwwenkaiscreen.css" },
+    { cache: "yasashi-runtime-v9", url: "https://example.test/fonts/lxgw/files/lxgwwenkaiscreen-subset-4.woff2" },
+  ])
 })
 
 test("PWA offline E2E verifies visited-page cache, fallback, and local state preservation", () => {

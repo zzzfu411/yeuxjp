@@ -46,14 +46,13 @@ function QuizPageContent() {
 
     Promise.resolve().then(() => {
       if (cancelled) return
-      if (!urlMode) {
+      const parsed = parseQuizMode(urlMode)
+      if (!parsed) {
         lastAutoMode.current = null
+        setMode(null)
         return
       }
       if (lastAutoMode.current === urlMode) return
-
-      const parsed = parseQuizMode(urlMode)
-      if (!parsed) return
       lastAutoMode.current = urlMode
       setMode(parsed)
     })
@@ -99,6 +98,7 @@ function QuizPageContent() {
 
   return (
     <QuizRunner
+      key={mode}
       mode={mode}
       onExit={() => setMode(null)}
     />

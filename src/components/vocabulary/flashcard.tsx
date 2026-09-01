@@ -87,28 +87,30 @@ export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true 
         </div>
 
         <div
-          className="absolute inset-0 flex h-full w-full rotate-y-180 flex-col items-center justify-center bg-card/20 px-5 py-6 text-center backface-hidden"
+          className="absolute inset-0 flex h-full min-h-0 w-full rotate-y-180 flex-col items-center overflow-y-auto bg-card/20 px-5 py-6 text-center backface-hidden"
           aria-hidden={!isFlipped}
         >
-          <div className="text-2xl font-semibold text-accent">{vocab.meaning}</div>
-          {showRomaji && <div className="font-scribble mt-1 text-lg text-muted-foreground">{vocab.romaji}</div>}
-          {example && (
-            <div className="ledger-row mt-4 w-full border-y border-border/40 px-2 py-3">
-              <div className="line-clamp-2 text-sm leading-snug text-foreground/90">{example.japanese}</div>
-              <div className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">{example.meaning}</div>
-            </div>
-          )}
+          <div className="my-auto flex w-full flex-col items-center">
+            <div className="text-2xl font-semibold text-accent">{vocab.meaning}</div>
+            {showRomaji && <div className="font-scribble mt-1 text-lg text-muted-foreground">{vocab.romaji}</div>}
+            {example && (
+              <div className="ledger-row mt-4 w-full border-y border-border/40 px-2 py-3">
+                <div className="line-clamp-2 text-sm leading-snug text-foreground/90">{example.japanese}</div>
+                <div className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">{example.meaning}</div>
+              </div>
+            )}
 
-          <button
-            type="button"
-            onClick={handlePlay}
-            onKeyDown={stopCardKeyDown}
-            tabIndex={isFlipped ? 0 : -1}
-            className="mt-3 inline-flex h-9 w-9 items-center justify-center text-muted-foreground transition-colors hover:text-accent"
-            aria-label={`朗读 ${vocab.kana}`}
-          >
-            <Volume2 className="h-5 w-5" />
-          </button>
+            <button
+              type="button"
+              onClick={handlePlay}
+              onKeyDown={stopCardKeyDown}
+              tabIndex={isFlipped ? 0 : -1}
+              className="mt-3 inline-flex h-9 w-9 items-center justify-center text-muted-foreground transition-colors hover:text-accent"
+              aria-label={`朗读 ${vocab.kana}`}
+            >
+              <Volume2 className="h-5 w-5" />
+            </button>
+          </div>
 
           <button
             type="button"

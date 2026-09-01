@@ -31,7 +31,7 @@ test("vocabulary page records one assessment per focused card and resets between
   assert.match(source, /selfAssessmentLockedRef/)
   assert.match(source, /if \(!selectedVocab \|\| selfAssessment \|\| selfAssessmentLockedRef\.current\) return/)
   assert.match(source, /selfAssessmentLockedRef\.current = false/)
-  assert.match(source, /resetFocusedCard\(\)/)
+  assert.match(source, /useIndexedModalNavigation\(currentData\.length, resetFocusedCard\)/)
   assert.match(source, /assessment=\{selfAssessment\}/)
   assert.match(source, /onSelfAssess=\{handleSelfAssessment\}/)
   assert.match(source, /if \(saved && onlyUnlearned && !wasLearned\) \{/)
