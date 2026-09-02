@@ -28,6 +28,7 @@ async function verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl) {
   try {
     await autoplayPage.addInitScript((storageKey) => {
       const spoken = []
+      let cancelCount = 0
       class FakeUtterance {
         constructor(text) {
           this.text = text
@@ -38,6 +39,10 @@ async function verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl) {
         configurable: true,
         value: spoken,
       })
+      Object.defineProperty(window, "__yasashiSpeechCancelCount", {
+        configurable: true,
+        get: () => cancelCount,
+      })
       Object.defineProperty(window, "SpeechSynthesisUtterance", {
         configurable: true,
         writable: true,
@@ -46,7 +51,9 @@ async function verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl) {
       Object.defineProperty(window, "speechSynthesis", {
         configurable: true,
         value: {
-          cancel() {},
+          cancel() {
+            cancelCount += 1
+          },
           getVoices: () => [],
           speak(utterance) {
             spoken.push(utterance.text)
@@ -75,6 +82,20 @@ async function verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl) {
 
     const spokenCount = await autoplayPage.evaluate(() => window.__yasashiSpeechSpoken?.length ?? 0)
     assert.equal(spokenCount, 1, "changing repeat should not replay the unchanged autoplay prompt")
+
+    await autoplayPage.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
+    await autoplayPage.getByTestId("vocabulary-search").fill("みせ")
+    const vocabCard = autoplayPage
+      .getByTestId("vocabulary-expand-sur-n-35")
+      .locator("xpath=ancestor::*[@role='button'][1]")
+    await vocabCard.click()
+    await autoplayPage.getByRole("button", { name: "朗读 みせ" }).click()
+    await autoplayPage.waitForFunction(() => window.__yasashiSpeechSpoken?.length === 1, undefined, { timeout: 2_000 })
+    const cancelCountBeforeFilter = await autoplayPage.evaluate(() => window.__yasashiSpeechCancelCount ?? 0)
+
+    await autoplayPage.getByTestId("vocabulary-search").fill("zzzz-not-found")
+    await autoplayPage.getByTestId("vocabulary-expand-sur-n-35").waitFor({ state: "hidden" })
+    await autoplayPage.waitForFunction((before) => (window.__yasashiSpeechCancelCount ?? 0) > before, cancelCountBeforeFilter, { timeout: 2_000 })
   } finally {
     await autoplayPage.close()
   }
