@@ -123,6 +123,42 @@ test("stale standalone callbacks cannot finish newer speech playback", () => {
   assert.deepEqual(callbacks, ["second-end"])
 })
 
+test("replacement and explicit cancellation notify each playback exactly once", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapanese("一", {
+    onCancel: () => callbacks.push("first-cancel"),
+  })
+  const second = speech.speakJapanese("二", {
+    onCancel: () => callbacks.push("second-cancel"),
+  })
+
+  assert.deepEqual(callbacks, ["first-cancel"])
+  first.onend()
+  first.onerror(new Error("canceled"))
+  assert.deepEqual(callbacks, ["first-cancel"], "late events must not repeat cancellation")
+
+  speech.cancelJapaneseSpeech(second)
+  speech.cancelJapaneseSpeech(second)
+  assert.deepEqual(callbacks, ["first-cancel", "second-cancel"])
+})
+
+test("sequence cancellation callback fires while a repeat waits between utterances", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapaneseSequence(["一", "二"], {
+    gapMs: 10,
+    onCancel: () => callbacks.push("sequence-cancel"),
+  })
+  first.onend()
+  assert.equal(spoken.length, 1)
+
+  speech.speakJapanese("三")
+  assert.deepEqual(callbacks, ["sequence-cancel"])
+})
+
 test("stale onstart callbacks cannot start replaced speech playback", () => {
   spoken.length = 0
 
