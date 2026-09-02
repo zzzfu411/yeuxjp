@@ -128,6 +128,31 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
     await mobilePage.keyboard.press("Escape")
     await mobilePage.getByRole("dialog").waitFor({ state: "hidden" })
 
+    // A short modal scrolls the focused toggle into view before the stroke
+    // animation mounts. The animation surface should remain discoverable after
+    // that click rather than being left above the modal viewport.
+    await mobilePage.setViewportSize({ width: 280, height: 300 })
+    await mobilePage.goto(`${baseUrl}/kana`, { waitUntil: "networkidle" })
+    await mobilePage.getByTestId("kana-card-a").click()
+    await mobilePage.getByRole("dialog").waitFor({ state: "visible" })
+    await mobilePage.getByTestId("kana-stroke-toggle").waitFor({ state: "visible" })
+    await mobilePage.getByTestId("kana-stroke-toggle").click()
+    await mobilePage.getByTestId("kana-stroke-progress").waitFor({ state: "visible" })
+    await mobilePage.waitForFunction(() => {
+      const scroller = document.querySelector('[role="dialog"] .overflow-y-auto')
+      const surface = document.querySelector('[role="dialog"] .kana-animcjk-wrapper')
+      if (!scroller || !surface) return false
+
+      const scrollerRect = scroller.getBoundingClientRect()
+      const surfaceRect = surface.getBoundingClientRect()
+      return scroller.scrollTop <= 1 &&
+        surfaceRect.bottom > scrollerRect.top &&
+        surfaceRect.top < scrollerRect.bottom
+    })
+    await mobilePage.keyboard.press("Escape")
+    await mobilePage.getByRole("dialog").waitFor({ state: "hidden" })
+    await mobilePage.setViewportSize({ width: 390, height: 844 })
+
     await mobilePage.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
     await mobilePage.getByTestId("quiz-mode-hiragana-romaji").waitFor({ state: "visible" })
     await mobilePage.getByTestId("quiz-mode-verb-conjugation").waitFor({ state: "visible" })

@@ -3,6 +3,8 @@ import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const quiz = await loadTsModule("src/lib/quiz-generators.ts")
+const builders = await loadTsModule("src/lib/quiz-question-builders.ts")
+const verbConjugation = await loadTsModule("src/lib/verb-conjugation.ts")
 
 const vocab = [
   { id: "v1", kana: "みず", romaji: "mizu", meaning: "水", category: "food", level: "survival" },
@@ -246,4 +248,43 @@ test("verb conjugation quiz withholds potential and causative until N4", () => {
 
   assert.equal(n5.meta.askedForm.id, "te")
   assert.equal(n4.meta.askedForm.id, "potential")
+})
+
+test("verb conjugation questions exclude できる from potential and causative", () => {
+  const forceDekiru = (formIndex) => {
+    let call = 0
+    const values = [
+      (27 + 0.25) / verbConjugation.VERB_CONJ_VERBS.length,
+      (formIndex + 0.25) / verbConjugation.VERB_CONJ_FORMS.length,
+    ]
+    return () => values[call++] ?? 0
+  }
+
+  for (const formIndex of [4, 5]) {
+    const question = builders.generateVerbConjugationQuestion(
+      forceDekiru(formIndex),
+      verbConjugation.VERB_CONJ_FORMS
+    )
+    assert.notEqual(question.meta.verb.dict, "できる")
+    assert.notEqual(question.correctAnswer, "できられる")
+    assert.notEqual(question.correctAnswer, "できさせる")
+  }
+})
+
+test("basic できる questions keep only learner-facing forms in their options", () => {
+  const question = builders.generateVerbConjugationQuestion(
+    (() => {
+      let call = 0
+      const values = [
+        (27 + 0.25) / verbConjugation.VERB_CONJ_VERBS.length,
+        0.25 / verbConjugation.VERB_CONJ_FORMS.length,
+      ]
+      return () => values[call++] ?? 0
+    })(),
+    verbConjugation.VERB_CONJ_FORMS
+  )
+
+  assert.equal(question.meta.verb.dict, "できる")
+  assert.equal(question.options.length, 4)
+  assert.ok(question.options.every((option) => !["できられる", "できさせる"].includes(option.value)))
 })

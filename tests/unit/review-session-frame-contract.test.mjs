@@ -68,3 +68,11 @@ test("review sessions delegate repeated queue state to useReviewSessionState", (
   assert.doesNotMatch(source, /recordReviewAnswer/)
   assert.doesNotMatch(source, /createReviewStats/)
 })
+
+test("review session state owns a presentation version for audio replay", () => {
+  const source = read("src/components/review/use-review-session-state.ts")
+
+  assert.match(source, /const \[presentationVersion, setPresentationVersion\] = useState\(0\)/)
+  assert.equal(source.match(/setPresentationVersion\(\(prev\) => prev \+ 1\)/g)?.length, 3)
+  assert.match(source, /presentationVersion,/)
+})

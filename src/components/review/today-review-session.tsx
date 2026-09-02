@@ -81,7 +81,7 @@ export function TodayReviewSession({
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.autoPlayAudio ? data.audio : undefined,
-    autoPlayKey: current?.id,
+    autoPlayKey: review.presentationVersion,
     autoPlayDelayMs: 350,
   })
 

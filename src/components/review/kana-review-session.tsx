@@ -67,7 +67,7 @@ export function KanaReviewSession({
 
   const { playAudio } = useReviewAudio({
     autoPlayText: item?.kana[item.script],
-    autoPlayKey: item?.id,
+    autoPlayKey: review.presentationVersion,
   })
 
   const recordAnswerSelection = useReviewAnswerRecorder({
