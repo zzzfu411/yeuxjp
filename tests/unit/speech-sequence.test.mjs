@@ -123,6 +123,38 @@ test("stale standalone callbacks cannot finish newer speech playback", () => {
   assert.deepEqual(callbacks, ["second-end"])
 })
 
+test("standalone speech errors invalidate late completion callbacks", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const utterance = speech.speakJapanese("一", {
+    onEnd: () => callbacks.push("end"),
+    onError: () => callbacks.push("error"),
+  })
+
+  utterance.onerror(new Error("speech failed"))
+  utterance.onend()
+
+  assert.deepEqual(callbacks, ["error"], "an error must prevent a later onend from completing playback")
+})
+
+test("sequence speech errors stop late completion from advancing the chain", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapaneseSequence(["一", "二"], {
+    gapMs: 0,
+    onEnd: () => callbacks.push("end"),
+    onError: () => callbacks.push("error"),
+  })
+
+  first.onerror(new Error("speech failed"))
+  first.onend()
+
+  assert.equal(spoken.length, 1, "a failed sequence must not enqueue another utterance")
+  assert.deepEqual(callbacks, ["error", "end"], "sequence error completion remains exactly once")
+})
+
 test("replacement and explicit cancellation notify each playback exactly once", () => {
   spoken.length = 0
 

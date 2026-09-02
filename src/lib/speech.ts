@@ -122,6 +122,7 @@ export function speakJapanese(text: string, options: SpeakOptions = {}) {
   }
   utterance.onerror = (event) => {
     if (generation !== speechGeneration) return
+    nextSpeechGeneration()
     clearActivePlayback(utterance)
     options.onError?.(event)
   }
@@ -169,6 +170,7 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
 
     utterance.onerror = (event) => {
       if (generation !== speechGeneration) return
+      nextSpeechGeneration()
       clearActivePlayback(utterance)
       options.onError?.(event)
       options.onEnd?.()
@@ -207,7 +209,6 @@ export function speakJapaneseRepeated(text: string, options: SpeakRepeatOptions 
 export const DEFAULT_SPEECH_PREFS_STORAGE_KEY = STORAGE_KEYS.SPEECH_PREFS
 export const SPEECH_PREFS_EVENT = "yasashi:speech-preferences:update"
 export { DEFAULT_SPEECH_PREFERENCES, type SpeechUserPreferences } from "@/lib/speech-preferences-model"
-
 export function applySpeechPreferences(prefs: SpeechUserPreferences) {
   setSpeechDefaults({ rate: prefs.rate })
 }
