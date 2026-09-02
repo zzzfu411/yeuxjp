@@ -33,9 +33,12 @@ test("useReviewAudio owns repeated speech, autoplay timing, and presentation rep
 
   assert.match(source, /useSpeechPreferences/)
   assert.match(source, /useRef/)
+  assert.match(source, /const playAudioRef = useRef\(playAudio\)/)
+  assert.match(source, /playAudioRef\.current = playAudio/)
   assert.match(source, /speakJapaneseRepeated\(text, \{ repeat, gapMs \}\)/)
   assert.match(source, /autoPlay = speech\?\.prefs\.autoPlay \?\? true/)
-  assert.match(source, /setTimeout\(\(\) => \{[\s\S]*?playAudio\(autoPlayText\)/)
+  assert.match(source, /setTimeout\(\(\) => \{[\s\S]*?playAudioRef\.current\(autoPlayText\)/)
+  assert.doesNotMatch(source, /autoPlayText, playAudio, speech\?\.prefs\.autoPlay/)
   assert.match(source, /clearTimeout\(timer\)/)
   assert.match(source, /clearTimeout\(pendingTimer\)/)
   assert.match(source, /autoPlayTimerRef\.current !== timer/)

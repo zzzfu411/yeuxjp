@@ -23,6 +23,63 @@ async function restoreSpeechPreferenceWrites(page) {
   })
 }
 
+async function verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl) {
+  const autoplayPage = await page.context().newPage()
+  try {
+    await autoplayPage.addInitScript((storageKey) => {
+      const spoken = []
+      class FakeUtterance {
+        constructor(text) {
+          this.text = text
+        }
+      }
+
+      Object.defineProperty(window, "__yasashiSpeechSpoken", {
+        configurable: true,
+        value: spoken,
+      })
+      Object.defineProperty(window, "SpeechSynthesisUtterance", {
+        configurable: true,
+        writable: true,
+        value: FakeUtterance,
+      })
+      Object.defineProperty(window, "speechSynthesis", {
+        configurable: true,
+        value: {
+          cancel() {},
+          getVoices: () => [],
+          speak(utterance) {
+            spoken.push(utterance.text)
+          },
+        },
+      })
+      localStorage.setItem(storageKey, JSON.stringify({
+        rate: 0.9,
+        repeat: 1,
+        autoPlay: true,
+        gapMs: 250,
+      }))
+    }, E2E_STORAGE_KEYS.SPEECH_PREFS)
+
+    await autoplayPage.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
+    await autoplayPage.getByTestId("quiz-mode-audio-kana").click()
+    await autoplayPage.getByTestId("speech-repeat-2").waitFor({ state: "visible" })
+    await autoplayPage.waitForFunction(() => window.__yasashiSpeechSpoken?.length === 1, undefined, { timeout: 2_000 })
+
+    await autoplayPage.getByTestId("speech-repeat-2").click()
+    await autoplayPage.waitForFunction((key) => {
+      const prefs = JSON.parse(localStorage.getItem(key) ?? "null")
+      return prefs?.repeat === 2
+    }, E2E_STORAGE_KEYS.SPEECH_PREFS)
+    await autoplayPage.waitForTimeout(700)
+
+    const spokenCount = await autoplayPage.evaluate(() => window.__yasashiSpeechSpoken?.length ?? 0)
+    assert.equal(spokenCount, 1, "changing repeat should not replay the unchanged autoplay prompt")
+  } finally {
+    await autoplayPage.close()
+  }
+}
+
 export async function verifySpeechPreferenceSaveFailureFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
   await page.evaluate((key) => localStorage.removeItem(key), E2E_STORAGE_KEYS.SPEECH_PREFS)
@@ -61,4 +118,6 @@ export async function verifySpeechPreferenceSaveFailureFlow(page, baseUrl) {
     { rate: 0.9, repeat: 1, autoPlay: true, gapMs: 250 },
     "speech preference reset should restore default speech preferences"
   )
+
+  await verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl)
 }

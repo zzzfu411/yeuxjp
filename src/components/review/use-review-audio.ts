@@ -29,6 +29,13 @@ export function useReviewAudio({
     const gapMs = speech?.prefs.gapMs ?? 250
     speakJapaneseRepeated(text, { repeat, gapMs })
   }, [speech?.prefs.gapMs, speech?.prefs.repeat])
+  const playAudioRef = useRef(playAudio)
+
+  // Preference changes should affect the next playback without rearming the
+  // current prompt's autoplay timer.
+  useEffect(() => {
+    playAudioRef.current = playAudio
+  }, [playAudio])
 
   // Manual playback must also stop when the prompt changes or unmounts,
   // including when autoplay is disabled and no autoplay timer exists.
@@ -43,14 +50,14 @@ export function useReviewAudio({
     const timer = setTimeout(() => {
       if (autoPlayTimerRef.current !== timer) return
       autoPlayTimerRef.current = null
-      playAudio(autoPlayText)
+      playAudioRef.current(autoPlayText)
     }, autoPlayDelayMs)
     autoPlayTimerRef.current = timer
     return () => {
       clearTimeout(timer)
       if (autoPlayTimerRef.current === timer) autoPlayTimerRef.current = null
     }
-  }, [autoPlayDelayMs, autoPlayKey, autoPlayText, playAudio, speech?.prefs.autoPlay])
+  }, [autoPlayDelayMs, autoPlayKey, autoPlayText, speech?.prefs.autoPlay])
 
   return { playAudio }
 }
