@@ -191,6 +191,65 @@ test("sequence cancellation callback fires while a repeat waits between utteranc
   assert.deepEqual(callbacks, ["sequence-cancel"])
 })
 
+test("expected sequence handle cancels while a repeat waits between utterances", async () => {
+  spoken.length = 0
+
+  const first = speech.speakJapaneseSequence(["一", "二"], { gapMs: 10 })
+  first.onend()
+  speech.cancelJapaneseSpeech(first)
+
+  await sleep(20)
+  assert.deepEqual(
+    spoken.map((utterance) => utterance.text),
+    ["一"],
+    "canceling the returned sequence handle must also cancel a pending gap"
+  )
+})
+
+test("expected sequence handle cancels after a later utterance starts", () => {
+  spoken.length = 0
+
+  const first = speech.speakJapaneseSequence(["一", "二", "三"], { gapMs: 0 })
+  first.onend()
+  assert.equal(spoken.length, 2)
+
+  speech.cancelJapaneseSpeech(first)
+  spoken[1].onend()
+
+  assert.deepEqual(
+    spoken.map((utterance) => utterance.text),
+    ["一", "二"],
+    "the sequence root handle must cancel later repeats too"
+  )
+})
+
+test("completed sequences release their expected cancellation handle", () => {
+  spoken.length = 0
+
+  const first = speech.speakJapaneseSequence(["一", "二"], { gapMs: 0 })
+  first.onend()
+  spoken[1].onend()
+  const cancelCount = synth.cancelCount
+
+  speech.cancelJapaneseSpeech(first)
+
+  assert.equal(synth.cancelCount, cancelCount)
+})
+
+test("cancel false sequences retain their root handle without clearing the queue", () => {
+  spoken.length = 0
+  const cancelCount = synth.cancelCount
+
+  const first = speech.speakJapaneseSequence(["一", "二"], { cancel: false, gapMs: 0 })
+  first.onend()
+  assert.equal(synth.cancelCount, cancelCount)
+
+  speech.cancelJapaneseSpeech(first)
+  spoken[1].onend()
+
+  assert.deepEqual(spoken.map((utterance) => utterance.text), ["一", "二"])
+})
+
 test("stale onstart callbacks cannot start replaced speech playback", () => {
   spoken.length = 0
 

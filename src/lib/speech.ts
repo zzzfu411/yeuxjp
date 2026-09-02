@@ -62,6 +62,7 @@ export function isSpeechSupported() {
 // explicit cancel) bumps the generation; stale chains check it and stop.
 let speechGeneration = 0
 let activeUtterance: SpeechSynthesisUtterance | null = null
+let activePlaybackHandle: SpeechSynthesisUtterance | null = null // sequence root handle
 let activePlaybackCancel: (() => void) | null = null
 
 function nextSpeechGeneration() {
@@ -71,6 +72,7 @@ function nextSpeechGeneration() {
 function clearActivePlayback(utterance?: SpeechSynthesisUtterance) {
   if (utterance && activeUtterance && activeUtterance !== utterance) return
   activeUtterance = null
+  activePlaybackHandle = null
   activePlaybackCancel = null
 }
 function cancelActivePlayback() {
@@ -79,14 +81,13 @@ function cancelActivePlayback() {
   onCancel?.()
 }
 export function cancelJapaneseSpeech(expected?: SpeechSynthesisUtterance) {
-  if (expected && activeUtterance !== expected) return
+  if (expected && activeUtterance !== expected && activePlaybackHandle !== expected) return
 
   nextSpeechGeneration()
   cancelActivePlayback()
   if (!isSpeechSupported()) return
   window.speechSynthesis.cancel()
 }
-
 function applyUtteranceDefaults(utterance: SpeechSynthesisUtterance, options: SpeakOptions) {
   utterance.lang = options.lang ?? speechDefaults.lang ?? "ja-JP"
 
@@ -126,7 +127,7 @@ export function speakJapanese(text: string, options: SpeakOptions = {}) {
     clearActivePlayback(utterance)
     options.onError?.(event)
   }
-  activeUtterance = utterance
+  activeUtterance = activePlaybackHandle = utterance
   activePlaybackCancel = options.onCancel ?? null
   synth.speak(utterance)
   return utterance
@@ -165,7 +166,7 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
     applyUtteranceDefaults(utterance, options)
     if (voice) utterance.voice = voice
 
-    if (!first) first = utterance
+    if (!first) first = activePlaybackHandle = utterance
     if (index === 0 && options.onStart) utterance.onstart = () => { if (generation === speechGeneration) options.onStart?.() }
 
     utterance.onerror = (event) => {
@@ -179,7 +180,6 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
     utterance.onend = () => {
       if (generation !== speechGeneration) return
 
-      if (activeUtterance === utterance) activeUtterance = null
       index += 1
       if (index >= cleaned.length) {
         clearActivePlayback(utterance)
