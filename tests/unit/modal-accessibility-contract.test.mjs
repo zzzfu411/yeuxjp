@@ -26,6 +26,7 @@ test("Modal traps keyboard focus while preserving escape close behavior", () => 
   assert.match(source, /onCloseRef/)
   assert.match(source, /openModalStack\.length > 0 && openModalStack\.at\(-1\) !== dialog/)
   assert.match(source, /addEventListener\("keydown", onKey, true\)/)
+  assert.match(source, /fixed inset-0 z-\[100\] !mt-0 flex/)
   assert.doesNotMatch(source, /\[getFocusableElements, isOpen, onClose, show\]/)
 })
 

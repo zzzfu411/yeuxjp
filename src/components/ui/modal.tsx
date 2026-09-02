@@ -149,7 +149,10 @@ export function Modal({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6",
+        // A fixed overlay can be a child of a `space-y-*` container. Those
+        // parent selectors add margin to every following sibling, which must
+        // not shift a viewport-sized modal backdrop.
+        "fixed inset-0 z-[100] !mt-0 flex items-center justify-center p-4 sm:p-6",
         isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300"
       )}
     >
