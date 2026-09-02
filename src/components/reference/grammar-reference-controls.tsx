@@ -91,7 +91,7 @@ export function GrammarReferenceControls({
         />
       </div>
 
-      <div className="sticky top-20 z-30 mx-auto flex w-fit max-w-full flex-wrap items-center justify-center border-y border-border/55 bg-background/90 px-1 py-1 backdrop-blur-sm">
+      <div className="short-viewport-static sticky top-20 z-30 mx-auto flex w-fit max-w-full flex-wrap items-center justify-center border-y border-border/55 bg-background/90 px-1 py-1 backdrop-blur-sm">
         {GRAMMAR_LEVELS.map((level) => (
           <Button
             key={level}

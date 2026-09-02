@@ -542,6 +542,12 @@
     width: min(62vmin, 190px, 100%);
     margin-top: 0.25rem;
   }
+
+  /* A short window cannot leave usable room below the fixed chrome for a
+     tall filter rail; let these controls scroll with the page instead. */
+  .short-viewport-static {
+    position: static;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

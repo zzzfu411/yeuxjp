@@ -722,6 +722,11 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
   assert.match(e2e, /narrow path route/)
   assert.match(e2e, /getByRole\("heading", \{ name: \/语义辨析\/ \}\)/)
   assert.match(e2e, /narrow semantics route/)
+  assert.match(e2e, /setViewportSize\(\{ width: 280, height: 300 \}\)/)
+  assert.match(e2e, /getByTestId\("grammar-point-n5-wa"\)/)
+  assert.match(e2e, /short grammar modal/)
+  assert.match(e2e, /vocabulary-expand-/)
+  assert.match(e2e, /short vocabulary modal/)
   assert.match(e2e, /mobileContext\.close\(\)/)
 })
 

@@ -166,6 +166,36 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
     await mobilePage.getByRole("heading", { name: /语义辨析/ }).waitFor({ state: "visible" })
     await mobilePage.locator(".paper-slip").first().waitFor({ state: "visible" })
     await assertNoHorizontalOverflow(mobilePage, "narrow semantics route")
+
+    await mobilePage.setViewportSize({ width: 280, height: 300 })
+    await mobilePage.goto(`${baseUrl}/grammar`, { waitUntil: "networkidle" })
+    const narrowGrammarCard = mobilePage.getByTestId("grammar-point-n5-wa")
+    await narrowGrammarCard.waitFor({ state: "visible" })
+    await narrowGrammarCard.click()
+    await mobilePage.getByRole("dialog").waitFor({ state: "visible" })
+    await assertNoHorizontalOverflow(mobilePage, "short grammar modal")
+    await mobilePage.keyboard.press("Escape")
+    await mobilePage.getByRole("dialog").waitFor({ state: "hidden" })
+
+    await mobilePage.goto(`${baseUrl}/vocabulary`, { waitUntil: "networkidle" })
+    const narrowVocabularyExpand = mobilePage.locator('[data-testid^="vocabulary-expand-"]').first()
+    await narrowVocabularyExpand.waitFor({ state: "visible" })
+    await narrowVocabularyExpand.click()
+    await mobilePage.getByRole("dialog").waitFor({ state: "visible" })
+    await assertNoHorizontalOverflow(mobilePage, "short vocabulary modal")
+    await mobilePage.keyboard.press("Escape")
+    await mobilePage.getByRole("dialog").waitFor({ state: "hidden" })
+
+    const narrowVocabularyCategory = mobilePage.getByRole("button", { name: "食物 (Food)", exact: true })
+    await narrowVocabularyCategory.click()
+    await mobilePage.waitForFunction(() => {
+      const section = document.getElementById("cat-food")
+      const header = document.querySelector(".paper-nav")
+      if (!section || !header) return false
+      const sectionTop = section.getBoundingClientRect().top
+      const headerBottom = header.getBoundingClientRect().bottom
+      return sectionTop >= headerBottom - 1 && sectionTop <= headerBottom + 32
+    })
   } finally {
     await mobileContext.close()
   }
