@@ -101,12 +101,31 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
 
     await mobilePage.getByTestId("speech-controls-open").click()
     await mobilePage.getByRole("dialog").waitFor({ state: "visible" })
-    const speechDialogName = await mobilePage.evaluate(() => {
+    const speechDialogStacking = await mobilePage.evaluate(() => {
       const dialog = document.querySelector('[role="dialog"][aria-modal="true"]')
+      const overlay = dialog?.parentElement
+      const nav = document.querySelector(".paper-nav")
+      const grain = document.querySelector(".paper-grain")
+      const vignette = document.querySelector(".paper-vignette")
       const labelledBy = dialog?.getAttribute("aria-labelledby")
-      return labelledBy ? document.getElementById(labelledBy)?.textContent?.trim() ?? "" : ""
+      return {
+        name: labelledBy ? document.getElementById(labelledBy)?.textContent?.trim() ?? "" : "",
+        dialogInNav: Boolean(nav && dialog && nav.contains(dialog)),
+        overlayParentIsBody: overlay?.parentElement === document.body,
+        overlayZ: overlay ? Number(getComputedStyle(overlay).zIndex) : NaN,
+        grainZ: grain ? Number(getComputedStyle(grain).zIndex) : NaN,
+        vignetteZ: vignette ? Number(getComputedStyle(vignette).zIndex) : NaN,
+      }
     })
+    const speechDialogName = speechDialogStacking.name
     assert.ok(speechDialogName.length > 0, "mobile speech settings dialog should have an accessible name")
+    assert.equal(speechDialogStacking.dialogInNav, false, "speech settings dialog should escape the navbar stacking context")
+    assert.equal(speechDialogStacking.overlayParentIsBody, true, "speech settings overlay should portal to document.body")
+    assert.ok(
+      speechDialogStacking.overlayZ > speechDialogStacking.grainZ &&
+        speechDialogStacking.overlayZ > speechDialogStacking.vignetteZ,
+      `speech settings overlay should stack above paper grain/vignette: overlay=${speechDialogStacking.overlayZ}, grain=${speechDialogStacking.grainZ}, vignette=${speechDialogStacking.vignetteZ}`
+    )
     await mobilePage.getByTestId("speech-repeat-2").click()
     await mobilePage.waitForFunction((key) => {
       const prefs = JSON.parse(localStorage.getItem(key) ?? "{}")

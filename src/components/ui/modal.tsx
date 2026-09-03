@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -34,10 +35,16 @@ export function Modal({
   ariaDescribedBy,
 }: ModalProps) {
   const [show, setShow] = React.useState(isOpen)
+  const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null)
   const previousOverflow = React.useRef<string | null>(null)
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
   const onCloseRef = React.useRef(onClose)
+
+  React.useEffect(() => {
+    // Escape navbar / nested stacking contexts (paper grain sits at z-80/81).
+    setPortalTarget(document.body)
+  }, [])
 
   React.useEffect(() => {
     onCloseRef.current = onClose
@@ -85,7 +92,7 @@ export function Modal({
 
   // Esc to close, trap tab focus, and focus dialog on open.
   React.useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || !show || !portalTarget) return
     const dialog = dialogRef.current
     if (dialog) openModalStack.push(dialog)
     // Defer focus until after animation kicks in.
@@ -142,16 +149,18 @@ export function Modal({
         if (stackIndex >= 0) openModalStack.splice(stackIndex, 1)
       }
     }
-  }, [getFocusableElements, isOpen, show])
+  }, [getFocusableElements, isOpen, portalTarget, show])
 
-  if (!show) return null
+  if (!show || !portalTarget) return null
 
-  return (
+  return createPortal(
     <div
       className={cn(
         // A fixed overlay can be a child of a `space-y-*` container. Those
         // parent selectors add margin to every following sibling, which must
-        // not shift a viewport-sized modal backdrop.
+        // not shift a viewport-sized modal backdrop. Portaling to body also
+        // escapes parent stacking contexts such as the navbar (z-60) so grain
+        // / vignette (z-80 / 81) cannot paint over the dialog.
         "fixed inset-0 z-[100] !mt-0 flex items-center justify-center p-4 sm:p-6",
         isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300"
       )}
@@ -189,6 +198,7 @@ export function Modal({
         </Button>
         {children}
       </div>
-    </div>
+    </div>,
+    portalTarget
   )
 }
