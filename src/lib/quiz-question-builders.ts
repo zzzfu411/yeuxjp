@@ -129,9 +129,15 @@ export function generateVerbConjugationQuestion(
     }
   }
 
-  while (optionSet.size < 4) {
-    const other = randomItem(VERB_CONJ_VERBS, random)
-    optionSet.add(conjugateVerb(other.dict, other.kind, form.id))
+  if (compatibleVerbs.length > 0) {
+    let attempts = 0
+    const maxAttempts = Math.max(32, compatibleVerbs.length * 4)
+    while (optionSet.size < 4 && attempts < maxAttempts) {
+      attempts += 1
+      const other = randomItem(compatibleVerbs, random)
+      if (!isVerbConjFormSupported(other, form.id)) continue
+      optionSet.add(conjugateVerb(other.dict, other.kind, form.id))
+    }
   }
 
   return {

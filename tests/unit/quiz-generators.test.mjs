@@ -288,3 +288,31 @@ test("basic できる questions keep only learner-facing forms in their options"
   assert.equal(question.options.length, 4)
   assert.ok(question.options.every((option) => !["できられる", "できさせる"].includes(option.value)))
 })
+
+function mulberry32(seed) {
+  let a = seed >>> 0
+  return () => {
+    a += 0x6d2b79f5
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+test("potential and causative distractors never include malformed できる forms", () => {
+  const malformed = ["できられる", "できさせる"]
+  const potentialOnly = verbConjugation.VERB_CONJ_FORMS.filter((form) => form.id === "potential")
+  const causativeOnly = verbConjugation.VERB_CONJ_FORMS.filter((form) => form.id === "causative")
+
+  for (const pool of [potentialOnly, causativeOnly]) {
+    for (let seed = 0; seed < 200; seed += 1) {
+      const question = builders.generateVerbConjugationQuestion(mulberry32(seed), pool)
+      assert.notEqual(question.meta.verb.dict, "できる")
+      assert.ok(
+        question.options.every((option) => !malformed.includes(option.value)),
+        `seed ${seed} ${pool[0].id} included ${question.options.map((option) => option.value).join(", ")}`
+      )
+    }
+  }
+})
