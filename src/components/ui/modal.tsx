@@ -17,6 +17,14 @@ const FOCUSABLE_SELECTOR = [
 
 const openModalStack: HTMLDivElement[] = []
 
+function pruneOpenModalStack() {
+  for (let index = openModalStack.length - 1; index >= 0; index -= 1) {
+    if (!openModalStack[index].isConnected) {
+      openModalStack.splice(index, 1)
+    }
+  }
+}
+
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
@@ -41,8 +49,10 @@ export function Modal({
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
   const onCloseRef = React.useRef(onClose)
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     // Escape navbar / nested stacking contexts (paper grain sits at z-80/81).
+    // Layout timing portals before the focus-trap effect, so Escape is bound
+    // to the live dialog instead of a remounted SSR node.
     setPortalTarget(document.body)
   }, [])
 
@@ -94,13 +104,16 @@ export function Modal({
   React.useEffect(() => {
     if (!isOpen || !show) return
     const dialog = dialogRef.current
-    if (dialog) openModalStack.push(dialog)
+    if (!dialog) return
+    pruneOpenModalStack()
+    openModalStack.push(dialog)
     // Defer focus until after animation kicks in.
     const focusTimer = setTimeout(() => {
       dialogRef.current?.focus()
     }, 50)
 
     const onKey = (e: KeyboardEvent) => {
+      pruneOpenModalStack()
       const dialog = dialogRef.current
       if (openModalStack.length > 0 && openModalStack.at(-1) !== dialog) return
 
