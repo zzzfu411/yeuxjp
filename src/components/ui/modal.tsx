@@ -92,7 +92,7 @@ export function Modal({
 
   // Esc to close, trap tab focus, and focus dialog on open.
   React.useEffect(() => {
-    if (!isOpen || !show || !portalTarget) return
+    if (!isOpen || !show) return
     const dialog = dialogRef.current
     if (dialog) openModalStack.push(dialog)
     // Defer focus until after animation kicks in.
@@ -151,9 +151,9 @@ export function Modal({
     }
   }, [getFocusableElements, isOpen, portalTarget, show])
 
-  if (!show || !portalTarget) return null
+  if (!show) return null
 
-  return createPortal(
+  const overlay = (
     <div
       className={cn(
         // A fixed overlay can be a child of a `space-y-*` container. Those
@@ -198,7 +198,10 @@ export function Modal({
         </Button>
         {children}
       </div>
-    </div>,
-    portalTarget
+    </div>
   )
+
+  // Keep open-modal markup in the SSR/SSG tree so offline caches still contain
+  // detail copy. After mount, portal to body to escape nested stacking.
+  return portalTarget ? createPortal(overlay, portalTarget) : overlay
 }

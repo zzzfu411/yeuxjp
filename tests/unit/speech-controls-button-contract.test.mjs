@@ -33,6 +33,7 @@ test("Speech controls stay in the navbar while Modal portals above paper grain",
 
   assert.match(modal, /createPortal/)
   assert.match(modal, /setPortalTarget\(document\.body\)/)
+  assert.match(modal, /return portalTarget \? createPortal\(overlay, portalTarget\) : overlay/)
   assert.match(modal, /fixed inset-0 z-\[100\] !mt-0 flex/)
 
   assert.match(navbar, /<SpeechControlsButton \/>/)
