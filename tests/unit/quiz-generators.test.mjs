@@ -271,6 +271,38 @@ test("verb conjugation questions exclude できる from potential and causative"
   }
 })
 
+test("verb conjugation questions exclude かう and わかる from potential", () => {
+  const forceVerb = (verbIndex) => {
+    let call = 0
+    const values = [
+      (verbIndex + 0.25) / verbConjugation.VERB_CONJ_VERBS.length,
+      (4 + 0.25) / verbConjugation.VERB_CONJ_FORMS.length,
+    ]
+    return () => values[call++] ?? 0
+  }
+
+  const kauIndex = verbConjugation.VERB_CONJ_VERBS.findIndex((verb) => verb.dict === "かう")
+  const wakaruIndex = verbConjugation.VERB_CONJ_VERBS.findIndex((verb) => verb.dict === "わかる")
+  assert.ok(kauIndex >= 0)
+  assert.ok(wakaruIndex >= 0)
+
+  const kauQuestion = builders.generateVerbConjugationQuestion(
+    forceVerb(kauIndex),
+    verbConjugation.VERB_CONJ_FORMS
+  )
+  const wakaruQuestion = builders.generateVerbConjugationQuestion(
+    forceVerb(wakaruIndex),
+    verbConjugation.VERB_CONJ_FORMS
+  )
+
+  assert.equal(kauQuestion.meta.askedForm.id, "potential")
+  assert.equal(wakaruQuestion.meta.askedForm.id, "potential")
+  assert.notEqual(kauQuestion.meta.verb.dict, "かう")
+  assert.notEqual(wakaruQuestion.meta.verb.dict, "わかる")
+  assert.notEqual(kauQuestion.correctAnswer, "かえる")
+  assert.notEqual(wakaruQuestion.correctAnswer, "わかれる")
+})
+
 test("basic できる questions keep only learner-facing forms in their options", () => {
   const question = builders.generateVerbConjugationQuestion(
     (() => {
@@ -314,5 +346,24 @@ test("potential and causative distractors never include malformed できる form
         `seed ${seed} ${pool[0].id} included ${question.options.map((option) => option.value).join(", ")}`
       )
     }
+  }
+})
+
+test("potential-form questions never ask かう or わかる or use 買う's かえる", () => {
+  const potentialOnly = verbConjugation.VERB_CONJ_FORMS.filter((form) => form.id === "potential")
+  const unsupportedPotentialVerbs = new Set(["かう", "わかる", "できる"])
+
+  for (let seed = 0; seed < 200; seed += 1) {
+    const question = builders.generateVerbConjugationQuestion(mulberry32(seed), potentialOnly)
+    assert.equal(question.meta.askedForm.id, "potential")
+    assert.ok(
+      !unsupportedPotentialVerbs.has(question.meta.verb.dict),
+      `seed ${seed} asked potential of ${question.meta.verb.dict}`
+    )
+    assert.ok(
+      question.options.every((option) => option.value !== "かえる" && option.value !== "わかれる"),
+      `seed ${seed} potential options included ${question.options.map((option) => option.value).join(", ")}`
+    )
+    assert.ok(verbConjugation.isVerbConjFormSupported(question.meta.verb, "potential"))
   }
 })
