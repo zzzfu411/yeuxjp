@@ -9,6 +9,14 @@ test("review queues remove correct answers and requeue wrong answers", () => {
   assert.deepEqual(session.advanceReviewQueue(["a", "b", "c"], false), ["b", "c", "a"])
 })
 
+test("wrong-answer requeues produce a fresh queue snapshot", () => {
+  const queue = ["a"]
+  const next = session.advanceReviewQueue(queue, false)
+
+  assert.deepEqual(next, ["a"])
+  assert.notEqual(next, queue)
+})
+
 test("review queues do not advance before an answer is graded", () => {
   const queue = ["a", "b"]
   assert.deepEqual(session.advanceReviewQueue(queue, null), queue)

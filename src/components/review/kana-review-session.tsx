@@ -13,7 +13,7 @@ import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { getKanaById } from "@/lib/kana-id"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
-import type { Question, QuestionResult } from "@/lib/questions"
+import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { makeKanaReviewQuestion } from "@/lib/review-questions"
 
@@ -30,7 +30,6 @@ export function KanaReviewSession({
   learning: ReturnType<typeof useLearningProgress>
   srs: ReturnType<typeof useSrsDeck>
 }) {
-  const [question, setQuestion] = useState<Question | null>(null)
   const [saveError, setSaveError] = useState(false)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
@@ -38,6 +37,7 @@ export function KanaReviewSession({
 
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? getKanaById(currentId) : null), [currentId])
+  const question = useMemo(() => (item ? makeKanaReviewQuestion(item.id) : null), [item])
 
   useEffect(() => {
     if (currentId && !item) {
@@ -45,29 +45,9 @@ export function KanaReviewSession({
     }
   }, [currentId, dropCurrent, item])
 
-  useEffect(() => {
-    let cancelled = false
-
-    Promise.resolve().then(() => {
-      if (cancelled) return
-      if (!item) {
-        setQuestion(null)
-        setSaveError(false)
-        return
-      }
-
-      setQuestion(makeKanaReviewQuestion(item.id))
-      setSaveError(false)
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [item])
-
   const { playAudio } = useReviewAudio({
-    autoPlayText: item?.kana[item.script],
-    autoPlayKey: item?.id,
+    autoPlayText: question ? item?.kana[item.script] : undefined,
+    autoPlayKey: review.presentationVersion,
   })
 
   const recordAnswerSelection = useReviewAnswerRecorder({

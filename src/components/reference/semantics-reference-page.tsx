@@ -53,13 +53,13 @@ export function SemanticsReferencePage({
           <Link
             key={point.id}
             href={semanticsItemHref(index)}
-            className="paper-slip group relative overflow-hidden"
+            className="paper-slip group relative"
           >
             <span className="paper-tape" aria-hidden="true" />
             <div className="flex flex-col justify-between gap-4 border-b border-border/35 p-6 md:flex-row md:items-center">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
+              <h2 className="flex flex-wrap items-center gap-2 text-2xl font-bold">
                 <span className="text-primary">{point.pair[0]}</span>
-                <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
+                <ArrowRightLeft className="h-5 w-5 shrink-0 text-muted-foreground" />
                 <span className="text-primary">{point.pair[1]}</span>
               </h2>
               <div className="font-scribble text-base text-muted-foreground">

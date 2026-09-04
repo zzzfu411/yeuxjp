@@ -58,7 +58,7 @@ export function SkillTreePage() {
         <section className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.45fr)_minmax(15rem,0.55fr)]" aria-label="课表与学习记录">
           <PathStarterLessons completedLessonIds={learning.completedLessonIds} activeLessonId={nextLesson?.id} />
 
-          <aside className="border-l border-border/45 pl-5 lg:sticky lg:top-28">
+          <aside className="min-w-0 border-l border-border/45 pl-5 lg:sticky lg:top-28">
             <p className="eyebrow inkline">课表与掌握度</p>
             <div className="mt-3 border-y border-border/40">
               <Metric label="课表" value={`${satisfiedLessonCount}/${STARTER_LESSONS.length}`} />

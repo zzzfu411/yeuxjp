@@ -43,12 +43,12 @@ export function KanaBanner({ banner, className }: KanaBannerProps) {
   return (
     <div
       className={cn(
-        "paper-slip relative mx-auto min-h-32 w-full max-w-3xl overflow-hidden",
+        "paper-slip relative mx-auto min-h-32 w-full max-w-3xl",
         className
       )}
     >
       <span className="paper-tape" aria-hidden="true" />
-      <div className="absolute inset-y-0 right-0 w-[44%] opacity-65 dark:opacity-45">
+      <div className="absolute inset-y-0 right-0 w-[44%] overflow-hidden opacity-65 dark:opacity-45">
         <Image
           src={meta.src}
           alt=""

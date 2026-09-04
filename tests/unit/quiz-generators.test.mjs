@@ -3,6 +3,8 @@ import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const quiz = await loadTsModule("src/lib/quiz-generators.ts")
+const builders = await loadTsModule("src/lib/quiz-question-builders.ts")
+const verbConjugation = await loadTsModule("src/lib/verb-conjugation.ts")
 
 const vocab = [
   { id: "v1", kana: "みず", romaji: "mizu", meaning: "水", category: "food", level: "survival" },
@@ -136,6 +138,30 @@ test("vocabulary quiz generators return meaning questions", () => {
   assert.equal(question.options.length, 4)
 })
 
+test("vocabulary meaning questions de-duplicate visible meanings", () => {
+  const duplicateMeaningVocab = [
+    { id: "v1", kana: "やすむ", romaji: "yasumu", meaning: "休息", category: "verbs", level: "survival" },
+    { id: "v2", kana: "やすみ", romaji: "yasumi", meaning: "休息", category: "time", level: "survival" },
+    { id: "v3", kana: "みず", romaji: "mizu", meaning: "水", category: "food", level: "survival" },
+    { id: "v4", kana: "ちゃ", romaji: "cha", meaning: "茶", category: "food", level: "survival" },
+    { id: "v5", kana: "パン", romaji: "pan", meaning: "面包", category: "food", level: "survival" },
+  ]
+
+  const question = quiz.generateQuizQuestion({
+    mode: "meaning-vocab",
+    kanaBasePool: [],
+    kanaTargetPool: [],
+    vocabBasePool: duplicateMeaningVocab,
+    vocabTargetPool: [duplicateMeaningVocab[0]],
+    random: () => 0,
+  })
+
+  assert.equal(question.correctAnswer, "v1")
+  assert.equal(question.options.length, 4)
+  assert.equal(new Set(question.options.map((option) => option.display)).size, question.options.length)
+  assert.ok(question.options.some((option) => option.value === "v1"))
+})
+
 test("vocabulary quiz generators require enough unique options", () => {
   const smallVocab = vocab.slice(0, 3)
   const question = quiz.generateQuizQuestion({
@@ -222,4 +248,122 @@ test("verb conjugation quiz withholds potential and causative until N4", () => {
 
   assert.equal(n5.meta.askedForm.id, "te")
   assert.equal(n4.meta.askedForm.id, "potential")
+})
+
+test("verb conjugation questions exclude できる from potential and causative", () => {
+  const forceDekiru = (formIndex) => {
+    let call = 0
+    const values = [
+      (27 + 0.25) / verbConjugation.VERB_CONJ_VERBS.length,
+      (formIndex + 0.25) / verbConjugation.VERB_CONJ_FORMS.length,
+    ]
+    return () => values[call++] ?? 0
+  }
+
+  for (const formIndex of [4, 5]) {
+    const question = builders.generateVerbConjugationQuestion(
+      forceDekiru(formIndex),
+      verbConjugation.VERB_CONJ_FORMS
+    )
+    assert.notEqual(question.meta.verb.dict, "できる")
+    assert.notEqual(question.correctAnswer, "できられる")
+    assert.notEqual(question.correctAnswer, "できさせる")
+  }
+})
+
+test("verb conjugation questions exclude かう and わかる from potential", () => {
+  const forceVerb = (verbIndex) => {
+    let call = 0
+    const values = [
+      (verbIndex + 0.25) / verbConjugation.VERB_CONJ_VERBS.length,
+      (4 + 0.25) / verbConjugation.VERB_CONJ_FORMS.length,
+    ]
+    return () => values[call++] ?? 0
+  }
+
+  const kauIndex = verbConjugation.VERB_CONJ_VERBS.findIndex((verb) => verb.dict === "かう")
+  const wakaruIndex = verbConjugation.VERB_CONJ_VERBS.findIndex((verb) => verb.dict === "わかる")
+  assert.ok(kauIndex >= 0)
+  assert.ok(wakaruIndex >= 0)
+
+  const kauQuestion = builders.generateVerbConjugationQuestion(
+    forceVerb(kauIndex),
+    verbConjugation.VERB_CONJ_FORMS
+  )
+  const wakaruQuestion = builders.generateVerbConjugationQuestion(
+    forceVerb(wakaruIndex),
+    verbConjugation.VERB_CONJ_FORMS
+  )
+
+  assert.equal(kauQuestion.meta.askedForm.id, "potential")
+  assert.equal(wakaruQuestion.meta.askedForm.id, "potential")
+  assert.notEqual(kauQuestion.meta.verb.dict, "かう")
+  assert.notEqual(wakaruQuestion.meta.verb.dict, "わかる")
+  assert.notEqual(kauQuestion.correctAnswer, "かえる")
+  assert.notEqual(wakaruQuestion.correctAnswer, "わかれる")
+})
+
+test("basic できる questions keep only learner-facing forms in their options", () => {
+  const question = builders.generateVerbConjugationQuestion(
+    (() => {
+      let call = 0
+      const values = [
+        (27 + 0.25) / verbConjugation.VERB_CONJ_VERBS.length,
+        0.25 / verbConjugation.VERB_CONJ_FORMS.length,
+      ]
+      return () => values[call++] ?? 0
+    })(),
+    verbConjugation.VERB_CONJ_FORMS
+  )
+
+  assert.equal(question.meta.verb.dict, "できる")
+  assert.equal(question.options.length, 4)
+  assert.ok(question.options.every((option) => !["できられる", "できさせる"].includes(option.value)))
+})
+
+function mulberry32(seed) {
+  let a = seed >>> 0
+  return () => {
+    a += 0x6d2b79f5
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+test("potential and causative distractors never include malformed できる forms", () => {
+  const malformed = ["できられる", "できさせる"]
+  const potentialOnly = verbConjugation.VERB_CONJ_FORMS.filter((form) => form.id === "potential")
+  const causativeOnly = verbConjugation.VERB_CONJ_FORMS.filter((form) => form.id === "causative")
+
+  for (const pool of [potentialOnly, causativeOnly]) {
+    for (let seed = 0; seed < 200; seed += 1) {
+      const question = builders.generateVerbConjugationQuestion(mulberry32(seed), pool)
+      assert.notEqual(question.meta.verb.dict, "できる")
+      assert.ok(
+        question.options.every((option) => !malformed.includes(option.value)),
+        `seed ${seed} ${pool[0].id} included ${question.options.map((option) => option.value).join(", ")}`
+      )
+    }
+  }
+})
+
+test("potential-form questions never ask かう or わかる or use 買う's かえる", () => {
+  const potentialOnly = verbConjugation.VERB_CONJ_FORMS.filter((form) => form.id === "potential")
+  const unsupportedPotentialVerbs = new Set(["かう", "わかる", "できる"])
+
+  for (let seed = 0; seed < 200; seed += 1) {
+    const question = builders.generateVerbConjugationQuestion(mulberry32(seed), potentialOnly)
+    assert.equal(question.meta.askedForm.id, "potential")
+    assert.ok(
+      !unsupportedPotentialVerbs.has(question.meta.verb.dict),
+      `seed ${seed} asked potential of ${question.meta.verb.dict}`
+    )
+    assert.ok(
+      question.options.every((option) => option.value !== "かえる" && option.value !== "わかれる"),
+      `seed ${seed} potential options included ${question.options.map((option) => option.value).join(", ")}`
+    )
+    assert.ok(verbConjugation.isVerbConjFormSupported(question.meta.verb, "potential"))
+  }
 })

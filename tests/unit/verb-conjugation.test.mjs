@@ -76,6 +76,43 @@ test("potential and causative cover ichidan, godan, and irregulars", () => {
   assert.match(verbs.explainConjugation({ dict: "かく", kanji: "書く", meaning: "写", kind: "godan" }, "causative"), /かかせる/)
 })
 
+test("できる stays in basic practice but is excluded from potential and causative", () => {
+  const dekiru = verbs.VERB_CONJ_VERBS.find((verb) => verb.dict === "できる")
+  assert.ok(dekiru)
+  assert.equal(verbs.isVerbConjFormSupported(dekiru, "masu"), true)
+  assert.equal(verbs.isVerbConjFormSupported(dekiru, "potential"), false)
+  assert.equal(verbs.isVerbConjFormSupported(dekiru, "causative"), false)
+  assert.deepEqual(
+    verbs.getVerbConjFormsForVerb(dekiru).map((form) => form.id),
+    ["masu", "nai", "te", "ta"]
+  )
+})
+
+test("かう and わかる stay in the bank but drop potential-form questions", () => {
+  const kau = verbs.VERB_CONJ_VERBS.find((verb) => verb.dict === "かう")
+  const wakaru = verbs.VERB_CONJ_VERBS.find((verb) => verb.dict === "わかる")
+  assert.ok(kau)
+  assert.ok(wakaru)
+
+  for (const verb of [kau, wakaru]) {
+    assert.equal(verbs.isVerbConjFormSupported(verb, "masu"), true)
+    assert.equal(verbs.isVerbConjFormSupported(verb, "nai"), true)
+    assert.equal(verbs.isVerbConjFormSupported(verb, "te"), true)
+    assert.equal(verbs.isVerbConjFormSupported(verb, "ta"), true)
+    assert.equal(verbs.isVerbConjFormSupported(verb, "potential"), false)
+    assert.equal(verbs.isVerbConjFormSupported(verb, "causative"), true)
+    assert.deepEqual(
+      verbs.getVerbConjFormsForVerb(verb).map((form) => form.id),
+      ["masu", "nai", "te", "ta", "causative"]
+    )
+  }
+
+  assert.equal(verbs.conjugateVerb("かう", "godan", "potential"), "かえる")
+  assert.equal(verbs.conjugateVerb("わかる", "godan", "potential"), "わかれる")
+  assert.equal(verbs.conjugateVerb("かう", "godan", "causative"), "かわせる")
+  assert.equal(verbs.conjugateVerb("わかる", "godan", "causative"), "わからせる")
+})
+
 test("verb conjugation quiz forms stay on N5 until the course reaches N4", () => {
   const n5Ids = verbs.verbConjFormsForCourse().map((form) => form.id)
   assert.deepEqual(n5Ids, ["masu", "nai", "te", "ta"])

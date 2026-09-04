@@ -219,7 +219,7 @@ export function useLearningProgress() {
     const next = applyLessonStepAnswer(currentResult.value, lessonId, stepId, answer, Date.now())
     if (!next) return false
     if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: currentResult.raw })) return false
-    setLessons(next)
+    queueLearningNotification(() => setLessons(next))
     return true
   }, [])
 

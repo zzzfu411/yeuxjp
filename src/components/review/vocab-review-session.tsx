@@ -67,7 +67,7 @@ export function VocabReviewSession({
 
   const { playAudio } = useReviewAudio({
     autoPlayText: promptModel?.autoPlayAudio ? promptModel.audio : undefined,
-    autoPlayKey: item?.id,
+    autoPlayKey: review.presentationVersion,
   })
 
   const recordAnswerSelection = useReviewAnswerRecorder({

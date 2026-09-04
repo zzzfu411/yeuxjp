@@ -81,7 +81,7 @@ export function TodayReviewSession({
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.autoPlayAudio ? data.audio : undefined,
-    autoPlayKey: current?.id,
+    autoPlayKey: review.presentationVersion,
     autoPlayDelayMs: 350,
   })
 
@@ -186,6 +186,8 @@ export function TodayReviewSession({
       <ReviewAnswerFeedback
         question={data.question}
         selectedAnswer={selected}
+        correct={review.lastAnswerCorrect}
+        showSelectedAnswer
         showSpecialFeedback={shouldShowReviewSpecialFeedback(data.question.type)}
       />
 

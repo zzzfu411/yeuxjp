@@ -57,6 +57,10 @@ export function KanaGrid({
   const hasStrokes = !!currentChar && currentStrokeAvailability === "available"
   const isComboChar = (currentChar?.length ?? 0) > 1
 
+  useEffect(() => {
+    return () => cancelJapaneseSpeech()
+  }, [])
+
   // 导航逻辑
   const handleNext = useCallback(() => {
     if (selectedIndex === null || selectedIndex < 0 || data.length === 0) return
@@ -151,9 +155,17 @@ export function KanaGrid({
     const utterance = speakJapanese(currentChar ?? selectedKana.hiragana, {
       onEnd: () => setIsPlaying(false),
       onError: () => setIsPlaying(false),
+      onCancel: () => setIsPlaying(false),
     })
     if (!utterance) setIsPlaying(false)
   }
+
+  const handleClose = useCallback(() => {
+    cancelJapaneseSpeech()
+    setIsPlaying(false)
+    setSelectedRomaji(null)
+    setIsWriting(false)
+  }, [])
 
   return (
     <>
@@ -204,12 +216,7 @@ export function KanaGrid({
         isComboChar={isComboChar}
         learned={learned}
         canToggleMastered={!!onToggleMastered}
-        onClose={() => {
-          cancelJapaneseSpeech()
-          setIsPlaying(false)
-          setSelectedRomaji(null)
-          setIsWriting(false)
-        }}
+        onClose={handleClose}
         onPrev={handlePrev}
         onNext={handleNext}
         onPlay={handlePlay}

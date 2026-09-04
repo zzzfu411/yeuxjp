@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import fs from "node:fs"
 import path from "node:path"
 import test from "node:test"
+import { loadTsModule } from "./load-ts-module.mjs"
 
 const root = path.resolve(import.meta.dirname, "..", "..")
 
@@ -96,4 +97,32 @@ test("useReviewSessionState supports a before-commit guard for persisted answer 
   assert.match(source, /setIsInvalidated\(true\)/)
   assert.match(source, /setQueue\(\[\]\)/)
   assert.match(source, /isInvalidated/)
+})
+
+test("useReviewSessionState consumes the answer token before advancing the queue", async () => {
+  const source = read("src/components/review/use-review-session-state.ts")
+  const session = await loadTsModule("src/lib/review-session.ts")
+
+  assert.match(source, /if \(!answerPendingRef\.current \|\| lastAnswerCorrect === null\) return/)
+  assert.match(
+    source,
+    /if \(!answerPendingRef\.current \|\| lastAnswerCorrect === null\) return\s*answerPendingRef\.current = false\s*setQueue\(/,
+  )
+
+  // Model two synchronous activations of the callback. Only the first may consume the token.
+  for (const lastAnswerCorrect of [true, false]) {
+    let answerPending = true
+    let queue = ["a", "b", "c"]
+    const advance = () => {
+      if (!answerPending || lastAnswerCorrect === null) return
+      answerPending = false
+      queue = session.advanceReviewQueue(queue, lastAnswerCorrect)
+    }
+
+    advance()
+    advance()
+
+    assert.deepEqual(queue, lastAnswerCorrect ? ["b", "c"] : ["b", "c", "a"])
+    assert.equal(answerPending, false)
+  }
 })

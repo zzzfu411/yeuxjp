@@ -260,6 +260,7 @@ test("path and next-step surfaces consume the shared recommendation hook", () =>
   assert.match(pathPage, /STARTER_LESSONS\.length/)
   assert.match(pathPage, /from "@\/components\/path\/path-starter-lessons"/)
   assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
+  assert.match(pathPage, /aside className="min-w-0/)
   assert.doesNotMatch(pathPage, /STARTER_LESSONS\.slice/)
 })
 
@@ -275,4 +276,5 @@ test("PathStarterLessons renders the complete starter course", () => {
   assert.match(source, /getLessonEntryBadge\(status\)/)
   assert.match(source, /countSatisfiedLessons/)
   assert.match(source, /STARTER_LESSONS\.length/)
+  assert.match(source, /className="min-w-0"/)
 })

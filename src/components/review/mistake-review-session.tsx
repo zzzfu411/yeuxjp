@@ -56,7 +56,7 @@ export function MistakeReviewSession({
 
   const { playAudio } = useReviewAudio({
     autoPlayText: item?.questionAudio,
-    autoPlayKey: currentId,
+    autoPlayKey: review.presentationVersion,
   })
 
   const recordAnswerSelection = useReviewAnswerRecorder({

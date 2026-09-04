@@ -25,7 +25,7 @@ function installFakeSpeech() {
   return { spoken, synth }
 }
 
-const { spoken } = installFakeSpeech()
+const { spoken, synth } = installFakeSpeech()
 const speech = await loadTsModule("src/lib/speech.ts")
 
 function sleep(ms) {
@@ -97,4 +97,198 @@ test("speakJapanese interrupts and invalidates an in-flight sequence chain", () 
   spoken[0].onend()
   assert.equal(spoken.length, 2, "the interrupted sequence must not enqueue its second repeat")
   assert.equal(spoken[1].text, "いぬ")
+})
+
+test("stale standalone callbacks cannot finish newer speech playback", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapanese("一", {
+    onEnd: () => callbacks.push("first-end"),
+    onError: () => callbacks.push("first-error"),
+  })
+  const second = speech.speakJapanese("二", {
+    onEnd: () => callbacks.push("second-end"),
+    onError: () => callbacks.push("second-error"),
+  })
+
+  assert.equal(spoken.length, 2)
+
+  // Cancellation can deliver a late completion/error event for the old utterance.
+  first.onend()
+  first.onerror(new Error("canceled"))
+  assert.deepEqual(callbacks, [], "stale callbacks must not end replacement playback")
+
+  second.onend()
+  assert.deepEqual(callbacks, ["second-end"])
+})
+
+test("standalone speech errors invalidate late completion callbacks", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const utterance = speech.speakJapanese("一", {
+    onEnd: () => callbacks.push("end"),
+    onError: () => callbacks.push("error"),
+  })
+
+  utterance.onerror(new Error("speech failed"))
+  utterance.onend()
+
+  assert.deepEqual(callbacks, ["error"], "an error must prevent a later onend from completing playback")
+})
+
+test("sequence speech errors stop late completion from advancing the chain", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapaneseSequence(["一", "二"], {
+    gapMs: 0,
+    onEnd: () => callbacks.push("end"),
+    onError: () => callbacks.push("error"),
+  })
+
+  first.onerror(new Error("speech failed"))
+  first.onend()
+
+  assert.equal(spoken.length, 1, "a failed sequence must not enqueue another utterance")
+  assert.deepEqual(callbacks, ["error", "end"], "sequence error completion remains exactly once")
+})
+
+test("replacement and explicit cancellation notify each playback exactly once", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapanese("一", {
+    onCancel: () => callbacks.push("first-cancel"),
+  })
+  const second = speech.speakJapanese("二", {
+    onCancel: () => callbacks.push("second-cancel"),
+  })
+
+  assert.deepEqual(callbacks, ["first-cancel"])
+  first.onend()
+  first.onerror(new Error("canceled"))
+  assert.deepEqual(callbacks, ["first-cancel"], "late events must not repeat cancellation")
+
+  speech.cancelJapaneseSpeech(second)
+  speech.cancelJapaneseSpeech(second)
+  assert.deepEqual(callbacks, ["first-cancel", "second-cancel"])
+})
+
+test("sequence cancellation callback fires while a repeat waits between utterances", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapaneseSequence(["一", "二"], {
+    gapMs: 10,
+    onCancel: () => callbacks.push("sequence-cancel"),
+  })
+  first.onend()
+  assert.equal(spoken.length, 1)
+
+  speech.speakJapanese("三")
+  assert.deepEqual(callbacks, ["sequence-cancel"])
+})
+
+test("expected sequence handle cancels while a repeat waits between utterances", async () => {
+  spoken.length = 0
+
+  const first = speech.speakJapaneseSequence(["一", "二"], { gapMs: 10 })
+  first.onend()
+  speech.cancelJapaneseSpeech(first)
+
+  await sleep(20)
+  assert.deepEqual(
+    spoken.map((utterance) => utterance.text),
+    ["一"],
+    "canceling the returned sequence handle must also cancel a pending gap"
+  )
+})
+
+test("expected sequence handle cancels after a later utterance starts", () => {
+  spoken.length = 0
+
+  const first = speech.speakJapaneseSequence(["一", "二", "三"], { gapMs: 0 })
+  first.onend()
+  assert.equal(spoken.length, 2)
+
+  speech.cancelJapaneseSpeech(first)
+  spoken[1].onend()
+
+  assert.deepEqual(
+    spoken.map((utterance) => utterance.text),
+    ["一", "二"],
+    "the sequence root handle must cancel later repeats too"
+  )
+})
+
+test("completed sequences release their expected cancellation handle", () => {
+  spoken.length = 0
+
+  const first = speech.speakJapaneseSequence(["一", "二"], { gapMs: 0 })
+  first.onend()
+  spoken[1].onend()
+  const cancelCount = synth.cancelCount
+
+  speech.cancelJapaneseSpeech(first)
+
+  assert.equal(synth.cancelCount, cancelCount)
+})
+
+test("cancel false sequences retain their root handle without clearing the queue", () => {
+  spoken.length = 0
+  const cancelCount = synth.cancelCount
+
+  const first = speech.speakJapaneseSequence(["一", "二"], { cancel: false, gapMs: 0 })
+  first.onend()
+  assert.equal(synth.cancelCount, cancelCount)
+
+  speech.cancelJapaneseSpeech(first)
+  spoken[1].onend()
+
+  assert.deepEqual(spoken.map((utterance) => utterance.text), ["一", "二"])
+})
+
+test("stale onstart callbacks cannot start replaced speech playback", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapanese("一", { onStart: () => callbacks.push("first-start") })
+  const second = speech.speakJapanese("二", { onStart: () => callbacks.push("second-start") })
+
+  first.onstart()
+  assert.deepEqual(callbacks, [], "a replaced utterance must not report a late start")
+
+  second.onstart()
+  assert.deepEqual(callbacks, ["second-start"])
+})
+
+test("stale sequence onstart callbacks cannot start replaced playback", () => {
+  spoken.length = 0
+
+  const callbacks = []
+  const first = speech.speakJapaneseSequence(["一", "二"], { onStart: () => callbacks.push("first-start") })
+  const second = speech.speakJapaneseSequence(["三"], { onStart: () => callbacks.push("second-start") })
+
+  first.onstart()
+  assert.deepEqual(callbacks, [], "a replaced sequence must not report a late start")
+
+  second.onstart()
+  assert.deepEqual(callbacks, ["second-start"])
+})
+
+test("stale button cleanup cannot cancel newer speech playback", () => {
+  spoken.length = 0
+
+  const first = speech.speakJapanese("一")
+  const second = speech.speakJapanese("二")
+  const cancelCountBeforeStaleCleanup = synth.cancelCount
+
+  speech.cancelJapaneseSpeech(first)
+  assert.equal(synth.cancelCount, cancelCountBeforeStaleCleanup)
+  assert.equal(spoken.length, 2)
+
+  speech.cancelJapaneseSpeech(second)
+  assert.equal(synth.cancelCount, cancelCountBeforeStaleCleanup + 1)
 })

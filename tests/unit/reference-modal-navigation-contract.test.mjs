@@ -184,6 +184,9 @@ test("semantics and pragmatics reference pages keep static lists in server compo
   }
 
   const semanticsModal = read("src/components/reference/semantics-focus-modal.tsx")
+  const semanticsPage = read("src/components/reference/semantics-reference-page.tsx")
+  assert.match(semanticsPage, /ArrowRightLeft className="h-5 w-5 shrink-0 text-muted-foreground"/)
+  assert.match(semanticsModal, /ArrowRightLeft className="h-6 w-6 shrink-0 text-muted-foreground\/55/)
   assert.match(semanticsModal, /语境例句/)
   assert.match(semanticsModal, /提示/)
   assert.doesNotMatch(semanticsModal, /Contextual Examples/)

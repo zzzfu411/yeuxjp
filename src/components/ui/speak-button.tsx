@@ -27,6 +27,9 @@ export function SpeakButton({
   className,
 }: SpeakButtonProps) {
   const [speechSupported, setSpeechSupported] = React.useState(true)
+  const playingRef = React.useRef(false)
+  const utteranceRef = React.useRef<SpeechSynthesisUtterance | null>(null)
+  const playbackIdRef = React.useRef(0)
 
   React.useEffect(() => {
     let cancelled = false
@@ -38,7 +41,14 @@ export function SpeakButton({
     }
   }, [])
 
-  React.useEffect(() => () => cancelJapaneseSpeech(), [text])
+  React.useEffect(() => () => {
+    const utterance = utteranceRef.current
+    utteranceRef.current = null
+    playbackIdRef.current += 1
+    if (!playingRef.current || !utterance) return
+    playingRef.current = false
+    cancelJapaneseSpeech(utterance)
+  }, [text])
 
   const disabled = !speechSupported || !text?.trim()
 
@@ -51,7 +61,31 @@ export function SpeakButton({
         "rounded-sm border-transparent bg-transparent text-muted-foreground shadow-none hover:translate-y-0 hover:border-border/50 hover:bg-muted/35 hover:text-accent",
         className
       )}
-      onClick={() => speakJapanese(text, { rate })}
+      onClick={() => {
+        const playbackId = playbackIdRef.current + 1
+        playbackIdRef.current = playbackId
+        playingRef.current = true
+        const utterance = speakJapanese(text, {
+          rate,
+          onEnd: () => {
+            if (playbackIdRef.current !== playbackId) return
+            playingRef.current = false
+            utteranceRef.current = null
+          },
+          onError: () => {
+            if (playbackIdRef.current !== playbackId) return
+            playingRef.current = false
+            utteranceRef.current = null
+          },
+          onCancel: () => {
+            if (playbackIdRef.current !== playbackId) return
+            playingRef.current = false
+            utteranceRef.current = null
+          },
+        })
+        utteranceRef.current = utterance
+        if (!utterance) playingRef.current = false
+      }}
       disabled={disabled}
       aria-label={label ?? "朗读"}
       title={label ?? "朗读"}

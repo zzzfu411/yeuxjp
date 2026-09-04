@@ -35,7 +35,7 @@ export function PragmaticsFocusModal({
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
     >
-      <span className="paper-tape" aria-hidden="true" />
+      <span className="paper-tape top-0" aria-hidden="true" />
       <div className="flex-1 space-y-8 overflow-y-auto px-5 pb-8 pt-10 sm:px-8">
         <div className="space-y-4 border-b border-border/45 pb-7">
           <div className="eyebrow flex items-center gap-2 text-base text-accent">

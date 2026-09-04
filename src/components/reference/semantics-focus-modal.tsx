@@ -34,13 +34,13 @@ export function SemanticsFocusModal({
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
     >
-      <span className="paper-tape" aria-hidden="true" />
+      <span className="paper-tape top-0" aria-hidden="true" />
       <div className="flex-1 space-y-8 overflow-y-auto px-5 pb-8 pt-10 sm:px-8">
         <div className="border-b border-border/50 pb-6 text-center">
           <p className="eyebrow mb-3">意味 · Nuance note</p>
-          <h2 id={titleId} className="flex items-center justify-center gap-3 font-jp text-3xl font-medium sm:text-4xl">
+          <h2 id={titleId} className="flex flex-wrap items-center justify-center gap-3 font-jp text-3xl font-medium sm:text-4xl">
             <span>{point.pair[0]}</span>
-            <ArrowRightLeft className="h-6 w-6 text-muted-foreground/55 sm:h-7 sm:w-7" />
+            <ArrowRightLeft className="h-6 w-6 shrink-0 text-muted-foreground/55 sm:h-7 sm:w-7" />
             <span>{point.pair[1]}</span>
           </h2>
           <div className="font-scribble mt-2 text-lg text-muted-foreground">

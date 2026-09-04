@@ -19,6 +19,9 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
   const [initialCount] = useState(initialQueue.length)
   const [stats, setStats] = useState(createReviewStats)
   const [isInvalidated, setIsInvalidated] = useState(false)
+  // Increment only when the queue advances, so a requeued item gets a fresh
+  // autoplay/cancellation token without replaying while answer feedback is visible.
+  const [presentationVersion, setPresentationVersion] = useState(0)
 
   const currentItem = queue[0] ?? null
   const isComplete = queue.length === 0
@@ -33,6 +36,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
       answerPendingRef.current = false
       setIsInvalidated(true)
       setQueue([])
+      setPresentationVersion((prev) => prev + 1)
       setSelectedAnswer(null)
       setLastAnswerCorrect(null)
     }
@@ -71,14 +75,18 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
   }, [selectedAnswer])
 
   const advance = useCallback(() => {
+    // Consume the answer token synchronously so rapid activations cannot process two queue items.
+    if (!answerPendingRef.current || lastAnswerCorrect === null) return
+    answerPendingRef.current = false
     setQueue((prev) => advanceReviewQueue(prev, lastAnswerCorrect))
+    setPresentationVersion((prev) => prev + 1)
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
-    answerPendingRef.current = false
   }, [lastAnswerCorrect])
 
   const dropCurrent = useCallback(() => {
     setQueue((prev) => dropCurrentReviewItem(prev))
+    setPresentationVersion((prev) => prev + 1)
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
     answerPendingRef.current = false
@@ -94,6 +102,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     isAnswered,
     isInvalidated,
     completionStats,
+    presentationVersion,
     recordAnswer,
     advance,
     dropCurrent,

@@ -7,6 +7,7 @@ import { loadTsModule } from "./load-ts-module.mjs"
 const root = path.resolve(import.meta.dirname, "..", "..")
 const loader = await loadTsModule("src/data/vocabulary/loader.ts")
 const levels = await loadTsModule("src/data/vocabulary/levels.ts")
+const reviewQuestions = await loadTsModule("src/lib/review-questions.ts")
 
 test("vocabulary loader returns the requested level only", async () => {
   const survival = await loader.loadVocabularyLevel("survival")
@@ -71,4 +72,19 @@ test("vocabulary review pool adds same-level distractors without losing target i
   assert.equal(pool[0].id, "sur-g-1")
   assert.equal(pool.every((item) => item.level === "survival"), true)
   assert.equal(new Set(pool.map((item) => item.id)).size, pool.length)
+})
+
+test("vocabulary review pool expands past duplicate visible answers", async () => {
+  const pool = await loader.loadVocabularyReviewPool(["day-v-62"])
+
+  assert.equal(pool[0].id, "day-v-62")
+  assert.ok(pool.length > 4, "duplicate meanings should trigger another same-level distractor")
+  assert.ok(
+    reviewQuestions.makeVocabReviewQuestion(pool[0], pool, () => 0, "meaning"),
+    "meaning review should have enough unique visible options"
+  )
+  assert.ok(
+    reviewQuestions.makeVocabReviewQuestion(pool[0], pool, () => 0, "listening"),
+    "listening review should have enough unique visible options"
+  )
 })

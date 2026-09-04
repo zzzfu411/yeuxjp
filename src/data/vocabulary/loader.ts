@@ -1,6 +1,7 @@
 import type { VocabLevel, Vocabulary } from "./types"
 import { VOCABULARY_LEVEL_IDS } from "./levels"
 import { getVocabLevelForId } from "./stats"
+import { normalizeAnswer } from "@/lib/questions"
 
 const vocabularyLevelLoaders: Record<VocabLevel, () => Promise<Vocabulary[]>> = {
   survival: () => import("./survival").then((module) => module.survivalVocab),
@@ -53,9 +54,27 @@ export async function loadVocabularyForIds(ids: readonly string[]): Promise<Voca
   return entries
 }
 
+function getReviewJapaneseDisplay(item: Pick<Vocabulary, "kanji" | "kana">) {
+  return item.kanji ? `${item.kanji}（${item.kana}）` : item.kana
+}
+
+function hasEnoughDistinctReviewValues(pool: readonly Vocabulary[], minSize: number) {
+  if (minSize <= 0) return true
+
+  const meanings = new Set<string>()
+  const japanese = new Set<string>()
+  for (const item of pool) {
+    meanings.add(normalizeAnswer(item.meaning))
+    japanese.add(normalizeAnswer(getReviewJapaneseDisplay(item)))
+    if (meanings.size >= minSize && japanese.size >= minSize) return true
+  }
+
+  return false
+}
+
 export async function loadVocabularyReviewPool(ids: readonly string[], minSize: number = 4): Promise<Vocabulary[]> {
   const targets = await loadVocabularyForIds(ids)
-  if (!targets.length || targets.length >= minSize) return targets
+  if (!targets.length || hasEnoughDistinctReviewValues(targets, minSize)) return targets
 
   const levels = Array.from(new Set(targets.map((item) => item.level)))
   const chunks = await Promise.all(levels.map(loadVocabularyLevel))
@@ -63,7 +82,7 @@ export async function loadVocabularyReviewPool(ids: readonly string[], minSize: 
   const pool = [...targets]
 
   for (const item of chunks.flat()) {
-    if (pool.length >= minSize) break
+    if (hasEnoughDistinctReviewValues(pool, minSize)) break
     if (seen.has(item.id)) continue
     seen.add(item.id)
     pool.push(item)
