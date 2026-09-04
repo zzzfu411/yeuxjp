@@ -35,14 +35,14 @@ export function PathStarterLessons({
 
   if (!profileLoaded) {
     return (
-      <div className="py-8">
+      <div className="min-w-0 py-8">
         <div className="text-sm text-muted-foreground">正在读取课表...</div>
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="eyebrow">

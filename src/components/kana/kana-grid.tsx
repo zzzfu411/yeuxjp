@@ -155,6 +155,7 @@ export function KanaGrid({
     const utterance = speakJapanese(currentChar ?? selectedKana.hiragana, {
       onEnd: () => setIsPlaying(false),
       onError: () => setIsPlaying(false),
+      onCancel: () => setIsPlaying(false),
     })
     if (!utterance) setIsPlaying(false)
   }

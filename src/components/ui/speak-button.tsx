@@ -77,6 +77,11 @@ export function SpeakButton({
             playingRef.current = false
             utteranceRef.current = null
           },
+          onCancel: () => {
+            if (playbackIdRef.current !== playbackId) return
+            playingRef.current = false
+            utteranceRef.current = null
+          },
         })
         utteranceRef.current = utterance
         if (!utterance) playingRef.current = false
