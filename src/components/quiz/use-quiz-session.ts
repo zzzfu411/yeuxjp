@@ -46,7 +46,6 @@ export function useQuizSession(mode: QuizMode) {
   )
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const currentQuestionRef = useRef<Question | null>(null)
-  currentQuestionRef.current = currentQuestion
   const [emptyReason, setEmptyReason] = useState<QuizEmptyReason>("loading")
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [saveError, setSaveError] = useState(false)
@@ -99,6 +98,7 @@ export function useQuizSession(mode: QuizMode) {
       })) {
         return
       }
+      currentQuestionRef.current = null
       setCurrentQuestion(null)
       selectedOptionRef.current = null
       setSelectedOption(null)
@@ -124,6 +124,7 @@ export function useQuizSession(mode: QuizMode) {
 
     if (q) {
       lastQuestionKeyRef.current = getQuizQuestionKey(q)
+      currentQuestionRef.current = q
       setCurrentQuestion(q)
       selectedOptionRef.current = null
       setSelectedOption(null)
@@ -133,6 +134,7 @@ export function useQuizSession(mode: QuizMode) {
       return
     }
 
+    currentQuestionRef.current = null
     setCurrentQuestion(null)
     selectedOptionRef.current = null
     setSelectedOption(null)
