@@ -17,6 +17,16 @@ export function getQuizPreflightEmptyReason({
   return null
 }
 
+export function shouldKeepCurrentQuizQuestionDuringPreflight({
+  hasCurrentQuestion,
+  preflightReason,
+}: {
+  hasCurrentQuestion: boolean
+  preflightReason: QuizEmptyReason | null
+}) {
+  return hasCurrentQuestion && preflightReason === "loading"
+}
+
 export function getQuizNoQuestionReason({
   mode,
   onlyUnmasteredKana,

@@ -186,6 +186,8 @@ export function TodayReviewSession({
       <ReviewAnswerFeedback
         question={data.question}
         selectedAnswer={selected}
+        correct={review.lastAnswerCorrect}
+        showSelectedAnswer
         showSpecialFeedback={shouldShowReviewSpecialFeedback(data.question.type)}
       />
 

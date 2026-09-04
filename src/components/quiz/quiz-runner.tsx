@@ -30,6 +30,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     onlyUnlearnedVocab,
     setOnlyUnlearnedVocab,
     retryVocabulary,
+    vocabLoading,
     generateQuestion,
     handleSelect,
     playAudio,
@@ -71,6 +72,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         onOnlyUnmasteredKanaChange={setOnlyUnmasteredKana}
         vocabScope={vocabScope}
         onVocabScopeChange={setVocabScope}
+        vocabScopeDisabled={vocabLoading}
         onlyUnlearnedVocab={onlyUnlearnedVocab}
         onOnlyUnlearnedVocabChange={setOnlyUnlearnedVocab}
       />
