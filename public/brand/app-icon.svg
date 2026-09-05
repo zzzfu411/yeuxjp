@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 512 512" role="img" aria-label="Yasashi Japanese app icon">
+  <title>Yasashi Japanese app icon</title>
+  <rect width="512" height="512" fill="#162035"/>
+  <circle cx="402" cy="112" r="118" fill="none" stroke="#3a7af5" stroke-width="34" opacity=".42"/>
+  <path d="M-38 392 498 220l52 163L14 555z" fill="#f05c8a" opacity=".22"/>
+  <path d="M120 104h272l52 52v272H120z" fill="#3a7af5"/>
+  <path d="M76 68h272l52 52v272H76z" fill="#fff" stroke="#162035" stroke-width="16"/>
+  <path d="M84 76h132v24H84z" fill="#f05c8a"/>
+  <path d="M348 68v52h52" fill="#f7c948" stroke="#162035" stroke-width="12" stroke-linejoin="round"/>
+  <text x="238" y="310" fill="#162035" font-family="Yu Gothic, Hiragino Kaku Gothic ProN, Microsoft YaHei UI, sans-serif" font-size="190" font-weight="800" text-anchor="middle">優</text>
+  <path d="M146 342h184" stroke="#f05c8a" stroke-width="18"/>
+  <path d="M146 365h116" stroke="#3a7af5" stroke-width="12"/>
+  <path d="M273 365h57" stroke="#f7c948" stroke-width="12"/>
+</svg>

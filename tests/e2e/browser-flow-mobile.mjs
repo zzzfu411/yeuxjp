@@ -16,28 +16,21 @@ async function assertNoHorizontalOverflow(page, label) {
 }
 
 async function assertActiveNavLinkVisible(page, label) {
-  const state = await page.evaluate(() => {
-    const nav = document.querySelector("nav")
-    const activeLink = nav?.querySelector('a[aria-current="page"]')
-    if (!nav || !activeLink) return null
-
-    const navRect = nav.getBoundingClientRect()
-    const linkRect = activeLink.getBoundingClientRect()
-    return {
-      text: activeLink.textContent?.trim() ?? "",
-      visible: linkRect.left >= navRect.left - 1 && linkRect.right <= navRect.right + 1,
-    }
-  })
-
-  assert.ok(state, `${label} should expose an active navigation link`)
-  assert.ok(state.visible, `${label} active navigation link should be visible: ${state.text}`)
+  // On detail routes the open modal intentionally isolates the background.
+  if (await page.getByRole("dialog").count()) return
+  await page.getByRole("button", { name: "打开导航菜单" }).click()
+  const navigation = page.getByRole("navigation", { name: "移动导航" })
+  await navigation.locator('a[aria-current="page"]').waitFor({ state: "visible" })
+  assert.ok(await navigation.locator('a[aria-current="page"]').isVisible(), label + " should show the current page in the menu")
+  await page.keyboard.press("Escape")
+  await page.getByRole("dialog").waitFor({ state: "hidden" })
 }
 
 async function assertCoverCopyBelowNavbar(page, label) {
   const state = await page.evaluate(() => {
     const header = document.querySelector(".paper-nav")
-    const eyebrow = document.querySelector(".paper-cover .eyebrow")
-    const title = document.querySelector(".paper-cover h1")
+    const eyebrow = document.querySelector(".vn-scene-intro")
+    const title = document.querySelector("#home-cover-title")
     if (!header || !eyebrow || !title) return null
 
     const headerBottom = header.getBoundingClientRect().bottom
@@ -56,26 +49,13 @@ async function assertCoverCopyBelowNavbar(page, label) {
 }
 
 async function assertVocabularyToolbarPinned(page, label) {
-  await page.waitForFunction(() => document.documentElement.scrollHeight > window.innerHeight + 1200)
+  await page.locator(".vocab-flashcard").first().waitFor({ state: "visible" })
+  const cards = await page.locator(".vocab-flashcard").count()
+  assert.ok(cards > 0 && cards <= 24, label + " should mount at most one page of vocabulary")
+  assert.ok(await page.locator("*").count() < 3500, label + " DOM should remain bounded")
   await page.evaluate(() => window.scrollTo({ top: 900, behavior: "instant" }))
-  await page.waitForFunction(() => window.scrollY >= 899)
-
-  const state = await page.evaluate(() => {
-    const header = document.querySelector(".paper-nav")
-    const toolbar = document.querySelector('section[aria-label="词汇筛选"]')
-    if (!header || !toolbar) return null
-
-    return {
-      headerBottom: header.getBoundingClientRect().bottom,
-      toolbarTop: toolbar.getBoundingClientRect().top,
-    }
-  })
-
-  assert.ok(state, `${label} should render a vocabulary toolbar and navbar`)
-  assert.ok(
-    state.toolbarTop >= state.headerBottom - 1 && state.toolbarTop <= state.headerBottom + 12,
-    `${label} vocabulary toolbar should stay pinned below the navbar: toolbar=${state.toolbarTop}, navbar=${state.headerBottom}`
-  )
+  const toolbar = page.locator('section[aria-label="词汇筛选"]')
+  assert.equal(await toolbar.evaluate(el => getComputedStyle(el).position), "static", "Mobile filters should scroll away so the cards keep the screen")
 }
 
 export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null) {
@@ -92,11 +72,13 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
     await mobilePage.goto(baseUrl, { waitUntil: "networkidle" })
     await mobilePage.getByTestId("home-start-learning").waitFor({ state: "visible" })
 
-    await mobilePage.getByTestId("nav-start-learning").click()
+    assert.equal(await mobilePage.getByTestId("nav-start-learning").isVisible(), false)
+    await mobilePage.getByRole("button", { name: "打开导航菜单" }).click()
+    await mobilePage.getByRole("navigation", { name: "移动导航" }).getByRole("link", { name: "学习路径" }).click()
     await mobilePage.waitForURL(/\/path$/)
     await mobilePage.getByTestId("path-next-learning").waitFor({ state: "visible" })
-    assert.ok(await mobilePage.getByText("课表", { exact: true }).isVisible(), "mobile path should show course progress")
-    assert.ok(await mobilePage.getByText("生存词", { exact: true }).isVisible(), "mobile path should show survival vocabulary progress")
+    assert.ok(await mobilePage.getByText("已完成课程", { exact: true }).isVisible(), "mobile path should show course progress")
+    assert.ok(await mobilePage.getByText("入门词汇", { exact: true }).isVisible(), "mobile path should show starter vocabulary progress")
     await assertNoHorizontalOverflow(mobilePage, "mobile path route after header CTA")
 
     await mobilePage.getByTestId("speech-controls-open").click()
@@ -105,16 +87,13 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
       const dialog = document.querySelector('[role="dialog"][aria-modal="true"]')
       const overlay = dialog?.parentElement
       const nav = document.querySelector(".paper-nav")
-      const grain = document.querySelector(".paper-grain")
-      const vignette = document.querySelector(".paper-vignette")
       const labelledBy = dialog?.getAttribute("aria-labelledby")
       return {
         name: labelledBy ? document.getElementById(labelledBy)?.textContent?.trim() ?? "" : "",
         dialogInNav: Boolean(nav && dialog && nav.contains(dialog)),
         overlayParentIsBody: overlay?.parentElement === document.body,
         overlayZ: overlay ? Number(getComputedStyle(overlay).zIndex) : NaN,
-        grainZ: grain ? Number(getComputedStyle(grain).zIndex) : NaN,
-        vignetteZ: vignette ? Number(getComputedStyle(vignette).zIndex) : NaN,
+        navZ: nav ? Number(getComputedStyle(nav).zIndex) : NaN,
       }
     })
     const speechDialogName = speechDialogStacking.name
@@ -122,9 +101,8 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
     assert.equal(speechDialogStacking.dialogInNav, false, "speech settings dialog should escape the navbar stacking context")
     assert.equal(speechDialogStacking.overlayParentIsBody, true, "speech settings overlay should portal to document.body")
     assert.ok(
-      speechDialogStacking.overlayZ > speechDialogStacking.grainZ &&
-        speechDialogStacking.overlayZ > speechDialogStacking.vignetteZ,
-      `speech settings overlay should stack above paper grain/vignette: overlay=${speechDialogStacking.overlayZ}, grain=${speechDialogStacking.grainZ}, vignette=${speechDialogStacking.vignetteZ}`
+      speechDialogStacking.overlayZ > speechDialogStacking.navZ,
+      `speech settings overlay should stack above navigation: overlay=${speechDialogStacking.overlayZ}, nav=${speechDialogStacking.navZ}`
     )
     await mobilePage.getByTestId("speech-repeat-2").click()
     await mobilePage.waitForFunction((key) => {
@@ -204,11 +182,11 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
     await mobilePage.setViewportSize({ width: 280, height: 500 })
     await mobilePage.goto(`${baseUrl}/path`, { waitUntil: "networkidle" })
     await mobilePage.getByTestId("path-next-learning").waitFor({ state: "visible" })
-    await mobilePage.getByRole("heading", { name: "一页一课，循序展卷" }).waitFor({ state: "visible" })
+    await mobilePage.getByRole("heading", { name: "每天一课，循序学习" }).waitFor({ state: "visible" })
     await assertNoHorizontalOverflow(mobilePage, "narrow path route")
     await mobilePage.goto(`${baseUrl}/semantics`, { waitUntil: "networkidle" })
     await mobilePage.getByRole("heading", { name: /语义辨析/ }).waitFor({ state: "visible" })
-    await mobilePage.locator(".paper-slip").first().waitFor({ state: "visible" })
+    await mobilePage.locator('a[href="/semantics/s-shiru-wakaru"]').waitFor({ state: "visible" })
     await assertNoHorizontalOverflow(mobilePage, "narrow semantics route")
 
     await mobilePage.setViewportSize({ width: 280, height: 300 })
@@ -232,14 +210,10 @@ export async function verifyMobileSmoke(browser, baseUrl, issueCollector = null)
 
     const narrowVocabularyCategory = mobilePage.getByRole("button", { name: "食物 (Food)", exact: true })
     await narrowVocabularyCategory.click()
-    await mobilePage.waitForFunction(() => {
-      const section = document.getElementById("cat-food")
-      const header = document.querySelector(".paper-nav")
-      if (!section || !header) return false
-      const sectionTop = section.getBoundingClientRect().top
-      const headerBottom = header.getBoundingClientRect().bottom
-      return sectionTop >= headerBottom - 1 && sectionTop <= headerBottom + 32
-    })
+    await mobilePage.locator("#cat-food").waitFor({ state: "visible" })
+    assert.ok(await mobilePage.locator(".vocab-flashcard").count() <= 24)
+    assert.ok(mobilePage.url().includes("category=food"), "category selection should survive reload")
+
   } finally {
     await mobileContext.close()
   }

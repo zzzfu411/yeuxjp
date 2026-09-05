@@ -43,14 +43,14 @@ export function GrammarFocusModal({
                 <BookOpen className="h-4 w-4" aria-hidden="true" />
                 {point.level} 语法 No.{selectedPosition}
               </div>
-              <h2 id={titleId} className="inkline font-jp text-4xl font-medium">{point.title}</h2>
+              <h2 id={titleId} className="inkline font-jp text-4xl font-medium" lang="ja">{point.title}</h2>
               <p id={descriptionId} className="mx-auto max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">{point.explanation}</p>
             </div>
 
             <div className="space-y-8">
               <div className="ledger-row border-y border-border/50 px-4 py-6 text-center">
                 <div className="eyebrow mb-3">结构 · Pattern</div>
-                <code className="font-jp block text-3xl font-medium text-foreground">{point.structure}</code>
+                <code className="font-jp block text-3xl font-medium text-foreground" lang="ja">{point.structure}</code>
               </div>
 
               {point.plainExplanation && (
@@ -83,7 +83,7 @@ export function GrammarFocusModal({
                   {point.examples.map((ex, i) => (
                     <div key={i} className="ledger-row space-y-2 border-b border-border/45 px-2 py-6">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="font-jp text-2xl font-medium text-foreground">{ex.japanese}</div>
+                        <div className="font-jp text-2xl font-medium text-foreground" lang="ja">{ex.japanese}</div>
                         <SpeakButton text={ex.japanese} label="朗读例句" className="shrink-0" />
                       </div>
                       <div className="font-scribble text-base text-muted-foreground">{ex.romaji}</div>

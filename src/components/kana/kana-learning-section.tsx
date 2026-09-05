@@ -40,7 +40,7 @@ export function KanaLearningSection({
   descriptionClassName,
 }: KanaLearningSectionProps) {
   return (
-    <section className={cn("flex w-full flex-col items-center space-y-7", className)}>
+    <section className={cn("flex w-full flex-col items-center space-y-4", className)}>
       {banner && <KanaBanner banner={banner} />}
 
       {(title || description) && (

@@ -1,5 +1,7 @@
 "use client"
 
+import { runLearningWrite } from "@/lib/learning-write-lock"
+
 import * as React from "react"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { Button } from "@/components/ui/button"
@@ -20,8 +22,8 @@ export type SpeechPreferences = SpeechUserPreferences
 
 type SpeechPreferencesContextValue = {
   prefs: SpeechPreferences
-  update: (patch: Partial<SpeechPreferences>) => boolean
-  reset: () => boolean
+  update: (patch: Partial<SpeechPreferences>) => Promise<boolean>
+  reset: () => Promise<boolean>
 }
 
 const SpeechPreferencesContext = React.createContext<SpeechPreferencesContextValue | null>(null)
@@ -82,16 +84,18 @@ export function SpeechPreferencesProvider({
   }, [storageKey])
 
   const update = React.useCallback(
-    (patch: Partial<SpeechPreferences>) => {
-      const result = updateSpeechPreferencesWithStatus(patch, storageKey)
+    async (patch: Partial<SpeechPreferences>) => {
+      const result = await runLearningWrite(() => updateSpeechPreferencesWithStatus(patch, storageKey))
+      if (!result) return false
       setPrefs(result.prefs)
       return result.saved
     },
     [storageKey]
   )
 
-  const reset = React.useCallback(() => {
-    const result = resetSpeechPreferencesWithStatus(storageKey)
+  const reset = React.useCallback(async () => {
+    const result = await runLearningWrite(() => resetSpeechPreferencesWithStatus(storageKey))
+    if (!result) return false
     setPrefs(result.prefs)
     return result.saved
   }, [storageKey])
@@ -104,9 +108,11 @@ export function SpeechPreferencesProvider({
 export function SpeechSettingsBar({
   className,
   showQuizOptions = false,
+  collapsible = false,
 }: {
   className?: string
   showQuizOptions?: boolean
+  collapsible?: boolean
 }) {
   const ctx = useSpeechPreferences()
   const [saveError, setSaveError] = React.useState(false)
@@ -114,16 +120,16 @@ export function SpeechSettingsBar({
   const reset = ctx?.reset
 
   const savePatch = React.useCallback(
-    (patch: Partial<SpeechPreferences>) => {
+    async (patch: Partial<SpeechPreferences>) => {
       if (!update) return
-      setSaveError(!update(patch))
+      setSaveError(!await update(patch))
     },
     [update]
   )
 
-  const resetPrefs = React.useCallback(() => {
+  const resetPrefs = React.useCallback(async () => {
     if (!reset) return
-    setSaveError(!reset())
+    setSaveError(!await reset())
   }, [reset])
 
   if (!ctx) return null
@@ -135,7 +141,7 @@ export function SpeechSettingsBar({
     { label: "正常", value: 1.0 },
   ]
 
-  return (
+  const body = (
     <div className={cn("paper-sheet w-full space-y-4 p-4 sm:p-5", className)}>
       <div className="flex items-center justify-between gap-3">
         <div>
@@ -226,4 +232,8 @@ export function SpeechSettingsBar({
       />
     </div>
   )
+  return collapsible ? <details className="my-3 border-y border-border/35 text-sm">
+    <summary className="cursor-pointer px-1 py-3 text-muted-foreground">听力设置 · {prefs.rate.toFixed(2)}x</summary>
+    {body}
+  </details> : body
 }

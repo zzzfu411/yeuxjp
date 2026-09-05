@@ -342,7 +342,7 @@ test("root package remains a dependency-free forwarding entrypoint", () => {
 })
 
 test("app-local check command matches the root quality gate", () => {
-  assert.match(webPackage, /"validate:data": "node scripts\/validate-data\.mjs"/)
+  assert.match(webPackage, /"validate:data": "node scripts\/generate-learning-index\.mjs --check && node scripts\/validate-data\.mjs"/)
   assert.equal(webPackageJson.scripts.build, "node scripts/build.mjs")
   assert.match(webPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
   assert.match(webPackage, /"check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required"/)

@@ -146,7 +146,7 @@ test("path page model soft-locks skills and formats progress badges", () => {
   assert.equal(model.isSkillUnlocked("grammar-n2", kanaStats(), vocabStats(), undefined, { allLessonsDone: true }), true)
   assert.deepEqual(model.getSkillStatus("grammar-n4", kanaStats(), vocabStats(), undefined, { nextTrack: "starter-45" }), {
     status: "locked",
-    badge: "先完成 N5 课表",
+    badge: "先完成 N5 课程",
   })
   assert.deepEqual(model.getSkillStatus("grammar-n5", kanaStats(), vocabStats(), undefined, { nextTrack: "starter-45" }), {
     status: "in-progress",
@@ -158,11 +158,11 @@ test("path page model soft-locks skills and formats progress badges", () => {
   })
   assert.deepEqual(model.getSkillStatus("grammar-n5", kanaStats(), vocabStats(), undefined, { nextTrack: "n4-core" }), {
     status: "done",
-    badge: "课表已过该阶段",
+    badge: "课程已完成该阶段",
   })
   assert.deepEqual(model.getSkillStatus("grammar-n2", kanaStats(), vocabStats(), undefined, { allLessonsDone: true }), {
     status: "done",
-    badge: "课表已过该阶段",
+    badge: "课程已完成该阶段",
   })
   assert.equal(model.isSkillUnlocked("pragmatics", lockedKana, vocabStats()), false)
   assert.equal(model.isSkillUnlocked("pragmatics", kanaStats(), vocabStats()), true)
@@ -196,7 +196,7 @@ test("path page model summarizes five-dimension mastery", () => {
     },
   })
 
-  assert.deepEqual(summary, { avg: 44, attempts: 5, production: 53 })
+  assert.deepEqual(summary, { avg: 49, attempts: 5, production: 53 })
   assert.deepEqual(
     model.getPathMasterySummary({
       broken: {
@@ -224,9 +224,9 @@ test("path page model summarizes five-dimension mastery", () => {
         updatedAt: 2,
       },
     }),
-    { avg: 80, attempts: 2, production: 50 }
+    { avg: 100, attempts: 2, production: 100 }
   )
-  assert.deepEqual(model.getPathMasterySummary({}), { avg: 0, attempts: 0, production: 0 })
+  assert.deepEqual(model.getPathMasterySummary({}), { avg: 0, attempts: 0, production: null })
 })
 
 test("path and next-step surfaces consume the shared recommendation hook", () => {
@@ -254,13 +254,13 @@ test("path and next-step surfaces consume the shared recommendation hook", () =>
   assert.match(pathPage, /from "@\/lib\/path-page-model"/)
   assert.match(pathPage, /getSkillStatus\(skill\.id, kanaStats, vocabStats, SKILL_TREE, course\)/)
   assert.match(pathPage, /getPathMasterySummary\(learning\.items\)/)
-  assert.match(pathPage, /课表/)
-  assert.match(pathPage, /生存词/)
+  assert.match(pathPage, /课程/)
+  assert.match(pathPage, /入门词汇/)
   assert.match(pathPage, /vocabStats\.survival/)
   assert.match(pathPage, /STARTER_LESSONS\.length/)
   assert.match(pathPage, /from "@\/components\/path\/path-starter-lessons"/)
   assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
-  assert.match(pathPage, /aside className="min-w-0/)
+  assert.match(pathPage, /aside className="progress-panel min-w-0/)
   assert.doesNotMatch(pathPage, /STARTER_LESSONS\.slice/)
 })
 

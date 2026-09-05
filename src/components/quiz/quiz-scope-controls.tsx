@@ -84,9 +84,9 @@ export function QuizScopeControls({
       <div className="flex w-full flex-wrap items-center justify-center gap-3 border-y border-dashed border-border/50 py-3">
         <div className="flex flex-wrap gap-1">
           {[
-            ["survival", "生存"],
+            ["survival", "入门"],
             ["daily", "日常"],
-            ["fluent", "流利"],
+            ["fluent", "进阶"],
             ["all", "全部"],
           ].map(([scope, label]) => (
             <button

@@ -3,7 +3,7 @@ import type { Kana } from "@/data/kana-data"
 import { KANA_SCRIPTS, makeKanaId } from "@/lib/kana-id"
 import type { VocabLevelStat } from "@/data/vocabulary/stats"
 import { SKILL_TREE, type SkillId, type SkillNode } from "@/lib/skill-tree"
-import { averageMastery, type ItemProgressMap } from "@/lib/learning-progress-model"
+import { averageMastery, getAssessedModes, type ItemProgressMap } from "@/lib/learning-progress-model"
 
 export type SkillStatus = "locked" | "available" | "in-progress" | "done"
 
@@ -29,7 +29,7 @@ export interface PathVocabStats {
 export interface PathMasterySummary {
   avg: number
   attempts: number
-  production: number
+  production: number | null
 }
 
 export interface SkillStatusResult {
@@ -192,9 +192,9 @@ export function getSkillStatus(
   course?: CourseRecommendationHint
 ): SkillStatusResult {
   if (!isSkillUnlocked(skillId, kanaStats, vocabStats, skillTree, course)) {
-    if (skillId === "grammar-n4") return { status: "locked", badge: "先完成 N5 课表" }
-    if (skillId === "grammar-n3") return { status: "locked", badge: "先完成 N4 课表" }
-    if (skillId === "grammar-n2") return { status: "locked", badge: "先完成 N3 课表" }
+    if (skillId === "grammar-n4") return { status: "locked", badge: "先完成 N5 课程" }
+    if (skillId === "grammar-n3") return { status: "locked", badge: "先完成 N4 课程" }
+    if (skillId === "grammar-n2") return { status: "locked", badge: "先完成 N3 课程" }
     return { status: "locked", badge: "建议稍后" }
   }
 
@@ -224,18 +224,20 @@ export function getGrammarSkillProgress(skillId: SkillId, course?: CourseRecomme
   if (!track) return null
   const need = COURSE_TRACK_RANK[track] ?? 0
   const now = course?.allLessonsDone ? 4 : COURSE_TRACK_RANK[course?.nextTrack ?? "starter-45"] ?? 0
-  if (now > need) return { status: "done", badge: "课表已过该阶段" }
+  if (now > need) return { status: "done", badge: "课程已完成该阶段" }
   if (now === need) return { status: "in-progress", badge: "当前阶段" }
   return { status: "available", badge: "可练习" }
 }
 
 export function getPathMasterySummary(items: ItemProgressMap): PathMasterySummary {
   const values = Object.values(items)
-  if (!values.length) return { avg: 0, attempts: 0, production: 0 }
+  const measured = values.filter(item => getAssessedModes(item).length > 0)
+  const output = values.filter(item => getAssessedModes(item).includes("production"))
+  if (!values.length) return { avg: 0, attempts: 0, production: null }
 
   return {
-    avg: Math.round(values.reduce((acc, item) => acc + averageMastery(item), 0) / values.length),
+    avg: measured.length ? Math.round(measured.reduce((acc, item) => acc + averageMastery(item), 0) / measured.length) : 0,
     attempts: values.reduce((acc, item) => acc + safeCount(item.attempts), 0),
-    production: Math.round(values.reduce((acc, item) => acc + safeScore(item.production), 0) / values.length),
+    production: output.length ? Math.round(output.reduce((acc, item) => acc + safeScore(item.production), 0) / output.length) : null,
   }
 }

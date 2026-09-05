@@ -11,13 +11,13 @@ export function ModeToggle() {
     <button
       type="button"
       aria-label="Toggle theme"
-      title={resolvedTheme === "dark" ? "切换到原纸" : "切换到夜墨"}
-      className="relative inline-flex h-10 w-10 items-center justify-center border border-transparent bg-transparent text-foreground transition-colors hover:border-border/60 hover:bg-primary/10"
+      title="切换明亮 / 深色主题"
+      className="nav-icon-toggle relative inline-flex h-10 w-10 items-center justify-center text-foreground transition-colors"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >
       <Sun className="h-4 w-4 rotate-0 scale-100 dark:-rotate-90 dark:scale-0" />
       <Moon className="absolute h-4 w-4 rotate-90 scale-0 dark:rotate-0 dark:scale-100" />
-      <span className="sr-only">原纸 / 夜墨</span>
+      <span className="sr-only">明亮主题 / 深色主题</span>
     </button>
   )
 }

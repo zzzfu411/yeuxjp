@@ -13,6 +13,7 @@ import {
 
 export function useReviewSessionState<T>(initialQueue: T[]) {
   const answerPendingRef = useRef(false)
+  const invalidatedRef = useRef(false)
   const [queue, setQueue] = useState<T[]>(() => initialQueue)
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null)
@@ -33,6 +34,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
 
   useEffect(() => {
     const invalidate = () => {
+      invalidatedRef.current = true
       answerPendingRef.current = false
       setIsInvalidated(true)
       setQueue([])
@@ -60,7 +62,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
   }, [])
 
   const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean) => {
-    if (selectedAnswer != null || answerPendingRef.current) return false
+    if (invalidatedRef.current || selectedAnswer != null || answerPendingRef.current) return false
     answerPendingRef.current = true
 
     if (beforeCommit && !beforeCommit()) {

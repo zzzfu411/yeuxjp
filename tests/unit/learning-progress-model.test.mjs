@@ -257,6 +257,7 @@ test("practice result normalization rejects unknown modes and item types", () =>
 
   const updated = model.updateItemProgressForPractice({}, normalized[0])
   assert.deepEqual(Object.keys(updated.ok).sort(), [
+    "assessedModes",
     "attempts",
     "correct",
     "itemId",
@@ -392,6 +393,7 @@ test("practice recording helpers append history and update item mastery from sto
   )
 
   assert.deepEqual(nextItems["hiragana:ka"], {
+    assessedModes: ["recognition", "listening"],
     itemId: "hiragana:ka",
     itemType: "kana",
     recognition: 10,
@@ -451,7 +453,7 @@ test("learning progress helpers merge maps, normalize step indexes, and average 
       correct: 1,
       updatedAt: 1,
     }),
-    40
+    50
   )
   assert.equal(
     model.averageMastery({
@@ -466,7 +468,7 @@ test("learning progress helpers merge maps, normalize step indexes, and average 
       correct: 1,
       updatedAt: 1,
     }),
-    12
+    30
   )
 })
 
@@ -517,7 +519,7 @@ test("learning progress model builds study dates and calculates current streak",
 
   assert.deepEqual(Array.from(dates).sort(), ["2026-06-08", "2026-06-10", "2026-06-11", "2026-06-12"])
   assert.equal(model.calculateStudyStreak(dates, new Date(today)), 3)
-  assert.equal(model.calculateStudyStreak(new Set(["2026-06-11"]), new Date(today)), 0)
+  assert.equal(model.calculateStudyStreak(new Set(["2026-06-11"]), new Date(today)), 1)
 })
 
 test("learning progress study date helpers ignore invalid dates without losing epoch dates", () => {

@@ -8,6 +8,9 @@ import {
   skipOptionalPlaywrightRuntimeError,
   startProductionServer,
 } from "./harness.mjs"
+import { verifyMaturityUi } from "../../scripts/verify-maturity-ui.mjs"
+import { verifyLearningConcurrency } from "../../scripts/verify-learning-concurrency.mjs"
+import { verifyAccessibility } from "../../scripts/verify-accessibility.mjs"
 import {
   verifyConfirmDialogKeyboardFlow,
   verifyDueReviewFlow,
@@ -15,6 +18,7 @@ import {
   verifyKanaAndVocabularyFlow,
   verifyLearningDataFlow,
   verifyLessonFlow,
+  verifyLessonIntegrity,
   verifyMobileSmoke,
   verifyPwaUpdateBannerFlow,
   verifyProfileSaveFailureFlow,
@@ -68,7 +72,10 @@ try {
   const page = await context.newPage()
   issueCollector.attachPage(page)
 
+  await verifyLearningConcurrency(browser, baseUrl)
+
   await verifyLessonFlow(page, baseUrl)
+  await verifyLessonIntegrity(page, baseUrl)
   await verifyInitialReviewEmptyState(page, baseUrl)
   await verifyConfirmDialogKeyboardFlow(page, baseUrl)
   await verifyVocabularyLoadRetryFlow(page, baseUrl)
@@ -83,6 +90,8 @@ try {
   await verifyLearningDataFlow(page, baseUrl)
   await verifyPwaUpdateBannerFlow(page, baseUrl)
   await verifyMobileSmoke(browser, baseUrl, issueCollector)
+  await verifyMaturityUi(baseUrl)
+  await verifyAccessibility(browser, baseUrl)
   issueCollector.assertNoIssues()
 
   console.log(`Browser E2E checks passed at ${baseUrl}`)

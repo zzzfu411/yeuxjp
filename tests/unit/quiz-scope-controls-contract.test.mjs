@@ -48,6 +48,6 @@ test("QuizScopeControls owns kana and vocabulary scope presentation", () => {
   assert.match(source, /onOnlyUnmasteredKanaChange\(!onlyUnmasteredKana\)/)
   assert.match(source, /onVocabScopeChange\(scope as VocabQuizScope\)/)
   assert.match(source, /onOnlyUnlearnedVocabChange\(!onlyUnlearnedVocab\)/)
-  assert.match(source, /生存/)
-  assert.match(source, /流利/)
+  assert.match(source, /入门/)
+  assert.match(source, /进阶/)
 })

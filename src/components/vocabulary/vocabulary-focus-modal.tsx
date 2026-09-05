@@ -44,13 +44,6 @@ export function VocabularyFocusModal({
 }) {
   const titleId = "vocabulary-focus-modal-title"
   const descriptionId = "vocabulary-focus-modal-description"
-  const handleCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget) return
-    if (event.key !== " " && event.key !== "Enter") return
-
-    event.preventDefault()
-    onFlip()
-  }
 
   return (
     <Modal
@@ -70,25 +63,20 @@ export function VocabularyFocusModal({
             {vocab.meaning}
           </p>
           <div
-            role="button"
-            tabIndex={0}
-            className="group relative min-h-0 flex-1 cursor-pointer overflow-y-auto overscroll-contain bg-transparent text-inherit outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-            onClick={onFlip}
-            onKeyDown={handleCardKeyDown}
-            aria-pressed={flipped}
-            data-testid="vocabulary-focus-card"
+            className="group relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-transparent text-inherit outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
+            <Button variant="outline" className="mx-6 mt-10" onClick={onFlip} aria-pressed={flipped} data-testid="vocabulary-focus-card">{flipped ? "返回词面" : "翻面查看释义"}</Button>
             <div className="flex min-h-full flex-col items-center justify-center p-6 text-center sm:p-9">
               {!flipped ? (
                 <div className="animate-in fade-in zoom-in space-y-7 duration-200">
                   <div className="space-y-2">
                     <p className="eyebrow">ことば · Word</p>
-                    <h2 className="font-jp text-6xl font-medium text-foreground sm:text-7xl">{vocab.kanji || vocab.kana}</h2>
-                    {vocab.kanji && <p className="text-2xl text-muted-foreground/80">{vocab.kana}</p>}
+                    <h2 className="font-jp text-6xl font-medium text-foreground sm:text-7xl" lang="ja">{vocab.kanji || vocab.kana}</h2>
+                    {vocab.kanji && <p className="text-2xl text-muted-foreground/80" lang="ja">{vocab.kana}</p>}
                   </div>
-                  <div className="flex justify-center opacity-60 transition-opacity group-hover:opacity-100">
+                  <div className="flex justify-center">
                     <div className="font-scribble flex items-center gap-2 border-b border-dashed border-border/70 px-1 pb-1 text-sm text-muted-foreground">
-                      <RotateCw className="h-3 w-3" /> 点击或按空格翻面
+                      <RotateCw className="h-3 w-3" /> 用上方按钮查看释义
                     </div>
                   </div>
                 </div>
@@ -102,7 +90,7 @@ export function VocabularyFocusModal({
                   </div>
                   {vocab.exampleSentences?.[0] && (
                     <div className="ledger-row space-y-1 border-y border-border/45 px-4 py-3 text-left">
-                      <p className="text-base leading-relaxed text-foreground">{vocab.exampleSentences[0].japanese}</p>
+                      <p className="text-base leading-relaxed text-foreground" lang="ja">{vocab.exampleSentences[0].japanese}</p>
                       {showRomaji && vocab.exampleSentences[0].romaji && (
                         <p className="font-scribble text-sm text-muted-foreground">{vocab.exampleSentences[0].romaji}</p>
                       )}

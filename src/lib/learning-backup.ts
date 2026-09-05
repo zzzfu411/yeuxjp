@@ -13,9 +13,10 @@ import { normalizeProgressList } from "@/lib/progress-list-storage"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 import { normalizeSpeechPreferences } from "@/lib/speech-preferences-model"
 import { normalizeSrsState } from "@/lib/srs-model"
+import { normalizeStudyCalendar } from "@/lib/study-calendar-model"
 
-export const LEARNING_BACKUP_VERSION = 3
-const LEGACY_LEARNING_BACKUP_VERSIONS = new Set([1, 2])
+export const LEARNING_BACKUP_VERSION = 4
+const LEGACY_LEARNING_BACKUP_VERSIONS = new Set([1, 2, 3])
 export const BACKUP_KEYS = MANAGED_LEARNING_STORAGE_KEYS
 
 export type LearningBackupKey = (typeof BACKUP_KEYS)[number]
@@ -71,6 +72,10 @@ export function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, n
   if (!parsed.ok) return null
 
   switch (key) {
+    case STORAGE_KEYS.STUDY_CALENDAR: {
+      const calendar = normalizeStudyCalendar(parsed.value)
+      return calendar ? JSON.stringify(calendar) : null
+    }
     case STORAGE_KEYS.USER_PROFILE: {
       if (!isPlainObject(parsed.value)) return null
       const profile = normalizeProfile(parsed.value, safeNow)

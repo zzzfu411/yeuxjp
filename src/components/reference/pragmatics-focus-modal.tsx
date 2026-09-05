@@ -6,6 +6,13 @@ import { SpeakButton } from "@/components/ui/speak-button"
 import { UrlControlledReferenceModal } from "@/components/reference/url-controlled-reference-modal"
 import { cn } from "@/lib/utils"
 
+const RESPONSE_TYPE_LABEL = {
+  Good: "合适",
+  Bad: "不推荐",
+  Native: "自然表达",
+  Anime: "作品用语",
+} as const
+
 interface PragmaticsFocusModalProps {
   scenario: PragmaticScenario
   selectedPosition: number
@@ -50,14 +57,14 @@ export function PragmaticsFocusModal({
 
         <div className="border-l-2 border-accent/45 bg-primary/[0.035] px-5 py-4 text-base italic leading-relaxed text-muted-foreground">
           <span className="eyebrow mb-2 block text-sm not-italic text-foreground">
-            文化背景 · cultural note
+            使用背景 · context
           </span>
           {scenario.culturalNote}
         </div>
 
         <div className="space-y-5">
           <h3 className="eyebrow border-b border-border/45 pb-2 text-base text-foreground">
-            回答分析 · response notes
+            表达说明 · response notes
           </h3>
           <div className="border-t border-border/30">
             {scenario.responses.map((response, index) => {
@@ -81,7 +88,7 @@ export function PragmaticsFocusModal({
                         isNative && "text-foreground"
                       )}
                     >
-                      {response.type}
+                      {RESPONSE_TYPE_LABEL[response.type]}
                     </span>
                     {isBad && <XCircle className="h-5 w-5 text-accent/75" />}
                     {response.type === "Good" && <CheckCircle2 className="h-5 w-5 text-foreground/55" />}
@@ -90,7 +97,7 @@ export function PragmaticsFocusModal({
 
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="font-jp text-2xl font-semibold leading-relaxed text-foreground">
+                      <div className="font-jp text-2xl font-semibold leading-relaxed text-foreground" lang="ja">
                         {response.expression}
                       </div>
                       <SpeakButton text={response.expression} label="朗读表达" className="shrink-0" />

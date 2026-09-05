@@ -68,7 +68,7 @@ test("quiz runner delegates empty question states to QuizEmptyState", () => {
   assert.match(emptyState, /export type \{ QuizEmptyReason \} from "@\/lib\/quiz-runner-model"/)
   assert.match(emptyState, /function getQuizEmptyMessage/)
   assert.match(emptyState, /词汇题库加载失败/)
-  assert.match(emptyState, /当前题库不足以生成 4 个唯一选项/)
+  assert.match(emptyState, /当前范围内的题目太少，无法生成 4 个不同选项/)
   assert.match(emptyState, /data-testid="quiz-empty-state"/)
   assert.match(emptyState, /data-testid="quiz-retry-vocabulary"/)
   assert.match(emptyState, /reason === "load-error"/)

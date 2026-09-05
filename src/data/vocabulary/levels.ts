@@ -13,9 +13,9 @@ export type VocabularyLevelMetadata = {
 export const DEFAULT_VOCABULARY_LEVEL: VocabLevel = "survival"
 
 export const VOCABULARY_LEVEL_METADATA = [
-  { id: "survival", label: "生存级 (N5)", desc: "购物、问路、自我介绍", count: 544, idPrefix: "sur-" },
-  { id: "daily", label: "日常级 (N4-N3)", desc: "生活交流、动漫理解", count: 297, idPrefix: "day-" },
-  { id: "fluent", label: "流利级 (N2-N1)", desc: "商务、新闻、深层文化", count: 225, idPrefix: "flu-" },
+  { id: "survival", label: "入门词汇（N5）", desc: "购物、问路和自我介绍等基础表达", count: 544, idPrefix: "sur-" },
+  { id: "daily", label: "日常词汇（N4–N3）", desc: "生活交流和常见动漫表达", count: 297, idPrefix: "day-" },
+  { id: "fluent", label: "进阶词汇（N2–N1）", desc: "商务、新闻和文化话题", count: 225, idPrefix: "flu-" },
 ] as const satisfies readonly VocabularyLevelMetadata[]
 
 export function isVocabLevel(value: unknown): value is VocabLevel {

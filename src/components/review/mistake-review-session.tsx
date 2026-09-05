@@ -1,5 +1,7 @@
 "use client"
 
+import { runLearningWrite } from "@/lib/learning-write-lock"
+
 import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useReviewAnswerRecorder } from "@/components/review/use-review-answer-recorder"
@@ -89,8 +91,8 @@ export function MistakeReviewSession({
   const question = mistakeToQuestion(item)
   const correct = question.correctAnswer
 
-  const handleSelect = (val: string) => {
-    const recorded = recordAnswerSelection(question, val)
+  const handleSelect = async (val: string) => {
+    const recorded = await recordAnswerSelection(question, val)
     setSaveErrorId(recorded ? null : item.id)
   }
 
@@ -99,8 +101,8 @@ export function MistakeReviewSession({
     review.advance()
   }
 
-  const handleRemove = () => {
-    const removed = notebook.remove(item.id)
+  const handleRemove = async () => {
+    const removed = await runLearningWrite(() => notebook.remove(item.id))
     setSaveErrorId(removed ? null : item.id)
     if (removed) dropCurrent()
   }

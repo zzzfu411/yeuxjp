@@ -1,5 +1,7 @@
 "use client"
 
+import { runLearningWrite } from "@/lib/learning-write-lock"
+
 import * as React from "react"
 import { Download, RotateCcw, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -40,9 +42,9 @@ function backupRestoreDescription(backup: LearningBackup) {
   const entryCount = Object.keys(backup.entries).length
   const time = backupExportTime(backup.exportedAt)
   if (entryCount === 0) {
-    return `备份时间：${time}。该备份不含学习数据；恢复后会清空当前浏览器里的进度、SRS、错题本和朗读偏好。`
+    return `备份时间：${time}。该备份不含学习数据；恢复后会清空当前浏览器里的学习进度、复习安排、错题本和朗读设置。`
   }
-  return `备份时间：${time}，包含 ${entryCount} 类本地数据。恢复后会替换当前浏览器里的进度、SRS、错题本和朗读偏好。`
+  return `备份时间：${time}，包含 ${entryCount} 类本地数据。恢复后会替换当前浏览器里的学习进度、复习安排、错题本和朗读设置。`
 }
 
 export function LearningDataPanel({ className }: { className?: string }) {
@@ -52,9 +54,9 @@ export function LearningDataPanel({ className }: { className?: string }) {
   const [pendingBackup, setPendingBackup] = React.useState<LearningBackup | null>(null)
   const [readingBackup, setReadingBackup] = React.useState(false)
 
-  const exportData = React.useCallback(() => {
+  const exportData = React.useCallback(async () => {
     setResetDialogOpen(false)
-    const backup = tryCreateLearningBackup()
+    const backup = await runLearningWrite(() => tryCreateLearningBackup())
     if (!backup) {
       setNotice({ tone: "error", text: "无法读取本地学习数据，导出失败。" })
       return
@@ -111,10 +113,10 @@ export function LearningDataPanel({ className }: { className?: string }) {
     }
   }, [])
 
-  const restorePendingBackup = React.useCallback(() => {
+  const restorePendingBackup = React.useCallback(async () => {
     if (!pendingBackup) return
 
-    if (!restoreLearningBackup(pendingBackup)) {
+    if (!await runLearningWrite(() => restoreLearningBackup(pendingBackup), { replacesData: true })) {
       setNotice({ tone: "error", text: "导入失败。" })
       setPendingBackup(null)
       return
@@ -124,8 +126,8 @@ export function LearningDataPanel({ className }: { className?: string }) {
     setPendingBackup(null)
   }, [pendingBackup])
 
-  const resetData = React.useCallback(() => {
-    if (resetLearningData()) {
+  const resetData = React.useCallback(async () => {
+    if (await runLearningWrite(() => resetLearningData(), { replacesData: true })) {
       setNotice({ tone: "success", text: "本地学习数据已清空。" })
       setResetDialogOpen(false)
       return
@@ -139,7 +141,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <div className="text-sm font-semibold text-foreground">本地学习数据</div>
-          <div className="text-xs text-muted-foreground">进度、SRS、错题本和朗读偏好只保存在这台设备。</div>
+          <div className="text-xs text-muted-foreground">学习进度、复习安排、错题本和朗读设置只保存在这台设备上。</div>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -222,7 +224,7 @@ export function LearningDataPanel({ className }: { className?: string }) {
       <ConfirmActionDialog
         open={resetDialogOpen}
         title="清空本地学习数据"
-        description="这会删除当前浏览器里的进度、SRS、错题本和朗读偏好。导出的备份文件不会受到影响。"
+        description="这会删除当前浏览器里的学习进度、复习安排、错题本和朗读设置。导出的备份文件不会受到影响。"
         confirmLabel="清空"
         testId="learning-data-reset-dialog"
         onCancel={() => setResetDialogOpen(false)}

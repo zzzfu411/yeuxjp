@@ -16,9 +16,9 @@ const iconByRating = {
 } as const
 
 const selectedClassByRating = {
-  again: "border-accent bg-accent/[0.05] text-accent",
-  hard: "border-accent bg-accent/[0.05] text-accent",
-  good: "border-accent bg-accent/[0.05] text-accent",
+  again: "is-selected",
+  hard: "is-selected",
+  good: "is-selected",
 } as const
 
 export function VocabularySelfAssessmentControls({
@@ -31,7 +31,7 @@ export function VocabularySelfAssessmentControls({
   return (
     <div className="space-y-3 border-t border-border/40 pt-5">
       <div>
-        <span className="eyebrow">记忆 · Recall</span>
+        <span className="eyebrow">记忆反馈</span>
         <span className="ml-2 text-sm text-foreground">这次记得吗？</span>
       </div>
       <div className="grid grid-cols-3 gap-2" role="group" aria-label="本次词汇回忆自评">
@@ -43,8 +43,9 @@ export function VocabularySelfAssessmentControls({
               key={option.id}
               type="button"
               variant="outline"
+              data-rating={option.id}
               className={cn(
-                "ledger-row h-auto min-h-16 flex-col gap-1 whitespace-normal rounded-none border-0 border-b border-border/50 bg-transparent px-2 py-3 font-normal shadow-none hover:translate-x-0 hover:translate-y-0 hover:bg-muted/35 hover:shadow-none disabled:opacity-50",
+                "recall-option h-auto min-h-16 flex-col gap-1 whitespace-normal px-2 py-3 font-normal shadow-none disabled:opacity-50",
                 selected && "disabled:opacity-100",
                 selected && selectedClassByRating[option.id]
               )}

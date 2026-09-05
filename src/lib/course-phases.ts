@@ -13,10 +13,10 @@ export type CoursePhase = {
 }
 
 export const COURSE_PHASES: readonly CoursePhase[] = [
-  { id: "n5", track: "starter-45", label: "N5 骨架", short: "假名、助词、生存句", range: "Day 1–45" },
-  { id: "n4", track: "n4-core", label: "N4 日常", short: "条件、授受、语态", range: "Day 46–90" },
-  { id: "n3", track: "n3-core", label: "N3 说明", short: "わけ/はず、立场、书面连接", range: "Day 91–135" },
-  { id: "n2", track: "n2-core", label: "N2 书面", short: "新闻、商务、对照连接", range: "Day 136–175" },
+  { id: "n5", track: "starter-45", label: "N5 基础", short: "假名、助词、实用句", range: "Day 1–45" },
+  { id: "n4", track: "n4-core", label: "N4 日常表达", short: "条件、授受、语态", range: "Day 46–90" },
+  { id: "n3", track: "n3-core", label: "N3 观点说明", short: "わけ/はず、立场、书面衔接", range: "Day 91–135" },
+  { id: "n2", track: "n2-core", label: "N2 书面表达", short: "新闻、商务、对比衔接", range: "Day 136–175" },
 ]
 
 const PHASE_BY_TRACK = new Map(COURSE_PHASES.map((phase) => [phase.track, phase]))
@@ -49,8 +49,10 @@ export function countPhaseProgress(
   kanaLevel?: KanaLevel | null
 ) {
   const phaseLessons = lessons.filter((lesson) => lesson.track === track)
+  const done = phaseLessons.filter(lesson => completedLessonIds.has(lesson.id)).length
   return {
-    done: countSatisfiedLessons(phaseLessons, completedLessonIds, kanaLevel),
+    done,
+    skipped: countSatisfiedLessons(phaseLessons, completedLessonIds, kanaLevel) - done,
     total: phaseLessons.length,
   }
 }

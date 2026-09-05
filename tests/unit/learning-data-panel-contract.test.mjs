@@ -50,7 +50,7 @@ test("review page exposes local learning data management through the shared stor
   assert.match(panel, /aria-label="清空本地学习数据"/)
   assert.match(panel, /open=\{resetDialogOpen\}/)
   assert.match(panel, /title="清空本地学习数据"/)
-  assert.match(panel, /description="这会删除当前浏览器里的进度、SRS、错题本和朗读偏好。导出的备份文件不会受到影响。"/)
+  assert.match(panel, /description="这会删除当前浏览器里的学习进度、复习安排、错题本和朗读设置。导出的备份文件不会受到影响。"/)
   assert.match(panel, /testId="learning-data-reset-dialog"/)
   assert.match(panel, /onCancel=\{\(\) => setResetDialogOpen\(false\)\}/)
   assert.match(panel, /onConfirm=\{resetData\}/)

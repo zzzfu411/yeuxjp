@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { getNextLesson } from "@/data/lessons"
+import { getNextLesson } from "@/data/lesson-catalog"
 import { useLearningProfile } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningStatus } from "@/lib/learning-status"
@@ -166,7 +166,7 @@ export function useQuizSession(mode: QuizMode) {
     return () => clearTimeout(timer)
   }, [generateQuestion])
 
-  const handleSelect = useCallback((val: string) => {
+  const handleSelect = useCallback(async (val: string) => {
     if (!canStartQuizAnswerSubmission({
       selectedOption,
       answerPending: answerPendingRef.current,
@@ -175,7 +175,8 @@ export function useQuizSession(mode: QuizMode) {
     if (!currentQuestion) return
     answerPendingRef.current = true
 
-    const result = recordAnswer(currentQuestion, val)
+    const result = await recordAnswer(currentQuestion, val)
+    if (currentQuestionRef.current !== currentQuestion) return
     const submission = resolveQuizAnswerSubmission(val, Boolean(result))
     answerPendingRef.current = submission.answerPending
     selectedOptionRef.current = submission.selectedOption

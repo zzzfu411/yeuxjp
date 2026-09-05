@@ -78,6 +78,7 @@ test("E2E app health recognizes current app pages", () => {
     "/vocabulary",
     "/quiz",
     "/review",
+    "/settings",
     "/path",
     "/grammar",
     "/semantics",

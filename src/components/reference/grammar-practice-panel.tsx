@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { CheckCircle2, RotateCcw } from "lucide-react"
 import type { GrammarPoint } from "@/data/grammar-data"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
@@ -9,6 +9,7 @@ import { ReviewAnswerFeedback } from "@/components/review/review-answer-feedback
 import { Button } from "@/components/ui/button"
 import { buildGrammarPracticeQuestions } from "@/lib/grammar-practice"
 import { recordQuestionPractice } from "@/lib/learning-session"
+import { runLearningWrite } from "@/lib/learning-write-lock"
 import { useLearningStatus } from "@/lib/learning-status"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { makeQuestionResult, type QuestionResult } from "@/lib/questions"
@@ -25,6 +26,11 @@ export function GrammarPracticePanel({ point }: { point: GrammarPoint }) {
   const [results, setResults] = useState<QuestionResult[]>([])
   const [saveError, setSaveError] = useState(false)
   const answerLockedRef = useRef(false)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   if (!questions.length) return null
 
@@ -40,17 +46,19 @@ export function GrammarPracticePanel({ point }: { point: GrammarPoint }) {
     answerLockedRef.current = false
   }
 
-  function selectAnswer(selectedAnswer: string) {
+  async function selectAnswer(selectedAnswer: string) {
     if (result || answerLockedRef.current) return
     answerLockedRef.current = true
 
     const nextResult = makeQuestionResult(currentQuestion, selectedAnswer)
-    const saved = recordQuestionPractice({
+    const saved = await runLearningWrite(() => mountedRef.current && recordQuestionPractice({
       progress: learning,
       notebook,
       result: nextResult,
       enrollReviewOnCorrect: false,
-    })
+    }))
+
+    if (!mountedRef.current) return
 
     if (!saved) {
       setSaveError(true)

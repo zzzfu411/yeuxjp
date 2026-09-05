@@ -38,7 +38,7 @@ export function SemanticsFocusModal({
       <div className="flex-1 space-y-8 overflow-y-auto px-5 pb-8 pt-10 sm:px-8">
         <div className="border-b border-border/50 pb-6 text-center">
           <p className="eyebrow mb-3">意味 · Nuance note</p>
-          <h2 id={titleId} className="flex flex-wrap items-center justify-center gap-3 font-jp text-3xl font-medium sm:text-4xl">
+          <h2 id={titleId} className="flex flex-wrap items-center justify-center gap-3 font-jp text-3xl font-medium sm:text-4xl" lang="ja">
             <span>{point.pair[0]}</span>
             <ArrowRightLeft className="h-6 w-6 shrink-0 text-muted-foreground/55 sm:h-7 sm:w-7" />
             <span>{point.pair[1]}</span>
@@ -62,11 +62,11 @@ export function SemanticsFocusModal({
 
             <div className="grid grid-cols-2 border-y border-border/50">
               <div className="ledger-row border-b-0 border-r border-border/40 px-3 py-5 text-center">
-                <div className="font-jp mb-2 text-xl font-semibold">{point.pair[0]}</div>
+                <div className="font-jp mb-2 text-xl font-semibold" lang="ja">{point.pair[0]}</div>
                 <div className="text-sm text-muted-foreground">{point.meaning[0]}</div>
               </div>
               <div className="ledger-row border-b-0 px-3 py-5 text-center">
-                <div className="font-jp mb-2 text-xl font-semibold">{point.pair[1]}</div>
+                <div className="font-jp mb-2 text-xl font-semibold" lang="ja">{point.pair[1]}</div>
                 <div className="text-sm text-muted-foreground">{point.meaning[1]}</div>
               </div>
             </div>
@@ -83,7 +83,7 @@ export function SemanticsFocusModal({
               {point.examples.map((example, index) => (
                 <div key={index} className="ledger-row space-y-2 border-b border-border/45 px-1 py-5">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="font-jp text-xl font-medium leading-relaxed text-foreground">{example.sentence}</div>
+                    <div className="font-jp text-xl font-medium leading-relaxed text-foreground" lang="ja">{example.sentence}</div>
                     <SpeakButton text={example.sentence} label="朗读例句" className="shrink-0" />
                   </div>
                   <div className="text-base text-muted-foreground">{example.translation}</div>

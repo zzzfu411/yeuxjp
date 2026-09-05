@@ -41,7 +41,7 @@ test("GitHub Actions workflow runs merge and release quality gates", () => {
   assert.match(workflow, /release:/)
   assert.match(workflow, /actions\/checkout@v4/)
   assert.match(workflow, /actions\/setup-node@v4/)
-  assert.match(workflow, /node-version: 20/)
+  assert.match(workflow, /node-version: 24/)
   assert.match(workflow, /cache-dependency-path: package-lock\.json/)
   assert.match(workflow, /run: npm ci/)
   assert.match(workflow, /run: npm run check/)

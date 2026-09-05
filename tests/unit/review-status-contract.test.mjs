@@ -26,7 +26,8 @@ test("review status owns completion and loading surfaces", () => {
   assert.match(source, /export function ReviewLoadingState/)
   assert.match(source, /export function ReviewErrorState/)
   assert.match(source, /export function ReviewDone/)
-  assert.match(source, /state-complete\.webp/)
+  assert.doesNotMatch(source, /next\/image|state-complete\.webp/)
+  assert.match(source, /completion-burst-main/)
   assert.match(source, /data-testid=\{stats \? "review-complete-state" : "review-invalidated-state"\}/)
   assert.match(source, /border-destructive\/30/)
   assert.match(source, /onRetry\?: \(\) => void/)
@@ -39,7 +40,7 @@ test("review completion copy distinguishes attempts from initial items", () => {
 
   assert.match(
     source,
-    /`本轮作答 \$\{stats\.answered\} 次，通过 \$\{stats\.correct\}\/\$\{stats\.initial\} 项，正确率 \$\{accuracy \?\? 0\}%，重排 \$\{stats\.repeated\} 次。`/
+    /`本轮复习 \$\{stats\.initial\} 项，共作答 \$\{stats\.answered\} 次：答对 \$\{stats\.correct\} 次，正确率 \$\{accuracy \?\? 0\}%；\$\{stats\.repeated\} 次答错后重新排队。`/
   )
 })
 

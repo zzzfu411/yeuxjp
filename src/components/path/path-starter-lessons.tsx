@@ -5,7 +5,7 @@ import type { LessonTrack } from "@/data/lesson-types"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { getLessonEntryBadge, getLessonEntryStatus } from "@/lib/learning-entry"
-import { STARTER_LESSONS } from "@/data/lessons"
+import { STARTER_LESSONS } from "@/data/lesson-catalog"
 import {
   countPhaseProgress,
   getActiveCoursePhase,
@@ -36,7 +36,7 @@ export function PathStarterLessons({
   if (!profileLoaded) {
     return (
       <div className="min-w-0 py-8">
-        <div className="text-sm text-muted-foreground">正在读取课表...</div>
+        <div className="text-sm text-muted-foreground">正在读取课程...</div>
       </div>
     )
   }
@@ -48,7 +48,7 @@ export function PathStarterLessons({
           <div className="eyebrow">
             N5–N2 · {STARTER_LESSONS.length} 天路径
           </div>
-          <h2 className="mt-2 text-xl font-semibold">一页一课，循序展卷</h2>
+          <h2 className="mt-2 text-xl font-semibold">每天一课，循序学习</h2>
         </div>
         <div className="font-scribble text-base text-muted-foreground">
           {satisfiedCount}/{STARTER_LESSONS.length}
@@ -84,7 +84,7 @@ export function PathStarterLessons({
             done && "text-foreground/75",
             skipped && "bg-muted/20",
             active && "border-l-2 border-l-accent bg-accent/[0.06] pl-[calc(0.5rem-2px)]",
-            locked && "cursor-default opacity-45 hover:bg-transparent"
+            locked && "cursor-default bg-muted/15 hover:bg-transparent"
           )
 
           return (
@@ -108,7 +108,7 @@ export function PathStarterLessons({
                     <div className="mt-0.5 text-xs text-muted-foreground">{phase.short}</div>
                   </div>
                   <div className="font-scribble text-sm text-muted-foreground">
-                    {progress.done}/{progress.total} {phaseOpen ? "▾" : "▸"}
+                    {progress.done}/{progress.total}{progress.skipped > 0 && <small className="block">另跳过 {progress.skipped} 课</small>} {phaseOpen ? "▾" : "▸"}
                   </div>
                 </button>
               ) : null}

@@ -24,6 +24,10 @@ export const STORAGE_KEYS = {
   LESSON_PROGRESS: "yasashi.learning.lessons.v1",
   ITEM_PROGRESS: "yasashi.learning.items.v1",
   PRACTICE_RESULTS: "yasashi.learning.practice.v1",
+  STUDY_CALENDAR: "yasashi.learning.calendar.v1",
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
+
+// Coordination metadata, deliberately excluded from transferable learning backups.
+export const LEARNING_WRITE_EPOCH_KEY = "yasashi.learning.write-epoch.v1"

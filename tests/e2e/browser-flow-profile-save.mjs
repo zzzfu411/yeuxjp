@@ -28,6 +28,7 @@ export async function verifyProfileSaveFailureFlow(page, baseUrl) {
   await page.evaluate(() => localStorage.clear())
   await page.reload({ waitUntil: "networkidle" })
 
+  await page.getByTestId("home-edit-profile").click()
   await page.getByTestId("onboarding-goal-travel").click()
   await page.getByTestId("onboarding-some").click()
   await page.getByTestId("onboarding-always").click()

@@ -78,12 +78,11 @@ export function ReviewDashboard({
   }
 
   return (
-    <div className="paper-wrap mb-20 space-y-10 py-10 sm:py-14">
+    <div className="review-dashboard-page paper-wrap mb-12 space-y-6 py-8 sm:py-10">
       <div className="mx-auto max-w-3xl space-y-2 text-center">
-        <div className="eyebrow">復習 · Review</div>
         <h1 className="font-brush text-4xl font-normal sm:text-5xl"><span className="inkline">复习台</span></h1>
         <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">
-          只覆盖 <span className="font-semibold text-foreground">假名 / 单词 / 错题本</span>：把“学过但会忘”系统性解决。
+          在这里复习 <span className="font-semibold text-foreground">假名、单词和错题</span>，把容易忘的内容记牢。
         </p>
       </div>
 
@@ -93,7 +92,7 @@ export function ReviewDashboard({
         <ReviewStreakBanner totalDue={totalDue} totalEnrolled={totalEnrolled} nextDueLabel={nextDueLabel} />
       )}
 
-      <SpeechSettingsBar showQuizOptions className="mx-auto max-w-3xl" />
+      <SpeechSettingsBar collapsible showQuizOptions className="mx-auto max-w-3xl" />
 
       <TodayReviewPanel
         todayQueueLength={todayQueueLength}
@@ -105,7 +104,7 @@ export function ReviewDashboard({
       <section aria-label="复习卡组" className="grid grid-cols-1 gap-5 pt-2 md:grid-cols-3">
         <ReviewDeckCard
           title="假名复习"
-          desc="看假名选罗马音；错了会回到队列末尾。"
+          desc="看假名选罗马音；答错后会在本轮再次出现。"
           due={kana.due}
           total={kana.total}
           onStart={kana.onStart}
@@ -114,7 +113,7 @@ export function ReviewDashboard({
           extra={
             kana.enrollMissing > 0 ? (
               <Button type="button" variant="outline" size="sm" onClick={kana.onEnrollMissing}>
-                初始化复习（{kana.enrollMissing}）
+                加入复习（{kana.enrollMissing}）
               </Button>
             ) : (
               <div className="text-xs text-muted-foreground">已掌握：{kana.mastered}</div>
@@ -133,7 +132,7 @@ export function ReviewDashboard({
           extra={
             vocab.enrollMissing > 0 ? (
               <Button type="button" variant="outline" size="sm" onClick={vocab.onEnrollMissing}>
-                初始化复习（{vocab.enrollMissing}）
+                加入复习（{vocab.enrollMissing}）
               </Button>
             ) : (
               <div className="text-xs text-muted-foreground">已学习：{vocab.learned}</div>
@@ -143,7 +142,7 @@ export function ReviewDashboard({
 
         <ReviewDeckCard
           title="错题本"
-          desc="假名、词汇、语法和造句答错都会进来；复习对了才会拉长间隔。"
+          desc="答错的假名、词汇、语法和组句题会记在这里；答对后，下次复习间隔会延长。"
           due={mistakes.due}
           total={mistakes.total}
           onStart={mistakes.onStart}
@@ -157,7 +156,7 @@ export function ReviewDashboard({
                 ) : null}
                 {mistakes.enrollMissing > 0 ? (
                   <Button type="button" variant="outline" size="sm" onClick={mistakes.onEnrollMissing}>
-                    初始化复习（{mistakes.enrollMissing}）
+                    加入复习（{mistakes.enrollMissing}）
                   </Button>
                 ) : null}
                 {mistakes.total ? (
@@ -185,7 +184,7 @@ export function ReviewDashboard({
       <ConfirmActionDialog
         open={confirmClearMistakesOpen}
         title="清空错题本？"
-        description="错题记录和对应的错题复习队列会被删除。课程进度、假名和词汇复习记录不会受到影响。"
+        description="错题记录和对应的复习安排会被删除。课程进度、假名和词汇复习记录不会受到影响。"
         confirmLabel="清空错题"
         testId="mistakes-clear-dialog"
         onConfirm={confirmClearMistakes}

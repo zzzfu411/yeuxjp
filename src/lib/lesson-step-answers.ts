@@ -2,6 +2,7 @@ export type LessonStepAnswer = {
   answer?: string
   correct: boolean
   createdAt: number
+  assisted?: boolean
 }
 
 export type LessonStepAnswerMap = Record<string, LessonStepAnswer>
@@ -21,6 +22,7 @@ export function normalizeLessonStepAnswerMap(input: unknown): LessonStepAnswerMa
       correct: obj.correct,
       createdAt: finiteNumber(obj.createdAt, 0),
       answer: typeof obj.answer === "string" ? obj.answer : undefined,
+      ...(obj.assisted === true ? { assisted: true } : {}),
     }
   }
   return Object.keys(out).length ? out : undefined

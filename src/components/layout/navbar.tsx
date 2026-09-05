@@ -1,99 +1,55 @@
 "use client"
-
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Menu } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
 import { SpeechControlsButton } from "@/components/ui/speech-controls-button"
+import { Button } from "@/components/ui/button"
+import { Modal } from "@/components/ui/modal"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { name: "五十音", en: "Kana", href: "/kana" },
-  { name: "路径", en: "Path", href: "/path" },
-  { name: "复习", en: "Review", href: "/review" },
-  { name: "单词", en: "Vocab", href: "/vocabulary" },
-  { name: "语法", en: "Grammar", href: "/grammar" },
-  { name: "语义", en: "Meaning", href: "/semantics" },
-  { name: "语用", en: "Usage", href: "/pragmatics" },
-  { name: "测验", en: "Quiz", href: "/quiz" },
+  { name: "今日学习", href: "/" },
+  { name: "学习路径", href: "/path" },
+  { name: "五十音", href: "/kana" },
+  { name: "复习", href: "/review" },
+  { name: "单词", href: "/vocabulary" },
+  { name: "语法", href: "/grammar" },
+  { name: "语义", href: "/semantics" },
+  { name: "语用", href: "/pragmatics" },
+  { name: "测验", href: "/quiz" },
+  { name: "设置", href: "/settings" },
 ]
 
 export function Navbar() {
   const pathname = usePathname()
-  const coverRoute = pathname === "/"
-  const [pastCover, setPastCover] = useState(!coverRoute)
-  const activeLinkRef = useRef<HTMLAnchorElement | null>(null)
-  const coverAtTop = coverRoute && !pastCover
-
-  useEffect(() => {
-    if (coverAtTop) return
-    activeLinkRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" })
-  }, [pathname, coverAtTop])
-
-  useEffect(() => {
-    if (!coverRoute) return
-
-    const update = () => setPastCover(window.scrollY > Math.max(320, window.innerHeight * 0.68))
-    const frame = window.requestAnimationFrame(update)
-    window.addEventListener("scroll", update, { passive: true })
-    window.addEventListener("resize", update)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.removeEventListener("scroll", update)
-      window.removeEventListener("resize", update)
-    }
-  }, [coverRoute])
-
+  const [menuOpen, setMenuOpen] = useState(false)
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/")
   return (
-    <header
-      className="paper-nav fixed inset-x-0 top-0 z-[60] transition-[opacity,transform] duration-500"
-    >
-      <div className="flex h-[4.8rem] items-center gap-2 px-3 sm:px-5 lg:gap-5 lg:px-8">
-        <Link
-          href="/"
-          className="flex shrink-0 items-baseline gap-2 font-brush text-xl leading-none sm:text-2xl"
-          aria-label="優しい Yasashi 首页"
-        >
-          <span>優しい</span>
-          <span className="hidden font-scribble text-base text-muted-foreground sm:inline">Yasashi</span>
-        </Link>
-
-        <nav className={cn("scrollbar-hide flex min-w-0 flex-1 items-center gap-4 overflow-x-auto px-1 lg:gap-6", coverAtTop && "hidden")}>
-          {navItems.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                ref={active ? activeLinkRef : undefined}
-                className={cn(
-                  "nav-signpost shrink-0 whitespace-nowrap text-sm text-muted-foreground",
-                  active && "is-active text-foreground"
-                )}
-                aria-current={active ? "page" : undefined}
-              >
-                {item.name}
-                <span className="ml-1 hidden font-scribble text-[0.78rem] xl:inline">{item.en}</span>
-              </Link>
-            )
-          })}
+    <header className="paper-nav fixed inset-x-0 top-0 z-[60]">
+      <div className="nav-inner">
+        <Link href="/" className="brand-lockup" aria-label="優しい Yasashi 首页"><span lang="ja">優しい</span><span className="brand-caption">日本語を、少しずつ。</span></Link>
+        <nav aria-label="主导航" className="hidden items-center gap-8 lg:flex">
+          {navItems.slice(0, 4).map(item => <Link key={item.href} href={item.href}
+            data-testid={item.href === "/path" ? "nav-start-learning" : undefined}
+            aria-label={item.href === "/path" ? "开始学习" : undefined}
+            aria-current={isActive(item.href) ? "page" : undefined}
+            className={cn("nav-signpost", isActive(item.href) && "is-active")}>{item.name}</Link>)}
         </nav>
-
-        <div className={cn("flex shrink-0 items-center gap-0.5", coverAtTop && "ml-auto")}>
-          <SpeechControlsButton />
-          <ModeToggle />
-          <Link
-            href="/path"
-            data-testid="nav-start-learning"
-            className="nav-signpost ml-1 inline-flex h-10 min-w-10 items-center justify-center px-1 text-sm text-foreground sm:px-2"
-            aria-label="开始学习"
-          >
-            <span className="sm:hidden">学</span>
-            <span className="hidden sm:inline">学习</span>
-            <span className="ml-1 hidden font-scribble text-xs text-muted-foreground lg:inline">Begin</span>
-          </Link>
+        <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
+          <SpeechControlsButton /><ModeToggle />
+          <Button variant="ghost" className="gap-1.5 px-2" aria-label="打开导航菜单" aria-haspopup="dialog" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu className="h-4 w-4" aria-hidden="true" /><span>菜单</span></Button>
         </div>
       </div>
+      <Modal isOpen={menuOpen} onClose={() => setMenuOpen(false)} ariaLabelledBy="navigation-title" className="max-w-md p-6 sm:p-8">
+        <h2 id="navigation-title" className="mb-6 text-xl font-semibold">学习导航</h2>
+        <nav aria-label="移动导航" className="grid grid-cols-2 gap-x-6">
+          {navItems.map(item => <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}
+            className={cn("nav-signpost border-b border-border/40 py-4", isActive(item.href) && "is-active")}
+            aria-current={isActive(item.href) ? "page" : undefined}>{item.name}</Link>)}
+        </nav>
+      </Modal>
     </header>
   )
 }

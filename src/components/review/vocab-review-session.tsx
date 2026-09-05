@@ -113,7 +113,7 @@ export function VocabReviewSession({
     return (
       <ReviewEmptyQuestionState
         title="当前单词复习题不足"
-        message="这一轮单词复习暂时凑不出足够的唯一选项。返回复习页后稍后再试，或先增加词汇题库范围。"
+        message="当前范围内的单词太少，暂时无法组成一组题。请返回复习页稍后再试，或先学习更多单词。"
         onExit={onExit}
         onRetry={vocabulary.retry}
       />
@@ -124,8 +124,8 @@ export function VocabReviewSession({
     return null
   }
 
-  const handleSelect = (val: string) => {
-    const recorded = recordAnswerSelection(question, val)
+  const handleSelect = async (val: string) => {
+    const recorded = await recordAnswerSelection(question, val)
     setSaveError(!recorded)
   }
 

@@ -7,16 +7,16 @@ import { cn } from "@/lib/utils"
 import type { KanaLevel, LearningGoal, RomajiMode, UserProfile } from "@/lib/learning-progress"
 
 const goalOptions: { value: LearningGoal; label: string; desc: string }[] = [
-  { value: "balanced", label: "均衡推进", desc: "会读、会听、会造句，沿 N5→N2 主线走" },
-  { value: "travel", label: "旅行生存", desc: "优先点餐、问路、求助" },
-  { value: "jlpt", label: "JLPT N5–N2", desc: "按考试结构从 N5 骨架走到 N2 连接" },
-  { value: "media", label: "动漫理解", desc: "先打基础，再看兴趣表达" },
+  { value: "balanced", label: "均衡推进", desc: "兼顾阅读、听力和造句，按 N5→N2 课程学习" },
+  { value: "travel", label: "旅行实用", desc: "先学点餐、问路和求助等常用表达" },
+  { value: "jlpt", label: "JLPT N5–N2", desc: "按 N5→N2 的考试范围循序学习" },
+  { value: "media", label: "动漫理解", desc: "先打好基础，再学习动漫中的常见表达" },
 ]
 
 const kanaOptions: { value: KanaLevel; label: string; desc: string }[] = [
-  { value: "none", label: "刚开始", desc: "从 Day 1 假名课学起" },
-  { value: "some", label: "认识一些", desc: "仍走 Day 1，但技能树会更快转向句型" },
-  { value: "solid", label: "基本会读", desc: "跳过 Day 1–21 假名课，从助词句型开始" },
+  { value: "none", label: "刚开始", desc: "从 Day 1 的假名课开始" },
+  { value: "some", label: "认识一些", desc: "仍从 Day 1 开始，并更早推荐句型练习" },
+  { value: "solid", label: "基本会读", desc: "跳过 Day 1–21 的假名课，从基础句型开始" },
 ]
 
 const romajiOptions: { value: RomajiMode; label: string }[] = [
@@ -29,9 +29,10 @@ export function OnboardingPanel({
   onSave,
   initial,
 }: {
-  onSave: (input: Omit<UserProfile, "createdAt" | "updatedAt">) => boolean
+  onSave: (input: Omit<UserProfile, "createdAt" | "updatedAt">) => Promise<boolean>
   initial?: Pick<UserProfile, "goal" | "kanaLevel" | "romajiMode" | "minutesPerDay"> | null
 }) {
+  const [saving, setSaving] = useState(false)
   const [goal, setGoal] = useState<LearningGoal>(initial?.goal ?? "balanced")
   const [kanaLevel, setKanaLevel] = useState<KanaLevel>(initial?.kanaLevel ?? "none")
   const [romajiMode, setRomajiMode] = useState<RomajiMode>(initial?.romajiMode ?? "practice")
@@ -40,16 +41,12 @@ export function OnboardingPanel({
   return (
     <div className="space-y-6">
       <div>
-        <div className="eyebrow">
-          {initial ? "学习设置" : "首次学习设置"}
-        </div>
-        <div className="mt-2 text-lg font-semibold">先定一条适合你的路线</div>
-        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">只记在这台设备上，随时可以回来修改。</p>
+        <p className="text-sm text-muted-foreground">选择适合你的学习节奏，之后可以随时调整。</p>
       </div>
 
       <div>
         <div className="mb-2 text-sm font-semibold">学习目标</div>
-        <div className="border-y border-border/40">
+        <div className="grid gap-2">
           {goalOptions.map((item) => (
             <button
               key={item.value}
@@ -58,13 +55,13 @@ export function OnboardingPanel({
               data-testid={`onboarding-goal-${item.value}`}
               onClick={() => setGoal(item.value)}
               className={cn(
-                "ledger-row block w-full border-b border-border/30 px-2 py-3 text-left transition-colors last:border-b-0 hover:bg-muted/30",
-                goal === item.value && "border-l-2 border-l-accent bg-accent/[0.06] pl-[calc(0.5rem-2px)]"
+                "choice-card paper-slip block w-full px-3 py-3 text-left",
+                goal === item.value && "border-l-accent"
               )}
             >
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-sm font-semibold">{item.label}</span>
-                {goal === item.value ? <span className="font-scribble text-sm text-accent">chosen</span> : null}
+                {goal === item.value ? <span className="font-scribble text-sm text-accent">已选择</span> : null}
               </div>
               <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.desc}</div>
             </button>
@@ -80,7 +77,7 @@ export function OnboardingPanel({
         {kanaOptions.find((item) => item.value === kanaLevel)?.desc}
       </p>
 
-      <div className="border-y border-border/40 py-3">
+      <div className="border-t border-border/50 pt-4">
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="font-semibold">每天学习时长</span>
           <span className="font-scribble text-base text-muted-foreground">{minutesPerDay} 分钟</span>
@@ -94,7 +91,7 @@ export function OnboardingPanel({
           step={5}
           value={minutesPerDay}
           onChange={(event) => setMinutesPerDay(Number(event.target.value))}
-          className="w-full accent-accent"
+          className="anime-range w-full"
         />
       </div>
 
@@ -102,9 +99,13 @@ export function OnboardingPanel({
         type="button"
         className="w-full gap-2"
         data-testid="onboarding-save"
-        onClick={() => onSave({ goal, kanaLevel, romajiMode, minutesPerDay })}
+        disabled={saving}
+        onClick={async () => {
+          setSaving(true)
+          try { await onSave({ goal, kanaLevel, romajiMode, minutesPerDay }) } finally { setSaving(false) }
+        }}
       >
-        {initial ? "保存学习设置" : "生成今日计划"} <ArrowRight className="h-4 w-4" />
+        {initial ? "保存学习设置" : "保存并开始学习"} <ArrowRight className="h-4 w-4" />
       </Button>
     </div>
   )
@@ -133,10 +134,10 @@ function SelectPills({
             data-testid={`onboarding-${item.value}`}
             onClick={() => onChange(item.value)}
             className={cn(
-              "border-b px-0.5 py-1 text-xs font-semibold transition-colors",
+              "filter-chip px-2.5 py-1.5 text-xs font-semibold transition-colors",
               value === item.value
-                ? "border-accent text-accent"
-                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                ? "is-selected text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             {item.label}

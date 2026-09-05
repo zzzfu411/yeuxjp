@@ -6,23 +6,21 @@ import { LEARNING_EVENT, writeLearningJson } from "@/lib/learning-storage"
 import {
   clampScore,
   appendPracticeResult,
-  buildStudyDates,
   calculateStudyStreak,
   normalizeStepIndex,
   updateItemProgressForPractice,
   type ItemProgressMap,
   type LessonProgressMap,
   type PracticeResult,
-  type UserProfile,
 } from "@/lib/learning-progress-model"
 import { applyLessonStepAnswer, type LessonStepAnswer } from "@/lib/lesson-step-answers"
-import { includesProgressStorageKey, isProfileStorageKey, isProgressStorageKey } from "@/lib/learning-progress-keys"
+import { includesProgressStorageKey, isProgressStorageKey } from "@/lib/learning-progress-keys"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import { finishLessonAttempt, restartLessonAttempt, isLessonAttemptComplete } from "@/lib/lesson-attempt"
 import {
   readItemProgressMapResult,
   readLessonProgressMapResult,
   readPracticeResultsResult,
-  readUserProfileResult,
 } from "@/lib/learning-progress-storage"
 
 export {
@@ -38,75 +36,22 @@ export {
   type UserProfile,
 } from "@/lib/learning-progress-model"
 
-function readUserProfile() {
-  return readUserProfileResult().value
-}
+export { useLearningProfile } from "@/lib/learning-profile"
 
-export function useLearningProfile() {
-  const [profile, setProfileState] = useState<UserProfile | null>(null)
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    Promise.resolve().then(() => {
-      if (cancelled) return
-      setProfileState(readUserProfile())
-      setLoaded(true)
-    })
-
-    const sync = (event: Event) => {
-      const detail = (event as CustomEvent).detail as { key?: string } | undefined
-      if (!isProfileStorageKey(detail?.key)) return
-      setProfileState(readUserProfile())
-    }
-
-    const syncStore = (event: Event) => {
-      const detail = (event as CustomEvent).detail as { keys?: readonly string[] } | undefined
-      if (!detail?.keys?.includes(STORAGE_KEYS.USER_PROFILE)) return
-      setProfileState(readUserProfile())
-    }
-
-    const onStorage = (event: StorageEvent) => {
-      if (!isProfileStorageKey(event.key)) return
-      setProfileState(readUserProfile())
-    }
-
-    window.addEventListener("storage", onStorage)
-    window.addEventListener(LEARNING_EVENT, sync)
-    window.addEventListener(LEARNING_STORE_EVENT, syncStore)
-    return () => {
-      cancelled = true
-      window.removeEventListener("storage", onStorage)
-      window.removeEventListener(LEARNING_EVENT, sync)
-      window.removeEventListener(LEARNING_STORE_EVENT, syncStore)
-    }
-  }, [])
-
-  const saveProfile = useCallback((input: Omit<UserProfile, "createdAt" | "updatedAt">) => {
-    const now = Date.now()
-    const currentResult = readUserProfileResult()
-    if (!currentResult.ok) return false
-    const current = currentResult.value
-    const next: UserProfile = {
-      ...input,
-      createdAt: current?.createdAt ?? now,
-      updatedAt: now,
-    }
-    if (!writeLearningJson(STORAGE_KEYS.USER_PROFILE, next, { expectedRaw: currentResult.raw })) return false
-    setProfileState(next)
-    return true
-  }, [])
-
-  return { profile, loaded, saveProfile }
-}
+import { readStudyCalendarResult, prepareStudyCalendarWrite } from "@/lib/study-calendar-storage"
+import { calendarStudyDates, mergeLegacyStudyCalendar, type StudyCalendar } from "@/lib/study-calendar-model"
+import { useLocalDay } from "@/lib/use-local-day"
 
 export function useLearningProgress() {
+  const [calendar, setCalendar] = useState<StudyCalendar>({})
+  const currentLocalDay = useLocalDay()
   const [lessons, setLessons] = useState<LessonProgressMap>({})
   const [items, setItems] = useState<ItemProgressMap>({})
   const [results, setResults] = useState<PracticeResult[]>([])
   const [loaded, setLoaded] = useState(false)
 
   const load = useCallback(() => {
+    setCalendar(readStudyCalendarResult().value)
     setLessons(readLessonProgressMapResult().value)
     setItems(readItemProgressMapResult().value)
     setResults(readPracticeResultsResult().value)
@@ -162,49 +107,50 @@ export function useLearningProgress() {
     return true
   }, [])
 
-  const completeLesson = useCallback((lessonId: string, score?: number) => {
+  const completeLesson = useCallback((lessonId: string, score?: number, expectedAttempt?: { attemptId?: string }) => {
     const currentResult = readLessonProgressMapResult()
     if (!currentResult.ok) return false
     const base = currentResult.value
     const current = base[lessonId]
+    if (expectedAttempt && (!current || current.attemptId !== expectedAttempt.attemptId)) return false
+    if (isLessonAttemptComplete(current)) return true
     const now = Date.now()
     const next = {
       ...base,
-      [lessonId]: {
-        lessonId,
-        status: "completed" as const,
-        startedAt: current?.startedAt ?? now,
-        completedAt: now,
-        score: typeof score === "number" ? clampScore(score) : undefined,
-        currentStepIndex: current?.currentStepIndex,
-        lastStepId: current?.lastStepId,
-        stepAnswers: current?.stepAnswers,
-        updatedAt: now,
-      },
+      [lessonId]: finishLessonAttempt(lessonId, current, typeof score === "number" ? clampScore(score) : undefined, now),
     }
-    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: currentResult.raw })) return false
+    const writeCalendar = prepareStudyCalendarWrite(now)
+    if (!writeCalendar) return false
+    if (!runLearningStorageTransaction(() =>
+      writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: currentResult.raw }) && writeCalendar()
+    )) return false
     setLessons(next)
     return true
   }, [])
 
-  const saveLessonPosition = useCallback((lessonId: string, currentStepIndex: number, lastStepId?: string) => {
+  const restartLesson = useCallback((lessonId: string) => {
+    const stored = readLessonProgressMapResult()
+    if (!stored.ok || !stored.value[lessonId]) return false
+    const next = { ...stored.value, [lessonId]: restartLessonAttempt(stored.value[lessonId], crypto.randomUUID(), Date.now()) }
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: stored.raw })) return false
+    setLessons(next)
+    return true
+  }, [])
+
+  const saveLessonPosition = useCallback((lessonId: string, currentStepIndex: number, lastStepId?: string, expectedAttempt?: { attemptId?: string }) => {
     const currentResult = readLessonProgressMapResult()
     if (!currentResult.ok) return false
     const base = currentResult.value
     const current = base[lessonId]
     if (!current) return false
+    if (expectedAttempt && current.attemptId !== expectedAttempt.attemptId) return false
     const now = Date.now()
     const next = {
       ...base,
       [lessonId]: {
-        lessonId,
-        status: current.status,
-        startedAt: current.startedAt,
-        completedAt: current.completedAt,
-        score: current.score,
+        ...current,
         currentStepIndex: normalizeStepIndex(currentStepIndex),
         lastStepId: lastStepId || current.lastStepId,
-        stepAnswers: current.stepAnswers,
         updatedAt: now,
       },
     }
@@ -223,6 +169,17 @@ export function useLearningProgress() {
     return true
   }, [])
 
+  const revealLessonHint = useCallback((lessonId: string, stepId: string, attemptId?: string) => {
+    const stored = readLessonProgressMapResult()
+    const current = stored.value[lessonId]
+    if (!stored.ok || !current || current.attemptId !== attemptId) return false
+    const hintedStepIds = [...new Set([...(current.hintedStepIds ?? []), stepId])]
+    const next = { ...stored.value, [lessonId]: { ...current, hintedStepIds } }
+    if (!writeLearningJson(STORAGE_KEYS.LESSON_PROGRESS, next, { expectedRaw: stored.raw })) return false
+    setLessons(next)
+    return true
+  }, [])
+
   const recordPractice = useCallback((result: Omit<PracticeResult, "createdAt">) => {
     const createdAt = Date.now()
     const previousResultsResult = readPracticeResultsResult()
@@ -235,6 +192,8 @@ export function useLearningProgress() {
     if (!nextResult) return false
 
     const nextItems = updateItemProgressForPractice(previousItems, nextResult)
+    const writeCalendar = prepareStudyCalendarWrite(nextResult)
+    if (!writeCalendar) return false
 
     const saved = runLearningStorageTransaction(() => {
       const wrote = writeLearningJson(
@@ -245,7 +204,7 @@ export function useLearningProgress() {
         STORAGE_KEYS.ITEM_PROGRESS,
         nextItems,
         { expectedRaw: previousItemsResult.raw }
-      )
+      ) && writeCalendar()
       if (wrote) {
         queueLearningNotification(() => {
           setResults(nextResults)
@@ -263,13 +222,12 @@ export function useLearningProgress() {
     return new Set(Object.values(lessons).filter((item) => item.status === "completed").map((item) => item.lessonId))
   }, [lessons])
 
-  const studyDates = useMemo(() => {
-    return buildStudyDates(lessons, results)
-  }, [lessons, results])
+  const studyCalendar = useMemo(() => mergeLegacyStudyCalendar(calendar, lessons, results), [calendar, lessons, results])
+  const studyDates = useMemo(() => calendarStudyDates(studyCalendar), [studyCalendar])
 
   const streak = useMemo(() => {
-    return calculateStudyStreak(studyDates)
-  }, [studyDates])
+    return calculateStudyStreak(studyDates, currentLocalDay)
+  }, [studyDates, currentLocalDay])
 
   return {
     lessons,
@@ -278,10 +236,14 @@ export function useLearningProgress() {
     loaded,
     completedLessonIds,
     streak,
+    studyCalendar,
+    currentLocalDay,
     startLesson,
     completeLesson,
+    restartLesson,
     saveLessonPosition,
     saveLessonStepAnswer,
+    revealLessonHint,
     recordPractice,
   }
 }

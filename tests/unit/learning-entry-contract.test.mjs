@@ -38,12 +38,7 @@ test("learning entry surfaces share the centralized entry model", () => {
   assert.match(model, /resolveLearningEntry\(/)
 })
 
-test("starter lesson grids render locked future lessons as non-link cards", () => {
-  const home = read("src/components/home/home-starter-lessons.tsx")
-  assert.match(home, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId, kanaLevel\)/)
-  assert.match(home, /if \(locked\)/)
-  assert.match(home, /aria-disabled="true"/)
-
+test("course path renders locked future lessons as non-link cards", () => {
   const pathPage = read("src/components/path/skill-tree-page.tsx")
   assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
   assert.doesNotMatch(pathPage, /getLessonEntryStatus\(lesson, learning\.completedLessonIds, nextLesson\?\.id\)/)

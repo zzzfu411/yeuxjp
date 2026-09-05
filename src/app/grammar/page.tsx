@@ -1,3 +1,7 @@
+import { routeMetadata } from "@/lib/site-metadata"
+
+export const metadata = routeMetadata("/grammar")
+
 import { Suspense } from "react"
 import { GrammarReferencePage } from "@/components/reference/grammar-reference-page"
 

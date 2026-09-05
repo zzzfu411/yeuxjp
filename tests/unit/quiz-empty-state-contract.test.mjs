@@ -17,7 +17,7 @@ test("QuizEmptyState owns empty quiz copy and recovery actions", () => {
   assert.match(source, /function getQuizEmptyMessage/)
   assert.match(source, /加载中\.\.\./)
   assert.match(source, /词汇题库加载失败/)
-  assert.match(source, /当前题库不足以生成 4 个唯一选项/)
+  assert.match(source, /当前范围内的题目太少，无法生成 4 个不同选项/)
   assert.match(source, /data-testid="quiz-empty-state"/)
   assert.match(source, /data-testid="quiz-retry-vocabulary"/)
   assert.match(source, /onClick=\{onRetryVocabulary\}/)

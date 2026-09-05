@@ -4,20 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>優しい Yasashi · 离线中</title>
-    <meta name="theme-color" content="#d8d3cc" />
+    <meta name="theme-color" content="#fffdf9" />
     <style>
       :root {
         color-scheme: light;
-        --paper: #d8d3cc;
-        --paper-hi: #e7e3db;
-        --paper-lo: #c6c0b6;
-        --ink: #1b1815;
-        --ink-soft: #3b352f;
-        --line: rgba(27, 24, 21, 0.28);
-        --seal: #8c3a2c;
-        --shadow: 0 16px 34px rgba(46, 39, 31, 0.16);
-        font-family: "LXGW WenKai Screen", "KaiTi", "STKaiti", serif;
-        background: var(--paper);
+        --base: #fffdf9;
+        --panel: #ffffff;
+        --ink: #24283f;
+        --muted: #51556e;
+        --blue: #87b9e2;
+        --pink: #e980a8;
+        --yellow: #f3da87;
+        font-family: "Yu Gothic UI", "Microsoft YaHei UI", sans-serif;
+        background: var(--base);
         color: var(--ink);
       }
 
@@ -29,89 +28,84 @@
         display: grid;
         place-items: center;
         padding: 24px;
-        background:
-          radial-gradient(120% 120% at 50% 30%, var(--paper-hi) 0, var(--paper) 46%, var(--paper-lo) 100%),
-          radial-gradient(70% 60% at 82% 88%, rgba(90, 78, 60, 0.1), transparent 60%);
+        background: radial-gradient(ellipse at 0 0, rgba(135, 185, 226, 0.16), transparent 65%), var(--base);
       }
 
       main {
         position: relative;
-        width: min(100%, 460px);
-        border: 1px solid var(--line);
-        border-radius: 3px;
-        background: color-mix(in srgb, var(--paper-hi) 88%, transparent);
-        padding: 36px 32px;
-        box-shadow: var(--shadow);
+        width: min(100%, 480px);
+        border: 1px solid var(--pink);
+        border-radius: 20px;
+        background: var(--panel);
+        padding: 34px 30px;
+        box-shadow: 0 16px 50px rgba(79, 57, 97, 0.1);
       }
 
       main::before {
         position: absolute;
-        top: -12px;
-        left: 50%;
-        width: 88px;
-        height: 24px;
-        transform: translateX(-50%) rotate(-3deg);
-        border-inline: 1px dashed rgba(150, 132, 84, 0.3);
-        background: rgba(206, 188, 138, 0.46);
+        top: -2px;
+        left: 30px;
+        width: 96px;
+        height: 5px;
+        border-radius: 3px;
+        background: var(--pink);
         content: "";
       }
 
-      h1 {
-        margin: 0 0 12px;
-        font-size: 28px;
-        font-weight: 400;
-        line-height: 1.3;
+      .mark {
+        display: grid;
+        width: 54px;
+        height: 54px;
+        margin-bottom: 26px;
+        border: 1px solid var(--pink);
+        border-radius: 50%;
+        background: var(--base);
+        font-size: 22px;
+        font-weight: 800;
+        place-items: center;
       }
 
-      h1 small {
-        display: block;
-        margin-top: 2px;
-        color: var(--ink-soft);
-        font-size: 16px;
-      }
-
-      p {
-        margin: 0;
-        color: var(--ink-soft);
-        line-height: 1.85;
-      }
+      h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.2; }
+      h1 small { display: block; margin-top: 8px; color: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: 0; }
+      p { margin: 20px 0 0; color: var(--muted); line-height: 1.8; }
 
       a {
         display: inline-flex;
-        margin-top: 24px;
-        border-bottom: 1px solid var(--seal);
-        color: var(--seal);
-        padding: 4px 1px;
+        min-height: 44px;
+        margin-top: 26px;
+        align-items: center;
+        border: 1px solid var(--ink);
+        border-radius: 8px;
+        background: var(--ink);
+        color: var(--panel);
+        padding: 8px 18px;
+        font-weight: 800;
         text-decoration: none;
       }
+
+      a:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
 
       @media (prefers-color-scheme: dark) {
         :root {
           color-scheme: dark;
-          --paper: #2a2733;
-          --paper-hi: #332f3f;
-          --paper-lo: #221f2b;
-          --ink: #d9d4c9;
-          --ink-soft: #c3bdb0;
-          --line: rgba(217, 212, 201, 0.28);
-          --seal: #cf7a63;
-          --shadow: 0 16px 34px rgba(0, 0, 0, 0.44);
+          --base: #1e202b;
+          --panel: #23233b;
+          --ink: #f3eef8;
+          --muted: #c3bdd5;
+          --blue: #9ec6ef;
+          --pink: #f2a8c7;
+          --yellow: #eed49a;
         }
 
-        body {
-          background:
-            radial-gradient(120% 120% at 50% 30%, var(--paper-hi) 0, var(--paper) 46%, var(--paper-lo) 100%),
-            radial-gradient(70% 60% at 82% 88%, rgba(0, 0, 0, 0.24), transparent 60%);
-        }
-
-        main::before { background: rgba(206, 188, 138, 0.3); }
+        a { color: var(--base); }
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>当前离线 <small>offline note</small></h1>
-      <p>已缓存的页面和笔顺资源仍可使用；新的课程内容需要网络恢复后再加载。学习进度不会被 service worker 缓存或覆盖。</p>
+      <div class="mark" aria-hidden="true">休</div>
+      <h1>当前离线 <small>网络恢复后即可继续同步内容</small></h1>
+      <p>已缓存的页面和笔顺资源仍可使用；新的课程内容需要网络恢复后再加载。已保存的学习进度仍保存在当前浏览器。</p>
       <a href="/">回到首页</a>
     </main>
   </body>

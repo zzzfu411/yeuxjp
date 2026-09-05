@@ -54,7 +54,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
           <ArrowLeft className="w-4 h-4" /> 退出
         </Button>
         <div className="font-scribble text-lg text-muted-foreground" data-testid="quiz-score">
-          得分: {quizStats.score}/{quizStats.total}
+          得分：{quizStats.score}/{quizStats.total}
         </div>
       </div>
 

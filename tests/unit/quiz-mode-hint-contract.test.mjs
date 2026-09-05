@@ -18,7 +18,7 @@ test("quiz runner delegates mode hint copy to QuizModeHint", () => {
   assert.doesNotMatch(source, /GlossaryButton/)
   assert.doesNotMatch(source, /termId=/)
   assert.doesNotMatch(source, /modeHint/)
-  assert.doesNotMatch(source, /逐步减少罗马音依赖/)
+  assert.doesNotMatch(source, /逐渐少看罗马音/)
 })
 
 test("QuizModeHint owns quiz mode guidance and glossary links", () => {
@@ -31,6 +31,6 @@ test("QuizModeHint owns quiz mode guidance and glossary links", () => {
   assert.match(source, /termId="particle"/)
   assert.match(source, /termId="conjugation"/)
   assert.match(source, /termId="chouon"/)
-  assert.match(source, /逐步减少罗马音依赖/)
+  assert.match(source, /逐渐少看罗马音/)
   assert.match(source, /术语表/)
 })

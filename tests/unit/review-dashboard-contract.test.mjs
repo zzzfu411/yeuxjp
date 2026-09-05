@@ -45,8 +45,8 @@ test("review page delegates dashboard surfaces while keeping SRS/session wiring"
   assert.match(page, /runLearningStorageTransaction\(\(\) => enrollMissingReviewItems\(dashboard\.vocabEnrollMissing, vocabSrs\.enroll\)\)/)
   assert.match(page, /runLearningStorageTransaction\(\(\) => enrollMissingReviewItems\(dashboard\.mistakeEnrollMissing, mistakeSrs\.enroll\)\)/)
   assert.doesNotMatch(page, /mistakeSrs\.grade\(id, "again"\)/)
-  assert.match(page, /const removeMistake = \(id: string\) => setReviewSaveError\(!mistakes\.remove\(id\)\)/)
-  assert.match(page, /const clearMistakes = \(\) => setReviewSaveError\(!mistakes\.clear\(\)\)/)
+  assert.match(page, /const removeMistake = async \(id: string\) => setReviewSaveError\(!await runLearningWrite\(\(\) => mistakes\.remove\(id\)\)\)/)
+  assert.match(page, /const clearMistakes = async \(\) => setReviewSaveError\(!await runLearningWrite\(\(\) => mistakes\.clear\(\)\)\)/)
   assert.match(page, /deck: "today",\s+items: dashboard\.todayQueue,\s+remainingDueAfterBatch: Math\.max\(0, dashboard\.totalDue - dashboard\.todayQueue\.length\),/)
   assert.match(page, /startSession\(\{ deck: "kana", ids: dashboard\.reviewableKanaDueIds \}\)/)
   assert.match(page, /startSession\(\{ deck: "vocab", ids: dashboard\.vocabDueIds \}\)/)
@@ -114,8 +114,10 @@ test("review banners own first-time, streak, and today review surfaces", () => {
   assert.match(source, /export function FirstReviewBanner/)
   assert.match(source, /export function ReviewStreakBanner/)
   assert.match(source, /export function TodayReviewPanel/)
-  assert.match(source, /state-empty\.webp/)
-  assert.match(source, /review-streak\.webp/)
+  assert.doesNotMatch(source, /next\/image|state-empty\.webp|review-streak\.webp/)
+  assert.match(source, /function ReviewOrbitArt/)
+  assert.match(source, /review-orbit-ring/)
+  assert.match(source, /review-orbit-card/)
   assert.match(source, /href="\/kana"/)
   assert.match(source, /href="\/vocabulary"/)
   assert.match(source, /href="\/quiz"/)
@@ -128,12 +130,12 @@ test("review banners own first-time, streak, and today review surfaces", () => {
   assert.match(source, /错题 \{counts\.mistakesDue\} · 假名 \{counts\.kanaDue\} · 单词 \{counts\.vocabDue\}/)
 })
 
-test("review banners prioritize above-the-fold state artwork with bounded sizes", () => {
+test("review banners use bounded component-native state artwork", () => {
   const source = read("src/components/review/review-banners.tsx")
 
-  assert.match(source, /src="\/assets\/states\/state-empty\.webp"[\s\S]*?sizes="\(max-width: 640px\) 160px, 192px"[\s\S]*?priority/)
-  assert.match(source, /src="\/assets\/review\/review-streak\.webp"[\s\S]*?sizes="\(max-width: 896px\) 100vw, 896px"[\s\S]*?priority/)
-  assert.doesNotMatch(source, /src="\/assets\/review\/review-streak\.webp"[\s\S]{0,180}sizes="100vw"/)
+  assert.match(source, /<ReviewOrbitArt className="h-32 w-40 shrink-0 sm:h-40 sm:w-48" \/>/)
+  assert.match(source, /<ReviewOrbitArt className="absolute inset-y-0 right-3 hidden w-64 opacity-45 sm:block" \/>/)
+  assert.doesNotMatch(source, /<Image\b|sizes=|priority/)
 })
 
 test("ReviewDeckCard owns deck counts and start action presentation", () => {

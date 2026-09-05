@@ -1,5 +1,7 @@
 "use client"
 
+import { runLearningWrite } from "@/lib/learning-write-lock"
+
 import { useCallback, useState, Suspense } from "react"
 import { useLearningStatus } from "@/lib/learning-status"
 import { NextStepCard } from "@/components/learning/next-step-card"
@@ -39,9 +41,9 @@ function KanaPageContent() {
     setConfirmClearOpen(true)
   }, [])
 
-  const handleConfirmClearMastered = useCallback(() => {
+  const handleConfirmClearMastered = useCallback(async () => {
     setConfirmClearOpen(false)
-    const saved = clearMastered()
+    const saved = await runLearningWrite(() => clearMastered())
     setSaveError(!saved)
   }, [clearMastered])
 
@@ -50,19 +52,19 @@ function KanaPageContent() {
   }, [])
 
   const handleToggleMastered = useCallback(
-    (id: KanaId) => {
-      const saved = toggleMastered(id)
+    async (id: KanaId) => {
+      const saved = await runLearningWrite(() => toggleMastered(id))
       setSaveError(!saved)
     },
     [toggleMastered]
   )
 
   return (
-    <div className="paper-wrap py-8 sm:py-12">
-      <article className="paper-sheet mx-auto mb-16 px-4 py-8 sm:px-8 lg:px-12">
+    <div className="kana-page paper-wrap py-8 sm:py-10">
+      <article className="paper-sheet mx-auto mb-10 px-4 sm:px-8 lg:px-12">
         <KanaPageHero />
 
-        <div className="mt-9 border-y border-border/45 py-6">
+        <div className="mt-6">
           <KanaControls
             mode={mode}
             kanaSet={kanaSet}
@@ -81,18 +83,18 @@ function KanaPageContent() {
         <ConfirmActionDialog
           open={confirmClearOpen}
           title="清空假名掌握进度？"
-          description="当前假名掌握状态及 SRS 箱位、到期时间会被清空。练习历史和错题本会保留；之后仍可逐个重新标记掌握。"
+          description="清空后，已掌握标记和复习安排都会删除。练习历史和错题本不会受影响，你仍可重新标记。"
           confirmLabel="清空进度"
           testId="kana-clear-progress-dialog"
           onConfirm={handleConfirmClearMastered}
           onCancel={handleCancelClearMastered}
         />
 
-        <div className="mx-auto mt-6 max-w-3xl">
-          <SpeechSettingsBar className="max-w-3xl" />
+        <div className="mx-auto mt-3 max-w-3xl">
+          <SpeechSettingsBar collapsible className="max-w-3xl" />
         </div>
 
-        <div className="mt-10">
+        <div className="mt-5">
           <KanaPageSections
             kanaSet={kanaSet}
             pageData={pageData}

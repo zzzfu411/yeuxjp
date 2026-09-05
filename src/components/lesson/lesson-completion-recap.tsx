@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Sparkles } from "lucide-react"
-import type { Lesson } from "@/data/lessons"
+import type { Lesson } from "@/data/lesson-types"
 import { loadVocabularyForIds } from "@/data/vocabulary/loader"
 import {
   buildLessonCompletionRecapModel,
@@ -47,10 +47,10 @@ export function LessonCompletionRecap({ lesson }: { lesson: Lesson }) {
       <span className="paper-tape" aria-hidden="true" />
       <div className="flex items-center gap-2 font-semibold">
         <Sparkles className="h-4 w-4" />
-        课程已完成，掌握度已写入今日学习记录。
+        本课完成，练习结果已保存。
       </div>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-        课表进度和词汇掌握是两回事：点完课不等于这些词已经记住。
+        完成课程和记住词汇是两回事。课后再复习几次，才更容易记牢。
       </p>
       <p className="mt-2 text-sm font-semibold">{recap.summary}</p>
       {recap.highlights.length ? (

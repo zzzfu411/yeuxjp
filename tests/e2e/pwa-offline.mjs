@@ -127,7 +127,9 @@ async function waitForRealImages(page) {
       const source = image.currentSrc || image.src
       return source && !source.startsWith("data:") && !source.startsWith("blob:")
     })
-    return images.length > 0 && images.every((image) => image.complete && image.naturalWidth > 0)
+    // CSS-drawn pages legitimately have no img. Startup content and manifest
+    // icons are asserted separately; any real images must still load fully.
+    return images.every((image) => image.complete && image.naturalWidth > 0)
   }, undefined, { timeout: 15_000 })
 }
 
@@ -302,6 +304,7 @@ try {
 
   await page.goto(`${baseUrl}/vocabulary?level=daily`, { waitUntil: "networkidle" })
   await page.getByTestId("vocabulary-search").waitFor({ state: "visible", timeout: 10_000 })
+  await page.getByTestId("vocabulary-search").fill(YAKUSOKU_KANJI)
   await page.getByText(YAKUSOKU_KANJI).first().waitFor({ state: "visible", timeout: 10_000 })
   await assertBodyIncludes(page, YAKUSOKU_KANA, "online vocabulary prewarm should load daily vocabulary details")
 
@@ -391,6 +394,7 @@ try {
   await page.goto(`${baseUrl}/vocabulary?level=daily`, { waitUntil: "domcontentloaded" })
   await page.getByTestId("vocabulary-search").waitFor({ state: "visible", timeout: 10_000 })
   assert.ok(await page.getByTestId("vocabulary-search").isVisible(), "offline canonical navigation should serve a cached vocabulary query route")
+  await page.getByTestId("vocabulary-search").fill(YAKUSOKU_KANJI)
   await page.getByText(YAKUSOKU_KANJI).first().waitFor({ state: "visible", timeout: 10_000 })
   await assertBodyIncludes(page, YAKUSOKU_KANA, "offline vocabulary query should render daily vocabulary content")
 

@@ -1,0 +1,27 @@
+import {chromium} from 'playwright'
+import fs from 'node:fs'
+const b=await chromium.launch({headless:true})
+const c=await b.newContext()
+const p=await c.newPage()
+const cdp=await c.newCDPSession(p)
+await cdp.send('Network.enable')
+await cdp.send('Network.setCacheDisabled',{cacheDisabled:true})
+const base='http://127.0.0.1:3217'
+await p.goto(base,{waitUntil:'networkidle'})
+await p.waitForFunction(()=>navigator.serviceWorker.controller&&document.documentElement.dataset.pwaAppShellReady==='true')
+const imageCount=await p.evaluate(()=>document.images.length)
+await p.goto(base+'/kana',{waitUntil:'networkidle'})
+await p.waitForFunction(()=>document.documentElement.dataset.pwaAppShellReady==='true')
+await cdp.send('Network.clearBrowserCache')
+await c.setOffline(true)
+await p.reload({waitUntil:'domcontentloaded'})
+await p.getByTestId('kana-card-a').waitFor()
+await p.getByTestId('kana-card-a').click()
+await p.getByRole('dialog').waitFor()
+await p.keyboard.press('Escape')
+await p.goto(base,{waitUntil:'domcontentloaded'})
+await p.getByTestId('home-start-learning').waitFor()
+const result={imageCountOnHome:imageCount,offlineKanaHydrated:true,offlineHomeLoaded:true,caches:await p.evaluate(()=>caches.keys())}
+fs.writeFileSync('output/playwright/audit-20260905/offline-evidence.json',JSON.stringify(result,null,2))
+console.log(JSON.stringify(result))
+await b.close()

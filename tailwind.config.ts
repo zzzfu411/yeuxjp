@@ -18,6 +18,7 @@ const config = {
       },
     },
     extend: {
+      textColor: { accent: "hsl(var(--accent-text) / <alpha-value>)" },
       letterSpacing: {
         tighter: "0",
         tight: "0",
@@ -27,10 +28,15 @@ const config = {
         widest: "0",
       },
       fontFamily: {
-        sans: ["var(--font-hand)", "KaiTi", "serif"],
-        jp: ["var(--font-jp)", "Yu Mincho", "serif"],
-        brush: ["var(--font-brush)", "Ma Shan Zheng", "serif"],
-        scribble: ["var(--font-en)", "Segoe Print", "cursive"],
+        sans: ["var(--font-ui)", "sans-serif"],
+        jp: ["var(--font-jp)", "sans-serif"],
+        brush: ["var(--font-display)", "sans-serif"],
+        scribble: ["var(--font-latin)", "sans-serif"],
+      },
+      fontSize: {
+        xs: ["0.875rem", { lineHeight: "1.5" }],
+        sm: ["1rem", { lineHeight: "1.6" }],
+        base: ["1.0625rem", { lineHeight: "1.75" }],
       },
       boxShadow: {
         paper: "var(--shadow)",
@@ -73,12 +79,12 @@ const config = {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "2px",
-        sm: "0px",
-        xl: "4px",
-        "2xl": "4px",
-        "3xl": "6px",
-        full: "var(--radius)",
+        md: "8px",
+        sm: "6px",
+        xl: "16px",
+        "2xl": "20px",
+        "3xl": "24px",
+        full: "9999px",
       },
       keyframes: {
         "accordion-down": {

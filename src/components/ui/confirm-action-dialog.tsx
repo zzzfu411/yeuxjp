@@ -3,6 +3,7 @@
 import { AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
+import { useRef, useState } from "react"
 
 export interface ConfirmActionDialogProps {
   open: boolean
@@ -11,7 +12,7 @@ export interface ConfirmActionDialogProps {
   confirmLabel?: string
   cancelLabel?: string
   testId?: string
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
   onCancel: () => void
 }
 
@@ -25,13 +26,22 @@ export function ConfirmActionDialog({
   onConfirm,
   onCancel,
 }: ConfirmActionDialogProps) {
+  const pending = useRef(false)
+  const [saving, setSaving] = useState(false)
+  const confirm = async () => {
+    if (pending.current) return
+    pending.current = true
+    setSaving(true)
+    try { await onConfirm() } finally { pending.current = false; setSaving(false) }
+  }
+  const cancel = () => { if (!pending.current) onCancel() }
   const titleId = `${testId}-title`
   const descriptionId = `${testId}-description`
 
   return (
     <Modal
       isOpen={open}
-      onClose={onCancel}
+      onClose={cancel}
       className="max-w-md p-0"
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
@@ -56,7 +66,8 @@ export function ConfirmActionDialog({
             type="button"
             variant="outline"
             data-testid={`${testId}-cancel`}
-            onClick={onCancel}
+            onClick={cancel}
+            disabled={saving}
           >
             {cancelLabel}
           </Button>
@@ -64,7 +75,8 @@ export function ConfirmActionDialog({
             type="button"
             variant="destructive"
             data-testid={`${testId}-confirm`}
-            onClick={onConfirm}
+            onClick={confirm}
+            disabled={saving}
           >
             {confirmLabel}
           </Button>

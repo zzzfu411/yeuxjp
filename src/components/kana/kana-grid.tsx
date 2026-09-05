@@ -1,5 +1,6 @@
 "use client"
 
+import { useItemDeepLink } from "@/lib/use-item-deep-link"
 import { useState, useCallback, useEffect } from "react"
 import { Kana } from "@/data/kana-data"
 import { KanaCard } from "./kana-card"
@@ -39,6 +40,7 @@ export function KanaGrid({
   onToggleMastered,
 }: KanaGridProps) {
   const [selectedRomaji, setSelectedRomaji] = useState<string | null>(null)
+  useItemDeepLink(data, item => `${mode}:${item.romaji}`, index => setSelectedRomaji(data[index].romaji))
   const [isPlaying, setIsPlaying] = useState(false)
   const [isWriting, setIsWriting] = useState(false)
   const [strokeAvailability, setStrokeAvailability] = useState<Record<string, StrokeAvailability>>({})

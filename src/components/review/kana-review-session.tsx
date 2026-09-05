@@ -82,14 +82,14 @@ export function KanaReviewSession({
     return (
       <ReviewEmptyQuestionState
         title="当前假名复习题不足"
-        message="这一轮假名复习暂时凑不出足够的唯一选项。返回复习页后稍后再试，或先继续课程和测验扩充题库。"
+        message="当前范围内的假名太少，暂时无法组成一组题。请返回复习页稍后再试，或先继续课程和测验。"
         onExit={onExit}
       />
     )
   }
 
-  const handleSelect = (val: string) => {
-    const recorded = recordAnswerSelection(question, val)
+  const handleSelect = async (val: string) => {
+    const recorded = await recordAnswerSelection(question, val)
     setSaveError(!recorded)
   }
 

@@ -66,14 +66,14 @@ function QuizPageContent() {
     return (
       <div className="paper-wrap flex flex-col items-center space-y-10 py-12 sm:py-16 animate-in fade-in slide-in-from-bottom-4">
         <div className="space-y-3 text-center">
-          <div className="eyebrow">小試 · Quiz</div>
+          <div className="eyebrow">选择练习方式</div>
           <h1 className="font-brush text-4xl sm:text-5xl"><span className="inkline">选择测验模式</span></h1>
-          <p className="font-scribble text-lg text-muted-foreground">Choose a page from today&apos;s practice book.</p>
+          <p className="text-sm font-semibold text-muted-foreground">从听音、辨义、活用或输入中选一项开始</p>
         </div>
 
         <SpeechSettingsBar className="w-full" />
 
-        <section aria-label="测验模式" className="paper-sheet grid w-full grid-cols-1 gap-x-8 px-5 py-3 md:grid-cols-2">
+        <section aria-label="测验模式" className="paper-sheet grid w-full grid-cols-1 gap-4 px-5 py-3 md:grid-cols-2">
           {QUIZ_MODE_OPTIONS.map((option) => (
             <ModeCard
               key={option.mode}
@@ -150,14 +150,14 @@ function ModeCard({
       type="button"
       onClick={onClick}
       data-testid={testId}
-      className="ledger-row group relative flex min-h-28 cursor-pointer items-center gap-4 px-3 py-5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="quiz-mode-card ledger-row group relative flex min-h-28 cursor-pointer items-center gap-4 px-3 py-5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       {badge ? (
         <span className="seal-stamp absolute right-3 top-3 text-xs">
           {badge}
         </span>
       ) : null}
-      <div className="grid h-12 w-12 shrink-0 place-items-center border border-dashed border-border/70 bg-primary/5">
+      <div className="mode-icon grid h-12 w-12 shrink-0 place-items-center bg-card">
         <ModeIcon icon={icon} />
       </div>
       <div className="min-w-0 pr-8">

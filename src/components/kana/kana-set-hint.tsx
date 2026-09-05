@@ -26,7 +26,7 @@ export function KanaSetHint({ kanaSet }: { kanaSet: KanaSet }) {
   if (kanaSet === "yoon") {
     return (
       <>
-        <GlossaryTerm termId="yoon">拗音</GlossaryTerm>：由「い段 + 小ゃ/ゅ/ょ」组成，读音会“收缩”。
+        <GlossaryTerm termId="yoon">拗音</GlossaryTerm>：由「い段 + 小ゃ/ゅ/ょ」组成，两个假名合起来读一拍。
         <span className="font-jp ml-2 text-foreground/70">例：きゃ・しゅ・ちょ</span>
       </>
     )
@@ -35,7 +35,7 @@ export function KanaSetHint({ kanaSet }: { kanaSet: KanaSet }) {
   if (kanaSet === "special") {
     return (
       <>
-        <GlossaryTerm termId="sokuon">促音</GlossaryTerm>：小「っ/ッ」不单独发音，表示后续子音加倍。
+        <GlossaryTerm termId="sokuon">促音</GlossaryTerm>：小「っ/ッ」本身不发音，要在后面的辅音前停一拍。
         <span className="font-jp ml-2 text-foreground/70">例：きて vs きって</span>
       </>
     )

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { isolateModalBackground } from "@/lib/modal-isolation"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -44,7 +45,6 @@ export function Modal({
 }: ModalProps) {
   const [show, setShow] = React.useState(isOpen)
   const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null)
-  const previousOverflow = React.useRef<string | null>(null)
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
   const onCloseRef = React.useRef(onClose)
@@ -64,7 +64,7 @@ export function Modal({
     if (!dialogRef.current) return []
 
     return Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-      (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true"
+      (element) => !element.matches(":disabled") && !element.closest('[aria-hidden="true"], [inert]') && element.getClientRects().length > 0
     )
   }, [])
 
@@ -73,18 +73,10 @@ export function Modal({
 
     if (isOpen) {
       setShow(true)
-      if (previousOverflow.current === null) {
-        previousOverflow.current = document.body.style.overflow
-      }
-      document.body.style.overflow = "hidden" // Prevent scrolling
       // Remember the trigger so we can restore focus on close.
       previouslyFocused.current = (document.activeElement as HTMLElement | null) ?? null
     } else {
       timer = setTimeout(() => setShow(false), 300) // Wait for animation
-      if (previousOverflow.current !== null) {
-        document.body.style.overflow = previousOverflow.current
-        previousOverflow.current = null
-      }
       // Restore focus to the trigger.
       const prev = previouslyFocused.current
       if (prev && typeof prev.focus === "function") prev.focus()
@@ -93,10 +85,6 @@ export function Modal({
 
     return () => {
       if (timer) clearTimeout(timer)
-      if (previousOverflow.current !== null) {
-        document.body.style.overflow = previousOverflow.current
-        previousOverflow.current = null
-      }
     }
   }, [isOpen])
 
@@ -107,6 +95,7 @@ export function Modal({
     if (!dialog) return
     pruneOpenModalStack()
     openModalStack.push(dialog)
+    const releaseIsolation = isolateModalBackground(dialog)
     // Defer focus until after animation kicks in.
     const focusTimer = setTimeout(() => {
       dialogRef.current?.focus()
@@ -156,6 +145,9 @@ export function Modal({
     window.addEventListener("keydown", onKey, true)
     return () => {
       clearTimeout(focusTimer)
+      releaseIsolation()
+      const previous = previouslyFocused.current
+      if (previous?.isConnected) previous.focus()
       window.removeEventListener("keydown", onKey, true)
       if (dialog) {
         const stackIndex = openModalStack.lastIndexOf(dialog)
@@ -168,6 +160,7 @@ export function Modal({
 
   const overlay = (
     <div
+      data-modal-layer
       className={cn(
         // A fixed overlay can be a child of a `space-y-*` container. Those
         // parent selectors add margin to every following sibling, which must
@@ -180,7 +173,7 @@ export function Modal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/75 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden
       />
@@ -194,7 +187,7 @@ export function Modal({
         aria-describedby={ariaDescribedBy}
         tabIndex={-1}
         className={cn(
-          "paper-sheet relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-sm text-card-foreground outline-none",
+          "paper-sheet visual-novel-dialog relative max-h-[90vh] w-full max-w-2xl overflow-y-auto text-card-foreground outline-none",
           "transform transition-all duration-300",
           isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4",
           className
@@ -204,7 +197,7 @@ export function Modal({
           variant="ghost"
           size="icon"
           aria-label="关闭"
-          className="absolute right-4 top-4 z-10 bg-card"
+          className="dialog-close-button absolute right-4 top-4 z-10 bg-card"
           onClick={onClose}
         >
           <X className="h-4 w-4" />

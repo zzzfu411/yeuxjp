@@ -5,6 +5,7 @@ import { useKanaProgress } from "@/lib/kana-progress"
 import { useLearningProgress } from "@/lib/learning-progress"
 import { useVocabProgress } from "@/lib/vocab-progress"
 import { buildLearningStatusModel } from "@/lib/learning-status-model"
+import { readLearningStatus } from "@/lib/learning-status-storage"
 
 export function useLearningStatus() {
   const kanaProgress = useKanaProgress()
@@ -30,20 +31,26 @@ export function useLearningStatus() {
     [status.learnedVocabIds]
   )
   const toggleKanaMastered = useCallback(
-    (id: string) => kanaProgress.setMasteredId(id, !status.masteredKanaIds.has(id)),
-    [kanaProgress, status.masteredKanaIds]
+    (id: string) => {
+      const latest = readLearningStatus()
+      return latest.ok && kanaProgress.setMasteredId(id, !latest.masteredKanaIds.has(id))
+    },
+    [kanaProgress]
   )
   const clearKanaMastered = useCallback(
-    () => kanaProgress.clearMastered(status.masteredKanaIds),
-    [kanaProgress, status.masteredKanaIds]
+    () => kanaProgress.clearMastered(readLearningStatus().masteredKanaIds),
+    [kanaProgress]
   )
   const toggleVocabLearned = useCallback(
-    (id: string) => vocabProgress.setLearnedId(id, !status.learnedVocabIds.has(id)),
-    [status.learnedVocabIds, vocabProgress]
+    (id: string) => {
+      const latest = readLearningStatus()
+      return latest.ok && vocabProgress.setLearnedId(id, !latest.learnedVocabIds.has(id))
+    },
+    [vocabProgress]
   )
   const clearVocabLearned = useCallback(
-    () => vocabProgress.clearLearned(status.learnedVocabIds),
-    [status.learnedVocabIds, vocabProgress]
+    () => vocabProgress.clearLearned(readLearningStatus().learnedVocabIds),
+    [vocabProgress]
   )
 
   return {

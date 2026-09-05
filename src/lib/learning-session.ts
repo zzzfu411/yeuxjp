@@ -10,6 +10,7 @@ import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { Question, QuestionResult } from "@/lib/questions"
 import { questionToMistakeInput } from "@/lib/questions"
+import { readLessonProgressMapResult } from "@/lib/learning-progress-storage"
 
 type LearningProgressApi = ReturnType<typeof useLearningProgress>
 type MistakeNotebookApi = ReturnType<typeof useMistakeNotebook>
@@ -43,7 +44,7 @@ function recordPracticeResultWithoutTransaction(
 ) {
   const recorded = progress.recordPractice(result)
   if (!recorded) return false
-  if (result.correct && options.enrollReviewOnCorrect !== false) {
+  if (result.correct && !result.assisted && options.enrollReviewOnCorrect !== false) {
     return enrollReviewItem(result.itemType, result.itemId)
   }
   return true
@@ -104,20 +105,26 @@ export function recordLessonQuestionPractice({
   result,
   lessonId,
   lessonStepId,
+  lessonAttemptId,
 }: {
   progress: LearningProgressApi
   notebook?: MistakeNotebookApi
   result: QuestionResult
   lessonId: string
   lessonStepId: string
+  lessonAttemptId?: string
 }) {
   return runLearningStorageTransaction(() => {
+    const stored = readLessonProgressMapResult()
+    if (!stored.ok || stored.value[lessonId]?.attemptId !== lessonAttemptId) return false
+    if (stored.value[lessonId]?.hintedStepIds?.includes(lessonStepId)) result = { ...result, assisted: true }
     const recorded = recordQuestionPracticeWithoutTransaction({
       progress,
       notebook,
       result,
       lessonId,
       lessonStepId,
+      lessonAttemptId,
     })
     if (!recorded) return false
 
@@ -125,6 +132,7 @@ export function recordLessonQuestionPractice({
       answer: result.selectedAnswer,
       correct: result.correct,
       createdAt: result.answeredAt,
+      ...(result.assisted ? { assisted: true } : {}),
     })
   })
 }
@@ -136,6 +144,7 @@ export function recordQuestionPracticeWithoutTransaction({
   lessonId,
   lessonStepId,
   enrollReviewOnCorrect,
+  lessonAttemptId,
 }: {
   progress?: LearningProgressApi
   notebook?: MistakeNotebookApi
@@ -143,6 +152,7 @@ export function recordQuestionPracticeWithoutTransaction({
   lessonId?: string
   lessonStepId?: string
   enrollReviewOnCorrect?: boolean
+  lessonAttemptId?: string
 }) {
   const { question } = result
 
@@ -156,6 +166,8 @@ export function recordQuestionPracticeWithoutTransaction({
       mode: question.mode,
       correct: result.correct,
       answer: result.selectedAnswer,
+      ...(lessonAttemptId ? { lessonAttemptId } : {}),
+      ...(result.assisted ? { assisted: true } : {}),
     }, { enrollReviewOnCorrect })) {
       return false
     }

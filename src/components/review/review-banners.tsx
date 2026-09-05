@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -8,24 +7,14 @@ import type { ReviewDashboardProps } from "@/components/review/review-dashboard"
 
 export function FirstReviewBanner() {
   return (
-    <div className="paper-sheet relative flex w-full flex-col items-center gap-6 p-6 sm:flex-row sm:pr-8" data-testid="review-empty-state">
+    <div className="paper-sheet review-hero-card relative flex w-full flex-col items-center gap-6 p-6 sm:flex-row sm:pr-8" data-testid="review-empty-state">
       <span className="paper-tape" aria-hidden />
-      <div className="relative w-40 h-32 shrink-0 sm:w-48 sm:h-40">
-        <Image
-          src="/assets/states/state-empty.webp"
-          alt=""
-          fill
-          sizes="(max-width: 640px) 160px, 192px"
-          className="object-contain"
-          priority
-        />
-      </div>
+      <ReviewOrbitArt className="h-32 w-40 shrink-0 sm:h-40 sm:w-48" />
       <div className="flex-1 space-y-2 text-center sm:text-left">
-        <div className="eyebrow">First review</div>
         <div className="font-brush text-2xl">还没有复习内容</div>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          SRS（间隔重复）会在你<span className="font-semibold text-foreground">标记「已掌握」</span>的假名 / 单词上自动入册。
-          先去学几个再回来吧。
+          将假名或单词<span className="font-semibold text-foreground">标记为「已掌握」</span>后，它们会自动加入间隔复习。
+          先学几个，再回来复习。
         </p>
         <div className="flex flex-wrap justify-center gap-2 pt-2 sm:justify-start">
           <Button asChild size="sm" className="gap-1.5">
@@ -53,18 +42,10 @@ export function ReviewStreakBanner({
 }) {
   return (
     <div
-      className="paper-sheet relative w-full overflow-hidden"
+      className="paper-sheet review-hero-card relative w-full overflow-hidden"
       data-testid={totalDue > 0 ? "review-due-state" : "review-scheduled-empty-state"}
     >
-      <Image
-        src="/assets/review/review-streak.webp"
-        alt=""
-        fill
-        sizes="(max-width: 896px) 100vw, 896px"
-        className="object-cover object-right opacity-30 mix-blend-multiply dark:opacity-20 dark:mix-blend-screen"
-        aria-hidden
-        priority
-      />
+      <ReviewOrbitArt className="absolute inset-y-0 right-3 hidden w-64 opacity-45 sm:block" />
       <div className="relative grid grid-cols-1 items-center gap-4 p-6 sm:grid-cols-[1fr_auto] sm:pr-10">
         <div className="space-y-1">
           <div className="eyebrow">今日复习 · Today</div>
@@ -73,7 +54,7 @@ export function ReviewStreakBanner({
             <span className="text-base font-normal text-muted-foreground"> · 共 {totalEnrolled} 张</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            {totalDue > 0 ? "建议从下面任一卡组开始 5 分钟。" : `今天没有到期内容。下一次复习：${nextDueLabel}。`}
+            {totalDue > 0 ? "从下面任选一组，先复习 5 分钟。" : `今天没有到期内容。下一次复习：${nextDueLabel}。`}
           </p>
         </div>
       </div>
@@ -94,13 +75,13 @@ export function TodayReviewPanel({
 }) {
   return (
     <div
-      className="paper-sheet flex flex-col gap-4 border-l-2 border-l-accent/50 p-5 sm:flex-row sm:items-center sm:justify-between"
+      className="paper-sheet today-review-card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
       data-testid={todayQueueLength ? "review-today-due" : "review-today-empty"}
     >
       <div className="space-y-1">
-        <div className="font-brush text-2xl">今日复习流</div>
+        <div className="font-brush text-2xl">今日复习</div>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          自动混合到期假名、词汇和错题，先处理最容易遗忘的内容。完成后会同步更新新的掌握度模型。
+          到期的假名、单词和错题会排在一起，容易忘的内容优先。完成后，系统会安排下次复习。
         </p>
         <div className="text-xs text-muted-foreground">
           错题 {counts.mistakesDue} · 假名 {counts.kanaDue} · 单词 {counts.vocabDue}
@@ -121,6 +102,17 @@ export function TodayReviewPanel({
           </Button>
         </div>
       )}
+    </div>
+  )
+}
+
+function ReviewOrbitArt({ className }: { className?: string }) {
+  return (
+    <div className={`review-orbit-art ${className ?? ""}`} aria-hidden="true">
+      <span className="review-orbit-ring" />
+      <span className="review-orbit-card review-orbit-card-a" />
+      <span className="review-orbit-card review-orbit-card-b" />
+      <span className="review-orbit-dot" />
     </div>
   )
 }

@@ -1,4 +1,5 @@
-import { STARTER_LESSON_BY_ID, type Lesson } from "@/data/lessons"
+import type { Lesson } from "@/data/lesson-types"
+import { STARTER_LESSON_BY_ID } from "@/data/lesson-catalog"
 import type { LessonTrack } from "@/data/lesson-types"
 import type { KanaLevel } from "@/lib/learning-progress-model"
 import { isLessonSatisfied, isLessonSkipped } from "@/lib/lesson-skip"
@@ -91,7 +92,7 @@ export function resolveLearningEntry({
   return {
     kind: "review",
     title: "复习与巩固",
-    subtitle: "N5–N2 路径已经走完。回到复习页巩固到期项目和错题，再用技能树补薄弱项。",
+    subtitle: "你已完成 N5–N2 课程。接下来可以复习到期内容和错题，或按学习路径加强薄弱项。",
     href: fallbackHref,
     cta: "进入复习",
   }

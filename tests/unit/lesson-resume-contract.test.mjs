@@ -15,7 +15,7 @@ test("LessonRunner restores a saved lesson step only after progress storage has 
   assert.match(source, /const \{ lessons, results, loaded, startLesson, completeLesson, saveLessonPosition \} = progress/)
   assert.match(source, /if \(!loaded\) return 0/)
   assert.match(source, /resolveLessonResumeStepIndex\(savedLessonProgress, lesson\.steps\)/)
-  assert.match(source, /manualStep\?\.lessonId === lesson\.id \? manualStep\.index : resumedStepIndex/)
+  assert.match(source, /manualStep\?\.lessonId === lesson\.id && manualStep\.attemptId === savedLessonProgress\?\.attemptId \? manualStep\.index : resumedStepIndex/)
   assert.doesNotMatch(source, /setStepIndex/)
   assert.doesNotMatch(source, /setState.*resumeIndex/)
 })
@@ -26,7 +26,7 @@ test("LessonRunner restores answered practice state from persisted results", () 
   const session = read("src/lib/lesson-session.ts")
 
   assert.match(source, /getLatestLessonStepAnswers/)
-  assert.match(source, /getLatestLessonStepAnswers\(lesson\.id, lesson\.steps, results\)/)
+  assert.match(source, /getLatestLessonStepAnswers\(lesson\.id, lesson\.steps, results, savedLessonProgress\?\.attemptId\)/)
   assert.match(source, /mergeLessonStepAnswers/)
   assert.match(source, /persistedStepAnswers/)
   assert.match(source, /getLessonAnsweredFromStepMap\(persistedStepAnswers\)/)
@@ -47,14 +47,14 @@ test("LessonRunner saves step position through the shared learning progress faca
 
   assert.match(source, /if \(!loaded\) return/)
   assert.match(source, /if \(!lessonUnlocked\) return/)
-  assert.match(source, /const saved = startLesson\(lesson\.id\)/)
-  assert.match(source, /const saved = saveLessonPosition\(lesson\.id, stepIndex, step\?\.id\)/)
-  assert.match(source, /window\.setTimeout\(\(\) => setSaveError\(!saved\), 0\)/)
-  assert.match(source, /window\.clearTimeout\(timer\)/)
-  assert.match(source, /setSaveError\(!completeLesson\(lesson\.id, completionScore\)\)/)
+  assert.match(source, /runLearningWrite\(\(\) => !cancelled && startLesson\(lesson\.id\)\)/)
+  assert.match(source, /saveLessonPosition\(lesson\.id, stepIndex, step\?\.id, \{ attemptId: savedLessonProgress\?\.attemptId \}\)/)
+  assert.match(source, /then\(saved => \{ if \(!cancelled\) setSaveError\(!saved\) \}\)/)
+  assert.match(source, /return \(\) => \{ cancelled = true \}/)
+  assert.match(source, /return completeLesson\(lesson\.id, score, \{ attemptId: savedLessonProgress\?\.attemptId \}\)/)
   assert.match(source, /buildLessonRunnerViewModel/)
   assert.match(source, /completionScore/)
-  assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index \}\)/)
+  assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index, attemptId: savedLessonProgress\?\.attemptId \}\)/)
   assert.match(runner, /setManualStepIndex\(Math\.min\(stepIndex \+ 1, lesson\.steps\.length - 1\)\)/)
   assert.match(runner, /setManualStepIndex\(Math\.max\(stepIndex - 1, 0\)\)/)
   assert.doesNotMatch(source, /localStorage\.setItem/)
@@ -75,7 +75,7 @@ test("LessonRunner warns on locked direct lesson visits without auto-starting pr
   assert.match(preview, /data-testid="lesson-locked-preview"/)
   assert.match(preview, /这节课还没有解锁/)
   assert.match(preview, /去推荐课程/)
-  assert.match(preview, /查看技能树/)
+  assert.match(preview, /查看学习路径/)
 })
 
 test("LessonRunner keeps locked lesson previews read-only", () => {
@@ -114,7 +114,7 @@ test("LessonRunner exposes stable completed lesson follow-up targets", () => {
 test("learning progress preserves compatible lesson keys while adding resume fields", () => {
   const progress = read("src/lib/learning-progress.ts")
   const storage = read("src/lib/learning-progress-storage.ts")
-  const model = read("src/lib/learning-progress-model.ts")
+  const model = read("src/lib/learning-progress-model.ts") + read("src/lib/learning-progress-types.ts")
 
   assert.match(storage, /normalizeLessonProgressMap/)
   assert.match(progress, /normalizeStepIndex/)
@@ -136,7 +136,7 @@ test("learning progress preserves compatible lesson keys while adding resume fie
 })
 
 test("learning progress listens for cross-tab storage updates", () => {
-  const progress = read("src/lib/learning-progress.ts")
+  const progress = read("src/lib/learning-progress.ts") + read("src/lib/learning-profile.ts")
   const keys = read("src/lib/learning-progress-keys.ts")
 
   assert.match(progress, /from "@\/lib\/learning-progress-keys"/)
@@ -159,7 +159,7 @@ test("learning progress listens for cross-tab storage updates", () => {
 })
 
 test("learning profile saves from the current storage snapshot", () => {
-  const progress = read("src/lib/learning-progress.ts")
+  const progress = read("src/lib/learning-profile.ts")
 
   assert.match(progress, /function readUserProfile\(\)/)
   assert.match(progress, /const currentResult = readUserProfileResult\(\)/)
@@ -177,7 +177,8 @@ test("lesson progress updates state only after storage writes succeed", () => {
   const progress = read("src/lib/learning-progress.ts")
 
   const guardedWrites = progress.match(/if \(!writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next, \{ expectedRaw: (?:current|currentResult)\.raw \}\)\) return false/g) ?? []
-  assert.equal(guardedWrites.length, 4)
+  assert.equal(guardedWrites.length, 3)
+  assert.match(progress, /prepareStudyCalendarWrite\(now\)/)
   assert.match(progress, /setLessons\(next\)/)
   assert.match(progress, /return true/)
   assert.doesNotMatch(progress, /writeLearningJson\(STORAGE_KEYS\.LESSON_PROGRESS, next\) \? next : prev/)

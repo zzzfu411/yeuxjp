@@ -60,7 +60,7 @@ test("KanaPageHero owns static kana intro copy", () => {
   const source = read("src/components/kana/kana-page-hero.tsx")
 
   assert.match(source, /export function KanaPageHero/)
-  assert.match(source, /五十音图 \(Gojūon\)/)
+  assert.match(source, /五十音图/)
   assert.match(source, /termId="hiragana"/)
   assert.match(source, /termId="katakana"/)
   assert.match(source, /平假名/)

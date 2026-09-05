@@ -1,5 +1,7 @@
 "use client"
 
+import { runLearningWrite } from "@/lib/learning-write-lock"
+
 import { useCallback } from "react"
 import type { Dispatch, SetStateAction } from "react"
 import type { useLearningProgress } from "@/lib/learning-progress"
@@ -21,12 +23,12 @@ export function useQuizAnswerRecorder({
   setQuizStats: Dispatch<SetStateAction<QuizStats>>
 }) {
   return useCallback((question: Question, selectedAnswer: string) => {
-    return recordQuizQuestionPractice({
+    return runLearningWrite(() => recordQuizQuestionPractice({
       progress,
       notebook,
       question,
       selectedAnswer,
       updateStats: setQuizStats,
-    })
+    }))
   }, [notebook, progress, setQuizStats])
 }

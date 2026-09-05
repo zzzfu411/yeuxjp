@@ -1,5 +1,4 @@
 "use client"
-
 import { useCallback, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import type { VocabLevel } from "@/data/vocabulary/types"
@@ -7,86 +6,63 @@ import { DEFAULT_VOCABULARY_LEVEL, isVocabLevel } from "@/data/vocabulary/levels
 import { useLearningProfile } from "@/lib/learning-progress"
 import { defaultShowStudyRomaji, nextRomajiVisibility } from "@/lib/romaji-visibility"
 
-function parseVocabularyLevel(value: string | null): VocabLevel | null {
-  return isVocabLevel(value) ? value : null
-}
-
-// The mobile filter rail is 222px tall and sits 80px below the fixed navbar.
-const VOCABULARY_CATEGORY_SCROLL_OFFSET = 320
-const VOCABULARY_SHORT_VIEWPORT_SCROLL_OFFSET = 96
-
 export function useVocabularyPageControls() {
-  const searchParams = useSearchParams()
+  const params = useSearchParams()
   const { profile } = useLearningProfile()
   const [currentLevel, setCurrentLevel] = useState<VocabLevel>(DEFAULT_VOCABULARY_LEVEL)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [onlyUnlearned, setOnlyUnlearned] = useState(false)
+  const [page, setPage] = useState(1)
   const [romajiOverride, setRomajiOverride] = useState<boolean | null>(null)
   const showRomaji = romajiOverride ?? defaultShowStudyRomaji(profile?.romajiMode)
-
-  const urlLevel = searchParams.get("level")
-
+  const queryString = params.toString()
   useEffect(() => {
-    let cancelled = false
+    const query = new URLSearchParams(queryString)
+    const level = query.get("level")
+    const timer = setTimeout(() => {
+      setCurrentLevel(isVocabLevel(level) ? level : DEFAULT_VOCABULARY_LEVEL)
+      setActiveCategory(query.get("category") || null)
+      setSearchQuery(query.get("q") || "")
+      setOnlyUnlearned(query.get("unlearned") === "1")
+      const requestedPage = Number(query.get("page"))
+      setPage(Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [queryString])
 
-    Promise.resolve().then(() => {
-      if (cancelled) return
-      const parsedLevel = parseVocabularyLevel(urlLevel)
-      setCurrentLevel(parsedLevel ?? DEFAULT_VOCABULARY_LEVEL)
-      setActiveCategory(null)
-    })
-
-    return () => {
-      cancelled = true
+  const changeQuery = useCallback((patch: Record<string, string | null>) => {
+    const url = new URL(window.location.href)
+    url.searchParams.delete("item")
+    for (const [key, value] of Object.entries(patch)) {
+      if (value) url.searchParams.set(key, value)
+      else url.searchParams.delete(key)
     }
-  }, [urlLevel])
-
+    window.history.replaceState(null, "", url.pathname + url.search)
+  }, [])
   const handleLevelChange = useCallback((level: VocabLevel) => {
-    setCurrentLevel(level)
-    setActiveCategory(null)
-    window.scrollTo({ top: 0 })
-  }, [])
-
+    setCurrentLevel(level); setActiveCategory(null); setPage(1)
+    changeQuery({ level, category: null, page: null })
+  }, [changeQuery])
   const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value)
-  }, [])
-
+    setSearchQuery(value); setPage(1)
+    changeQuery({ q: value, page: null })
+  }, [changeQuery])
   const handleToggleOnlyUnlearned = useCallback(() => {
-    setOnlyUnlearned((value) => !value)
-  }, [])
-
+    setOnlyUnlearned(!onlyUnlearned); setPage(1)
+    changeQuery({ unlearned: onlyUnlearned ? null : "1", page: null })
+  }, [changeQuery, onlyUnlearned])
   const handleToggleShowRomaji = useCallback(() => {
-    setRomajiOverride((value) => nextRomajiVisibility(value, profile?.romajiMode, defaultShowStudyRomaji))
+    setRomajiOverride(value => nextRomajiVisibility(value, profile?.romajiMode, defaultShowStudyRomaji))
   }, [profile?.romajiMode])
-
   const scrollToCategory = useCallback((category: string) => {
-    setActiveCategory(category)
-    const element = document.getElementById(`cat-${category}`)
-    if (!element) return
-
-    const elementPosition = element.getBoundingClientRect().top
-    const scrollOffset = window.innerHeight <= 420
-      ? VOCABULARY_SHORT_VIEWPORT_SCROLL_OFFSET
-      : VOCABULARY_CATEGORY_SCROLL_OFFSET
-    const offsetPosition = elementPosition + window.pageYOffset - scrollOffset
-
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: "smooth",
-    })
-  }, [])
-
-  return {
-    currentLevel,
-    activeCategory,
-    searchQuery,
-    onlyUnlearned,
-    showRomaji,
-    handleLevelChange,
-    handleSearchChange,
-    handleToggleOnlyUnlearned,
-    handleToggleShowRomaji,
-    scrollToCategory,
-  }
+    setActiveCategory(category || null); setPage(1)
+    changeQuery({ category: category || null, page: null })
+    requestAnimationFrame(() => document.getElementById("vocabulary-results")?.scrollIntoView({ block: "start" }))
+  }, [changeQuery])
+  const changePage = useCallback((value: number) => {
+    setPage(value); changeQuery({ page: String(value) })
+    document.getElementById("vocabulary-results")?.scrollIntoView({ block: "start" })
+  }, [changeQuery])
+  return { currentLevel, activeCategory, searchQuery, onlyUnlearned, page, changePage, showRomaji, handleLevelChange, handleSearchChange, handleToggleOnlyUnlearned, handleToggleShowRomaji, scrollToCategory }
 }

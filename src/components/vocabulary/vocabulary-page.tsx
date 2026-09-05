@@ -1,5 +1,9 @@
 "use client"
 
+import { runLearningWrite } from "@/lib/learning-write-lock"
+
+import { Pagination } from "@/components/ui/pagination"
+import { useItemDeepLink } from "@/lib/use-item-deep-link"
 import { useMemo, useRef, useState, useCallback, useEffect, Suspense } from "react"
 import type { VocabLevel } from "@/data/vocabulary/types"
 import { cancelJapaneseSpeech, speakJapanese } from "@/lib/speech"
@@ -43,6 +47,8 @@ function VocabularyPageContent() {
   const {
     currentLevel,
     activeCategory,
+    page,
+    changePage,
     searchQuery,
     onlyUnlearned,
     showRomaji,
@@ -59,7 +65,7 @@ function VocabularyPageContent() {
     return getVocabularyProgress(rawData, isLearnedId)
   }, [isLearnedId, rawData])
 
-  const currentData = useMemo(() => {
+  const filteredData = useMemo(() => {
     return filterVocabularyItems({
       items: rawData,
       searchQuery,
@@ -69,20 +75,28 @@ function VocabularyPageContent() {
   }, [isLearnedId, onlyUnlearned, rawData, searchQuery])
 
   const categories = useMemo(
-    () => getVocabularyCategories(currentData),
-    [currentData]
+    () => getVocabularyCategories(filteredData),
+    [filteredData]
   )
+
+  const currentData = useMemo(() => activeCategory ? filteredData.filter(item => item.category === activeCategory) : filteredData, [activeCategory, filteredData])
+  const pageSize = 24
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(currentData.length / pageSize)))
+  const pageStart = (currentPage - 1) * pageSize
+  const pageItems = currentData.slice(pageStart, pageStart + pageSize)
 
   const [isModalFlipped, setIsModalFlipped] = useState(false)
   const [selfAssessment, setSelfAssessment] = useState<VocabularySelfAssessment | null>(null)
   const selfAssessmentLockedRef = useRef(false)
+  const focusedVersion = useRef(0)
 
   const resetFocusedCard = useCallback(() => {
+    focusedVersion.current += 1
     setIsModalFlipped(false)
     setSelfAssessment(null)
     setSaveError(false)
     selfAssessmentLockedRef.current = false
-  }, [])
+  }, [setIsModalFlipped])
 
   const {
     selectedIndex,
@@ -91,6 +105,7 @@ function VocabularyPageContent() {
     goNext,
     goPrev,
   } = useIndexedModalNavigation(currentData.length, resetFocusedCard)
+  useItemDeepLink(currentData, item => item.id, openAt)
   const selectedVocab = selectedIndex !== null ? currentData[selectedIndex] ?? null : null
   const selectedKana = selectedVocab?.kana
 
@@ -123,9 +138,9 @@ function VocabularyPageContent() {
     setConfirmClearOpen(true)
   }, [])
 
-  const handleConfirmClearLearned = useCallback(() => {
+  const handleConfirmClearLearned = useCallback(async () => {
     setConfirmClearOpen(false)
-    const saved = clearLearned()
+    const saved = await runLearningWrite(() => clearLearned())
     setSaveError(!saved)
   }, [clearLearned])
 
@@ -133,10 +148,10 @@ function VocabularyPageContent() {
     setConfirmClearOpen(false)
   }, [])
 
-  const handleToggleLearned = useCallback(() => {
+  const handleToggleLearned = useCallback(async () => {
     if (!selectedVocab) return
     const wasLearned = isLearnedId(selectedVocab.id)
-    const saved = toggleLearnedId(selectedVocab.id)
+    const saved = await runLearningWrite(() => toggleLearnedId(selectedVocab.id))
     setSaveError(!saved)
     if (saved && onlyUnlearned && !wasLearned) {
       resetSelection()
@@ -148,15 +163,17 @@ function VocabularyPageContent() {
     speakJapanese(selectedKana)
   }, [selectedKana])
 
-  const handleSelfAssessment = useCallback((rating: VocabularySelfAssessment) => {
+  const handleSelfAssessment = useCallback(async (rating: VocabularySelfAssessment) => {
     if (!selectedVocab || selfAssessment || selfAssessmentLockedRef.current) return
     selfAssessmentLockedRef.current = true
+    const version = focusedVersion.current
 
-    const saved = recordVocabularySelfAssessment({
+    const saved = await runLearningWrite(() => version === focusedVersion.current && recordVocabularySelfAssessment({
       progress: learning,
       itemId: selectedVocab.id,
       rating,
-    })
+    }))
+    if (version !== focusedVersion.current) return
     setSaveError(!saved)
     if (!saved) {
       selfAssessmentLockedRef.current = false
@@ -167,28 +184,27 @@ function VocabularyPageContent() {
   }, [learning, selectedVocab, selfAssessment])
 
   return (
-    <div className="paper-wrap px-3 py-8 sm:px-5 sm:py-12">
-      <article className="paper-sheet mx-auto mb-16 max-w-6xl px-4 py-8 sm:px-8 lg:px-12">
-        <header className="border-b border-border/50 pb-7">
-          <p className="eyebrow">ことば帖 · Vocabulary ledger</p>
+    <div className="vocabulary-page paper-wrap px-3 py-5 sm:px-5 sm:py-10">
+      <article className="paper-sheet mx-auto mb-10 max-w-6xl px-4 sm:px-8 lg:px-12">
+        <header className="border-b border-border/50 pb-4">
           <div className="mt-2 flex flex-wrap items-end justify-between gap-5">
             <div>
-              <h1 className="inkline font-brush text-4xl sm:text-5xl">单词手帖 <span className="sr-only">Kotoba</span></h1>
-              <p className="font-scribble mt-1 text-lg text-muted-foreground">words, noted by hand</p>
+              <h1 className="inkline font-brush text-4xl sm:text-5xl">单词库 <span className="sr-only">Kotoba</span></h1>
             </div>
             <GlossaryButton className="h-auto border-0 bg-transparent px-0 py-1 text-sm text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground">
-              打开术语笺
+              打开术语表
             </GlossaryButton>
           </div>
-          <p className="mt-5 max-w-3xl text-sm leading-7 text-muted-foreground">
-            {getVocabularyLevelDescription(currentLevel)} 依等级与主题翻阅，点开词笺可朗读、自评并记入掌握进度。
+          <details className="mt-3 text-sm text-muted-foreground"><summary className="cursor-pointer py-2">使用说明</summary>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+            {getVocabularyLevelDescription(currentLevel)}。按难度和主题浏览单词。点开卡片可以听发音、检查记忆，并标记为已掌握。
           </p>
-          <p className="mt-2 text-xs leading-6 text-muted-foreground">
-            <GlossaryTerm termId="jlpt">JLPT</GlossaryTerm>：N5 最基础，N1 最难。本页分级为学习路线（大致对应 JLPT）。
+          <p className="hidden sm:block mt-2 text-xs leading-6 text-muted-foreground">
+            <GlossaryTerm termId="jlpt">JLPT</GlossaryTerm>：N5 最基础，N1 最难。这里的分级用于安排学习顺序，与 JLPT 等级大致对应。
           </p>
+          </details>
         </header>
 
-        <SpeechSettingsBar className="paper-slip relative mx-auto mt-8 max-w-3xl border-border/50 bg-card/60 shadow-paper-soft" />
 
         <VocabularyToolbar
           levels={VOCABULARY_LEVELS}
@@ -211,25 +227,30 @@ function VocabularyPageContent() {
         <ConfirmActionDialog
           open={confirmClearOpen}
           title="清空词汇掌握进度？"
-          description="当前词汇掌握状态及 SRS 箱位、到期时间会被清空。练习历史和错题本会保留；之后仍可逐个重新标记掌握。"
+          description="清空后，已掌握标记和复习安排都会删除。练习历史和错题本不会受影响，你仍可重新标记。"
           confirmLabel="清空进度"
           testId="vocabulary-clear-progress-dialog"
           onConfirm={handleConfirmClearLearned}
           onCancel={handleCancelClearLearned}
         />
 
+        <div id="vocabulary-results" className="scroll-mt-24">
+        <Pagination page={currentPage} total={currentData.length} pageSize={pageSize} onChange={changePage} />
         <VocabularyCategoryList
-          categories={categories}
+          categories={getVocabularyCategories(pageItems)}
           categoryNames={VOCABULARY_CATEGORY_NAMES}
-          items={currentData}
+          items={pageItems}
           loading={vocabulary.loading}
           error={vocabulary.error}
           showRomaji={showRomaji}
           isLearnedId={isLearnedId}
           onRetry={vocabulary.retry}
-          onExpand={openAt}
+          onExpand={index => openAt(pageStart + index)}
         />
 
+        <Pagination page={currentPage} total={currentData.length} pageSize={pageSize} onChange={changePage} />
+        </div>
+        <SpeechSettingsBar collapsible className="paper-slip relative mx-auto mt-3 sm:mt-6 max-w-3xl border-border/50 bg-card/60 shadow-paper-soft" />
         <NextStepCard className="mt-12" />
       </article>
 

@@ -1,8 +1,9 @@
-import type { Lesson, LessonStep } from "@/data/lessons"
+import type { Lesson, LessonStep } from "@/data/lesson-types"
 import type { KanaLevel, LessonProgressMap, PracticeResult } from "@/lib/learning-progress-model"
 import { getNextCourseLesson as getNextUnsatisfiedCourseLesson } from "@/lib/lesson-skip"
 import { makeQuestionResult, type Question, type QuestionResult } from "@/lib/questions"
 import type { LessonStepAnswer, LessonStepAnswerMap } from "@/lib/lesson-step-answers"
+import { isLessonAttemptComplete } from "@/lib/lesson-attempt"
 
 export type LessonPracticeStep = Extract<LessonStep, { itemId: string }>
 export type PersistedLessonStepAnswer = LessonStepAnswer
@@ -65,6 +66,7 @@ export function resolveLessonStepSubmission(
       selectedAnswer: persisted.answer ?? answer,
       correct: persisted.correct,
       answeredAt: finiteNumber(persisted.createdAt, 0),
+      ...(persisted.assisted ? { assisted: true } : {}),
     },
     shouldRecord: false,
   }
@@ -108,7 +110,7 @@ export function isLessonReadOnly(loaded: boolean, lessonUnlocked: boolean) {
 }
 
 export function isLessonCompleted(lessons: LessonProgressMap, lessonId: string) {
-  return lessons[lessonId]?.status === "completed"
+  return isLessonAttemptComplete(lessons[lessonId])
 }
 
 export function buildLessonRunnerViewModel({
@@ -124,7 +126,7 @@ export function buildLessonRunnerViewModel({
   kanaLevel,
 }: {
   lesson: Lesson
-  courseLessons: readonly Lesson[]
+  courseLessons: readonly Omit<Lesson, "steps">[]
   lessons: LessonProgressMap
   stepIndex: number
   answered: Record<string, boolean>
@@ -152,13 +154,15 @@ export function buildLessonRunnerViewModel({
 export function getLatestLessonStepAnswers(
   lessonId: string,
   steps: readonly LessonStep[],
-  results: readonly PracticeResult[]
+  results: readonly PracticeResult[],
+  attemptId?: string
 ): PersistedLessonStepAnswerMap {
   const practiceStepIds = new Set(steps.filter((step): step is LessonPracticeStep => "itemId" in step).map((step) => step.id))
   const latestByStep = new Map<string, PersistedLessonStepAnswer>()
 
   for (const result of results) {
     if (result.lessonId !== lessonId) continue
+    if (result.lessonAttemptId !== attemptId) continue
     if (!result.lessonStepId || !practiceStepIds.has(result.lessonStepId)) continue
     const createdAt = finiteNumber(result.createdAt, 0)
     const existing = latestByStep.get(result.lessonStepId)
@@ -169,6 +173,7 @@ export function getLatestLessonStepAnswers(
       answer: typeof result.answer === "string" ? result.answer : undefined,
       correct: result.correct,
       createdAt,
+      ...(result.assisted ? { assisted: true } : {}),
     })
   }
 
@@ -178,7 +183,7 @@ export function getLatestLessonStepAnswers(
 export function getLessonAnsweredFromStepMap(answers: PersistedLessonStepAnswerMap) {
   const answered: Record<string, boolean> = {}
   for (const [stepId, result] of Object.entries(answers)) {
-    answered[stepId] = result.correct
+    answered[stepId] = result.correct && !result.assisted
   }
   return answered
 }
@@ -195,6 +200,8 @@ export interface LessonResumeProgress {
   status?: "started" | "completed"
   currentStepIndex?: number
   lastStepId?: string
+  attemptId?: string
+  attemptCompletedAt?: number
 }
 
 export function clampLessonStepIndex(stepIndex: unknown, stepCount: number) {
@@ -207,14 +214,14 @@ export function clampLessonStepIndex(stepIndex: unknown, stepCount: number) {
 export function resolveLessonResumeStepIndex(progress: LessonResumeProgress | undefined, steps: readonly Pick<LessonStep, "id">[]) {
   if (!progress) return 0
 
-  if (progress.status === "completed") return clampLessonStepIndex(steps.length - 1, steps.length)
+  if (progress.status === "completed" && (!progress.attemptId || progress.attemptCompletedAt !== undefined)) return clampLessonStepIndex(steps.length - 1, steps.length)
 
   if (progress.lastStepId) {
     const stepIndex = steps.findIndex((step) => step.id === progress.lastStepId)
     if (stepIndex >= 0) return stepIndex
   }
 
-  if (progress.status !== "started") return 0
+  if (progress.status !== "started" && !progress.attemptId) return 0
 
   return clampLessonStepIndex(progress.currentStepIndex, steps.length)
 }

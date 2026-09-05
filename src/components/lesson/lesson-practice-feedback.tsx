@@ -8,11 +8,13 @@ import { cn } from "@/lib/utils"
 export function LessonPracticeFeedback({
   step,
   result,
+  assisted = false,
 }: {
   step: LessonPracticeStep
   result: "correct" | "wrong"
+  assisted?: boolean
 }) {
-  const showSrsEnrollment = result === "correct" && canEnrollReviewItem(step.itemType, step.itemId)
+  const showSrsEnrollment = result === "correct" && !assisted && canEnrollReviewItem(step.itemType, step.itemId)
 
   return (
     <div
@@ -31,9 +33,10 @@ export function LessonPracticeFeedback({
       </div>
       正确答案：<span className="font-semibold">{step.answer}</span>
       {"explanation" in step && step.explanation ? <div className="mt-1">{step.explanation}</div> : null}
+      {assisted && result === "correct" ? <div className="mt-1">借助提示答对，本题保留练习记录，不增加独立回忆掌握度。下次试试不看提示。</div> : null}
       {result === "wrong" ? <div className="mt-1">这道题已加入错题本，稍后会在复习页出现。</div> : null}
       {showSrsEnrollment ? (
-        <div className="mt-1">已加入 SRS 复习队列，系统会在合适时间提醒巩固。</div>
+        <div className="mt-1">已加入复习计划，之后会在合适的时间再次出现。</div>
       ) : null}
     </div>
   )

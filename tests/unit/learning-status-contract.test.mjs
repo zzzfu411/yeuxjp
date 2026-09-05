@@ -25,8 +25,9 @@ test("useLearningStatus is the shared read facade over legacy marks and item pro
   assert.match(source, /toggleVocabLearned/)
   assert.match(source, /excludedKanaIds: kanaProgress\.excluded/)
   assert.match(source, /excludedVocabIds: vocabProgress\.excluded/)
-  assert.match(source, /setMasteredId\(id, !status\.masteredKanaIds\.has\(id\)\)/)
-  assert.match(source, /setLearnedId\(id, !status\.learnedVocabIds\.has\(id\)\)/)
+  assert.match(source, /const latest = readLearningStatus\(\)/)
+  assert.match(source, /setMasteredId\(id, !latest\.masteredKanaIds\.has\(id\)\)/)
+  assert.match(source, /setLearnedId\(id, !latest\.learnedVocabIds\.has\(id\)\)/)
 })
 
 test("high-level recommendation and review surfaces use the shared learning status facade", () => {

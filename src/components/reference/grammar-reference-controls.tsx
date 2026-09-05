@@ -1,5 +1,7 @@
 "use client"
 
+import { useItemDeepLink } from "@/lib/use-item-deep-link"
+import { Pagination } from "@/components/ui/pagination"
 import { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Search, SearchX } from "lucide-react"
@@ -22,6 +24,7 @@ export function GrammarReferenceControls({
   const searchParams = useSearchParams()
   const [activeLevel, setActiveLevel] = useState<Level>("N5")
   const [searchQuery, setSearchQuery] = useState("")
+  const [page, setPage] = useState(1)
 
   const urlLevel = searchParams.get("level")
   useEffect(() => {
@@ -41,6 +44,10 @@ export function GrammarReferenceControls({
   const currentPoints = useMemo(() => {
     return filterGrammarPoints(pointsByLevel[activeLevel] || [], searchQuery)
   }, [activeLevel, pointsByLevel, searchQuery])
+  const pageSize = 12
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(currentPoints.length / pageSize)))
+  const pageStart = (currentPage - 1) * pageSize
+  const pagePoints = currentPoints.slice(pageStart, pageStart + pageSize)
 
   const {
     selectedIndex,
@@ -52,6 +59,7 @@ export function GrammarReferenceControls({
     goPrev,
   } = useIndexedModalNavigation(currentPoints.length)
 
+  useItemDeepLink(currentPoints, point => point.id, openAt)
   const selectedPoint = selectedIndex !== null ? currentPoints[selectedIndex] : null
 
   useEffect(() => {
@@ -78,7 +86,7 @@ export function GrammarReferenceControls({
         </p>
       </div>
 
-      <SpeechSettingsBar className="max-w-3xl mx-auto" />
+      <SpeechSettingsBar collapsible className="max-w-3xl mx-auto" />
 
       <div className="relative mx-auto w-full max-w-md">
         <Search className="absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -86,7 +94,7 @@ export function GrammarReferenceControls({
           aria-label="搜索语法"
           placeholder="搜索语法..."
           value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
+          onChange={(event) => { setSearchQuery(event.target.value); setPage(1) }}
           className="border-border/75 bg-transparent pl-8 text-base focus-visible:border-accent"
         />
       </div>
@@ -96,7 +104,7 @@ export function GrammarReferenceControls({
           <Button
             key={level}
             variant="ghost"
-            onClick={() => setActiveLevel(level)}
+            onClick={() => { setActiveLevel(level); setPage(1) }}
             aria-pressed={activeLevel === level}
             className={cn(
               "min-w-[56px] rounded-none border-0 border-b-2 border-transparent bg-transparent font-scribble text-base font-normal shadow-none hover:translate-y-0 hover:border-border hover:bg-muted/30",
@@ -108,8 +116,13 @@ export function GrammarReferenceControls({
         ))}
       </div>
 
+      <div id="grammar-results" className="scroll-mt-40">
+      <Pagination page={currentPage} total={currentPoints.length} pageSize={pageSize} onChange={next => {
+        setPage(next)
+        document.getElementById("grammar-results")?.scrollIntoView({ block: "start" })
+      }} />
       {currentPoints.length ? (
-        <GrammarPointList points={currentPoints} activeLevel={activeLevel} onOpen={openAt} />
+        <GrammarPointList points={pagePoints} activeLevel={activeLevel} onOpen={index => openAt(pageStart + index)} />
       ) : (
         <div className="paper-slip flex flex-col items-center gap-3 px-6 py-12 text-center" role="status">
           <SearchX className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
@@ -117,6 +130,7 @@ export function GrammarReferenceControls({
           <p className="text-sm text-muted-foreground">试试更短的关键词，或切换其他等级。</p>
         </div>
       )}
+      </div>
 
       <GrammarFocusModal
         point={selectedPoint}

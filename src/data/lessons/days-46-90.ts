@@ -436,7 +436,7 @@ export const DAYS_46_90: Lesson[] = [
   {
     id: "day-49-n4-conditions-checkpoint",
     title: "Day 49：条件句检查",
-    subtitle: "零新内容。たら、ば、なら、と 一次过。",
+    subtitle: "今天不学新内容，集中复习 たら、ば、なら 和 と。",
     track: "n4-core",
     order: 49,
     estimatedMinutes: 20,
@@ -1276,7 +1276,7 @@ export const DAYS_46_90: Lesson[] = [
   {
     id: "day-55-n4-intent-checkpoint",
     title: "Day 55：意图检查",
-    subtitle: "零新内容。能做、意向、打算、也许、んです 一次过。",
+    subtitle: "今天不学新内容，集中复习可能、意向、打算、推测和 んです。",
     track: "n4-core",
     order: 55,
     estimatedMinutes: 20,
@@ -1972,7 +1972,7 @@ export const DAYS_46_90: Lesson[] = [
   {
     id: "day-60-n4-te-aux-checkpoint",
     title: "Day 60：て 形补助检查",
-    subtitle: "零新内容。てみる、てしまう、ておく、てある、ていく。",
+    subtitle: "今天不学新内容，集中复习 てみる、てしまう、ておく、てある 和 ていく。",
     track: "n4-core",
     order: 60,
     estimatedMinutes: 20,
@@ -2528,7 +2528,7 @@ export const DAYS_46_90: Lesson[] = [
   {
     id: "day-64-n4-giving-checkpoint",
     title: "Day 64：授受检查",
-    subtitle: "零新内容。あげる / くれる / もらう 方向一次过。",
+    subtitle: "今天不学新内容，集中复习 あげる、くれる 和 もらう 的方向。",
     track: "n4-core",
     order: 64,
     estimatedMinutes: 20,
@@ -3221,7 +3221,7 @@ export const DAYS_46_90: Lesson[] = [
   {
     id: "day-69-n4-advice-checkpoint",
     title: "Day 69：劝告检查",
-    subtitle: "零新内容。必须、不必、最好、请不要。",
+    subtitle: "今天不学新内容，集中复习必须、不必、建议和禁止表达。",
     track: "n4-core",
     order: 69,
     estimatedMinutes: 20,
@@ -4058,7 +4058,7 @@ export const DAYS_46_90: Lesson[] = [
   {
     id: "day-75-n4-modality-checkpoint",
     title: "Day 75：语态检查",
-    subtitle: "零新内容。受身、使役、传闻そう、样态そう、みたい。",
+    subtitle: "今天不学新内容，集中复习受身、使役、传闻そう、样态そう 和 みたい。",
     track: "n4-core",
     order: 75,
     estimatedMinutes: 20,
@@ -4753,7 +4753,7 @@ export const DAYS_46_90: Lesson[] = [
   {
     id: "day-80-n4-time-checkpoint",
     title: "Day 80：时间表达检查",
-    subtitle: "零新内容。とき、まえに、あとで、ながら、たり、たことがある。",
+    subtitle: "今天不学新内容，集中复习 とき、まえに、あとで、ながら、たり 和 たことがある。",
     track: "n4-core",
     order: 80,
     estimatedMinutes: 20,
@@ -6032,7 +6032,7 @@ export const DAYS_46_90: Lesson[] = [
   {
     id: "day-89-n4-checkpoint",
     title: "Day 89：N4 综合检查",
-    subtitle: "零新内容。条件、授受、劝告、时间、样态抽查。",
+    subtitle: "今天不学新内容，集中检查条件、授受、劝告、时间和样态表达。",
     track: "n4-core",
     order: 89,
     estimatedMinutes: 20,
@@ -6155,7 +6155,7 @@ export const DAYS_46_90: Lesson[] = [
         id: "summary",
         type: "summary",
         title: "检查完成",
-        body: "N4 骨架还在。模糊的项目交给复习页，明天做毕业提取。",
+        body: "N4 的主要内容已经掌握。不熟的部分可以在复习页继续练，明天做阶段总结。",
         reviewItems: ["たら / ば / なら / と", "授受三件套", "そう 两条线", "たことがある"],
         next: "明天是 N4 毕业复习。",
       },
@@ -6176,11 +6176,11 @@ export const DAYS_46_90: Lesson[] = [
         id: "d90-explain",
         type: "explain",
         title: "90 天走到这里",
-        body: "从 たら 到出行词，N4 课堂骨架已经走完：条件、意图、て 形补助、授受、劝告、受身使役、样态、时间句。今天做最后一次综合提取，然后把节奏交给复习和 N3。",
+        body: "从 たら 到出行词，你已经学完 N4 的主要内容：条件、意图、て 形补助、授受、劝告、受身使役、样态和时间句。今天做综合复习，之后进入 N3。",
         bullets: [
-          "每天先清空复习队列，再学新内容",
+          "先完成今日复习，再学新内容",
           "错题本仍是弱点清单",
-          "N3 会在说明、立场、书面连接上加厚",
+          "N3 会继续学习说明、立场和书面衔接",
           "能用礼貌体把今天的句型说出来，就算毕业",
         ],
       },
@@ -6287,13 +6287,12 @@ export const DAYS_46_90: Lesson[] = [
         type: "summary",
         title: "N4 完成，明天进入 N3",
         body: "条件、意图、て 形补助、授受、劝告、语态和时间句已经能用。下一段从 N3 的说明和立场表达开始。",
-        reviewItems: ["每天清空复习队列", "错题本是弱点清单", "N4 骨架完成"],
+        reviewItems: ["先完成今日复习", "用错题本找出薄弱项", "N4 主要内容完成"],
         next: "明天进入 N3。",
       },
     ],
   },
 ]
-
 
 
 

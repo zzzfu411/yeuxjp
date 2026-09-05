@@ -24,11 +24,10 @@ test("SpeechControlsButton labels the shared speech settings modal", () => {
   assert.match(source, /<SpeechSettingsBar showQuizOptions \/>/)
 })
 
-test("Speech controls stay in the navbar while Modal portals above paper grain", () => {
+test("Speech controls stay in the navbar while Modal portals above navigation", () => {
   const modal = read("src/components/ui/modal.tsx")
   const navbar = read("src/components/layout/navbar.tsx")
   const speech = read("src/components/ui/speech-controls-button.tsx")
-  const grain = read("src/app/globals.css")
   const layout = read("src/app/layout.tsx")
 
   assert.match(modal, /createPortal/)
@@ -43,9 +42,5 @@ test("Speech controls stay in the navbar while Modal portals above paper grain",
   assert.match(speech, /<Modal/)
   assert.doesNotMatch(speech, /GlossaryProvider|createPortal/)
 
-  assert.match(grain, /\.paper-grain \{[\s\S]*?z-index: 80;/)
-  assert.match(grain, /\.paper-vignette \{[\s\S]*?z-index: 81;/)
-
-  assert.match(layout, /<PaperGrain \/>/)
   assert.match(layout, /<Navbar \/>/)
 })

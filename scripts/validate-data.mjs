@@ -6,7 +6,7 @@ const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, "..")
 const workspaceRoot = path.resolve(root, "..")
 const srcDir = path.join(root, "src")
-const PWA_PRECACHE_ASSET_BUDGET_BYTES = 3 * 1024 * 1024
+const PWA_PRECACHE_ASSET_BUDGET_BYTES = 256 * 1024
 const PWA_PRECACHE_ENTRY_BUDGET = 64
 
 let failed = false
@@ -644,8 +644,8 @@ function validatePwaManifest() {
     ["start_url", "/"],
     ["scope", "/"],
     ["display", "standalone"],
-    ["background_color", "#d8d3cc"],
-    ["theme_color", "#d8d3cc"],
+    ["background_color", "#fffdf9"],
+    ["theme_color", "#fffdf9"],
   ])
 
   for (const [field, expected] of requiredFields) {
@@ -773,11 +773,12 @@ function validateServiceWorkerAssets() {
   }
 
   const cacheWorthyAssets = cacheWorthyPublicAssets()
-  const missingRuntimeAssets = cacheWorthyAssets.filter((asset) => !runtimeAssets.includes(asset))
+  const installationAssets = ["/favicon.ico", "/apple-touch-icon.png", "/icons/icon-192.png", "/icons/icon-512.png"]
+  const missingRuntimeAssets = installationAssets.filter((asset) => !runtimeAssets.includes(asset))
   if (missingRuntimeAssets.length) {
-    fail(`PWA service worker RUNTIME_ASSETS is missing cache-worthy public assets: ${missingRuntimeAssets.join(", ")}`)
+    fail(`PWA service worker RUNTIME_ASSETS is missing installation assets: ${missingRuntimeAssets.join(", ")}`)
   } else {
-    pass(`PWA service worker runtime cache owns cache-worthy public assets (${cacheWorthyAssets.length})`)
+    pass(`PWA service worker runtime cache covers installation assets (${installationAssets.length}); page media are cached on demand`)
   }
 
   const shellMediaAssets = shellAssets.filter((asset) => cacheWorthyAssets.includes(asset))
@@ -821,7 +822,7 @@ function validateOfflineFallback() {
     "lang=\"zh-CN\"",
     "当前离线",
     "已缓存的页面和笔顺资源仍可使用",
-    "学习进度不会被 service worker 缓存或覆盖",
+    "已保存的学习进度仍保存在当前浏览器",
     "回到首页",
   ]
 

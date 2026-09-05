@@ -4,7 +4,9 @@ import { useEffect } from "react"
 import Link from "next/link"
 import { ArrowLeft, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { isPracticeStep, STARTER_LESSONS, type Lesson, type LessonStep } from "@/data/lessons"
+import type { Lesson, LessonStep } from "@/data/lesson-types"
+import { STARTER_LESSONS } from "@/data/lesson-catalog"
+import { isPracticeStep } from "@/lib/lesson-step-kind"
 import { cancelJapaneseSpeech, speakJapaneseRepeated } from "@/lib/speech"
 import { LessonCompletionRecap } from "@/components/lesson/lesson-completion-recap"
 import { LessonPracticeFeedback } from "@/components/lesson/lesson-practice-feedback"
@@ -40,6 +42,8 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     setSaveError,
     setManualStepIndex,
     completeCurrentLesson,
+    restartCurrentLesson,
+    revealCurrentHint,
   } = useLessonRunnerState(lesson)
   const {
     lessonPosition,
@@ -56,6 +60,8 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
     progress,
     notebook: mistakes,
     persistedAnswers: persistedStepAnswers,
+    attemptId: savedLessonProgress?.attemptId,
+    hintedStepIds: savedLessonProgress?.hintedStepIds,
     setAnswered: setAnsweredForLesson,
   })
   const {
@@ -116,7 +122,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
 
         {loaded && !lessonUnlocked ? <LessonLockedPreview recommendedLesson={recommendedLesson} /> : null}
 
-        <div className="grid gap-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12">
+        <div className="grid gap-4 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12">
           <LessonProgressSidebar
             lesson={lesson}
             lessonPosition={lessonPosition}
@@ -128,7 +134,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
             savedProgress={savedLessonProgress}
           />
 
-          <main className="paper-sheet p-5 sm:p-8">
+          <section aria-label="课程内容" className="paper-sheet lesson-stage p-5 sm:p-8">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <div className="eyebrow mb-1">{stepLabel(current.type)}</div>
@@ -163,15 +169,25 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
               onSubmitSentence={submitSentence}
               onPlay={playAudio}
               readOnly={lessonReadOnly}
+              attemptSeed={`${lesson.id}:${savedLessonProgress?.attemptId ?? savedLessonProgress?.startedAt ?? 0}`}
+              hintUsed={savedLessonProgress?.hintedStepIds?.includes(current.id)}
+              onRevealHint={revealCurrentHint}
             />
 
             {result && isPracticeStep(current) ? (
-              <LessonPracticeFeedback step={current} result={result} />
+              <LessonPracticeFeedback step={current} result={result} assisted={savedLessonProgress?.hintedStepIds?.includes(current.id)} />
             ) : null}
 
             <PracticeSaveError show={saveError} />
 
             {current.type === "summary" && hasCompletedLesson ? <LessonCompletionRecap lesson={lesson} /> : null}
+            {current.type === "summary" && loaded && lessonUnlocked ? (
+              <div className="mt-5 border-t border-border/40 pt-4 text-sm text-muted-foreground">
+                <p>独立答对 {correctCount}/{practiceSteps}。查看提示后的答对保留在练习记录中。</p>
+                <Button type="button" variant="outline" className="mt-3" onClick={restartCurrentLesson} data-testid="lesson-restart">重新练习本课</Button>
+                <p className="mt-2">从第一步重新练习，保留已完成记录和首次成绩。</p>
+              </div>
+            ) : null}
 
             <LessonNavigationBar
               current={current}
@@ -185,7 +201,7 @@ export function LessonRunner({ lesson }: LessonRunnerProps) {
               result={result}
               stepIndex={stepIndex}
             />
-          </main>
+          </section>
         </div>
       </div>
     </div>

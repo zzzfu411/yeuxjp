@@ -1,5 +1,7 @@
 "use client"
 
+import { runLearningWrite } from "@/lib/learning-write-lock"
+
 import { useMemo, useState } from "react"
 import dynamic from "next/dynamic"
 import { useMistakeNotebook, MISTAKE_SRS_STORAGE_KEY } from "@/lib/mistake-notebook"
@@ -75,11 +77,11 @@ export function ReviewPage() {
     setReviewSaveError(false)
     setSession(nextSession)
   }
-  const enrollKanaMissing = () => setReviewSaveError(!runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.kanaEnrollMissing, kanaSrs.enroll)))
-  const enrollVocabMissing = () => setReviewSaveError(!runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.vocabEnrollMissing, vocabSrs.enroll)))
-  const enrollMistakeMissing = () => setReviewSaveError(!runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.mistakeEnrollMissing, mistakeSrs.enroll)))
-  const removeMistake = (id: string) => setReviewSaveError(!mistakes.remove(id))
-  const clearMistakes = () => setReviewSaveError(!mistakes.clear())
+  const enrollKanaMissing = async () => setReviewSaveError(!await runLearningWrite(() => runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.kanaEnrollMissing, kanaSrs.enroll))))
+  const enrollVocabMissing = async () => setReviewSaveError(!await runLearningWrite(() => runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.vocabEnrollMissing, vocabSrs.enroll))))
+  const enrollMistakeMissing = async () => setReviewSaveError(!await runLearningWrite(() => runLearningStorageTransaction(() => enrollMissingReviewItems(dashboard.mistakeEnrollMissing, mistakeSrs.enroll))))
+  const removeMistake = async (id: string) => setReviewSaveError(!await runLearningWrite(() => mistakes.remove(id)))
+  const clearMistakes = async () => setReviewSaveError(!await runLearningWrite(() => mistakes.clear()))
 
   return (
     <>

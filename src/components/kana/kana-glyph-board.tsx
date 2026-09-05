@@ -71,17 +71,15 @@ export function KanaGlyphBoard({
       aria-label={label}
       data-testid={label ? "kana-stroke-board" : undefined}
     >
-      {/* Washi paper texture — tiled at low opacity. Only shows in light mode
-          (paper-washi-tile is a warm cream tone that fights with dark bg). */}
+      {/* A quiet practice grid keeps stroke direction readable in both themes. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 dark:hidden"
+        className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage: "url(/assets/textures/paper-washi-tile.png)",
-          backgroundRepeat: "repeat",
-          backgroundSize: "128px 128px",
-          opacity: 0.35,
-          mixBlendMode: "multiply",
+          backgroundImage:
+            "linear-gradient(to right, hsl(var(--border) / 0.12) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / 0.12) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          opacity: 0.6,
         }}
       />
 

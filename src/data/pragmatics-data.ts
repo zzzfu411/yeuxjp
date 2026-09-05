@@ -20,8 +20,8 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "早安",
     situation: "早上见面",
     context: "对同事/邻居。",
-    culturalNote: "元气满满的开始。",
-    responses: [{ type: "Native", expression: "おはようございます。", explanation: "必须清晰响亮。对熟人可略为'おはよう'。" }]
+    culturalNote: "正式场合常用的早晨问候。",
+    responses: [{ type: "Native", expression: "おはようございます。", explanation: "清楚地说即可；对熟人可以简化为「おはよう」。" }]
   },
   {
     id: "p-aisatsu-day",
@@ -44,16 +44,16 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "工作开始",
     situation: "到公司/打工",
     context: "即使是下午或晚上到。",
-    culturalNote: "业界惯例，只要是该人的一天开始，都说早安。",
-    responses: [{ type: "Native", expression: "おはようございます。", explanation: "电视台/服务业尤甚。" }]
+    culturalNote: "部分行业会把这句话当作开工时的问候，不限于早晨。",
+    responses: [{ type: "Native", expression: "おはようございます。", explanation: "在电视、演艺和部分服务业中较常见。" }]
   },
   {
     id: "p-aisatsu-work-during",
     title: "辛苦了",
     situation: "同事擦肩而过",
     context: "在公司走廊。",
-    culturalNote: "承认对方的劳动。",
-    responses: [{ type: "Native", expression: "お疲れ様です。", explanation: "万能金句。千万别对长辈说'ご苦労様'（那是上对下）。" }]
+    culturalNote: "工作场合常用来问候或慰劳同事。",
+    responses: [{ type: "Native", expression: "お疲れ様です。", explanation: "适用范围很广。「ご苦労様」一般用于上级对下级，不宜对上司使用。" }]
   },
   {
     id: "p-aisatsu-leave",
@@ -156,8 +156,8 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "对不起",
     situation: "道歉",
     context: "犯错/添麻烦。",
-    culturalNote: "道歉文化。",
-    responses: [{ type: "Native", expression: "申し訳ございません。", explanation: "最高级道歉，比すみません更正式。" }]
+    culturalNote: "适合正式或较郑重的道歉。",
+    responses: [{ type: "Native", expression: "申し訳ございません。", explanation: "语气非常正式，比「すみません」更郑重。" }]
   },
   {
     id: "p-aisatsu-thanks",
@@ -184,8 +184,8 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "拒绝喝酒",
     situation: "上司邀请",
     context: "不想去。",
-    culturalNote: "不能直接说不。",
-    responses: [{ type: "Native", expression: "今日はちょっと用事がありまして...", explanation: "我有事（省略了不能去）。" }]
+    culturalNote: "直接拒绝有时会显得生硬，可以先说明原因。",
+    responses: [{ type: "Native", expression: "今日はちょっと用事がありまして...", explanation: "表示今天有事，后半句省略了“不能去”。" }]
   },
   {
     id: "p-refuse-date",
@@ -193,22 +193,22 @@ export const pragmaticsData: PragmaticScenario[] = [
     situation: "被表白/邀约",
     context: "不喜欢对方。",
     culturalNote: "保持距离。",
-    responses: [{ type: "Native", expression: "今は仕事（勉強）に集中したいので。", explanation: "我想专注工作（借口）。" }]
+    responses: [{ type: "Native", expression: "今は仕事（勉強）に集中したいので。", explanation: "说明自己目前想专注工作或学习，委婉地拒绝邀约。" }]
   },
   {
     id: "p-refuse-offer",
     title: "拒绝推销",
     situation: "店员推荐",
     context: "不想买。",
-    culturalNote: "给面子。",
-    responses: [{ type: "Native", expression: "ちょっと考えます。", explanation: "我再考虑一下（=不买）。" }]
+    culturalNote: "用含蓄说法给彼此留出余地。",
+    responses: [{ type: "Native", expression: "ちょっと考えます。", explanation: "字面是“我再考虑一下”，在推销场景里常表示暂时不买。" }]
   },
   {
     id: "p-refuse-help",
     title: "拒绝帮助",
     situation: "别人想帮你",
     context: "自己能行。",
-    culturalNote: "不添麻烦。",
+    culturalNote: "先表达自己可以处理，避免让对方继续费心。",
     responses: [{ type: "Native", expression: "大丈夫です。自分でやります。", explanation: "没事，我自己来。" }]
   },
   {
@@ -380,16 +380,16 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "辛苦",
     situation: "慰劳",
     context: "对下属/平辈。",
-    culturalNote: "上对下。",
-    responses: [{ type: "Native", expression: "ご苦労様。", explanation: "辛苦了（只能对下级说）。" }]
+    culturalNote: "通常由上级对下级使用。",
+    responses: [{ type: "Native", expression: "ご苦労様。", explanation: "有“辛苦了”的意思，一般不用于对上司或客户说。" }]
   },
   {
     id: "p-biz-understand",
     title: "明白了",
     situation: "接指令",
     context: "对上司/客户。",
-    culturalNote: "不要说'分かりました'。",
-    responses: [{ type: "Native", expression: "かしこまりました / 承知いたしました。", explanation: "遵命/知道了（谦逊）。" }]
+    culturalNote: "对客户或上级，需要比「分かりました」更正式的说法。",
+    responses: [{ type: "Native", expression: "かしこまりました / 承知いたしました。", explanation: "表示“明白了”，语气郑重而礼貌。" }]
   },
   {
     id: "p-biz-name",
@@ -412,8 +412,8 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "座位",
     situation: "会议室/车",
     context: "上座下座。",
-    culturalNote: "离门最远是上座。",
-    responses: [{ type: "Native", expression: "奥へどうぞ。", explanation: "请坐里面（上座）。" }]
+    culturalNote: "在常见会客室里，离门较远的位置通常是上座。",
+    responses: [{ type: "Native", expression: "奥へどうぞ。", explanation: "请对方坐到里面的位置。" }]
   },
   {
     id: "p-biz-enter",
@@ -500,8 +500,8 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "电梯",
     situation: "送客",
     context: "电梯门关。",
-    culturalNote: "鞠躬直到门关。",
-    responses: [{ type: "Native", expression: "失礼いたします（深鞠躬）。", explanation: "保持鞠躬姿势直到门完全关上。" }]
+    culturalNote: "离开房间时先致意，再轻轻关门。",
+    responses: [{ type: "Native", expression: "失礼いたします。", explanation: "说完后鞠躬，退出房间并轻轻关门。" }]
   },
 
   // ==========================================
@@ -545,7 +545,7 @@ export const pragmaticsData: PragmaticScenario[] = [
     situation: "爱",
     context: "沉重的爱。",
     culturalNote: "恐怖。",
-    responses: [{ type: "Anime", expression: "殺してあげる。", explanation: "我杀了你（为了爱）。" }]
+    responses: [{ type: "Anime", expression: "殺してあげる。", explanation: "“我来杀了你”，属于夸张的威胁台词。" }]
   },
   {
     id: "p-ani-chuunibyou",
@@ -560,8 +560,8 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "前辈",
     situation: "校园",
     context: "呼唤学长。",
-    culturalNote: "敬仰。",
-    responses: [{ type: "Anime", expression: "先輩！", explanation: "Senpai（已成为国际词汇）。" }]
+    culturalNote: "称呼比自己资历更深的人。",
+    responses: [{ type: "Anime", expression: "先輩！", explanation: "意思是“学长、学姐或前辈”，具体语气取决于人物关系。" }]
   },
   {
     id: "p-ani-onii",
@@ -600,7 +600,7 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "约定",
     situation: "指勾",
     context: "幼驯染。",
-    culturalNote: "Flag。",
+    culturalNote: "常见的剧情承诺台词。",
     responses: [{ type: "Anime", expression: "約束だ。", explanation: "说好了哦。" }]
   },
   {
@@ -656,8 +656,8 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "去死",
     situation: "攻击",
     context: "绝招。",
-    culturalNote: "极度攻击性。",
-    responses: [{ type: "Anime", expression: "死ね！", explanation: "去死吧！" }]
+    culturalNote: "攻击性很强，现实交流中不要使用。",
+    responses: [{ type: "Anime", expression: "死ね！", explanation: "“去死吧”，是非常强烈的辱骂。" }]
   },
   {
     id: "p-ani-bakana",
@@ -684,8 +684,8 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "月色真美",
     situation: "含蓄表白",
     context: "夏目漱石。",
-    culturalNote: "文学。",
-    responses: [{ type: "Native", expression: "月が綺麗ですね。", explanation: "我爱你（含蓄版）。" }]
+    culturalNote: "常被文学和流行文化联想到含蓄告白。",
+    responses: [{ type: "Native", expression: "月が綺麗ですね。", explanation: "字面意思是“月色很美”；是否带有告白意味，要看具体语境。" }]
   },
   {
     id: "p-love-date",
@@ -756,7 +756,7 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "共鸣",
     situation: "闲聊",
     context: "天气。",
-    culturalNote: "助词ne。",
+    culturalNote: "句尾的「ね」用来邀请对方认同。",
     responses: [{ type: "Native", expression: "寒いですね。", explanation: "好冷啊（是吧）。" }]
   },
   {
@@ -764,7 +764,7 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "附和",
     situation: "听话",
     context: "点头。",
-    culturalNote: "Aizuchi。",
+    culturalNote: "简短回应可以表示自己正在听。",
     responses: [{ type: "Native", expression: "そうですか / なるほど。", explanation: "是吗/原来如此。" }]
   },
   {
@@ -772,7 +772,7 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "夸奖",
     situation: "赞赏",
     context: "很棒。",
-    culturalNote: "Sugoii。",
+    culturalNote: "口语中常用来表达惊叹或称赞。",
     responses: [{ type: "Native", expression: "すごい！", explanation: "好厉害！" }]
   },
   {
@@ -796,7 +796,7 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "祝贺",
     situation: "喜事",
     context: "生日/结婚。",
-    culturalNote: "Omedetou。",
+    culturalNote: "用于祝贺对方取得成果或遇到喜事。",
     responses: [{ type: "Native", expression: "おめでとうございます。", explanation: "恭喜。" }]
   },
   {
@@ -812,7 +812,7 @@ export const pragmaticsData: PragmaticScenario[] = [
     title: "干杯",
     situation: "喝酒",
     context: "碰杯。",
-    culturalNote: "Kampai。",
+    culturalNote: "聚会举杯时使用。",
     responses: [{ type: "Native", expression: "乾杯！", explanation: "干杯！" }]
   },
   {

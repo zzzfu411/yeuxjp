@@ -1,3 +1,7 @@
+import { routeMetadata } from "@/lib/site-metadata"
+
+export const metadata = routeMetadata("/vocabulary")
+
 import { VocabularyPage } from "@/components/vocabulary/vocabulary-page"
 
 export default function VocabularyRoute() {

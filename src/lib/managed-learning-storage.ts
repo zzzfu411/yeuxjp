@@ -1,5 +1,7 @@
 "use client"
 
+import { assertLearningWriteLock } from "@/lib/learning-write-lock-state"
+
 import { MANAGED_LEARNING_STORAGE_KEYS, type ManagedLearningStorageKey } from "@/lib/managed-learning-keys"
 
 export { MANAGED_LEARNING_STORAGE_KEYS } from "@/lib/managed-learning-keys"
@@ -55,6 +57,7 @@ export function endManagedLearningStorageTransaction(transaction: ManagedLearnin
 }
 
 export function writeManagedLearningStorage(key: string, value: string) {
+  assertLearningWriteLock()
   if (typeof window === "undefined") return false
   const before = window.localStorage.getItem(key)
   window.localStorage.setItem(key, value)
@@ -63,6 +66,7 @@ export function writeManagedLearningStorage(key: string, value: string) {
 }
 
 export function removeManagedLearningStorage(key: string) {
+  assertLearningWriteLock()
   if (typeof window === "undefined") return false
   const before = window.localStorage.getItem(key)
   window.localStorage.removeItem(key)

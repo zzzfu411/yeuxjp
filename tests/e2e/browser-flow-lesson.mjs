@@ -56,20 +56,22 @@ export async function verifyLessonFlow(page, baseUrl) {
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   await page.evaluate(() => localStorage.clear())
   await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await page.getByTestId("home-edit-profile").click()
   await page.getByTestId("onboarding-goal-travel").click()
   await page.getByTestId("onboarding-some").click()
   await page.getByTestId("onboarding-always").click()
   await page.getByTestId("onboarding-minutes").focus()
   await page.keyboard.press("ArrowRight")
   await page.getByTestId("onboarding-save").click()
+  await page.getByRole("dialog").waitFor({ state: "hidden" })
   await page.getByTestId("home-start-learning").waitFor({ state: "visible" })
   assert.match(
-    await page.getByText("课表", { exact: true }).locator("xpath=..").innerText(),
+    await page.getByText("课程", { exact: true }).locator("xpath=..").innerText(),
     /0\/175/,
     "home should show course progress separately from vocabulary mastery"
   )
   assert.match(
-    await page.getByText("生存词", { exact: true }).locator("xpath=..").innerText(),
+    await page.getByText("入门词", { exact: true }).locator("xpath=..").innerText(),
     /0\/544/,
     "home should show survival vocabulary mastery separately from course progress"
   )
@@ -104,6 +106,7 @@ export async function verifyLessonFlow(page, baseUrl) {
   }, E2E_STORAGE_KEYS.LESSON_PROGRESS)
   await page.getByTestId("lesson-answer-a").waitFor({ state: "visible" })
   await rapidClick(page.getByTestId("lesson-answer-a"))
+  await page.getByTestId("lesson-next").and(page.locator(":enabled")).waitFor({ state: "visible" })
   assert.ok(await page.getByTestId("lesson-next").isEnabled())
 
   const lessonPractice = await readJsonStorage(page, E2E_STORAGE_KEYS.PRACTICE_RESULTS)
@@ -205,7 +208,7 @@ export async function verifyLessonFlow(page, baseUrl) {
   )
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   assert.match(
-    await page.getByText("课表", { exact: true }).locator("xpath=..").innerText(),
+    await page.getByText("课程", { exact: true }).locator("xpath=..").innerText(),
     /1\/175/,
     "home course progress should increment after completing day 1"
   )
@@ -217,6 +220,7 @@ export async function verifyLessonFlow(page, baseUrl) {
   await page.getByTestId("home-edit-profile").click()
   await page.getByTestId("onboarding-hidden").click()
   await page.getByTestId("onboarding-save").click()
+  await page.getByRole("dialog").waitFor({ state: "hidden" })
   await page.getByTestId("home-edit-profile").waitFor({ state: "visible" })
   const editedProfile = await readJsonStorage(page, E2E_STORAGE_KEYS.USER_PROFILE)
   assert.equal(editedProfile?.romajiMode, "hidden", "home profile editor should persist a later romaji change")
@@ -228,12 +232,12 @@ export async function verifyLessonFlow(page, baseUrl) {
     "path next step should recommend the next unlocked lesson after completing day 1"
   )
   assert.match(
-    await page.getByText("课表", { exact: true }).locator("xpath=..").innerText(),
+    await page.getByText("已完成课程", { exact: true }).locator("xpath=..").innerText(),
     /1\/175/,
     "path should show course progress separately from vocabulary mastery"
   )
   assert.match(
-    await page.getByText("生存词", { exact: true }).locator("xpath=..").innerText(),
+    await page.getByText("入门词汇", { exact: true }).locator("xpath=..").innerText(),
     /0\/544/,
     "path should show survival vocabulary mastery separately from course progress"
   )

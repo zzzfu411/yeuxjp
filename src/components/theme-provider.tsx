@@ -4,8 +4,8 @@ import * as React from "react"
 import { ThemeProvider as NextThemesProvider, type ThemeProviderProps, useTheme } from "next-themes"
 
 const THEME_COLOR_BY_MODE = {
-  light: "#d8d3cc",
-  dark: "#2a2733",
+  light: "#fffdf9",
+  dark: "#1e202b",
 } as const
 
 function ThemeColorSync() {

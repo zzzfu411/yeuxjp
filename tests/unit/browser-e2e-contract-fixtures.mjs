@@ -14,6 +14,7 @@ export const browserFixtureModulePaths = [
 ]
 export const browserFlowModulePaths = [
   "tests/e2e/browser-flow-lesson.mjs",
+  "tests/e2e/browser-flow-lesson-integrity.mjs",
   "tests/e2e/browser-flow-confirm-dialog.mjs",
   "tests/e2e/browser-flow-content.mjs",
   "tests/e2e/browser-flow-profile-save.mjs",
@@ -76,7 +77,7 @@ export function readE2EStorageKeys() {
 export const requiredSelectors = [
   {
     testId: "home-start-learning",
-    source: "src/components/home/home-now-playing.tsx",
+    source: "src/components/home/home-scene.tsx",
     pattern: /data-testid="home-start-learning"/,
   },
   {
@@ -87,7 +88,7 @@ export const requiredSelectors = [
   {
     testId: "nav-start-learning",
     source: "src/components/layout/navbar.tsx",
-    pattern: /data-testid="nav-start-learning"/,
+    pattern: /data-testid=\{item\.href === "\/path" \? "nav-start-learning" : undefined\}/,
   },
   {
     testId: "onboarding-goal-travel",

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { kanaData } from "@/data/kana-data"
-import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
+import { STARTER_LESSONS, getNextLesson } from "@/data/lesson-catalog"
 import { useLearningProfile } from "@/lib/learning-progress"
 import { buildLearningRecommendationModel } from "@/lib/learning-recommendation-model"
 import { useLearningStatus } from "@/lib/learning-status"

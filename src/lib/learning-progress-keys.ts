@@ -8,6 +8,7 @@ export const PROGRESS_STORAGE_KEYS = [
   STORAGE_KEYS.LESSON_PROGRESS,
   STORAGE_KEYS.ITEM_PROGRESS,
   STORAGE_KEYS.PRACTICE_RESULTS,
+  STORAGE_KEYS.STUDY_CALENDAR,
 ] as const
 
 export function includesProgressStorageKey(keys: readonly string[] | undefined) {

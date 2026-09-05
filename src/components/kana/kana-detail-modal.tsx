@@ -112,7 +112,7 @@ export function KanaDetailModal({
                     {mode === "hiragana" ? kana.hiragana : kana.katakana}
                   </span>
                   {!isComboChar && (
-                    <span className="font-jp absolute left-4 top-4 select-none text-5xl text-muted-foreground/10">
+                    <span className="font-jp absolute left-4 top-4 select-none text-5xl text-muted-foreground/10" lang="ja">
                       {mode === "hiragana" ? kana.katakana : kana.hiragana}
                     </span>
                   )}
@@ -124,7 +124,7 @@ export function KanaDetailModal({
                   className="border-y border-border/35 bg-muted/15 px-4 py-3 text-center text-sm text-muted-foreground"
                   aria-live="polite"
                 >
-                  正在确认 AnimCJK 笔顺资源，确认可用后会显示笔顺入口。
+                  正在加载笔顺动画，加载完成后即可查看。
                 </div>
               ) : null}
 
@@ -133,7 +133,7 @@ export function KanaDetailModal({
                   className="border-y border-border/35 bg-muted/15 px-4 py-3 text-center text-sm text-muted-foreground"
                   aria-live="polite"
                 >
-                  当前字符暂无可用 AnimCJK 笔顺资源，仍可朗读和标记掌握。
+                  这个假名暂时没有笔顺动画，你仍可以听发音或标记为已掌握。
                 </div>
               ) : null}
 

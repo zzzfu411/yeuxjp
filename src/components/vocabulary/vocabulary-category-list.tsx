@@ -30,18 +30,17 @@ export function VocabularyCategoryList({
   onRetry,
 }: VocabularyCategoryListProps) {
   return (
-    <div className="space-y-12 pt-10">
+    <div className="space-y-6 pt-3">
       {categories.map((category) => {
         const categoryItems = getVocabularyItemsByCategory(items, category)
 
         return (
-          <section key={category} id={`cat-${category}`} className="paper-sheet relative scroll-mt-48 px-4 py-7 sm:px-6 sm:py-8">
+          <section key={category} id={`cat-${category}`} className="paper-sheet vocab-category-panel relative scroll-mt-48 py-2">
             <span className="paper-tape" aria-hidden="true" />
-            <header className="mb-7 flex items-center gap-4 border-b border-border/45 pb-4">
-              <CategoryIcon category={category} size={44} />
+            <header className="vocab-category-heading mb-3 flex items-center gap-3 border-b border-border/45 pb-2 sm:mb-4 sm:gap-4 sm:pb-4">
+              <span className="hidden sm:block"><CategoryIcon category={category} size={44} /></span>
               <h2 className="min-w-0 text-lg font-semibold text-foreground sm:text-xl">
                 <span className="inkline">{categoryNames[category] || category}</span>
-                <span className="font-scribble ml-3 text-base font-normal text-muted-foreground">{category}</span>
               </h2>
               <span className="font-scribble ml-auto text-base text-muted-foreground">
                 {categoryItems.length}
@@ -66,7 +65,7 @@ export function VocabularyCategoryList({
       {loading && (
         <div className="paper-slip relative mx-auto max-w-lg px-6 py-14 text-center text-muted-foreground">
           <span className="paper-tape" aria-hidden="true" />
-          <span className="font-scribble block text-lg">loading notes...</span>
+          <span className="block text-sm font-bold">正在准备词汇卡...</span>
           <span className="mt-2 block text-sm">{"\u6b63\u5728\u52a0\u8f7d\u8bcd\u6c47..."}</span>
         </div>
       )}

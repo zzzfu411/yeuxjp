@@ -12,7 +12,8 @@ export const E2E_STORAGE_KEYS = {
   LESSON_PROGRESS: "yasashi.learning.lessons.v1",
   ITEM_PROGRESS: "yasashi.learning.items.v1",
   PRACTICE_RESULTS: "yasashi.learning.practice.v1",
+  STUDY_CALENDAR: "yasashi.learning.calendar.v1",
 }
 
 export const managedLearningBackupKeys = Object.values(E2E_STORAGE_KEYS)
-export const E2E_LEARNING_BACKUP_VERSION = 3
+export const E2E_LEARNING_BACKUP_VERSION = 4

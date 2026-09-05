@@ -1,57 +1,7 @@
 import { normalizeKanaPracticeRecord, normalizeKanaPracticeResultItemId } from "@/lib/kana-id"
-import { normalizeLessonStepAnswerMap, type LessonStepAnswerMap } from "@/lib/lesson-step-answers"
-export type LearningGoal = "balanced" | "travel" | "jlpt" | "media"
-export type KanaLevel = "none" | "some" | "solid"
-export type RomajiMode = "always" | "practice" | "hidden"
-
-export interface UserProfile {
-  goal: LearningGoal
-  minutesPerDay: number
-  kanaLevel: KanaLevel
-  romajiMode: RomajiMode
-  createdAt: number
-  updatedAt: number
-}
-export interface LessonProgress {
-  lessonId: string
-  status: "started" | "completed"
-  startedAt: number
-  completedAt?: number
-  score?: number
-  currentStepIndex?: number
-  lastStepId?: string
-  updatedAt?: number
-  stepAnswers?: LessonStepAnswerMap
-}
-export type PracticeItemType = "kana" | "vocab" | "grammar" | "sentence" | "lesson"
-export type PracticeMode = "recognition" | "listening" | "meaning" | "recall" | "production"
-
-export interface PracticeResult {
-  lessonId?: string
-  lessonStepId?: string
-  itemId: string
-  itemType: PracticeItemType
-  mode: PracticeMode
-  correct: boolean
-  answer?: string
-  durationMs?: number
-  createdAt: number
-}
-export interface ItemProgress {
-  itemId: string
-  itemType: PracticeItemType
-  recognition: number
-  listening: number
-  meaning: number
-  recall: number
-  production: number
-  attempts: number
-  correct: number
-  updatedAt: number
-}
-export type LessonProgressMap = Record<string, LessonProgress>
-export type ItemProgressMap = Record<string, ItemProgress>
-
+import { normalizeLessonStepAnswerMap } from "@/lib/lesson-step-answers"
+export type * from "@/lib/learning-progress-types"
+import type { LearningGoal, KanaLevel, RomajiMode, UserProfile, PracticeItemType, PracticeMode, PracticeResult, ItemProgress, LessonProgress, LessonProgressMap, ItemProgressMap } from "@/lib/learning-progress-types"
 const PRACTICE_RESULT_LIMIT = 300
 const PRACTICE_ITEM_TYPES = new Set<PracticeItemType>(["kana", "vocab", "grammar", "sentence", "lesson"])
 const PRACTICE_MODES = new Set<PracticeMode>(["recognition", "listening", "meaning", "recall", "production"])
@@ -152,6 +102,10 @@ export function normalizeLessonProgressMap(input: unknown, now = Date.now()): Le
     }
     const stepAnswers = normalizeLessonStepAnswerMap(obj.stepAnswers)
     if (stepAnswers) normalized.stepAnswers = stepAnswers
+    if (typeof obj.attemptId === "string" && obj.attemptId) normalized.attemptId = obj.attemptId
+    if (typeof obj.attemptCompletedAt === "number" && Number.isFinite(obj.attemptCompletedAt)) normalized.attemptCompletedAt = obj.attemptCompletedAt
+    if (typeof obj.attemptScore === "number") normalized.attemptScore = clampScore(obj.attemptScore)
+    if (Array.isArray(obj.hintedStepIds)) normalized.hintedStepIds = [...new Set(obj.hintedStepIds.filter((id): id is string => typeof id === "string" && !!id))]
     out[lessonId] = normalized
   }
   return out
@@ -169,6 +123,7 @@ export function normalizeItemProgressMap(input: unknown, now = Date.now()): Item
     out[itemId] = {
       itemId,
       itemType,
+      ...(Array.isArray(obj.assessedModes) ? { assessedModes: [...new Set(obj.assessedModes.filter(isPracticeMode))] } : {}),
       recognition: clampScore(obj.recognition ?? 0),
       listening: clampScore(obj.listening ?? 0),
       meaning: clampScore(obj.meaning ?? 0),
@@ -200,6 +155,8 @@ export function normalizePracticeResults(input: unknown, now = Date.now()): Prac
     out.push({
       lessonId: typeof item.lessonId === "string" ? item.lessonId : undefined,
       lessonStepId: typeof item.lessonStepId === "string" ? item.lessonStepId : undefined,
+      ...(typeof item.lessonAttemptId === "string" ? { lessonAttemptId: item.lessonAttemptId } : {}),
+      ...(item.assisted === true ? { assisted: true } : {}),
       itemId,
       itemType: item.itemType ?? "lesson",
       mode: item.mode,
@@ -225,7 +182,7 @@ export function updateItemProgressForPractice(previous: unknown, result: Practic
   const base = normalizeItemProgressMap(previous, updatedAt)
   const itemId = normalizeKanaPracticeResultItemId(result) ?? result.itemId
   const current = base[itemId] ?? createItemProgress(itemId, result.itemType, updatedAt)
-  const delta = result.correct ? 18 : -10
+  const delta = result.assisted ? 0 : result.correct ? 18 : -10
   const nextScore = clampScore(current[result.mode] + delta)
 
   return {
@@ -233,9 +190,10 @@ export function updateItemProgressForPractice(previous: unknown, result: Practic
     [itemId]: {
       ...current,
       itemType: result.itemType,
+      assessedModes: [...new Set([...getAssessedModes(current), ...(result.assisted ? [] : [result.mode])])],
       [result.mode]: nextScore,
       attempts: current.attempts + 1,
-      correct: current.correct + (result.correct ? 1 : 0),
+      correct: current.correct + (result.correct && !result.assisted ? 1 : 0),
       updatedAt,
     },
   } satisfies ItemProgressMap
@@ -272,6 +230,8 @@ export function calculateStudyStreak(studyDates: ReadonlySet<string>, today: Dat
   if (!Number.isFinite(today.getTime())) return 0
   let count = 0
   const cursor = new Date(today)
+  // A streak remains active through today until the learner misses a whole day.
+  if (!studyDates.has(todayKey(cursor))) cursor.setDate(cursor.getDate() - 1)
   for (;;) {
     const key = todayKey(cursor)
     if (!key || !studyDates.has(key)) break
@@ -290,8 +250,15 @@ export function normalizeStepIndex(stepIndex: number) {
   return Math.max(0, Math.floor(stepIndex))
 }
 
+export function getAssessedModes(item: ItemProgress): PracticeMode[] {
+  return Array.isArray(item.assessedModes)
+    ? [...new Set(item.assessedModes.filter(isPracticeMode))]
+    : [...PRACTICE_MODES].filter(mode => Number.isFinite(item[mode]) && item[mode] > 0)
+}
+
 export function averageMastery(item?: ItemProgress) {
   if (!item) return 0
-  const scores = [item.recognition, item.listening, item.meaning, item.recall, item.production].map(masteryScore)
+  const scores = getAssessedModes(item).map(mode => masteryScore(item[mode]))
+  if (!scores.length) return 0
   return Math.round(scores.reduce((total, score) => total + score, 0) / scores.length)
 }

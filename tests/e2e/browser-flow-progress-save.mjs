@@ -35,7 +35,7 @@ async function resetBrowserLearningState(page, url) {
 async function openVocabularyFocusModal(page) {
   await page.getByTestId("vocabulary-search").fill("みせ")
   await page.getByTestId("vocabulary-expand-sur-n-35").waitFor({ state: "visible" })
-  await page.getByTestId("vocabulary-expand-sur-n-35").locator("xpath=ancestor::*[@role='button'][1]").press("Space")
+  await page.getByTestId("vocabulary-expand-sur-n-35").locator("xpath=ancestor::article[1]").getByRole("button", { name: /点击翻面/ }).press("Space")
   await page.getByTestId("vocabulary-expand-back-sur-n-35").waitFor({ state: "visible" })
   await page.getByTestId("vocabulary-expand-back-sur-n-35").press("Space")
   await page.getByRole("dialog").waitFor({ state: "visible" })

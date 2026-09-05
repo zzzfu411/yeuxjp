@@ -5,6 +5,7 @@ import {
   pageLooksLikeYasashi,
 } from "./app-health.mjs"
 import { createServerController, startBuiltProductionServer } from "./harness.mjs"
+import { verifyReleaseSurfaces } from "../../scripts/verify-release-surfaces.mjs"
 
 const port = Number(process.env.E2E_PORT ?? 3210)
 let baseUrl = `http://127.0.0.1:${port}`
@@ -32,6 +33,7 @@ try {
     assert.equal(response.status, 404, `${route} should return 404`)
   }
 
+  await verifyReleaseSurfaces(baseUrl, routes)
   const notFoundLabel = appNotFoundRoutes.length === 1 ? "404 route" : "404 routes"
   console.log(`HTTP smoke checks passed for ${routes.length} routes and ${appNotFoundRoutes.length} ${notFoundLabel} at ${baseUrl}`)
 } catch (error) {

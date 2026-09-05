@@ -26,7 +26,7 @@ test("LessonLockedPreview owns locked lesson recovery links", () => {
   const source = read("src/components/lesson/lesson-locked-preview.tsx")
 
   assert.match(source, /export function LessonLockedPreview/)
-  assert.match(source, /recommendedLesson: Lesson \| null/)
+  assert.match(source, /recommendedLesson: Pick<Lesson, "id"> \| null/)
   assert.match(source, /data-testid="lesson-locked-preview"/)
   assert.match(source, /href=\{`\/learn\/\$\{recommendedLesson\.id\}`\}/)
   assert.match(source, /href="\/path"/)

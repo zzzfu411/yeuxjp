@@ -31,7 +31,7 @@ export function KanaCard({
       aria-label={`打开 ${mainChar}（${kana.romaji}）的详情`}
       data-testid={`kana-card-${kana.romaji}`}
       className={cn(
-        "paper-slip group relative flex aspect-square cursor-pointer select-none flex-col items-center justify-center p-2 sm:p-4",
+        "paper-slip kana-tile group relative flex aspect-square cursor-pointer select-none flex-col items-center justify-center p-2 sm:p-4",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         mastered && "bg-accent/[0.08] ring-1 ring-accent/35"
       )}
@@ -53,6 +53,7 @@ export function KanaCard({
       )}
       
       <div
+        lang="ja"
         className={cn(
           "font-jp mb-1 text-center font-semibold leading-none text-foreground",
           mainChar.length > 1 ? "text-xl sm:text-2xl" : "text-3xl sm:text-4xl"
@@ -65,7 +66,7 @@ export function KanaCard({
       {/* Sub-char watermark — only useful for single-char rows; combo kana
           (yoon like きゃ) would overflow the corner, so we hide it there. */}
       {mainChar.length === 1 && (
-        <div className="font-jp absolute left-2 top-2 select-none text-[10px] text-muted-foreground/30 sm:left-3 sm:text-xs">
+        <div lang="ja" aria-hidden="true" className="font-jp absolute left-2 top-2 select-none text-[10px] text-muted-foreground/30 sm:left-3 sm:text-xs">
           {subChar}
         </div>
       )}

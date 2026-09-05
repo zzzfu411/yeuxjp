@@ -5,16 +5,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-sm border text-sm font-semibold ring-offset-background transition-[transform,background-color,color,border-color,box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45 hover:-translate-y-0.5 active:translate-y-0",
+  "anime-button inline-flex items-center justify-center whitespace-nowrap text-sm font-bold transition-[transform,background-color,color,border-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       variant: {
-        default: "border-accent/70 bg-accent text-accent-foreground shadow-paper-soft hover:bg-accent/90",
-        destructive: "border-destructive/70 bg-destructive text-destructive-foreground shadow-paper-soft",
-        outline: "border-border/70 bg-card/55 text-foreground shadow-none hover:bg-primary/10",
-        secondary: "border-border/50 bg-secondary/50 text-secondary-foreground shadow-none hover:bg-secondary/80",
-        ghost: "border-transparent bg-transparent shadow-none hover:border-border/50 hover:bg-primary/10",
-        link: "border-transparent bg-transparent shadow-none underline-offset-4 hover:translate-y-0 hover:underline",
+        default: "anime-button-primary",
+        destructive: "border-destructive bg-destructive text-destructive-foreground shadow-[4px_4px_0_hsl(var(--destructive)/0.28)]",
+        outline: "anime-button-outline",
+        secondary: "anime-button-secondary",
+        ghost: "anime-button-ghost shadow-none",
+        link: "anime-button-ghost border-transparent bg-transparent px-0 shadow-none underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",

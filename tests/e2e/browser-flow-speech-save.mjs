@@ -87,7 +87,7 @@ async function verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl) {
     await autoplayPage.getByTestId("vocabulary-search").fill("みせ")
     const vocabCard = autoplayPage
       .getByTestId("vocabulary-expand-sur-n-35")
-      .locator("xpath=ancestor::*[@role='button'][1]")
+      .locator("xpath=ancestor::article[1]").getByRole("button", { name: /点击翻面/ })
     await vocabCard.click()
     await autoplayPage.getByRole("button", { name: "朗读 みせ" }).click()
     await autoplayPage.waitForFunction(() => window.__yasashiSpeechSpoken?.length === 1, undefined, { timeout: 2_000 })
@@ -103,6 +103,7 @@ async function verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl) {
 
 export async function verifySpeechPreferenceSaveFailureFlow(page, baseUrl) {
   await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.locator("summary").filter({ hasText: "听力设置" }).click()
   await page.evaluate((key) => localStorage.removeItem(key), E2E_STORAGE_KEYS.SPEECH_PREFS)
 
   await failSpeechPreferenceWrites(page)

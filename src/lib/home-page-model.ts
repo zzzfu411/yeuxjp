@@ -1,4 +1,5 @@
-import { STARTER_LESSONS, getNextLesson } from "@/data/lessons"
+import { STARTER_LESSONS, getNextLesson } from "@/data/lesson-catalog"
+import { LEARNING_ITEM_INDEX } from "@/data/learning-item-index"
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { summarizeLearnedVocabIds } from "@/data/vocabulary/stats"
 import { getKanaById } from "@/lib/kana-id"
@@ -25,13 +26,19 @@ export type HomePageModel = {
   nextLesson: ReturnType<typeof getNextLesson>
   learningEntry: LearningEntry
   completedCount: number
+  skippedCount: number
   survivalDone: number
   survivalTotal: number
   weakest: HomeWeakestItem | null
   weakestHref: string
 }
 
-export function getWeakestPracticeHref(itemType: PracticeItemType | undefined) {
+export function getWeakestPracticeHref(itemType: PracticeItemType | undefined, id?: string) {
+  if (id && itemType === "kana") {
+    const parsed = getKanaById(id)
+    if (parsed) return `/kana?mode=${parsed.script}&set=${parsed.kana.type === "handakuon" ? "dakuon" : parsed.kana.type}&item=${encodeURIComponent(id)}`
+  }
+  if (id && LEARNING_ITEM_INDEX[`${itemType}:${id}`]) return LEARNING_ITEM_INDEX[`${itemType}:${id}`][1]
   if (itemType === "kana") return "/kana"
   if (itemType === "vocab") return "/vocabulary"
   if (itemType === "grammar") return "/grammar"
@@ -66,7 +73,7 @@ export function getHomeWeakestItem(items: ItemProgressMap): HomeWeakestItem | nu
     .map((item) => ({
       id: item.itemId,
       display: (() => {
-        if (item.itemType !== "kana") return item.itemId
+        if (item.itemType !== "kana") return LEARNING_ITEM_INDEX[`${item.itemType}:${item.itemId}`]?.[0] ?? `${practiceItemTypeLabel(item.itemType)}练习`
         const parsed = getKanaById(item.itemId)
         return parsed ? `${parsed.kana[parsed.script]} (${parsed.romaji})` : item.itemId
       })(),
@@ -114,10 +121,11 @@ export function buildHomePageModel({
     totalDue: visibleKanaDueIds.length + visibleVocabDueIds.length + dueMistakeIds.length,
     nextLesson,
     learningEntry: resolveLearningEntry({ nextLesson, skill }),
-    completedCount: countSatisfiedLessons(STARTER_LESSONS, completedLessonIds, kanaLevel),
+    completedCount: STARTER_LESSONS.filter(lesson => completedLessonIds.has(lesson.id)).length,
+    skippedCount: countSatisfiedLessons(STARTER_LESSONS, completedLessonIds, kanaLevel) - STARTER_LESSONS.filter(lesson => completedLessonIds.has(lesson.id)).length,
     survivalDone: vocabStats.survival.done,
     survivalTotal: vocabStats.survival.total,
     weakest,
-    weakestHref: getWeakestPracticeHref(weakest?.itemType),
+    weakestHref: getWeakestPracticeHref(weakest?.itemType, weakest?.id),
   }
 }

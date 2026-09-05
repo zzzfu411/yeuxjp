@@ -1,6 +1,8 @@
 "use client"
 
-import { useCallback } from "react"
+import { runLearningWrite } from "@/lib/learning-write-lock"
+
+import { useCallback, useRef } from "react"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { Question, QuestionResult } from "@/lib/questions"
@@ -22,8 +24,10 @@ export function useReviewAnswerRecorder({
   canRecord?: (result: QuestionResult) => boolean
   grade: (result: QuestionResult) => boolean
 }) {
+  const pending = useRef<Promise<boolean> | null>(null)
   return useCallback((question: Question, selectedAnswer: string) => {
-    return recordReviewQuestionPractice({
+    if (pending.current) return pending.current
+    const task = runLearningWrite(() => recordReviewQuestionPractice({
       progress,
       notebook,
       question,
@@ -31,6 +35,8 @@ export function useReviewAnswerRecorder({
       recordAnswer,
       canRecord,
       grade,
-    })
+    })).finally(() => { pending.current = null })
+    pending.current = task
+    return task
   }, [canRecord, grade, notebook, progress, recordAnswer])
 }

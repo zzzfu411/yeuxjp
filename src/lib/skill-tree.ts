@@ -163,8 +163,8 @@ export const SKILL_TREE: SkillNode[] = [
   {
     id: "vocab-survival",
     category: "vocab",
-    title: "生存词汇（能用的词）",
-    short: "优先学“立刻能开口/能看懂”的词汇。",
+    title: "入门词汇（马上能用）",
+    short: "先学日常交流中最常用的词。",
     href: "/vocabulary?level=survival",
     prerequisites: ["kana-seion"],
     glossary: ["jlpt"],

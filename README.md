@@ -2,27 +2,29 @@
 
 Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana, vocabulary, grammar, semantic nuance, pragmatics, quizzes, a 175-day N5→N2 path, local progress tracking, SRS review, and a mistake notebook. Course practice, quiz practice, and review now share the same question/result rules so progress, SRS enrollment, and mistake recording stay consistent across pages. The course is a 175-day N5→N2 path (days 1–45 N5, 46–90 N4, 91–135 N3, 136–175 N2), not a complete official JLPT dump.
 
-![Yasashi Japanese home](docs/screenshots/home.jpg)
+The interface uses a Japanese manga colour-page design: large Gothic headings, readable 16–19 px body copy, warm paper, ink panel lines, a cherry-rose accent, and newly generated Kato Megumi fan artwork from *Saekano*. The illustration, title, and course dialogue share one composition, with a separately arranged mobile layout. Home has one learning action, daily progress, and optional profile setup. Reading and practice pages share the typography and panel treatment. Dark mode surrounds the illustrated paper with a dark reading surface. See [the current manga design, illustration prompt and verification](docs/MANGA-DESIGN-2026-09-05.md).
 
-*Home — a paper-style player with today's course queue, daily goal, streak, and the next lesson to play.*
+![Yasashi Japanese home](docs/screenshots/home-manga.png)
 
-![Kana chart](docs/screenshots/kana.jpg)
+*Home — an illustrated manga frontispiece with one next-lesson action, daily goal and learning progress. [Dark preview](docs/screenshots/home-manga-night.png), [mobile preview](docs/screenshots/home-manga-mobile.png).*
+
+![Kana chart](docs/screenshots/kana-manga.png)
 
 *Kana — hiragana and katakana charts with listening, romaji toggles, and mastery tracking.*
 
-![Guided lesson](docs/screenshots/lesson.jpg)
+![Guided lesson](docs/screenshots/lesson-manga.png)
 
 *Lesson — a guided day on the 175-day N5→N2 path, with examples, audio, and step progress.*
 
-![Kana quiz](docs/screenshots/quiz.jpg)
+![Practice modes](docs/screenshots/quiz-manga.png)
 
-*Quiz — look at a kana, pick the reading; also covers particles, verbs, and vocabulary.*
+*Quiz — choose a practice mode for kana, particles, verbs, or vocabulary.*
 
-![175-day skill tree](docs/screenshots/path.jpg)
+![175-day skill tree](docs/screenshots/path-manga.png)
 
 *175-day path — N5→N2 days, next-lesson recommendation, and five-dimension mastery.*
 
-![SRS review desk](docs/screenshots/review.jpg)
+![SRS review desk](docs/screenshots/review-manga.png)
 
 *SRS review — today's mixed queue for due kana, vocabulary, and the mistake notebook.*
 
@@ -36,7 +38,7 @@ Yasashi Japanese is a gentle Japanese learning app for beginners. It covers kana
 
 ## Install And Run
 
-From this app repository:
+Use Node.js 24 (the CI runtime), then run from this app repository:
 
 ```bash
 npm ci
@@ -91,7 +93,7 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 - All 45 N5 grammar points, plus the N4/N3/N2 points on the 175-day path, include focused recognition questions in the grammar modal. N5 entries also have plain-language explanations and common-pitfall notes. Grammar answers use the shared question/result rules: every attempt updates practice progress, and wrong answers enter the mistake notebook without enrolling grammar into the kana/vocabulary SRS decks.
 - The home page turns the onboarding minutes-per-day preference into a daily practice target with a progress bar based on today's recorded practice.
 - Shared learning-session helpers in `web/src/lib/learning-session.ts` and shared question helpers in `web/src/lib/questions.ts`.
-- Learning backup/restore/reset helpers in `web/src/lib/learning-store.ts`; storage keys remain compatible with existing localStorage data. New exports use backup schema v3, while v1/v2 backups remain importable and are normalized to script-aware kana state. Restore rejects unknown/non-string entries, invalid timestamps, malformed managed values, and files larger than 2 MB before mutation, then shows the backup time and data-category count and requires explicit confirmation. A valid empty backup is identified as destructive because confirming it clears current learning data.
+- Learning backup/restore/reset helpers in `web/src/lib/learning-store.ts`; storage keys remain compatible with existing localStorage data. New exports use backup schema v4, while v1/v2/v3 backups remain importable and are normalized to script-aware kana state. The durable daily activity calendar is included. Restore rejects unknown/non-string entries, invalid timestamps, malformed managed values, and files larger than 2 MB before mutation, then shows the backup time and data-category count and requires explicit confirmation. A valid empty backup is identified as destructive because confirming it clears current learning data.
 - Learning backup export/import normalizes active kana/vocabulary indexes and SRS maps, removes stale vocabulary ids, non-reviewable kana ids, and mistake SRS entries that no longer have notebook records, while preserving practice history.
 - Practice writes use the shared learning-store transaction helper so progress history, item mastery, SRS enrollment, and mistake notebook writes do not leave partial managed state after failures; this includes vocabulary flashcard self-grading. `again` schedules immediate review, `hard` shortens an advanced interval by one box without incrementing SRS right/wrong counters, and `good` advances recall mastery. Learning-store replacement events are broadcast across tabs so active review sessions stop before writing against replaced data.
 - Incremental learning writes distinguish missing storage from unreadable, invalid, or structurally empty-corrupt values. They refuse to overwrite an untrusted value and compare the raw read snapshot before persistence; explicit restore/reset/confirmed clear actions remain the recovery path for replacing invalid local data. Partial rollback failures still broadcast a resync event so mounted learning hooks reload the final browser state.
@@ -104,9 +106,19 @@ Builds may warn that `baseline-browser-mapping` or `caniuse-lite` data is stale.
 
 ## Extending Content
 
+The 2026-09-05 maturity work adds stable per-attempt answer ordering, IME-safe input, explicitly assisted hints, and replayable lessons that retain the first completed score. Completion counts exclude courses skipped by a self-reported kana level. Mastery averages only assessed modes; untested production is labeled untested. Daily study activity survives the 300-entry detailed-history limit, but dates already evicted by older versions cannot be reconstructed.
+
+Vocabulary mounts 24 cards per page and restores filters/page in the URL. Grammar, semantic and pragmatic references offer searchable summaries and pagination. Mobile navigation includes a persistent menu and a `/settings` destination for learning preferences, speech and backup. Shared dialogs isolate their background and restore focus. The browser release gate includes 320/390/1440 layout evidence, concurrent-tab writes, and axe checks of 32 light/dark page/dialog states; automated checks do not replace manual assistive-technology testing.
+
+All browser learning mutations must await `runLearningWrite` before reading fresh state and executing synchronous managed transactions. Replacement operations use its `replacesData` option. Do not call the asynchronous coordinator from inside its own callback. Unsupported Web Locks environments refuse writes with an explanation. See [the write protocol](docs/LEARNING-WRITE-PROTOCOL.md).
+
+Set `NEXT_PUBLIC_SITE_URL` to the production HTTP(S) origin before building; it controls canonical, Open Graph, sitemap and robots URLs. The default is `https://yeuxjp.vercel.app`. The app has route/global error recovery and a custom 404. Diagnostic copying excludes error messages, query strings and learning records. PWA v14 pre-caches only the shell and install icons; page resources are cached when visited. The public-file precache budget is 256 KiB, excluding dynamically generated home HTML and resources warmed after navigation.
+
+The tested framework versions are Next.js 16.3.4 and React 19.2.8. CI uses Node.js 24 and audits dependencies at moderate severity or above. Run `npm audit` when preparing a release; a zero result is a point-in-time dependency check, not a security certification. See [release and content review guidance](docs/RELEASE-READINESS.md).
+
 - Add vocabulary to `web/src/data/vocabulary/survival.ts`, `daily.ts`, or `fluent.ts`.
 - Add grammar to `web/src/data/grammar-data.ts`. Every N5–N2 grammar point must also have a matching entry in `n5GrammarPracticeSets`, `n4GrammarPracticeSets`, `n3GrammarPracticeSets`, or `n2GrammarPracticeSets` for its level; template ids, prompts, answers, and at least two unique options are required, and the answer must appear in the options.
-- Add lesson steps to `web/src/data/lessons.ts` or `web/src/data/lessons/*.ts` and run `npm run validate:data`.
+- Add lesson steps to `web/src/data/lessons.ts` or `web/src/data/lessons/*.ts`, run `npm run generate:index`, then `npm run validate:data`. The generated lesson catalog and item display index keep full course bodies out of shared client bundles.
 - Practice steps should include stable `itemId`, `itemType`, and `mode` fields so progress/SRS/mistake recording can identify the learned item.
 - Reviewable kana practice uses `hiragana:<romaji>` or `katakana:<romaji>` item IDs. Phonology exercises that represent a whole word, such as `sokuon:きって`, keep their scoped custom IDs and do not enroll the single-kana SRS deck.
 - Do not recreate `web/src/data/vocab-data.ts`, `kanaHira.json`, or `kanaKata.json`; validation fails if those legacy sources return.

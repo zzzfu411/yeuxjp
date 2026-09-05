@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { isPracticeStep, type Lesson, type LessonStep } from "@/data/lessons"
+import type { Lesson, LessonStep } from "@/data/lesson-types"
+import { isPracticeStep } from "@/lib/lesson-step-kind"
 
 export function LessonNavigationBar({
   current,
@@ -22,7 +23,7 @@ export function LessonNavigationBar({
   isLast: boolean
   lessonUnlocked: boolean
   loaded: boolean
-  nextLesson: Lesson | null
+  nextLesson: Pick<Lesson, "id"> | null
   onBack: () => void
   onNext: () => void
   result: "correct" | "wrong" | null

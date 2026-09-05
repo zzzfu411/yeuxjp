@@ -130,8 +130,8 @@ export function TodayReviewSession({
         title={current?.deck === "kana" ? "当前假名复习题不足" : "当前单词复习题不足"}
         message={
           current?.deck === "kana"
-            ? "这一轮假名复习暂时凑不出足够的唯一选项。返回复习页后稍后再试，或先继续课程和测验扩充题库。"
-            : "这一轮单词复习暂时凑不出足够的唯一选项。返回复习页后稍后再试，或先增加词汇题库范围。"
+            ? "当前范围内的假名太少，暂时无法组成一组题。请返回复习页稍后再试，或先继续课程和测验。"
+            : "当前范围内的单词太少，暂时无法组成一组题。请返回复习页稍后再试，或先学习更多单词。"
         }
         onExit={onExit}
         onRetry={current?.deck === "vocab" ? vocabulary.retry : undefined}
@@ -143,8 +143,8 @@ export function TodayReviewSession({
     return null
   }
 
-  const handleSelect = (value: string) => {
-    const recorded = recordAnswerSelection(data.question, value)
+  const handleSelect = async (value: string) => {
+    const recorded = await recordAnswerSelection(data.question, value)
     setSaveErrorKey(recorded ? null : currentKey)
   }
 
@@ -160,7 +160,7 @@ export function TodayReviewSession({
     >
 
       <div className="w-full border-y border-dashed border-border/60 bg-primary/5 p-4 text-sm leading-relaxed text-muted-foreground">
-        当前：<span className="font-semibold text-foreground">{data.deckLabel}</span> · 答错会排到本轮队尾，答对会进入下一次间隔复习。
+        当前：<span className="font-semibold text-foreground">{data.deckLabel}</span> · 答错后会在本轮再次出现；答对后，系统会安排下次复习。
       </div>
 
       <ReviewPromptCard minHeightClassName="min-h-[240px]">

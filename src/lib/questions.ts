@@ -30,6 +30,7 @@ export interface QuestionResult {
   selectedAnswer: string
   correct: boolean
   answeredAt: number
+  assisted?: boolean
 }
 
 export function normalizeAnswer(value: string) {

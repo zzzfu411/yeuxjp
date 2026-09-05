@@ -1,6 +1,6 @@
-import Link from "next/link"
+import { ReferenceCatalog } from "@/components/reference/reference-catalog"
 import { Suspense } from "react"
-import { ArrowRightLeft, BrainCircuit, Lightbulb } from "lucide-react"
+import { BrainCircuit } from "lucide-react"
 import { semanticsData } from "@/data/semantics-data"
 import { SemanticsFocusModal } from "@/components/reference/semantics-focus-modal"
 import { ReferenceQueryRedirect } from "@/components/reference/reference-query-redirect"
@@ -39,60 +39,16 @@ export function SemanticsReferencePage({
       )}
 
       <div className="space-y-2 text-center">
-        <p className="eyebrow">意味 · Nuance notes</p>
+        <p className="eyebrow">近义表达对比</p>
         <h1 className="flex items-center justify-center gap-3 font-brush text-4xl">
           <BrainCircuit className="h-7 w-7 text-muted-foreground" />
           语义辨析
           <span className="sr-only">Nuance Lab</span>
         </h1>
-        <p className="text-sm text-muted-foreground">点击纸笺进入深度辨析。</p>
+        <p className="text-sm text-muted-foreground">选择一组近义表达，查看它们在语气和用法上的区别。</p>
       </div>
 
-      <div className="grid gap-10">
-        {semanticsData.map((point, index) => (
-          <Link
-            key={point.id}
-            href={semanticsItemHref(index)}
-            className="paper-slip group relative"
-          >
-            <span className="paper-tape" aria-hidden="true" />
-            <div className="flex flex-col justify-between gap-4 border-b border-border/35 p-6 md:flex-row md:items-center">
-              <h2 className="flex flex-wrap items-center gap-2 text-2xl font-bold">
-                <span className="text-primary">{point.pair[0]}</span>
-                <ArrowRightLeft className="h-5 w-5 shrink-0 text-muted-foreground" />
-                <span className="text-primary">{point.pair[1]}</span>
-              </h2>
-              <div className="font-scribble text-base text-muted-foreground">
-                {point.title}
-              </div>
-            </div>
-
-            <div className="p-6 grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Lightbulb className="mt-1 h-5 w-5 shrink-0 text-accent" />
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">核心语义差异</h3>
-                    <p className="text-muted-foreground leading-relaxed">{point.explanation}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {point.examples.slice(0, 1).map((example, exampleIndex) => (
-                  <div key={exampleIndex} className="border-l border-border/45 bg-primary/[0.035] p-3 text-sm">
-                    <div className="font-medium">{example.sentence}</div>
-                    <div className="text-muted-foreground">{example.translation}</div>
-                  </div>
-                ))}
-                <div className="font-scribble mt-2 text-center text-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                  open note →
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+      <ReferenceCatalog label="语义辨析" entries={semanticsData.map(point => ({ id: point.id, title: point.title, japanese: point.pair.join(" / "), description: point.explanation, href: makeReferenceItemHref("/semantics", point.id) }))} />
 
       {selectedIndex !== null && selectedPoint && (
         <SemanticsFocusModal

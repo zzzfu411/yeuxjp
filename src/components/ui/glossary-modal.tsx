@@ -43,7 +43,7 @@ export function GlossaryModal({
         <div className="space-y-4 border-b border-border/50 px-5 pb-5 pt-6 sm:px-7">
           <div className="flex items-baseline justify-between gap-3">
             <div className="space-y-1">
-              <p className="eyebrow">术语笺 · Glossary</p>
+              <p className="eyebrow">术语表 · Glossary</p>
               <h2 id={titleId} className="inkline font-brush text-3xl">术语解释</h2>
               <p id={descriptionId} className="max-w-xl pt-1 text-sm leading-6 text-muted-foreground">
                 点击术语可查看解释；不确定的时候，先看例句与对比。

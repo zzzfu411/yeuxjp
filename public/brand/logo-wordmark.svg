@@ -1,13 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 226 32" height="32" role="img" aria-label="優しい Japanese">
-  <title>優しい Japanese</title>
-  <g transform="translate(0 1)" fill="currentColor">
-    <path d="M15.9 2.2c2.5 3 2.8 6.4 1 9.3-3.2-.7-5-3.7-4.6-7.5.1-1.2 2.8-2.7 3.6-1.8Z"/>
-    <path d="M24.7 8c-1.3 3.7-3.9 5.9-7.3 5.8-.9-3.2.8-6.2 4.4-7.7 1-.4 3.3.8 2.9 1.9Z"/>
-    <path d="M22.4 18.9c-3.9-.1-6.8-1.9-7.7-5.1 2.8-1.8 6.2-1.2 8.7 1.7.8.9.2 3.4-1 3.4Z"/>
-    <path d="M11.3 20.8c-1.1-3.8-.2-7.1 2.6-9 2.6 2 3.1 5.5 1.2 8.8-.6 1.1-3.5 1.3-3.8.2Z"/>
-    <path d="M5.7 11.2c3.4-2.1 6.8-2.2 9.4 0-1.2 3.1-4.3 4.5-8.1 3.7-1.1-.3-2.3-3.1-1.3-3.7Z"/>
-    <circle cx="15.6" cy="13.3" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 264 48" height="48" role="img" aria-label="優しい Yasashi Japanese">
+  <title>優しい Yasashi Japanese</title>
+  <g transform="translate(2 2)">
+    <path d="M8 7h28l6 6v28H8z" fill="#3a7af5"/>
+    <path d="M3 2h28l6 6v28H3z" fill="#fff" stroke="#162035" stroke-width="2.5"/>
+    <path d="M4.2 3.2h14v3.2h-14z" fill="#f05c8a"/>
+    <path d="M31 2v7h7" fill="#f7c948" stroke="#162035" stroke-width="1.7" stroke-linejoin="round"/>
+    <text x="20" y="29" fill="#162035" font-family="Yu Gothic, Hiragino Kaku Gothic ProN, Microsoft YaHei UI, sans-serif" font-size="21" font-weight="800" text-anchor="middle">優</text>
   </g>
-  <text x="38" y="23.5" fill="currentColor" font-family="Inter, 'Noto Sans JP', 'Yu Gothic', sans-serif" font-size="21" font-weight="700" letter-spacing="0">優しい</text>
-  <text x="106" y="23.5" fill="currentColor" font-family="Inter, 'Noto Sans JP', 'Yu Gothic', sans-serif" font-size="18" font-weight="600" letter-spacing=".2">Japanese</text>
+  <text x="52" y="23" fill="#162035" font-family="Yu Gothic UI, Hiragino Kaku Gothic ProN, Microsoft YaHei UI, sans-serif" font-size="22" font-weight="800">優しい</text>
+  <text x="53" y="39" fill="#43506a" font-family="Bahnschrift, Avenir Next Condensed, sans-serif" font-size="10" font-weight="700" letter-spacing="1.3">YASASHI JAPANESE</text>
+  <path d="M151 14h48" stroke="#3a7af5" stroke-width="3"/>
+  <path d="M199 14h29" stroke="#f05c8a" stroke-width="3"/>
+  <path d="M228 14h20" stroke="#f7c948" stroke-width="3"/>
 </svg>

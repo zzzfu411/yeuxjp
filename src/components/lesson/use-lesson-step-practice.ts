@@ -1,11 +1,11 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
-import type { LessonStep } from "@/data/lessons"
+import { useCallback, useEffect, useRef, useState } from "react"
+import type { LessonStep } from "@/data/lesson-types"
 import type { PersistedLessonStepAnswer } from "@/lib/lesson-session"
 import type { QuestionResult } from "@/lib/questions"
 
-type LessonAnswerRecorder = (step: LessonStep, answer: string) => QuestionResult | null
+type LessonAnswerRecorder = (step: LessonStep, answer: string) => Promise<QuestionResult | null | false>
 
 interface LessonPracticeState {
   step: LessonStep
@@ -30,6 +30,11 @@ export function useLessonStepPractice({
   setSaveError: (value: boolean) => void
 }) {
   const answerPendingRef = useRef<LessonStep | null>(null)
+  const latestStep = useRef<LessonStep | null>(current)
+  useEffect(() => {
+    latestStep.current = current
+    return () => { latestStep.current = null }
+  }, [current])
   const [draft, setDraft] = useState<LessonPracticeState | null>(null)
   const state = draft?.step === current && draft.restoredAnswer === restoredAnswer
     ? draft
@@ -74,11 +79,12 @@ export function useLessonStepPractice({
   }, [current, setSaveError])
 
   const applyRecordedAnswer = useCallback(
-    (answer: string, afterSuccess?: () => void) => {
+    async (answer: string, afterSuccess?: () => void) => {
       if (answerPendingRef.current === current) return
       answerPendingRef.current = current
 
-      const recorded = recordAnswer(current, answer)
+      const recorded = await recordAnswer(current, answer)
+      if (latestStep.current !== current) return
       if (!recorded) {
         answerPendingRef.current = null
         setSaveError(true)

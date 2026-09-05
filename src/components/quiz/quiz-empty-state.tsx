@@ -18,14 +18,14 @@ function getQuizEmptyMessage({
 
   if (reason === "filter-empty") {
     if (mode === "hiragana-romaji" || mode === "audio-kana") {
-      return "恭喜！你已掌握当前范围内的假名。请取消“只出未掌握”过滤，或切换到其他假名范围。"
+      return "恭喜！你已掌握当前范围内的假名。请关闭“只出未掌握”，或切换到其他假名范围。"
     }
     if (mode === "meaning-vocab") {
-      return "恭喜！你已掌握当前范围内的词汇。请取消“只出未掌握”过滤，或切换到其他词汇范围。"
+      return "恭喜！你已掌握当前范围内的词汇。请关闭“只出未掌握”，或切换到其他词汇范围。"
     }
   }
 
-  return "当前题库不足以生成 4 个唯一选项。请切换范围、取消筛选，或补充更多学习数据。"
+  return "当前范围内的题目太少，无法生成 4 个不同选项。请扩大范围或取消筛选。"
 }
 
 export function QuizEmptyState({
@@ -42,7 +42,7 @@ export function QuizEmptyState({
   return (
     <div className="container py-20 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6">
       <div className="paper-slip space-y-4 px-6 py-8 text-center">
-        <div className="eyebrow">Empty practice page</div>
+        <div className="eyebrow">暂无可用题目</div>
         <p className="text-lg text-muted-foreground" data-testid="quiz-empty-state">
           {getQuizEmptyMessage({ mode, reason })}
         </p>

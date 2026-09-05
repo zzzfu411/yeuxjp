@@ -1,10 +1,8 @@
 import {
   averageMastery,
-  clampScore,
   normalizeItemProgressMap,
   type ItemProgress,
   type ItemProgressMap,
-  type PracticeMode,
 } from "@/lib/learning-progress-model"
 import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { normalizeKanaIdList } from "@/lib/kana-id"
@@ -17,16 +15,8 @@ export interface LearningStatusModel {
   learnedVocabIds: Set<string>
 }
 
-const STATUS_MASTERY_MODES: Partial<Record<ItemProgress["itemType"], PracticeMode[]>> = {
-  kana: ["recognition", "listening"],
-  vocab: ["meaning", "recall"],
-}
-
 export function learningStatusMasteryScore(item: ItemProgress | undefined) {
-  if (!item) return 0
-  const modes = STATUS_MASTERY_MODES[item.itemType]
-  if (!modes) return averageMastery(item)
-  return Math.max(...modes.map((mode) => clampScore(item[mode])))
+  return averageMastery(item)
 }
 
 export function isItemLearnedFromProgress(

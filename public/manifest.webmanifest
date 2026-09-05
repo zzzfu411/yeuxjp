@@ -1,13 +1,13 @@
 {
   "name": "優しい Yasashi Japanese",
   "short_name": "優しい",
-  "description": "A quiet paper notebook for Japanese study, review, and practice.",
+  "description": "A focused Japanese course for daily study, review, and practice.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#d8d3cc",
-  "theme_color": "#d8d3cc",
+  "background_color": "#fffdf9",
+  "theme_color": "#fffdf9",
   "icons": [
     {
       "src": "/icons/icon-192.png",

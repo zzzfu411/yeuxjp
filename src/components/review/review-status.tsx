@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import type { ReviewCompletionStats } from "@/lib/review-session"
@@ -82,34 +81,30 @@ export function ReviewDone({
       className="container py-16 px-4 mx-auto max-w-lg flex flex-col items-center space-y-6"
       data-testid={stats ? "review-complete-state" : "review-invalidated-state"}
     >
-      <div className="relative w-56 h-44 sm:w-72 sm:h-56">
-        <Image
-          src="/assets/states/state-complete.webp"
-          alt=""
-          fill
-          sizes="(max-width: 640px) 224px, 288px"
-          className="object-contain"
-          priority
-        />
+      <div className="completion-burst h-44 w-56 sm:h-56 sm:w-72" aria-hidden="true">
+        <span className="completion-burst-main">✓</span>
+        <span className="completion-burst-line completion-burst-line-a" />
+        <span className="completion-burst-line completion-burst-line-b" />
+        <span className="completion-burst-line completion-burst-line-c" />
       </div>
       <div className="space-y-2 text-center">
-        <div className="eyebrow">Review complete</div>
+        <div className="eyebrow">{stats ? "Review complete" : "Review paused"}</div>
         <div className="font-brush text-3xl">{title}</div>
         <div className="text-sm text-muted-foreground">
           {stats
-            ? `本轮作答 ${stats.answered} 次，通过 ${stats.correct}/${stats.initial} 项，正确率 ${accuracy ?? 0}%，重排 ${stats.repeated} 次。`
-            : "今天的任务完成啦。也可以去技能树继续推进。"}
+            ? `本轮复习 ${stats.initial} 项，共作答 ${stats.answered} 次：答对 ${stats.correct} 次，正确率 ${accuracy ?? 0}%；${stats.repeated} 次答错后重新排队。`
+            : "学习数据在本轮期间发生了变化。请返回复习页重新开始。"}
         </div>
         {stats ? (
           <div className="text-xs text-muted-foreground">
-            {stats.repeated > 0 ? "建议稍后再回到复习页处理重排内容。" : "状态很好，可以继续下一课或做一轮轻量测验。"}
+            {stats.repeated > 0 ? "有些内容答错过，建议稍后再复习一次。" : "状态不错，可以继续下一课或做一组测验。"}
           </div>
         ) : null}
       </div>
       <div className="flex gap-2">
-        <Button onClick={onExit}>返回</Button>
+        <Button onClick={onExit}>返回复习</Button>
         <Button asChild variant="outline">
-          <Link href="/path">打开技能树</Link>
+          <Link href="/path">查看学习路径</Link>
         </Button>
       </div>
     </div>

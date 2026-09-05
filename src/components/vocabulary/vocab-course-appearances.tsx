@@ -33,7 +33,7 @@ export function VocabCourseAppearances({ vocabId }: { vocabId: string }) {
           onClick={(event) => event.stopPropagation()}
           className="font-scribble border-b border-dashed border-border/70 px-0.5 text-sm text-muted-foreground transition-colors hover:border-accent hover:text-accent"
         >
-          课表 Day {item.order}
+          课程 Day {item.order}
         </Link>
       ))}
     </div>

@@ -68,11 +68,11 @@ export function QuizAnswerFeedback({
 
       {!isCorrect && (
         <div className="w-full text-xs text-muted-foreground">
-          已加入错题本，可在{" "}
+          已加入错题本，可以前往{" "}
           <Link href="/review" className="text-accent underline decoration-dashed underline-offset-4">
-            复习（SRS）
+            复习页
           </Link>{" "}
-          里集中复盘。
+          再练一次。
         </div>
       )}
     </div>

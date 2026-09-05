@@ -24,7 +24,7 @@ export function QuizOptionGrid({
   testIdPrefix?: string
 }) {
   return (
-    <div className="grid w-full grid-cols-1 gap-x-5 sm:grid-cols-2">
+    <div className="grid w-full grid-cols-1 gap-x-5 gap-y-3 sm:grid-cols-2">
       {question.options.map((option, index) => {
         const feedback = getAnswerOptionFeedback({
           selectedAnswer: selectedOption,
@@ -39,7 +39,7 @@ export function QuizOptionGrid({
             size="lg"
             className={cn(
               getAnswerOptionClassName(feedback),
-              "min-h-16 h-auto justify-between whitespace-normal rounded-none border-x-0 border-t-0 border-b border-dashed border-border/70 bg-transparent px-3 text-left text-lg font-medium shadow-none hover:translate-y-0 hover:bg-primary/10",
+              "option-button min-h-16 h-auto whitespace-normal px-4 text-left text-lg font-medium",
               feedback === "correct" && "border-foreground/60 bg-primary/10 text-foreground hover:bg-primary/10 disabled:opacity-100",
               feedback === "wrong" && "border-accent/70 bg-accent/10 text-accent hover:bg-accent/10 disabled:opacity-100"
             )}

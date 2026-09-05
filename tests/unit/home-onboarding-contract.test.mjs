@@ -9,7 +9,7 @@ function read(relPath) {
   return fs.readFileSync(path.join(root, relPath), "utf8")
 }
 
-test("home page delegates first-run profile setup to OnboardingPanel", () => {
+test("home page keeps profile persistence in the settings dialog", () => {
   const route = read("src/app/page.tsx")
   const page = read("src/components/home/home-page.tsx")
   const nowPlaying = read("src/components/home/home-now-playing.tsx")
@@ -18,7 +18,6 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
   assert.match(route, /from "@\/components\/home\/home-page"/)
   assert.match(route, /<HomePage \/>/)
   assert.match(page, /from "@\/components\/home\/home-now-playing"/)
-  assert.match(page, /from "@\/components\/home\/home-starter-lessons"/)
   assert.match(nowPlaying, /from "@\/components\/home\/onboarding-panel"/)
   assert.match(nowPlaying, /from "@\/components\/practice\/practice-save-error"/)
   assert.match(page, /from "@\/lib\/home-page-model"/)
@@ -28,9 +27,8 @@ test("home page delegates first-run profile setup to OnboardingPanel", () => {
   assert.match(page, /skill: recommendedSkill/)
   assert.match(page, /mistakeIds: mistakes\.byId\.keys\(\)/)
   assert.match(page, /const \[profileSaveError, setProfileSaveError\] = useState\(false\)/)
-  assert.match(page, /const saved = saveProfile\(input\)/)
+  assert.match(page, /const saved = await runLearningWrite\(\(\) => saveProfile\(input\)\)/)
   assert.match(page, /setProfileSaveError\(!saved\)/)
-  assert.match(page, /<HomeStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
   assert.match(nowPlaying, /<PracticeSaveError show=\{profileSaveError\} \/>/)
   assert.doesNotMatch(page, /STARTER_LESSONS\.slice/)
   assert.doesNotMatch(page, /getLessonEntryStatus\(lesson/)
@@ -56,49 +54,37 @@ test("home hero images use bounded responsive sizes for LCP", () => {
 
   assert.doesNotMatch(page, /sizes="100vw"/)
   assert.doesNotMatch(nowPlaying, /sizes="100vw"/)
-  assert.match(nowPlaying, /data-testid="home-start-learning"/)
-  assert.match(nowPlaying, /font-jp/)
-  assert.match(nowPlaying, /label="课表"/)
-  assert.match(nowPlaying, /label="生存词"/)
+  assert.match(read("src/components/home/home-scene.tsx"), /data-testid="home-start-learning"/)
+  assert.match(nowPlaying, /label="课程"/)
+  assert.match(nowPlaying, /label="入门词"/)
   assert.match(nowPlaying, /data-testid="home-edit-profile"/)
   assert.match(nowPlaying, /data-testid="home-edit-profile-cancel"/)
   assert.match(page, /survivalDone=\{survivalDone\}/)
   assert.match(page, /href=\{weakestHref\}/)
 })
 
-test("home cover art preserves its sheet ratio and fits short viewports", () => {
+test("home scene keeps real learning data and accessible controls independent of decorative artwork", () => {
   const page = read("src/components/home/home-page.tsx")
-  const styles = read("src/app/globals.css")
-
-  assert.match(page, /className="mx-auto flex min-w-0 w-full max-w-4xl flex-col items-center"/)
-  assert.match(styles, /\.cover-art\s*\{[\s\S]*?aspect-ratio:\s*4\s*\/\s*3;/)
-  assert.match(styles, /\.cover-art\s*\{[\s\S]*?max-width:\s*100%;/)
-  assert.match(styles, /calc\(112svh - 18rem\)/)
-  assert.match(styles, /@media \(max-height: 640px\)[\s\S]*?\.paper-cover \{[\s\S]*?margin-top: 0;/)
-  assert.match(styles, /@media \(max-height: 560px\)[\s\S]*?\.cover-scroll \{ display: none; \}/)
-  assert.match(styles, /@media \(max-height: 420px\)[\s\S]*?\.paper-cover \{[\s\S]*?height: auto;[\s\S]*?padding-block: 1rem;/)
-  assert.match(styles, /width: min\(62vmin, 190px, 100%\)/)
-})
-
-test("HomeStarterLessons owns starter lesson cards and locked card behavior", () => {
-  const source = read("src/components/home/home-starter-lessons.tsx")
-
-  assert.match(source, /export function HomeStarterLessons/)
-  assert.match(source, /completedLessonIds: ReadonlySet<string>/)
-  assert.match(source, /activeLessonId: string \| null \| undefined/)
-  assert.match(source, /STARTER_LESSONS\.map\(/)
-  assert.match(source, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId, kanaLevel\)/)
-  assert.match(source, /getLessonEntryBadge\(status\)/)
-  assert.match(source, /if \(locked\)/)
-  assert.match(source, /aria-disabled="true"/)
-  assert.match(source, /href=\{`\/learn\/\$\{lesson\.id\}`\}/)
+  const scene = read("src/components/home/home-scene.tsx")
+  assert.match(page, /<HomeScene/)
+  assert.match(page, /entry=\{learningEntry\}/)
+  assert.match(scene, /aria-labelledby="home-cover-title"/)
+  assert.match(scene, /aria-hidden="true"/)
+  assert.match(scene, /megumi-manga\.webp" alt="" fill sizes=/)
+  assert.doesNotMatch(scene, /sizes="100vw"/)
+  assert.match(scene, /loading="eager" fetchPriority="high"/)
+  assert.match(scene, /\{entry\.title\}/)
+  assert.match(scene, /href=\{entry\.href\}/)
+  const progress = read("src/components/home/home-now-playing.tsx")
+  assert.match(progress, /role="progressbar" aria-label="今日练习进度"/)
+  assert.match(progress, /aria-valuenow=\{Math\.min\(todayPracticeCount, dailyTarget\)\}/)
 })
 
 test("OnboardingPanel owns profile option state and save payload", () => {
   const source = read("src/components/home/onboarding-panel.tsx")
 
   assert.match(source, /export function OnboardingPanel/)
-  assert.match(source, /onSave: \(input: Omit<UserProfile, "createdAt" \| "updatedAt">\) => boolean/)
+  assert.match(source, /onSave: \(input: Omit<UserProfile, "createdAt" \| "updatedAt">\) => Promise<boolean>/)
   assert.match(source, /const goalOptions/)
   assert.match(source, /const kanaOptions/)
   assert.match(source, /const romajiOptions/)
@@ -115,6 +101,6 @@ test("OnboardingPanel owns profile option state and save payload", () => {
   assert.match(source, /data-testid="onboarding-save"/)
   assert.match(source, /onSave\(\{ goal, kanaLevel, romajiMode, minutesPerDay \}\)/)
   assert.match(source, /function SelectPills/)
-  assert.match(source, /生成今日计划/)
+  assert.match(source, /保存并开始学习/)
   assert.match(source, /保存学习设置/)
 })
