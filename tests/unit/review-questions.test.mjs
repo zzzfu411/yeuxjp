@@ -144,6 +144,29 @@ test("answered typed review stays typed after lastWrongAnswer is recorded", () =
   assert.ok(presentedAfterAdvance.options.some((option) => option.value === "こんばんは"))
   assert.notEqual(review.reviewQuestionPresentationKey(before), review.reviewQuestionPresentationKey(after))
   assert.equal(review.reviewQuestionPresentationKey(before), review.reviewQuestionPresentationKey(presentedWhileAnswered))
+
+  const rebuiltBefore = {
+    ...before,
+    options: before.options.map((option) => ({ ...option })),
+  }
+  assert.equal(
+    review.reviewQuestionPresentationKey(before),
+    review.reviewQuestionPresentationKey(rebuiltBefore)
+  )
+
+  let current = null
+  let replacements = 0
+  for (let i = 0; i < 50; i += 1) {
+    const live = {
+      ...before,
+      options: before.options.map((option) => ({ ...option })),
+    }
+    if (review.reviewQuestionPresentationKey(current) !== review.reviewQuestionPresentationKey(live)) {
+      current = live
+      replacements += 1
+    }
+  }
+  assert.equal(replacements, 1)
 })
 
 test("typed review is used when a production mistake has no distractors", () => {
