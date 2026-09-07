@@ -14,11 +14,13 @@ test("presented review question hook latches the live question until the answer 
 
   assert.match(source, /export function usePresentedReviewQuestion/)
   assert.match(source, /presentedReviewQuestion/)
-  assert.match(source, /if \(selectedAnswer == null\) \{/)
-  assert.match(source, /latchedRef\.current = liveQuestion \?\? null/)
-  assert.match(source, /return presentedReviewQuestion\(liveQuestion, selectedAnswer, latchedRef\.current\)/)
-  assert.doesNotMatch(source, /useState/)
-  assert.doesNotMatch(source, /setLatchedQuestion/)
+  assert.match(source, /reviewQuestionPresentationKey/)
+  assert.match(source, /const \[latchedQuestion, setLatchedQuestion\] = useState<T \| null>\(live\)/)
+  assert.match(source, /selectedAnswer == null/)
+  assert.match(source, /reviewQuestionPresentationKey\(latchedQuestion\) !== reviewQuestionPresentationKey\(live\)/)
+  assert.match(source, /setLatchedQuestion\(live\)/)
+  assert.match(source, /return presentedReviewQuestion\(live, selectedAnswer, latchedQuestion\)/)
+  assert.doesNotMatch(source, /useRef/)
 })
 
 test("mistake and today review sessions render the latched question after an answer", () => {

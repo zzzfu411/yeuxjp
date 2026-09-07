@@ -21,7 +21,7 @@ export function presentedReviewQuestion<T>(
 }
 
 export function reviewQuestionPresentationKey(
-  question: Pick<Question, "options" | "correctAnswer"> | null | undefined
+  question: { options: { value: string }[]; correctAnswer: string } | null | undefined
 ) {
   if (!question) return ""
   const options = question.options.map((option) => normalizeAnswer(option.value)).join("\0")
