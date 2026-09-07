@@ -127,3 +127,24 @@ test("review answer recording rolls back progress and mistakes when SRS grading 
   assert.equal(store.get(storage.STORAGE_KEYS.MISTAKES), "[]")
   assert.equal(store.get(storage.STORAGE_KEYS.SRS_KANA), "{\"a\":{\"box\":1}}")
 })
+
+test("review answer recording passes a duplicate-guard result through without treating it as a commit", () => {
+  installLocalStorage()
+  const calls = []
+
+  const recorded = recording.recordReviewQuestionPractice({
+    question: kanaQuestion,
+    selectedAnswer: "a",
+    progress: { recordPractice: () => calls.push("progress") && true },
+    notebook: { recordWrong: () => calls.push("notebook") && true },
+    canRecord: () => calls.push("canRecord") && true,
+    grade: () => calls.push("grade") && true,
+    recordAnswer: () => {
+      calls.push("recordAnswer")
+      return "duplicate"
+    },
+  })
+
+  assert.equal(recorded, "duplicate")
+  assert.deepEqual(calls, ["recordAnswer"])
+})

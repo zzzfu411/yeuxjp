@@ -54,6 +54,59 @@ test("review sessions are invalidated only by learning data replacement actions"
   assert.equal(session.shouldInvalidateReviewSession(undefined), false)
 })
 
+test("review answer recording distinguishes duplicates from save failures", () => {
+  assert.equal(session.canStartReviewAnswerRecording({
+    selectedAnswer: null,
+    answerPending: false,
+  }), true)
+  assert.equal(session.canStartReviewAnswerRecording({
+    selectedAnswer: "a",
+    answerPending: false,
+  }), false)
+  assert.equal(session.canStartReviewAnswerRecording({
+    selectedAnswer: null,
+    answerPending: true,
+  }), false)
+
+  assert.equal(session.shouldShowReviewSaveError("failed"), true)
+  assert.equal(session.shouldShowReviewSaveError("ok"), false)
+  assert.equal(session.shouldShowReviewSaveError("duplicate"), false)
+})
+
+test("a second review submit while pending is a duplicate, not a save failure", () => {
+  let selectedAnswer = null
+  let answerPending = false
+
+  const recordAnswer = (_answer, _correct, beforeCommit) => {
+    if (!session.canStartReviewAnswerRecording({ selectedAnswer, answerPending })) {
+      return "duplicate"
+    }
+    answerPending = true
+    if (beforeCommit && !beforeCommit()) {
+      answerPending = false
+      return "failed"
+    }
+    selectedAnswer = _answer
+    return "ok"
+  }
+
+  const first = recordAnswer("a", true, () => true)
+  const second = recordAnswer("b", true, () => true)
+  const failed = (() => {
+    selectedAnswer = null
+    answerPending = false
+    return recordAnswer("c", true, () => false)
+  })()
+
+  assert.equal(first, "ok")
+  assert.equal(second, "duplicate")
+  assert.equal(failed, "failed")
+  assert.equal(session.shouldShowReviewSaveError(first), false)
+  assert.equal(session.shouldShowReviewSaveError(second), false)
+  assert.equal(session.shouldShowReviewSaveError(failed), true)
+  assert.equal(selectedAnswer, null)
+})
+
 test("review sessions are invalidated by cross-tab review source storage changes", async () => {
   const { STORAGE_KEYS } = await loadTsModule("src/lib/storage-keys.ts")
 

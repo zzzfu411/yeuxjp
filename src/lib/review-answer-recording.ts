@@ -3,6 +3,7 @@
 import { recordQuestionPracticeWithoutTransaction } from "@/lib/learning-session"
 import { runLearningStorageTransaction } from "@/lib/learning-store"
 import { makeQuestionResult, type Question, type QuestionResult } from "@/lib/questions"
+import type { ReviewAnswerRecordResult } from "@/lib/review-session"
 
 type QuestionPracticeParams = Parameters<typeof recordQuestionPracticeWithoutTransaction>[0]
 
@@ -15,7 +16,7 @@ type ReviewCommitParams = Pick<QuestionPracticeParams, "progress" | "notebook"> 
 export type ReviewQuestionPracticeParams = Omit<ReviewCommitParams, "result"> & {
   question: Question
   selectedAnswer: string
-  recordAnswer: (answer: string, correct: boolean, beforeCommit?: () => boolean) => boolean
+  recordAnswer: (answer: string, correct: boolean, beforeCommit?: () => boolean) => ReviewAnswerRecordResult
 }
 
 export function commitReviewQuestionPractice({

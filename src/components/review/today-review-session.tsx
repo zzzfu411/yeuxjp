@@ -19,6 +19,7 @@ import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { questionUsesTypedReview, shouldShowReviewSpecialFeedback, type TodayReviewItem } from "@/lib/review-questions"
+import { shouldShowReviewSaveError } from "@/lib/review-session"
 import {
   canRecordTodayReviewItem,
   getTodayReviewBatchCompletionTitle,
@@ -149,7 +150,7 @@ export function TodayReviewSession({
 
   const handleSelect = (value: string) => {
     const recorded = recordAnswerSelection(question, value)
-    setSaveErrorKey(recorded ? null : currentKey)
+    setSaveErrorKey(shouldShowReviewSaveError(recorded) ? currentKey : null)
   }
 
   const handleNext = () => {

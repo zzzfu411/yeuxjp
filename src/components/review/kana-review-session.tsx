@@ -16,6 +16,7 @@ import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { makeKanaReviewQuestion } from "@/lib/review-questions"
+import { shouldShowReviewSaveError } from "@/lib/review-session"
 
 export function KanaReviewSession({
   ids,
@@ -90,7 +91,7 @@ export function KanaReviewSession({
 
   const handleSelect = (val: string) => {
     const recorded = recordAnswerSelection(question, val)
-    setSaveError(!recorded)
+    setSaveError(shouldShowReviewSaveError(recorded))
   }
 
   const handleNext = () => {

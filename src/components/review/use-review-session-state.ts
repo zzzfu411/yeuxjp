@@ -4,11 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { addLearningStoreListener } from "@/lib/learning-events"
 import {
   advanceReviewQueue,
+  canStartReviewAnswerRecording,
   createReviewStats,
   dropCurrentReviewItem,
   getReviewCompletionStats,
   recordReviewAnswer,
   shouldInvalidateReviewSession,
+  type ReviewAnswerRecordResult,
 } from "@/lib/review-session"
 
 export function useReviewSessionState<T>(initialQueue: T[]) {
@@ -59,19 +61,24 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     }
   }, [])
 
-  const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean) => {
-    if (selectedAnswer != null || answerPendingRef.current) return false
+  const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean): ReviewAnswerRecordResult => {
+    if (!canStartReviewAnswerRecording({
+      selectedAnswer,
+      answerPending: answerPendingRef.current,
+    })) {
+      return "duplicate"
+    }
     answerPendingRef.current = true
 
     if (beforeCommit && !beforeCommit()) {
       answerPendingRef.current = false
-      return false
+      return "failed"
     }
 
     setSelectedAnswer(answer)
     setLastAnswerCorrect(correct)
     setStats((prev) => recordReviewAnswer(prev, correct))
-    return true
+    return "ok"
   }, [selectedAnswer])
 
   const advance = useCallback(() => {

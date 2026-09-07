@@ -67,3 +67,19 @@ export function shouldInvalidateReviewSession(action: unknown, keys?: readonly u
   if (!keys?.length) return false
   return keys.some((key) => typeof key === "string" && REVIEW_SESSION_SOURCE_KEYS.has(key))
 }
+
+export type ReviewAnswerRecordResult = "ok" | "duplicate" | "failed"
+
+export function canStartReviewAnswerRecording({
+  selectedAnswer,
+  answerPending,
+}: {
+  selectedAnswer: string | null
+  answerPending: boolean
+}) {
+  return selectedAnswer == null && !answerPending
+}
+
+export function shouldShowReviewSaveError(result: ReviewAnswerRecordResult) {
+  return result === "failed"
+}

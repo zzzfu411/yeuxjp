@@ -18,6 +18,7 @@ import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { mistakeToQuestion, questionUsesTypedReview } from "@/lib/review-questions"
+import { shouldShowReviewSaveError } from "@/lib/review-session"
 
 export function MistakeReviewSession({
   ids,
@@ -93,7 +94,7 @@ export function MistakeReviewSession({
 
   const handleSelect = (val: string) => {
     const recorded = recordAnswerSelection(question, val)
-    setSaveErrorId(recorded ? null : item.id)
+    setSaveErrorId(shouldShowReviewSaveError(recorded) ? item.id : null)
   }
 
   const handleNext = () => {
