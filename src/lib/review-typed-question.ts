@@ -11,6 +11,15 @@ export function questionUsesTypedReview(question: Pick<Question, "options" | "co
   return uniqueQuestionOptionCount(question) < 2
 }
 
+export function presentedReviewQuestion<T>(
+  liveQuestion: T | null | undefined,
+  selectedAnswer: string | null,
+  latchedQuestion: T | null | undefined
+): T | null {
+  if (selectedAnswer != null && latchedQuestion != null) return latchedQuestion
+  return liveQuestion ?? null
+}
+
 export function shouldShowReviewSpecialFeedback(questionType: string) {
   return questionType === "particle" || questionType === "verb-conjugation"
 }

@@ -9,6 +9,7 @@ import { MixedReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone, ReviewEmptyQuestionState, ReviewErrorState, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
+import { usePresentedReviewQuestion } from "@/components/review/use-presented-review-question"
 import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
@@ -70,6 +71,7 @@ export function TodayReviewSession({
       showRomaji,
     })
   }, [current, notebook.byId, reviewSeed, showRomaji, vocabulary.data])
+  const presentedQuestion = usePresentedReviewQuestion(data?.question, selected)
 
   useEffect(() => {
     if (!current) return
@@ -143,8 +145,10 @@ export function TodayReviewSession({
     return null
   }
 
+  const question = presentedQuestion ?? data.question
+
   const handleSelect = (value: string) => {
-    const recorded = recordAnswerSelection(data.question, value)
+    const recorded = recordAnswerSelection(question, value)
     setSaveErrorKey(recorded ? null : currentKey)
   }
 
@@ -167,7 +171,7 @@ export function TodayReviewSession({
         <MixedReviewPrompt prompt={data.prompt} sub={data.sub} hint={data.hint} audio={data.audio} onPlay={playAudio} />
       </ReviewPromptCard>
 
-      {questionUsesTypedReview(data.question) ? (
+      {questionUsesTypedReview(question) ? (
         <ReviewTypedAnswer
           key={`${currentKey}:${review.completionStats.answered}`}
           disabled={Boolean(selected)}
@@ -175,20 +179,20 @@ export function TodayReviewSession({
         />
       ) : (
         <ReviewOptionGrid
-          options={data.question.options}
-          correctAnswer={data.question.correctAnswer}
-          acceptedAnswers={data.question.acceptedAnswers}
+          options={question.options}
+          correctAnswer={question.correctAnswer}
+          acceptedAnswers={question.acceptedAnswers}
           selectedAnswer={selected}
           onSelect={handleSelect}
         />
       )}
 
       <ReviewAnswerFeedback
-        question={data.question}
+        question={question}
         selectedAnswer={selected}
         correct={review.lastAnswerCorrect}
         showSelectedAnswer
-        showSpecialFeedback={shouldShowReviewSpecialFeedback(data.question.type)}
+        showSpecialFeedback={shouldShowReviewSpecialFeedback(question.type)}
       />
 
       <PracticeSaveError show={saveError} />

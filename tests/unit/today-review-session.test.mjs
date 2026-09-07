@@ -3,6 +3,7 @@ import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const today = await loadTsModule("src/lib/today-review-session.ts")
+const review = await loadTsModule("src/lib/review-typed-question.ts")
 
 test("today review completion copy distinguishes a capped batch from a cleared queue", () => {
   assert.equal(today.getTodayReviewBatchCompletionTitle(0), "今日复习完成")
@@ -164,6 +165,47 @@ test("createSeededRandom yields identical unit-interval sequences for identical 
   for (const value of sequenceA) {
     assert.ok(value >= 0 && value < 1)
   }
+})
+
+test("today review typed mistake stays typed after lastWrongAnswer lands mid-feedback", () => {
+  const typedMistake = {
+    id: "typed-m1",
+    type: "lesson:typing",
+    itemId: "sur-g-1",
+    itemType: "vocab",
+    mode: "recall",
+    questionText: "输入“你好”",
+    correctAnswer: "こんにちは",
+    correctDisplay: "こんにちは",
+    options: [{ value: "こんにちは", display: "こんにちは" }],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  }
+
+  const before = today.resolveTodayReviewItemData({
+    current: { deck: "mistakes", id: "typed-m1" },
+    vocabulary: vocabPool,
+    mistakes: new Map([["typed-m1", typedMistake]]),
+  })
+  const after = today.resolveTodayReviewItemData({
+    current: { deck: "mistakes", id: "typed-m1" },
+    vocabulary: vocabPool,
+    mistakes: new Map([["typed-m1", { ...typedMistake, lastWrongAnswer: "こんばんは" }]]),
+  })
+
+  assert.equal(before.data.question.options.length, 1)
+  assert.ok(after.data.question.options.some((option) => option.value === "こんばんは"))
+
+  assert.equal(review.questionUsesTypedReview(before.data.question), true)
+  assert.equal(review.questionUsesTypedReview(after.data.question), false)
+
+  const presentedWhileAnswered = review.presentedReviewQuestion(after.data.question, "こんばんは", before.data.question)
+  assert.equal(review.questionUsesTypedReview(presentedWhileAnswered), true)
+  assert.deepEqual(presentedWhileAnswered.options, before.data.question.options)
+
+  const presentedAfterAdvance = review.presentedReviewQuestion(after.data.question, null, before.data.question)
+  assert.equal(review.questionUsesTypedReview(presentedAfterAdvance), false)
 })
 
 test("today review adapter resolves mistakes and preserves mistake history metadata", () => {
