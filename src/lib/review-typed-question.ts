@@ -20,6 +20,14 @@ export function presentedReviewQuestion<T>(
   return liveQuestion ?? null
 }
 
+export function reviewQuestionPresentationKey(
+  question: Pick<Question, "options" | "correctAnswer"> | null | undefined
+) {
+  if (!question) return ""
+  const options = question.options.map((option) => normalizeAnswer(option.value)).join("\0")
+  return `${normalizeAnswer(question.correctAnswer)}\0${options}`
+}
+
 export function shouldShowReviewSpecialFeedback(questionType: string) {
   return questionType === "particle" || questionType === "verb-conjugation"
 }

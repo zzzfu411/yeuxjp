@@ -126,6 +126,7 @@ export function ensureQuestionOptions(question: Pick<Question, "correctAnswer" |
 export {
   presentedReviewQuestion,
   questionUsesTypedReview,
+  reviewQuestionPresentationKey,
   shouldShowReviewSpecialFeedback,
   uniqueQuestionOptionCount,
 } from "@/lib/review-typed-question"

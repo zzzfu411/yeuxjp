@@ -14,8 +14,11 @@ test("presented review question hook latches the live question until the answer 
 
   assert.match(source, /export function usePresentedReviewQuestion/)
   assert.match(source, /presentedReviewQuestion/)
+  assert.match(source, /reviewQuestionPresentationKey/)
   assert.match(source, /const \[latchedQuestion, setLatchedQuestion\] = useState<T \| null>\(live\)/)
-  assert.match(source, /if \(selectedAnswer == null && latchedQuestion !== live\) \{/)
+  assert.match(source, /if \(/)
+  assert.match(source, /selectedAnswer == null/)
+  assert.match(source, /reviewQuestionPresentationKey\(latchedQuestion\) !== reviewQuestionPresentationKey\(live\)/)
   assert.match(source, /setLatchedQuestion\(live\)/)
   assert.match(source, /return presentedReviewQuestion\(live, selectedAnswer, latchedQuestion\)/)
   assert.doesNotMatch(source, /useRef/)
