@@ -1,17 +1,18 @@
 "use client"
 
-import { useRef } from "react"
+import { useState } from "react"
 import { presentedReviewQuestion } from "@/lib/review-typed-question"
 
 export function usePresentedReviewQuestion<T>(
   liveQuestion: T | null | undefined,
   selectedAnswer: string | null
 ): T | null {
-  const latchedRef = useRef<T | null>(null)
+  const live = liveQuestion ?? null
+  const [latchedQuestion, setLatchedQuestion] = useState<T | null>(live)
 
-  if (selectedAnswer == null) {
-    latchedRef.current = liveQuestion ?? null
+  if (selectedAnswer == null && latchedQuestion !== live) {
+    setLatchedQuestion(live)
   }
 
-  return presentedReviewQuestion(liveQuestion, selectedAnswer, latchedRef.current)
+  return presentedReviewQuestion(live, selectedAnswer, latchedQuestion)
 }
