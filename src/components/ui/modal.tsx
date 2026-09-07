@@ -4,6 +4,7 @@ import * as React from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { acquireModalOverflowLock, releaseModalOverflowLock } from "@/lib/modal-overflow-lock"
 import { Button } from "@/components/ui/button"
 
 const FOCUSABLE_SELECTOR = [
@@ -44,7 +45,6 @@ export function Modal({
 }: ModalProps) {
   const [show, setShow] = React.useState(isOpen)
   const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null)
-  const previousOverflow = React.useRef<string | null>(null)
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
   const onCloseRef = React.useRef(onClose)
@@ -73,18 +73,11 @@ export function Modal({
 
     if (isOpen) {
       setShow(true)
-      if (previousOverflow.current === null) {
-        previousOverflow.current = document.body.style.overflow
-      }
-      document.body.style.overflow = "hidden" // Prevent scrolling
+      acquireModalOverflowLock(document.body)
       // Remember the trigger so we can restore focus on close.
       previouslyFocused.current = (document.activeElement as HTMLElement | null) ?? null
     } else {
       timer = setTimeout(() => setShow(false), 300) // Wait for animation
-      if (previousOverflow.current !== null) {
-        document.body.style.overflow = previousOverflow.current
-        previousOverflow.current = null
-      }
       // Restore focus to the trigger.
       const prev = previouslyFocused.current
       if (prev && typeof prev.focus === "function") prev.focus()
@@ -93,9 +86,8 @@ export function Modal({
 
     return () => {
       if (timer) clearTimeout(timer)
-      if (previousOverflow.current !== null) {
-        document.body.style.overflow = previousOverflow.current
-        previousOverflow.current = null
+      if (isOpen) {
+        releaseModalOverflowLock(document.body)
       }
     }
   }, [isOpen])

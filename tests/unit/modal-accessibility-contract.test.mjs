@@ -42,6 +42,11 @@ test("Modal traps keyboard focus while preserving escape close behavior", () => 
   assert.doesNotMatch(source, /if \(!isOpen \|\| !show \|\| !portalTarget\) return/)
   assert.match(source, /\[getFocusableElements, isOpen, portalTarget, show\]/)
   assert.doesNotMatch(source, /\[getFocusableElements, isOpen, onClose, show\]/)
+  assert.match(source, /from "@\/lib\/modal-overflow-lock"/)
+  assert.match(source, /acquireModalOverflowLock\(document\.body\)/)
+  assert.match(source, /if \(isOpen\) \{\s*releaseModalOverflowLock\(document\.body\)\s*\}/)
+  assert.doesNotMatch(source, /previousOverflow/)
+  assert.doesNotMatch(source, /document\.body\.style\.overflow =/)
 })
 
 test("Modal exposes labelledby and describedby hooks to callers", () => {
