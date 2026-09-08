@@ -9,7 +9,7 @@ import {
   isTopOpenModal,
   registerOpenModal,
   remainingOpenModalTop,
-  shouldRestoreFocusOnModalClose,
+  restoreFocusOnModalClose,
   unregisterOpenModal,
 } from "@/lib/open-modal-stack"
 import { Button } from "@/components/ui/button"
@@ -82,19 +82,17 @@ export function Modal({
       }
     } else {
       timer = setTimeout(() => setShow(false), 300) // Wait for animation
-      if (shouldRestoreFocusOnModalClose(dialogRef.current)) {
-        const prev = previouslyFocused.current
-        if (prev?.isConnected && typeof prev.focus === "function") prev.focus()
-      } else {
-        remainingOpenModalTop(dialogRef.current)?.focus?.()
-      }
-      previouslyFocused.current = null
     }
 
     return () => {
       if (timer) clearTimeout(timer)
+      // isOpen→false and unmount-while-open (URL-controlled closeHref /
+      // Escape / backdrop) share this path. The later keydown effect
+      // unregisters first; remainingOpenModalTop still hands off correctly.
       if (isOpen) {
         releaseModalOverflowLock(document.body)
+        restoreFocusOnModalClose(dialogRef.current, previouslyFocused.current)
+        previouslyFocused.current = null
       }
     }
   }, [isOpen])

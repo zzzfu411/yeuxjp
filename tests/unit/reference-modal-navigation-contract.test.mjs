@@ -315,6 +315,7 @@ test("URL-controlled reference modal owns client-side close and arrow-key naviga
   assert.match(source, /ariaDescribedBy\?: string/)
   assert.match(source, /<Modal/)
   assert.match(source, /isOpen/)
+  assert.doesNotMatch(source, /isOpen=\{false\}/)
   assert.match(source, /onClose=\{close\}/)
   assert.match(source, /ariaLabelledBy=\{ariaLabelledBy\}/)
   assert.match(source, /ariaDescribedBy=\{ariaDescribedBy\}/)

@@ -272,6 +272,76 @@ test("today review adapter distinguishes missing records from undersized questio
   })
 })
 
+test("vocab pool failure is fatal only when every remaining today-review item needs it", () => {
+  const kana = { deck: "kana", id: "hiragana:a" }
+  const vocab = { deck: "vocab", id: "v1" }
+  const mistake = { deck: "mistakes", id: "m1" }
+
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: vocab,
+      remainingItems: [vocab],
+      vocabularyLoading: false,
+      vocabularyError: "复习题库加载失败",
+    }),
+    "error"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: vocab,
+      remainingItems: [vocab, vocab],
+      vocabularyLoading: false,
+      vocabularyError: "复习题库加载失败",
+    }),
+    "error"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: vocab,
+      remainingItems: [vocab, kana],
+      vocabularyLoading: false,
+      vocabularyError: "复习题库加载失败",
+    }),
+    "drop-vocab"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: kana,
+      remainingItems: [kana, vocab],
+      vocabularyLoading: false,
+      vocabularyError: "复习题库加载失败",
+    }),
+    "serve"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: mistake,
+      remainingItems: [mistake, vocab],
+      vocabularyLoading: true,
+      vocabularyError: null,
+    }),
+    "serve"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: vocab,
+      remainingItems: [vocab, kana],
+      vocabularyLoading: true,
+      vocabularyError: null,
+    }),
+    "loading"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: kana,
+      remainingItems: [kana],
+      vocabularyLoading: false,
+      vocabularyError: null,
+    }),
+    "serve"
+  )
+})
+
 test("today review adapter centralizes SRS recordability, grading, and item keys", () => {
   const srs = decks()
 

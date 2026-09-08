@@ -26,6 +26,7 @@ import {
   getTodayReviewItemKey,
   gradeTodayReviewItem,
   resolveTodayReviewItemData,
+  resolveTodayReviewVocabPoolGate,
 } from "@/lib/today-review-session"
 
 export function TodayReviewSession({
@@ -73,14 +74,24 @@ export function TodayReviewSession({
     })
   }, [current, notebook.byId, reviewSeed, showRomaji, vocabulary.data])
   const presentedQuestion = usePresentedReviewQuestion(data?.question, selected)
+  const vocabPoolGate = resolveTodayReviewVocabPoolGate({
+    current,
+    remainingItems: review.queue,
+    vocabularyLoading: vocabulary.loading,
+    vocabularyError: vocabulary.error,
+  })
 
   useEffect(() => {
     if (!current) return
+    if (vocabPoolGate === "drop-vocab") {
+      dropCurrent()
+      return
+    }
     if (current.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
     if (missingReviewEntry) {
       dropCurrent()
     }
-  }, [current, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
+  }, [current, dropCurrent, missingReviewEntry, vocabPoolGate, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.autoPlayAudio ? data.audio : undefined,
@@ -112,11 +123,11 @@ export function TodayReviewSession({
     )
   }
 
-  if (vocabulary.loading) {
+  if (vocabPoolGate === "loading") {
     return <ReviewLoadingState label="正在加载今日复习题库..." />
   }
 
-  if (vocabulary.error) {
+  if (vocabPoolGate === "error") {
     return (
       <ReviewErrorState
         title="今日复习题库加载失败"
@@ -125,6 +136,10 @@ export function TodayReviewSession({
         onRetry={vocabulary.retry}
       />
     )
+  }
+
+  if (vocabPoolGate === "drop-vocab") {
+    return null
   }
 
   if (insufficientQuestionOptions) {

@@ -124,6 +124,21 @@ export function createOpenModalStack() {
     return remainingOpenModalTop(closingDialog) == null
   }
 
+  function restoreFocusOnModalClose(
+    closingDialog?: OpenModalDialog | null,
+    previouslyFocused?: { isConnected: boolean; focus?: () => void } | null,
+  ) {
+    // URL-controlled modals unmount while still open, so this must run from
+    // effect cleanup as well as the isOpen→false path.
+    if (shouldRestoreFocusOnModalClose(closingDialog)) {
+      if (previouslyFocused?.isConnected && typeof previouslyFocused.focus === "function") {
+        previouslyFocused.focus()
+      }
+      return
+    }
+    remainingOpenModalTop(closingDialog)?.focus?.()
+  }
+
   function reset() {
     stack.length = 0
     reservedKeyIndexes.clear()
@@ -136,6 +151,7 @@ export function createOpenModalStack() {
     isTopOpenModal,
     remainingOpenModalTop,
     shouldRestoreFocusOnModalClose,
+    restoreFocusOnModalClose,
     reset,
     getDialogs() {
       return stack.map((entry) => entry.dialog)
@@ -151,4 +167,5 @@ export const pruneOpenModalStack = openModalStack.prune
 export const isTopOpenModal = openModalStack.isTopOpenModal
 export const remainingOpenModalTop = openModalStack.remainingOpenModalTop
 export const shouldRestoreFocusOnModalClose = openModalStack.shouldRestoreFocusOnModalClose
+export const restoreFocusOnModalClose = openModalStack.restoreFocusOnModalClose
 export const resetOpenModalStackForTests = openModalStack.reset

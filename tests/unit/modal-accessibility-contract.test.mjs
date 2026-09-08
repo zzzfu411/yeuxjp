@@ -23,14 +23,14 @@ test("Modal traps keyboard focus while preserving escape close behavior", () => 
   assert.match(source, /lastElement\.focus\(\)/)
   assert.match(source, /firstElement\.focus\(\)/)
   assert.match(source, /from "@\/lib\/open-modal-stack"/)
+  assert.match(source, /unmount-while-open/)
   assert.match(source, /export \{ isTopOpenModal \} from "@\/lib\/open-modal-stack"/)
   assert.match(source, /onCloseRef/)
   assert.match(source, /if \(!isTopOpenModal\(dialog\)\) return/)
   assert.match(source, /e\.key === "Escape"/)
   assert.match(source, /registerOpenModal\(dialog, stackKey\)/)
   assert.match(source, /unregisterOpenModal\(dialog\)/)
-  assert.match(source, /shouldRestoreFocusOnModalClose\(dialogRef\.current\)/)
-  assert.match(source, /remainingOpenModalTop\(dialogRef\.current\)\?\.focus/)
+  assert.match(source, /restoreFocusOnModalClose\(dialogRef\.current, previouslyFocused\.current\)/)
   assert.match(source, /if \(liveDialog && isTopOpenModal\(liveDialog\)\) liveDialog\.focus\(\)/)
   assert.match(source, /stackKey\?: string/)
   assert.match(source, /addEventListener\("keydown", onKey, true\)/)
@@ -50,7 +50,10 @@ test("Modal traps keyboard focus while preserving escape close behavior", () => 
   assert.doesNotMatch(source, /\[getFocusableElements, isOpen, onClose, show\]/)
   assert.match(source, /from "@\/lib\/modal-overflow-lock"/)
   assert.match(source, /acquireModalOverflowLock\(document\.body\)/)
-  assert.match(source, /if \(isOpen\) \{\s*releaseModalOverflowLock\(document\.body\)\s*\}/)
+  assert.match(
+    source,
+    /if \(isOpen\) \{\s*releaseModalOverflowLock\(document\.body\)\s*restoreFocusOnModalClose\(dialogRef\.current, previouslyFocused\.current\)\s*previouslyFocused\.current = null\s*\}/
+  )
   assert.doesNotMatch(source, /previousOverflow/)
   assert.doesNotMatch(source, /document\.body\.style\.overflow =/)
 })

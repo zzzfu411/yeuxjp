@@ -90,6 +90,53 @@ test("soft remount of a keyed underlay keeps the existing overlay on top", () =>
   assert.equal(speech.parentElement.style.zIndex, "101")
 })
 
+test("unmount-while-open restores the trigger when it is the last overlay", () => {
+  const openModals = stack.createOpenModalStack()
+  const detail = makeDialog("detail")
+  const trigger = makeDialog("trigger")
+
+  openModals.register(detail)
+  openModals.unregister(detail)
+
+  openModals.restoreFocusOnModalClose(detail, trigger)
+
+  assert.equal(trigger.focusCalls, 1)
+  assert.equal(detail.focusCalls, 0)
+})
+
+test("unmount-while-open hands focus to the remaining top dialog", () => {
+  const openModals = stack.createOpenModalStack()
+  const detail = makeDialog("detail")
+  const speech = makeDialog("speech")
+  const trigger = makeDialog("trigger")
+
+  openModals.register(detail)
+  openModals.register(speech)
+  openModals.unregister(detail)
+
+  openModals.restoreFocusOnModalClose(detail, trigger)
+
+  assert.equal(speech.focusCalls, 1)
+  assert.equal(trigger.focusCalls, 0)
+  assert.equal(detail.focusCalls, 0)
+})
+
+test("restore ignores a detached trigger and still hands off to a remaining overlay", () => {
+  const openModals = stack.createOpenModalStack()
+  const detail = makeDialog("detail")
+  const speech = makeDialog("speech")
+  const trigger = makeDialog("trigger", { connected: false })
+
+  openModals.register(detail)
+  openModals.register(speech)
+  detail.isConnected = false
+
+  openModals.restoreFocusOnModalClose(detail, trigger)
+
+  assert.equal(speech.focusCalls, 1)
+  assert.equal(trigger.focusCalls, 0)
+})
+
 test("disconnected underlays are pruned without promoting a remounted keyed dialog over speech", () => {
   const openModals = stack.createOpenModalStack()
   const detail = makeDialog("detail-1")
