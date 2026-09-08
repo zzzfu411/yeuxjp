@@ -61,7 +61,7 @@ export function TodayReviewSession({
   const review = useReviewSessionState(items)
   const current = review.currentItem
   const selected = review.selectedAnswer
-  const { dropCurrent } = review
+  const { deferCurrent, dropCurrent } = review
   const currentKey = getTodayReviewItemKey(current)
   const saveError = !!currentKey && saveErrorKey === currentKey
   const { data, missingReviewEntry, insufficientQuestionOptions } = useMemo(() => {
@@ -83,15 +83,15 @@ export function TodayReviewSession({
 
   useEffect(() => {
     if (!current) return
-    if (vocabPoolGate === "drop-vocab") {
-      dropCurrent()
+    if (vocabPoolGate === "defer-vocab") {
+      deferCurrent()
       return
     }
     if (current.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
     if (missingReviewEntry) {
       dropCurrent()
     }
-  }, [current, dropCurrent, missingReviewEntry, vocabPoolGate, vocabulary.error, vocabulary.loading])
+  }, [current, deferCurrent, dropCurrent, missingReviewEntry, vocabPoolGate, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.autoPlayAudio ? data.audio : undefined,
@@ -138,7 +138,7 @@ export function TodayReviewSession({
     )
   }
 
-  if (vocabPoolGate === "drop-vocab") {
+  if (vocabPoolGate === "defer-vocab") {
     return null
   }
 

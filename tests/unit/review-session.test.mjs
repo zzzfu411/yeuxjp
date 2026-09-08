@@ -31,6 +31,15 @@ test("review queues can drop the current item after external removal", () => {
   assert.deepEqual(queue, ["a", "b", "c"])
 })
 
+test("review queues can defer the current item to the tail without dropping it", () => {
+  const queue = ["vocab", "kana", "mistake"]
+
+  assert.deepEqual(session.deferCurrentReviewItem(queue), ["kana", "mistake", "vocab"])
+  assert.deepEqual(session.deferCurrentReviewItem(["vocab"]), ["vocab"])
+  assert.deepEqual(session.deferCurrentReviewItem([]), [])
+  assert.deepEqual(queue, ["vocab", "kana", "mistake"])
+})
+
 test("review stats accumulate answers and completion display data", () => {
   let stats = session.createReviewStats()
   stats = session.recordReviewAnswer(stats, true)

@@ -70,7 +70,7 @@ export function getTodayReviewItemKey(item: TodayReviewItem | null) {
   return item ? `${item.deck}:${item.id}` : null
 }
 
-export type TodayReviewVocabPoolGate = "serve" | "loading" | "error" | "drop-vocab"
+export type TodayReviewVocabPoolGate = "serve" | "loading" | "error" | "defer-vocab"
 
 function todayReviewItemsNeedVocabPool(items: readonly { deck: string }[] | null | undefined) {
   if (!items?.length) return false
@@ -90,9 +90,10 @@ export function resolveTodayReviewVocabPoolGate({
 }): TodayReviewVocabPoolGate {
   if (vocabularyError) {
     // Fatal only when every remaining card needs the failed pool. Mixed
-    // queues keep serving kana / mistakes and drop stranded vocab cards.
+    // queues keep serving kana / mistakes and defer stranded vocab cards
+    // so a later retry can still present them.
     if (todayReviewItemsNeedVocabPool(remainingItems)) return "error"
-    if (current?.deck === "vocab") return "drop-vocab"
+    if (current?.deck === "vocab") return "defer-vocab"
     return "serve"
   }
 

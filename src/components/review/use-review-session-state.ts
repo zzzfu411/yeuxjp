@@ -6,6 +6,7 @@ import {
   advanceReviewQueue,
   canStartReviewAnswerRecording,
   createReviewStats,
+  deferCurrentReviewItem,
   dropCurrentReviewItem,
   getReviewCompletionStats,
   recordReviewAnswer,
@@ -99,6 +100,14 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     answerPendingRef.current = false
   }, [])
 
+  const deferCurrent = useCallback(() => {
+    setQueue((prev) => deferCurrentReviewItem(prev))
+    setPresentationVersion((prev) => prev + 1)
+    setSelectedAnswer(null)
+    setLastAnswerCorrect(null)
+    answerPendingRef.current = false
+  }, [])
+
   return {
     queue,
     currentItem,
@@ -114,5 +123,6 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     recordAnswer,
     advance,
     dropCurrent,
+    deferCurrent,
   }
 }

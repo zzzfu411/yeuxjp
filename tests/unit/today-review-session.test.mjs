@@ -302,7 +302,7 @@ test("vocab pool failure is fatal only when every remaining today-review item ne
       vocabularyLoading: false,
       vocabularyError: "复习题库加载失败",
     }),
-    "drop-vocab"
+    "defer-vocab"
   )
   assert.equal(
     today.resolveTodayReviewVocabPoolGate({

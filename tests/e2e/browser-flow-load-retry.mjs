@@ -261,8 +261,6 @@ async function verifyTodayReviewVocabularyLoadRetry(page, baseUrl) {
 
   await failNextVocabularyLoad(page, "survival")
   await page.getByTestId("review-start-today").click()
-  await page.getByTestId("review-retry-load").waitFor({ state: "visible" })
-  await page.getByTestId("review-retry-load").click()
   await page.getByTestId("review-remaining").waitFor({ state: "visible" })
 
   await page.getByTestId("review-answer-a").click()
@@ -271,6 +269,8 @@ async function verifyTodayReviewVocabularyLoadRetry(page, baseUrl) {
   await page.getByTestId("review-answer-a").click()
   await page.getByTestId("review-next").waitFor({ state: "visible" })
   await page.getByTestId("review-next").click()
+  await page.getByTestId("review-retry-load").waitFor({ state: "visible" })
+  await page.getByTestId("review-retry-load").click()
   await page.getByTestId("review-answer-sur-g-1").waitFor({ state: "visible" })
   await page.getByTestId("review-answer-sur-g-1").click()
   await page.waitForFunction((storageKeys) => {

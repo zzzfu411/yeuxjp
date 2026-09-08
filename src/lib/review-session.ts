@@ -51,6 +51,10 @@ export function dropCurrentReviewItem<T>(queue: T[]): T[] {
   return rest
 }
 
+export function deferCurrentReviewItem<T>(queue: T[]): T[] {
+  return advanceReviewQueue(queue, false)
+}
+
 export function getReviewCompletionStats(initial: number, stats: ReviewStats): ReviewCompletionStats {
   return {
     initial,
