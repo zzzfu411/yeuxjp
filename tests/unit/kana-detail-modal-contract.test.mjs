@@ -13,8 +13,8 @@ test("KanaGrid delegates kana detail modal rendering to KanaDetailModal", () => 
   const source = read("src/components/kana/kana-grid.tsx")
 
   assert.match(source, /from "\.\/kana-detail-modal"/)
-  assert.match(source, /from "@\/lib\/keyboard-shortcuts"/)
-  assert.match(source, /shouldHandleGlobalShortcutEvent\(e\)/)
+  assert.match(source, /from "@\/lib\/modal-arrow-navigation"/)
+  assert.match(source, /shouldHandleModalArrowNavigation\(e\)/)
   assert.match(source, /const \[selectedRomaji, setSelectedRomaji\] = useState<string \| null>\(null\)/)
   assert.match(source, /data\.findIndex\(\(item\) => item\.romaji === selectedRomaji\)/)
   assert.match(source, /selectedKana \? selectedIndex : null/)

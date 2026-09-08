@@ -5,7 +5,16 @@ import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { acquireModalOverflowLock, releaseModalOverflowLock } from "@/lib/modal-overflow-lock"
+import {
+  isTopOpenModal,
+  registerOpenModal,
+  remainingOpenModalTop,
+  shouldRestoreFocusOnModalClose,
+  unregisterOpenModal,
+} from "@/lib/open-modal-stack"
 import { Button } from "@/components/ui/button"
+
+export { isTopOpenModal } from "@/lib/open-modal-stack"
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -16,16 +25,6 @@ const FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(", ")
 
-const openModalStack: HTMLDivElement[] = []
-
-function pruneOpenModalStack() {
-  for (let index = openModalStack.length - 1; index >= 0; index -= 1) {
-    if (!openModalStack[index].isConnected) {
-      openModalStack.splice(index, 1)
-    }
-  }
-}
-
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
@@ -33,6 +32,7 @@ interface ModalProps {
   className?: string
   ariaLabelledBy?: string
   ariaDescribedBy?: string
+  stackKey?: string
 }
 
 export function Modal({
@@ -42,6 +42,7 @@ export function Modal({
   className,
   ariaLabelledBy,
   ariaDescribedBy,
+  stackKey,
 }: ModalProps) {
   const [show, setShow] = React.useState(isOpen)
   const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null)
@@ -74,13 +75,19 @@ export function Modal({
     if (isOpen) {
       setShow(true)
       acquireModalOverflowLock(document.body)
-      // Remember the trigger so we can restore focus on close.
-      previouslyFocused.current = (document.activeElement as HTMLElement | null) ?? null
+      // Remember the trigger so we can restore focus on close. Soft remounts
+      // under a still-open overlay must not latch that overlay's focus.
+      if (!remainingOpenModalTop(dialogRef.current)) {
+        previouslyFocused.current = (document.activeElement as HTMLElement | null) ?? null
+      }
     } else {
       timer = setTimeout(() => setShow(false), 300) // Wait for animation
-      // Restore focus to the trigger.
-      const prev = previouslyFocused.current
-      if (prev && typeof prev.focus === "function") prev.focus()
+      if (shouldRestoreFocusOnModalClose(dialogRef.current)) {
+        const prev = previouslyFocused.current
+        if (prev?.isConnected && typeof prev.focus === "function") prev.focus()
+      } else {
+        remainingOpenModalTop(dialogRef.current)?.focus?.()
+      }
       previouslyFocused.current = null
     }
 
@@ -97,17 +104,17 @@ export function Modal({
     if (!isOpen || !show) return
     const dialog = dialogRef.current
     if (!dialog) return
-    pruneOpenModalStack()
-    openModalStack.push(dialog)
-    // Defer focus until after animation kicks in.
+    registerOpenModal(dialog, stackKey)
+    // Defer focus until after animation kicks in. Soft remounts must not steal
+    // focus from a still-open overlay that remains top of the stack.
     const focusTimer = setTimeout(() => {
-      dialogRef.current?.focus()
+      const liveDialog = dialogRef.current
+      if (liveDialog && isTopOpenModal(liveDialog)) liveDialog.focus()
     }, 50)
 
     const onKey = (e: KeyboardEvent) => {
-      pruneOpenModalStack()
       const dialog = dialogRef.current
-      if (openModalStack.length > 0 && openModalStack.at(-1) !== dialog) return
+      if (!isTopOpenModal(dialog)) return
 
       if (e.key === "Escape") {
         e.stopPropagation()
@@ -149,12 +156,9 @@ export function Modal({
     return () => {
       clearTimeout(focusTimer)
       window.removeEventListener("keydown", onKey, true)
-      if (dialog) {
-        const stackIndex = openModalStack.lastIndexOf(dialog)
-        if (stackIndex >= 0) openModalStack.splice(stackIndex, 1)
-      }
+      unregisterOpenModal(dialog)
     }
-  }, [getFocusableElements, isOpen, portalTarget, show])
+  }, [getFocusableElements, isOpen, portalTarget, show, stackKey])
 
   if (!show) return null
 

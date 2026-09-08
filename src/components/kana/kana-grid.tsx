@@ -6,7 +6,7 @@ import { KanaCard } from "./kana-card"
 import { cn } from "@/lib/utils"
 import { KanaDetailModal } from "./kana-detail-modal"
 import { cancelJapaneseSpeech, speakJapanese } from "@/lib/speech"
-import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
+import { shouldHandleModalArrowNavigation } from "@/lib/modal-arrow-navigation"
 import { makeKanaId, type KanaId, type KanaScript } from "@/lib/kana-id"
 import {
   cacheKeyForChar,
@@ -98,13 +98,12 @@ export function KanaGrid({
     if (selectedIndex === null || selectedIndex < 0) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!shouldHandleGlobalShortcutEvent(e)) return
-
-      if (e.key === "ArrowRight") {
+      const direction = shouldHandleModalArrowNavigation(e)
+      if (direction === "ArrowRight") {
         e.preventDefault()
         handleNext()
       }
-      if (e.key === "ArrowLeft") {
+      if (direction === "ArrowLeft") {
         e.preventDefault()
         handlePrev()
       }

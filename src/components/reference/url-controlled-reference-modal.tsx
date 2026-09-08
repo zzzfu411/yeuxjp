@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Modal } from "@/components/ui/modal"
-import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
+import { shouldHandleModalArrowNavigation } from "@/lib/modal-arrow-navigation"
 import { shouldUsePwaDocumentNavigationForHref } from "@/lib/pwa-navigation"
 
 interface UrlControlledReferenceModalProps {
@@ -48,13 +48,12 @@ export function UrlControlledReferenceModal({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!shouldHandleGlobalShortcutEvent(event)) return
-
-      if (event.key === "ArrowRight") {
+      const direction = shouldHandleModalArrowNavigation(event)
+      if (direction === "ArrowRight") {
         event.preventDefault()
         navigate(nextHref)
       }
-      if (event.key === "ArrowLeft") {
+      if (direction === "ArrowLeft") {
         event.preventDefault()
         navigate(prevHref)
       }
@@ -71,6 +70,7 @@ export function UrlControlledReferenceModal({
       className={className}
       ariaLabelledBy={ariaLabelledBy}
       ariaDescribedBy={ariaDescribedBy}
+      stackKey="url-controlled-reference"
     >
       {children}
     </Modal>
