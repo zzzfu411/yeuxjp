@@ -75,4 +75,5 @@ test("review session state owns a presentation version for audio replay", () => 
   assert.match(source, /const \[presentationVersion, setPresentationVersion\] = useState\(0\)/)
   assert.equal(source.match(/setPresentationVersion\(\(prev\) => prev \+ 1\)/g)?.length, 3)
   assert.match(source, /presentationVersion,/)
+  assert.match(source, /remainingItems: queue,/)
 })

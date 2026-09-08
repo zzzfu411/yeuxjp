@@ -40,7 +40,7 @@ test("TodayReviewSession delegates mixed queue data, shared prompts, and SRS dec
   assert.match(source, /getTodayReviewItemKey\(current\)/)
   assert.match(source, /resolveTodayReviewItemData\(\{/)
   assert.match(source, /resolveTodayReviewVocabPoolGate\(\{/)
-  assert.match(source, /remainingItems: review\.queue/)
+  assert.match(source, /remainingItems: review\.remainingItems/)
   assert.match(source, /vocabularyLoading: vocabulary\.loading/)
   assert.match(source, /vocabularyError: vocabulary\.error/)
   assert.match(source, /current,\s+vocabulary: vocabulary\.data,\s+mistakes: notebook\.byId,/)

@@ -76,7 +76,7 @@ export function TodayReviewSession({
   const presentedQuestion = usePresentedReviewQuestion(data?.question, selected)
   const vocabPoolGate = resolveTodayReviewVocabPoolGate({
     current,
-    remainingItems: review.queue,
+    remainingItems: review.remainingItems,
     vocabularyLoading: vocabulary.loading,
     vocabularyError: vocabulary.error,
   })

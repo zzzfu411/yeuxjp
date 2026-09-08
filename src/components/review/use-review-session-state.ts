@@ -103,6 +103,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     queue,
     currentItem,
     isComplete,
+    remainingItems: queue,
     remainingCount: queue.length,
     selectedAnswer,
     lastAnswerCorrect,
