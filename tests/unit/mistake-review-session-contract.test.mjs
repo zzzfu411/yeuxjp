@@ -37,7 +37,7 @@ test("MistakeReviewSession owns mistake question conversion, removal, feedback, 
   assert.match(source, /if \(!item \|\| !question\) return null/)
   assert.doesNotMatch(source, /错题不存在/)
   assert.match(source, /mistakeToQuestion\(item\)/)
-  assert.match(source, /usePresentedReviewQuestion\(liveQuestion, selected\)/)
+  assert.match(source, /usePresentedReviewQuestion\(liveQuestion, selected/)
   assert.match(source, /questionUsesTypedReview\(question\)/)
   assert.match(source, /const handleRemove = \(\) => \{/)
   assert.match(source, /const removed = notebook\.remove\(item\.id\)/)
