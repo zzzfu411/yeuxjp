@@ -169,6 +169,60 @@ test("answered typed review stays typed after lastWrongAnswer is recorded", () =
   assert.equal(replacements, 1)
 })
 
+test("presentation keys distinguish items that share an answer bank", () => {
+  const sharedOptions = [
+    { value: "は", display: "は" },
+    { value: "が", display: "が" },
+    { value: "を", display: "を" },
+  ]
+  const first = {
+    mistakeId: "m-particle-1",
+    itemId: "particle-wa",
+    questionText: "私＿学生です。",
+    explanation: "は marks the topic.",
+    correctAnswer: "は",
+    options: sharedOptions,
+  }
+  const second = {
+    mistakeId: "m-particle-2",
+    itemId: "particle-ga",
+    questionText: "雨＿降っています。",
+    explanation: "が marks the subject of 降る.",
+    correctAnswer: "は",
+    options: sharedOptions.map((option) => ({ ...option })),
+  }
+  const sameItemRebuilt = {
+    ...first,
+    options: first.options.map((option) => ({ ...option })),
+  }
+
+  const answerBankKey = (question) =>
+    `${question.correctAnswer}\0${question.options.map((option) => option.value).join("\0")}`
+  assert.equal(answerBankKey(first), answerBankKey(second))
+  assert.notEqual(review.reviewQuestionPresentationKey(first), review.reviewQuestionPresentationKey(second))
+  assert.equal(review.reviewQuestionPresentationKey(first), review.reviewQuestionPresentationKey(sameItemRebuilt))
+  assert.notEqual(
+    review.reviewQuestionPresentationKey(first, "mistakes:m-particle-1:0"),
+    review.reviewQuestionPresentationKey(second, "mistakes:m-particle-2:1")
+  )
+
+  let latched = first
+  const answerFirst = "が"
+  let selected = answerFirst
+  let presented = review.presentedReviewQuestion(first, selected, latched)
+  assert.equal(presented.questionText, first.questionText)
+  assert.equal(presented.mistakeId, first.mistakeId)
+
+  selected = null
+  if (review.reviewQuestionPresentationKey(latched) !== review.reviewQuestionPresentationKey(second)) {
+    latched = second
+  }
+  presented = review.presentedReviewQuestion(second, "を", latched)
+  assert.equal(presented.questionText, second.questionText)
+  assert.equal(presented.mistakeId, second.mistakeId)
+  assert.equal(presented.explanation, second.explanation)
+})
+
 test("typed review is used when a production mistake has no distractors", () => {
   const base = {
     id: "type-1",

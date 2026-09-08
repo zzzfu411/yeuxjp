@@ -77,6 +77,13 @@ function todayReviewItemsNeedVocabPool(items: readonly { deck: string }[] | null
   return items.every((item) => item.deck === "vocab")
 }
 
+export function getNextServableTodayReviewItem<T extends { deck: string }>(
+  remainingItems: readonly T[] | null | undefined
+): T | null {
+  if (!remainingItems?.length) return null
+  return remainingItems.find((item) => item.deck !== "vocab") ?? null
+}
+
 export function resolveTodayReviewVocabPoolGate({
   current,
   remainingItems,

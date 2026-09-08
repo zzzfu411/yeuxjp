@@ -25,6 +25,7 @@ import {
   getTodayReviewBatchCompletionTitle,
   getTodayReviewItemKey,
   gradeTodayReviewItem,
+  getNextServableTodayReviewItem,
   resolveTodayReviewItemData,
   resolveTodayReviewVocabPoolGate,
 } from "@/lib/today-review-session"
@@ -59,9 +60,19 @@ export function TodayReviewSession({
   // mistake notebook or vocabulary pool references.
   const [reviewSeed] = useState(() => `today-${Math.random().toString(36).slice(2)}`)
   const review = useReviewSessionState(items)
-  const current = review.currentItem
+  const queuedCurrent = review.currentItem
   const selected = review.selectedAnswer
   const { deferCurrent, dropCurrent } = review
+  const vocabPoolGate = resolveTodayReviewVocabPoolGate({
+    current: queuedCurrent,
+    remainingItems: review.remainingItems,
+    vocabularyLoading: vocabulary.loading,
+    vocabularyError: vocabulary.error,
+  })
+  const current =
+    vocabPoolGate === "defer-vocab"
+      ? getNextServableTodayReviewItem(review.remainingItems) ?? queuedCurrent
+      : queuedCurrent
   const currentKey = getTodayReviewItemKey(current)
   const saveError = !!currentKey && saveErrorKey === currentKey
   const { data, missingReviewEntry, insufficientQuestionOptions } = useMemo(() => {
@@ -73,25 +84,23 @@ export function TodayReviewSession({
       showRomaji,
     })
   }, [current, notebook.byId, reviewSeed, showRomaji, vocabulary.data])
-  const presentedQuestion = usePresentedReviewQuestion(data?.question, selected)
-  const vocabPoolGate = resolveTodayReviewVocabPoolGate({
-    current,
-    remainingItems: review.remainingItems,
-    vocabularyLoading: vocabulary.loading,
-    vocabularyError: vocabulary.error,
-  })
+  const presentedQuestion = usePresentedReviewQuestion(
+    data?.question,
+    selected,
+    `${currentKey ?? ""}:${review.presentationVersion}`
+  )
 
   useEffect(() => {
-    if (!current) return
+    if (!queuedCurrent) return
     if (vocabPoolGate === "defer-vocab") {
       deferCurrent()
       return
     }
-    if (current.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
+    if (queuedCurrent.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
     if (missingReviewEntry) {
       dropCurrent()
     }
-  }, [current, deferCurrent, dropCurrent, missingReviewEntry, vocabPoolGate, vocabulary.error, vocabulary.loading])
+  }, [deferCurrent, dropCurrent, missingReviewEntry, queuedCurrent, vocabPoolGate, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.autoPlayAudio ? data.audio : undefined,
@@ -138,8 +147,8 @@ export function TodayReviewSession({
     )
   }
 
-  if (vocabPoolGate === "defer-vocab") {
-    return null
+  if (vocabPoolGate === "defer-vocab" && (!current || !data)) {
+    return <ReviewLoadingState label="正在加载今日复习题库..." />
   }
 
   if (insufficientQuestionOptions) {

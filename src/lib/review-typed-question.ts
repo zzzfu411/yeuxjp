@@ -20,12 +20,30 @@ export function presentedReviewQuestion<T>(
   return liveQuestion ?? null
 }
 
+export type ReviewQuestionPresentationSource = {
+  options: { value: string }[]
+  correctAnswer: string
+  mistakeId?: string
+  itemId?: string
+  questionText?: string
+}
+
 export function reviewQuestionPresentationKey(
-  question: { options: { value: string }[]; correctAnswer: string } | null | undefined
+  question: ReviewQuestionPresentationSource | null | undefined,
+  presentationIdentity?: string | number | null
 ) {
-  if (!question) return ""
-  const options = question.options.map((option) => normalizeAnswer(option.value)).join("\0")
-  return `${normalizeAnswer(question.correctAnswer)}\0${options}`
+  if (!question && (presentationIdentity == null || presentationIdentity === "")) return ""
+  const options = question
+    ? question.options.map((option) => normalizeAnswer(option.value)).join("\0")
+    : ""
+  return [
+    presentationIdentity ?? "",
+    question?.mistakeId ?? "",
+    question?.itemId ?? "",
+    question?.questionText ?? "",
+    question ? normalizeAnswer(question.correctAnswer) : "",
+    options,
+  ].join("\0")
 }
 
 export function shouldShowReviewSpecialFeedback(questionType: string) {

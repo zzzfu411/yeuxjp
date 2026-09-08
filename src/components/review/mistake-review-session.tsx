@@ -42,7 +42,7 @@ export function MistakeReviewSession({
   const currentId = review.currentItem
   const item = currentId ? notebook.byId.get(currentId) ?? null : null
   const liveQuestion = item ? mistakeToQuestion(item) : null
-  const question = usePresentedReviewQuestion(liveQuestion, selected)
+  const question = usePresentedReviewQuestion(liveQuestion, selected, `${currentId ?? ""}:${review.presentationVersion}`)
   const saveError = !!currentId && saveErrorId === currentId
 
   useEffect(() => {

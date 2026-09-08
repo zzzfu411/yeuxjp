@@ -272,6 +272,19 @@ test("today review adapter distinguishes missing records from undersized questio
   })
 })
 
+test("mixed today-review can derive the next servable card while stranded vocab waits", () => {
+  const kana = { deck: "kana", id: "hiragana:a" }
+  const vocab = { deck: "vocab", id: "v1" }
+  const mistake = { deck: "mistakes", id: "m1" }
+
+  assert.deepEqual(today.getNextServableTodayReviewItem([vocab, kana, mistake]), kana)
+  assert.deepEqual(today.getNextServableTodayReviewItem([vocab, vocab, mistake]), mistake)
+  assert.equal(today.getNextServableTodayReviewItem([vocab, vocab]), null)
+  assert.equal(today.getNextServableTodayReviewItem([kana, vocab]), kana)
+  assert.equal(today.getNextServableTodayReviewItem([]), null)
+  assert.equal(today.getNextServableTodayReviewItem(null), null)
+})
+
 test("vocab pool failure is fatal only when every remaining today-review item needs it", () => {
   const kana = { deck: "kana", id: "hiragana:a" }
   const vocab = { deck: "vocab", id: "v1" }
