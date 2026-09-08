@@ -1,3 +1,4 @@
+import assert from "node:assert/strict"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
 import { seedMixedReviewState } from "./browser-fixtures.mjs"
 
@@ -262,6 +263,11 @@ async function verifyTodayReviewVocabularyLoadRetry(page, baseUrl) {
   await failNextVocabularyLoad(page, "survival")
   await page.getByTestId("review-start-today").click()
   await page.getByTestId("review-remaining").waitFor({ state: "visible" })
+  assert.equal(
+    await page.getByTestId("review-retry-load").count(),
+    0,
+    "mixed today review should keep serving when vocab pool fails"
+  )
 
   await page.getByTestId("review-answer-a").click()
   await page.getByTestId("review-next").waitFor({ state: "visible" })

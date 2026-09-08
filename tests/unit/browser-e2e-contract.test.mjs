@@ -814,6 +814,7 @@ test("browser E2E verifies dynamic vocabulary load retry recovery", () => {
   assert.match(e2e, /seedMixedReviewState/)
   assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("review-remaining"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /mixed today review should keep serving when vocab pool fails/)
   assert.match(
     e2e,
     /review-start-today[\s\S]*review-remaining[\s\S]*review-answer-a[\s\S]*review-retry-load[\s\S]*review-answer-sur-g-1/
