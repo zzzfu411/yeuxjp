@@ -31,15 +31,25 @@ export function createOpenModalStack() {
   const stack: OpenModalEntry[] = []
   const reservedKeyIndexes = new Map<string, number>()
 
+  function rememberRemovedSlot(removed: OpenModalEntry, index: number) {
+    // Reservations exist only so a keyed underlay can remount under a still-open
+    // overlay. An empty stack has no layering to preserve.
+    if (stack.length === 0) {
+      reservedKeyIndexes.clear()
+      return
+    }
+    if (removed.stackKey) reservedKeyIndexes.set(removed.stackKey, index)
+    for (const [key, reservedIndex] of reservedKeyIndexes) {
+      if (key === removed.stackKey) continue
+      if (reservedIndex > index) reservedKeyIndexes.set(key, reservedIndex - 1)
+    }
+  }
+
   function prune() {
     for (let index = stack.length - 1; index >= 0; index -= 1) {
       if (stack[index].dialog.isConnected) continue
       const [removed] = stack.splice(index, 1)
-      if (removed.stackKey) reservedKeyIndexes.set(removed.stackKey, index)
-      for (const [key, reservedIndex] of reservedKeyIndexes) {
-        if (key === removed.stackKey) continue
-        if (reservedIndex > index) reservedKeyIndexes.set(key, reservedIndex - 1)
-      }
+      rememberRemovedSlot(removed, index)
     }
   }
 
@@ -97,11 +107,7 @@ export function createOpenModalStack() {
     if (index < 0) return
 
     const [removed] = stack.splice(index, 1)
-    if (removed.stackKey) reservedKeyIndexes.set(removed.stackKey, index)
-    for (const [key, reservedIndex] of reservedKeyIndexes) {
-      if (key === removed.stackKey) continue
-      if (reservedIndex > index) reservedKeyIndexes.set(key, reservedIndex - 1)
-    }
+    rememberRemovedSlot(removed, index)
     syncLayering()
   }
 

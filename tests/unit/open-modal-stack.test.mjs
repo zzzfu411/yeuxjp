@@ -152,3 +152,44 @@ test("disconnected underlays are pruned without promoting a remounted keyed dial
   assert.equal(openModals.isTopOpenModal(remounted), false)
   assert.deepEqual(openModals.getDialogs().map((dialog) => dialog.id), ["detail-2", "speech"])
 })
+
+test("closing a keyed modal then opening speech keeps a later remounted reference on top", () => {
+  const openModals = stack.createOpenModalStack()
+  const detail = makeDialog("detail-1")
+  const speech = makeDialog("speech")
+  const remounted = makeDialog("detail-2")
+
+  openModals.register(detail, "url-controlled-reference")
+  openModals.unregister(detail)
+  assert.deepEqual(openModals.getDialogs(), [])
+
+  openModals.register(speech)
+  openModals.register(remounted, "url-controlled-reference")
+
+  assert.deepEqual(openModals.getDialogs().map((dialog) => dialog.id), ["speech", "detail-2"])
+  assert.equal(openModals.isTopOpenModal(remounted), true)
+  assert.equal(openModals.isTopOpenModal(speech), false)
+  assert.equal(openModals.isTopOpenModal(), false)
+  assert.equal(speech.parentElement.style.zIndex, "100")
+  assert.equal(remounted.parentElement.style.zIndex, "101")
+  assert.equal(openModals.remainingOpenModalTop(remounted), speech)
+  assert.equal(openModals.shouldRestoreFocusOnModalClose(remounted), false)
+})
+
+test("pruning the last keyed modal clears reservations so a later remount stacks above speech", () => {
+  const openModals = stack.createOpenModalStack()
+  const detail = makeDialog("detail-1")
+  const speech = makeDialog("speech")
+  const remounted = makeDialog("detail-2")
+
+  openModals.register(detail, "url-controlled-reference")
+  detail.isConnected = false
+  openModals.register(speech)
+  openModals.register(remounted, "url-controlled-reference")
+
+  assert.deepEqual(openModals.getDialogs().map((dialog) => dialog.id), ["speech", "detail-2"])
+  assert.equal(openModals.isTopOpenModal(remounted), true)
+  assert.equal(openModals.isTopOpenModal(speech), false)
+  assert.equal(speech.parentElement.style.zIndex, "100")
+  assert.equal(remounted.parentElement.style.zIndex, "101")
+})
