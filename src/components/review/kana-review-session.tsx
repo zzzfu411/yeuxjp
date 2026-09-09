@@ -41,8 +41,14 @@ export function KanaReviewSession({
   const question = useMemo(() => (item ? makeKanaReviewQuestion(item.id) : null), [item])
 
   useEffect(() => {
-    if (currentId && !item) {
+    if (!currentId || item) return
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
       dropCurrent()
+    })
+    return () => {
+      cancelled = true
     }
   }, [currentId, dropCurrent, item])
 

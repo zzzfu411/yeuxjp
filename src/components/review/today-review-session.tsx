@@ -100,8 +100,14 @@ export function TodayReviewSession({
       return
     }
     if (queuedCurrent.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
-    if (missingReviewEntry) {
+    if (!missingReviewEntry) return
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
       dropCurrent()
+    })
+    return () => {
+      cancelled = true
     }
   }, [deferCurrent, dropCurrent, missingReviewEntry, queuedCurrent, review.isAnswered, vocabPoolGate, vocabulary.error, vocabulary.loading])
 

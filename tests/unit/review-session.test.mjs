@@ -31,6 +31,38 @@ test("review queues can drop the current item after external removal", () => {
   assert.deepEqual(queue, ["a", "b", "c"])
 })
 
+test("cancelled microtask drop keeps the next valid head under Strict Mode remount", async () => {
+  // Strict Mode runs effect → cleanup → effect before the first setQueue commit.
+  // Two sync dropCurrentReviewItem updaters then chain: [missing, good, later] → [later].
+  const queue = ["missing", "good", "later"]
+  assert.deepEqual(session.dropCurrentReviewItem(queue), ["good", "later"])
+  assert.deepEqual(session.dropCurrentReviewItem(session.dropCurrentReviewItem(queue)), ["later"])
+
+  const updates = []
+  const dropCurrent = () => {
+    updates.push((prev) => session.dropCurrentReviewItem(prev))
+  }
+  const runGuardedEffect = () => {
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
+      dropCurrent()
+    })
+    return () => {
+      cancelled = true
+    }
+  }
+
+  const cleanup = runGuardedEffect()
+  cleanup()
+  runGuardedEffect()
+  await new Promise((resolve) => queueMicrotask(resolve))
+
+  const next = updates.reduce((prev, update) => update(prev), queue)
+  assert.equal(updates.length, 1)
+  assert.deepEqual(next, ["good", "later"])
+})
+
 test("review queues can defer the current item to the tail without dropping it", () => {
   const queue = ["vocab", "kana", "mistake"]
 

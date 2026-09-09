@@ -61,8 +61,14 @@ export function VocabReviewSession({
 
   useEffect(() => {
     if (!currentId || vocabulary.loading || vocabulary.error) return
-    if (missingReviewEntry) {
+    if (!missingReviewEntry) return
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
       dropCurrent()
+    })
+    return () => {
+      cancelled = true
     }
   }, [currentId, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
 
