@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { E2E_STORAGE_KEYS } from "./storage-keys.mjs"
-import { seedMixedReviewState } from "./browser-fixtures.mjs"
+import { seedMixedReviewState, seedVocabHeadedMixedReviewState } from "./browser-fixtures.mjs"
 
 const FLUENT_REVIEW_ID = "flu-abs-1"
 const VOCABULARY_CHUNK_MARKERS = {
@@ -272,6 +272,45 @@ async function verifyTodayReviewVocabularyLoadRetry(page, baseUrl) {
   await page.getByTestId("review-answer-a").click()
   await page.getByTestId("review-next").waitFor({ state: "visible" })
   await page.getByTestId("review-next").click()
+  await page.getByTestId("review-answer-a").click()
+  await page.getByTestId("review-next").waitFor({ state: "visible" })
+  await page.getByTestId("review-next").click()
+  await page.getByTestId("review-retry-load").waitFor({ state: "visible" })
+  await page.getByTestId("review-retry-load").click()
+  await page.getByTestId("review-answer-sur-g-1").waitFor({ state: "visible" })
+  await page.getByTestId("review-answer-sur-g-1").click()
+  await page.waitForFunction((storageKeys) => {
+    const srs = JSON.parse(localStorage.getItem(storageKeys.SRS_VOCAB) ?? "{}")
+    const practice = JSON.parse(localStorage.getItem(storageKeys.PRACTICE_RESULTS) ?? "[]")
+    return srs?.["sur-g-1"]?.box > 1 &&
+      srs?.["sur-g-1"]?.right >= 1 &&
+      Array.isArray(practice) &&
+      practice.some((item) =>
+        item.itemId === "sur-g-1" &&
+        item.itemType === "vocab" &&
+        ["meaning", "recall", "listening"].includes(item.mode) &&
+        item.correct === true
+      )
+  }, E2E_STORAGE_KEYS)
+  await page.evaluate(() => localStorage.clear())
+
+  await seedVocabHeadedMixedReviewState(page, baseUrl)
+  await page.goto(`${baseUrl}/review`, { waitUntil: "networkidle" })
+  await page.getByTestId("review-due-state").waitFor({ state: "visible" })
+  await failNextVocabularyLoad(page, "survival")
+  await page.getByTestId("review-start-today").click()
+  await page.getByTestId("review-remaining").waitFor({ state: "visible" })
+  assert.match(
+    await page.getByTestId("review-remaining").innerText(),
+    /2\b/,
+    "defer-vocab should keep stranded vocab in the queue while serving the aligned head"
+  )
+  assert.equal(
+    await page.getByTestId("review-retry-load").count(),
+    0,
+    "vocab-headed mixed today-review should serve kana after aligning the queue head"
+  )
+  await page.getByTestId("review-answer-a").waitFor({ state: "visible" })
   await page.getByTestId("review-answer-a").click()
   await page.getByTestId("review-next").waitFor({ state: "visible" })
   await page.getByTestId("review-next").click()

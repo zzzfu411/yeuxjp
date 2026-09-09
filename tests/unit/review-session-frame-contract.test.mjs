@@ -77,4 +77,7 @@ test("review session state owns a presentation version for audio replay", () => 
   assert.match(source, /presentationVersion,/)
   assert.match(source, /remainingItems: queue,/)
   assert.match(source, /deferCurrent,/)
+  assert.match(source, /canDeferReviewItem/)
+  assert.match(source, /reviewQueuesEqual/)
+  assert.match(source, /alignQueue/)
 })

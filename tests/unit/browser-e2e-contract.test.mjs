@@ -772,6 +772,7 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
 
 test("browser E2E verifies dynamic vocabulary load retry recovery", () => {
   const e2e = readBrowserE2ESources()
+  const fixtures = readBrowserFixtures()
   const harness = readE2EHarness()
   const loader = readSource("src/data/vocabulary/loader.ts")
 
@@ -812,9 +813,13 @@ test("browser E2E verifies dynamic vocabulary load retry recovery", () => {
   assert.match(e2e, /getByTestId\("review-retry-load"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("review-answer-flu-abs-1"\)/)
   assert.match(e2e, /seedMixedReviewState/)
+  assert.match(e2e, /seedVocabHeadedMixedReviewState/)
+  assert.match(fixtures, /export async function seedVocabHeadedMixedReviewState\(page, baseUrl\)/)
   assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("review-remaining"\)\.waitFor\(\{ state: "visible" \}\)/)
   assert.match(e2e, /mixed today review should keep serving when vocab pool fails/)
+  assert.match(e2e, /defer-vocab should keep stranded vocab in the queue while serving the aligned head/)
+  assert.match(e2e, /vocab-headed mixed today-review should serve kana after aligning the queue head/)
   assert.match(
     e2e,
     /review-start-today[\s\S]*review-remaining[\s\S]*review-answer-a[\s\S]*review-retry-load[\s\S]*review-answer-sur-g-1/

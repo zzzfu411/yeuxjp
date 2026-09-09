@@ -4,12 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { addLearningStoreListener } from "@/lib/learning-events"
 import {
   advanceReviewQueue,
+  canDeferReviewItem,
   canStartReviewAnswerRecording,
   createReviewStats,
   deferCurrentReviewItem,
   dropCurrentReviewItem,
   getReviewCompletionStats,
   recordReviewAnswer,
+  reviewQueuesEqual,
   shouldInvalidateReviewSession,
   type ReviewAnswerRecordResult,
 } from "@/lib/review-session"
@@ -100,12 +102,19 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     answerPendingRef.current = false
   }, [])
 
-  const deferCurrent = useCallback(() => {
-    setQueue((prev) => deferCurrentReviewItem(prev))
+  const deferCurrent = useCallback((alignQueue?: (queue: T[]) => T[]) => {
+    if (!canDeferReviewItem({ answerPending: answerPendingRef.current })) return
+    let didChange = false
+    setQueue((prev) => {
+      const next = alignQueue ? alignQueue(prev) : deferCurrentReviewItem(prev)
+      if (reviewQueuesEqual(next, prev)) return prev
+      didChange = true
+      return next
+    })
+    if (!didChange) return
     setPresentationVersion((prev) => prev + 1)
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
-    answerPendingRef.current = false
   }, [])
 
   return {

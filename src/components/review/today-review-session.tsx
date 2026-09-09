@@ -21,13 +21,14 @@ import type { useSrsDeck } from "@/lib/srs"
 import { questionUsesTypedReview, shouldShowReviewSpecialFeedback, type TodayReviewItem } from "@/lib/review-questions"
 import { shouldShowReviewSaveError } from "@/lib/review-session"
 import {
+  alignTodayReviewQueueForVocabPoolDefer,
   canRecordTodayReviewItem,
   getTodayReviewBatchCompletionTitle,
   getTodayReviewItemKey,
   gradeTodayReviewItem,
-  getNextServableTodayReviewItem,
   resolveTodayReviewItemData,
   resolveTodayReviewVocabPoolGate,
+  shouldDeferTodayReviewVocabHead,
 } from "@/lib/today-review-session"
 
 export function TodayReviewSession({
@@ -69,10 +70,12 @@ export function TodayReviewSession({
     vocabularyLoading: vocabulary.loading,
     vocabularyError: vocabulary.error,
   })
-  const current =
-    vocabPoolGate === "defer-vocab"
-      ? getNextServableTodayReviewItem(review.remainingItems) ?? queuedCurrent
-      : queuedCurrent
+  // Rotate stranded vocab out of the head before paint so the served card and
+  // the queue head are the same item any answer / advance will mutate.
+  if (shouldDeferTodayReviewVocabHead({ vocabPoolGate, isAnswered: review.isAnswered })) {
+    deferCurrent(alignTodayReviewQueueForVocabPoolDefer)
+  }
+  const current = queuedCurrent
   const currentKey = getTodayReviewItemKey(current)
   const saveError = !!currentKey && saveErrorKey === currentKey
   const { data, missingReviewEntry, insufficientQuestionOptions } = useMemo(() => {
@@ -92,15 +95,15 @@ export function TodayReviewSession({
 
   useEffect(() => {
     if (!queuedCurrent) return
-    if (vocabPoolGate === "defer-vocab") {
-      deferCurrent()
+    if (shouldDeferTodayReviewVocabHead({ vocabPoolGate, isAnswered: review.isAnswered })) {
+      deferCurrent(alignTodayReviewQueueForVocabPoolDefer)
       return
     }
     if (queuedCurrent.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
     if (missingReviewEntry) {
       dropCurrent()
     }
-  }, [deferCurrent, dropCurrent, missingReviewEntry, queuedCurrent, vocabPoolGate, vocabulary.error, vocabulary.loading])
+  }, [deferCurrent, dropCurrent, missingReviewEntry, queuedCurrent, review.isAnswered, vocabPoolGate, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.autoPlayAudio ? data.audio : undefined,

@@ -285,6 +285,47 @@ test("mixed today-review can derive the next servable card while stranded vocab 
   assert.equal(today.getNextServableTodayReviewItem(null), null)
 })
 
+test("defer-vocab alignment makes the served card the queue head and is idempotent", async () => {
+  const session = await loadTsModule("src/lib/review-session.ts")
+  const kana = { deck: "kana", id: "hiragana:a" }
+  const vocab = { deck: "vocab", id: "v1" }
+  const vocab2 = { deck: "vocab", id: "v2" }
+  const mistake = { deck: "mistakes", id: "m1" }
+  const mixed = [vocab, kana, mistake]
+  const twoItem = [vocab, kana]
+  const leadingVocab = [vocab, vocab2, mistake]
+
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer(mixed), [kana, mistake, vocab])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer(leadingVocab), [mistake, vocab, vocab2])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer([kana, vocab]), [kana, vocab])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer([vocab, vocab]), [vocab, vocab])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer([]), [])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer(null), [])
+
+  const aligned = today.alignTodayReviewQueueForVocabPoolDefer(twoItem)
+  const alignedAgain = today.alignTodayReviewQueueForVocabPoolDefer(aligned)
+  assert.deepEqual(aligned, [kana, vocab])
+  assert.deepEqual(alignedAgain, aligned)
+  assert.equal(aligned[0], today.getNextServableTodayReviewItem(twoItem))
+  assert.equal(today.shouldDeferTodayReviewVocabHead({ vocabPoolGate: "defer-vocab", isAnswered: false }), true)
+  assert.equal(today.shouldDeferTodayReviewVocabHead({ vocabPoolGate: "defer-vocab", isAnswered: true }), false)
+  assert.equal(today.shouldDeferTodayReviewVocabHead({ vocabPoolGate: "serve", isAnswered: false }), false)
+
+  // Painting kana while advancing the unaligned vocab head would drop vocab.
+  assert.deepEqual(session.advanceReviewQueue(twoItem, true), [kana])
+  assert.deepEqual(session.advanceReviewQueue(aligned, true), [vocab])
+  assert.deepEqual(session.advanceReviewQueue(aligned, false), [vocab, kana])
+
+  const applyDefer = (queue, answerPending = false) => {
+    if (!session.canDeferReviewItem({ answerPending })) return queue
+    const next = today.alignTodayReviewQueueForVocabPoolDefer(queue)
+    return session.reviewQueuesEqual(next, queue) ? queue : next
+  }
+
+  assert.deepEqual(applyDefer(applyDefer(twoItem)), [kana, vocab])
+  assert.deepEqual(applyDefer(twoItem, true), twoItem)
+})
+
 test("vocab pool failure is fatal only when every remaining today-review item needs it", () => {
   const kana = { deck: "kana", id: "hiragana:a" }
   const vocab = { deck: "vocab", id: "v1" }

@@ -40,6 +40,19 @@ test("review queues can defer the current item to the tail without dropping it",
   assert.deepEqual(queue, ["vocab", "kana", "mistake"])
 })
 
+test("one-item defer cancels on a two-item queue, so vocab-pool defer must be idempotent", () => {
+  const queue = ["vocab", "kana"]
+
+  assert.deepEqual(
+    session.deferCurrentReviewItem(session.deferCurrentReviewItem(queue)),
+    queue
+  )
+  assert.equal(session.reviewQueuesEqual(["vocab", "kana"], ["vocab", "kana"]), true)
+  assert.equal(session.reviewQueuesEqual(["vocab", "kana"], ["kana", "vocab"]), false)
+  assert.equal(session.canDeferReviewItem({ answerPending: false }), true)
+  assert.equal(session.canDeferReviewItem({ answerPending: true }), false)
+})
+
 test("review stats accumulate answers and completion display data", () => {
   let stats = session.createReviewStats()
   stats = session.recordReviewAnswer(stats, true)

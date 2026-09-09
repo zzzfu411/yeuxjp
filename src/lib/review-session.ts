@@ -55,6 +55,14 @@ export function deferCurrentReviewItem<T>(queue: T[]): T[] {
   return advanceReviewQueue(queue, false)
 }
 
+export function reviewQueuesEqual<T>(left: readonly T[], right: readonly T[]) {
+  return left.length === right.length && left.every((item, index) => Object.is(item, right[index]))
+}
+
+export function canDeferReviewItem({ answerPending }: { answerPending: boolean }) {
+  return !answerPending
+}
+
 export function getReviewCompletionStats(initial: number, stats: ReviewStats): ReviewCompletionStats {
   return {
     initial,

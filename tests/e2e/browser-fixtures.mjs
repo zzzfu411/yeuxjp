@@ -1,5 +1,5 @@
 export { seionHiraganaIds, seionHiraganaToRomaji, seionRomaji } from "./browser-fixture-kana.mjs"
-export { seedDueMistakeReviewState, seedMissingThenDueMistakeReviewState, seedMixedReviewState, seedReviewState } from "./browser-fixture-review.mjs"
+export { seedDueMistakeReviewState, seedMissingThenDueMistakeReviewState, seedMixedReviewState, seedReviewState, seedVocabHeadedMixedReviewState } from "./browser-fixture-review.mjs"
 export {
   assertManagedLearningSnapshot,
   managedLearningBackupKeys,

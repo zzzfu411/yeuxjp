@@ -60,6 +60,24 @@ export async function seedMixedReviewState(page, baseUrl) {
   }, E2E_STORAGE_KEYS)
 }
 
+export async function seedVocabHeadedMixedReviewState(page, baseUrl) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" })
+  await page.evaluate((storageKeys) => {
+    const now = Date.now()
+    localStorage.clear()
+    localStorage.setItem(storageKeys.KANA_MASTERED, JSON.stringify(["hiragana:a"]))
+    localStorage.setItem(storageKeys.VOCAB_LEARNED, JSON.stringify(["sur-g-1"]))
+    localStorage.setItem(
+      storageKeys.SRS_KANA,
+      JSON.stringify({ "hiragana:a": { box: 1, dueAt: now - 1, createdAt: now - 3000, right: 0, wrong: 0 } })
+    )
+    localStorage.setItem(
+      storageKeys.SRS_VOCAB,
+      JSON.stringify({ "sur-g-1": { box: 1, dueAt: now - 10, createdAt: now - 3000, right: 0, wrong: 0 } })
+    )
+  }, E2E_STORAGE_KEYS)
+}
+
 export async function seedDueMistakeReviewState(page, baseUrl) {
   await page.goto(baseUrl, { waitUntil: "networkidle" })
   await page.evaluate((storageKeys) => {

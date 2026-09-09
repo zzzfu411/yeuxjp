@@ -84,6 +84,30 @@ export function getNextServableTodayReviewItem<T extends { deck: string }>(
   return remainingItems.find((item) => item.deck !== "vocab") ?? null
 }
 
+export function alignTodayReviewQueueForVocabPoolDefer<T extends { deck: string }>(
+  remainingItems: readonly T[] | null | undefined
+): T[] {
+  if (!remainingItems?.length) return remainingItems ? [...remainingItems] : []
+  const servable = getNextServableTodayReviewItem(remainingItems)
+  if (!servable) return remainingItems as T[]
+  const servableIndex = remainingItems.indexOf(servable)
+  if (servableIndex <= 0) return remainingItems as T[]
+  return [
+    ...remainingItems.slice(servableIndex),
+    ...remainingItems.slice(0, servableIndex),
+  ]
+}
+
+export function shouldDeferTodayReviewVocabHead({
+  vocabPoolGate,
+  isAnswered,
+}: {
+  vocabPoolGate: TodayReviewVocabPoolGate
+  isAnswered: boolean
+}) {
+  return vocabPoolGate === "defer-vocab" && !isAnswered
+}
+
 export function resolveTodayReviewVocabPoolGate({
   current,
   remainingItems,
