@@ -85,7 +85,8 @@ export function useQuizSession(mode: QuizMode) {
     autoPlayEnabled: Boolean(currentQuestion?.autoPlayAudio),
   })
 
-  const generateQuestion = useCallback(() => {
+  const generateQuestion = useCallback((options?: { advance?: boolean }) => {
+    const advance = options?.advance === true
     const preflightReason = getQuizPreflightEmptyReason({
       mode,
       vocabLoading,
@@ -95,6 +96,7 @@ export function useQuizSession(mode: QuizMode) {
       if (shouldKeepCurrentQuizQuestionDuringPreflight({
         hasCurrentQuestion: Boolean(currentQuestionRef.current),
         preflightReason,
+        advance,
       })) {
         return
       }
@@ -154,6 +156,10 @@ export function useQuizSession(mode: QuizMode) {
     vocabTargetPool,
   ])
 
+  const advanceQuestion = useCallback(() => {
+    generateQuestion({ advance: true })
+  }, [generateQuestion])
+
   useEffect(() => {
     if (!shouldAutoGenerateQuizQuestion({
       selectedOption: selectedOptionRef.current,
@@ -200,6 +206,7 @@ export function useQuizSession(mode: QuizMode) {
     retryVocabulary,
     vocabLoading,
     generateQuestion,
+    advanceQuestion,
     handleSelect,
     playAudio,
   }

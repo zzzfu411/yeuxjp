@@ -31,7 +31,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     setOnlyUnlearnedVocab,
     retryVocabulary,
     vocabLoading,
-    generateQuestion,
+    advanceQuestion,
     handleSelect,
     playAudio,
   } = useQuizSession(mode)
@@ -99,7 +99,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
 
       {selectedOption && (
         <Button
-          onClick={generateQuestion}
+          onClick={advanceQuestion}
           size="lg"
           className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2"
           data-testid="quiz-next-question"

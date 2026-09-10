@@ -53,6 +53,24 @@ test("buried dialogs are not top once another modal is stacked above them", () =
   assert.equal(openModals.shouldRestoreFocusOnModalClose(detail), false)
 })
 
+test("unregister drops a closing overlay below remaining stacked layers", () => {
+  const openModals = stack.createOpenModalStack()
+  const detail = makeDialog("detail")
+  const speech = makeDialog("speech")
+
+  openModals.register(detail)
+  openModals.register(speech)
+  assert.equal(detail.parentElement.style.zIndex, "100")
+  assert.equal(speech.parentElement.style.zIndex, "101")
+
+  openModals.unregister(speech)
+
+  assert.equal(detail.parentElement.style.zIndex, "100")
+  assert.equal(speech.parentElement.style.zIndex, "99")
+  assert.equal(openModals.isTopOpenModal(detail), true)
+  assert.equal(openModals.isTopOpenModal(speech), false)
+})
+
 test("Escape membership stays with the live top dialog after the overlay closes", () => {
   const openModals = stack.createOpenModalStack()
   const detail = makeDialog("detail")

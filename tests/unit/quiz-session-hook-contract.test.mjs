@@ -24,3 +24,20 @@ test("quiz session keeps a visible question while vocabulary scope is only loadi
   assert.match(source, /setCurrentQuestion\(null\)/)
   assert.match(source, /vocabLoading/)
 })
+
+test("quiz next advances instead of keeping an answered card during vocabulary preflight", () => {
+  const runner = fs.readFileSync(path.join(root, "src/components/quiz/quiz-runner.tsx"), "utf8")
+
+  assert.match(source, /const generateQuestion = useCallback\(\(options\?: \{ advance\?: boolean \}\) => \{/)
+  assert.match(source, /const advance = options\?\.advance === true/)
+  assert.match(source, /advance,/)
+  assert.match(source, /const advanceQuestion = useCallback\(\(\) => \{\s*generateQuestion\(\{ advance: true \}\)/)
+  assert.match(source, /generateQuestion,/)
+  assert.match(source, /advanceQuestion,/)
+  assert.match(source, /setTimeout\(\(\) => \{\s*generateQuestion\(\)/)
+  assert.doesNotMatch(source, /generateQuestion\(\{ advance: true \}\)\s*, 0\)/)
+  assert.match(runner, /advanceQuestion/)
+  assert.match(runner, /onClick=\{advanceQuestion\}/)
+  assert.doesNotMatch(runner, /onClick=\{generateQuestion\}/)
+  assert.doesNotMatch(runner, /onClick=\{\(\) => generateQuestion\(\)\}/)
+})

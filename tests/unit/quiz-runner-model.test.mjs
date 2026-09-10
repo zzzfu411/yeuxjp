@@ -83,6 +83,22 @@ test("quiz preflight keeps a visible question while only the vocabulary pool is 
     }),
     false
   )
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: true,
+      preflightReason: "loading",
+      advance: true,
+    }),
+    false
+  )
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: true,
+      preflightReason: "loading",
+      advance: false,
+    }),
+    true
+  )
 })
 
 test("quiz no-question reason distinguishes exhausted filters from undersized pools", () => {

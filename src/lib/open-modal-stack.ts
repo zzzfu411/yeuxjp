@@ -108,6 +108,9 @@ export function createOpenModalStack() {
 
     const [removed] = stack.splice(index, 1)
     rememberRemovedSlot(removed, index)
+    // Exit animation keeps the overlay mounted. Drop its inline layer so a
+    // remaining modal is not trapped under a fading z-index from this slot.
+    overlayHost(removed.dialog).style.zIndex = String(BASE_OVERLAY_Z_INDEX - 1)
     syncLayering()
   }
 

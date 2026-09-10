@@ -43,6 +43,12 @@ test("Modal traps keyboard focus while preserving escape close behavior", () => 
   assert.doesNotMatch(source, /if \(!show \|\| !portalTarget\) return null/)
   assert.match(source, /const overlay = \(/)
   assert.match(source, /return portalTarget \? createPortal\(overlay, portalTarget\) : overlay/)
+  assert.match(
+    source,
+    /isOpen \? "animate-in fade-in duration-300" : "animate-out fade-out duration-300 pointer-events-none"/
+  )
+  assert.match(source, /aria-hidden=\{!isOpen\}/)
+  assert.match(source, /\{\.\.\.\(!isOpen \? \{ inert: true \} : \{\}\)\}/)
   assert.match(source, /if \(!isOpen \|\| !show\) return/)
   assert.match(source, /if \(!dialog\) return/)
   assert.doesNotMatch(source, /if \(!isOpen \|\| !show \|\| !portalTarget\) return/)

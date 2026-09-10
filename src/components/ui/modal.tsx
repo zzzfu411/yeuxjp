@@ -169,8 +169,10 @@ export function Modal({
         // escapes parent stacking contexts such as the navbar (z-60) so grain
         // / vignette (z-80 / 81) cannot paint over the dialog.
         "fixed inset-0 z-[100] !mt-0 flex items-center justify-center p-4 sm:p-6",
-        isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300"
+        isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300 pointer-events-none"
       )}
+      aria-hidden={!isOpen}
+      {...(!isOpen ? { inert: true } : {})}
     >
       {/* Backdrop */}
       <div

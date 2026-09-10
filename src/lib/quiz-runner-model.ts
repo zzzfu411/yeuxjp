@@ -20,11 +20,15 @@ export function getQuizPreflightEmptyReason({
 export function shouldKeepCurrentQuizQuestionDuringPreflight({
   hasCurrentQuestion,
   preflightReason,
+  advance = false,
 }: {
   hasCurrentQuestion: boolean
   preflightReason: QuizEmptyReason | null
+  advance?: boolean
 }) {
-  return hasCurrentQuestion && preflightReason === "loading"
+  // Auto/preflight reloads keep an unanswered card mounted so scope changes
+  // do not flash an empty page. An explicit Next must not reuse that path.
+  return !advance && hasCurrentQuestion && preflightReason === "loading"
 }
 
 export function getQuizNoQuestionReason({
