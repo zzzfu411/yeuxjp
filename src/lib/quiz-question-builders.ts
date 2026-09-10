@@ -5,7 +5,15 @@ import { pickRandomListItem, pickUniqueQuestionOptions, shuffleList } from "@/li
 import { LONG_VOWEL_MINIMAL_PAIRS, PARTICLE_QUESTIONS, SOKUON_MINIMAL_PAIRS } from "@/lib/quiz-data"
 import type { QuizMode } from "@/lib/quiz-types"
 import type { Question } from "@/lib/questions"
-import { VERB_CONJ_N5_FORMS, VERB_CONJ_VERBS, conjugateVerb, explainConjugation, type VerbConjForm } from "@/lib/verb-conjugation"
+import {
+  isVerbConjFormSupported,
+  VERB_CONJ_N5_FORMS,
+  VERB_CONJ_VERBS,
+  conjugateVerb,
+  explainConjugation,
+  type VerbConjForm,
+  type VerbEntry,
+} from "@/lib/verb-conjugation"
 
 type RandomFn = () => number
 type MinimalPair = { plain: string; special: string }
@@ -106,18 +114,30 @@ export function generateVerbConjugationQuestion(
   forms: readonly { id: VerbConjForm; label: string }[] = VERB_CONJ_N5_FORMS
 ): Question {
   const pool = forms.length ? forms : VERB_CONJ_N5_FORMS
-  const verb = randomItem(VERB_CONJ_VERBS, random)
+  const initiallySelectedVerb = randomItem(VERB_CONJ_VERBS, random)
   const form = randomItem(pool, random)
+  const compatibleVerbs = VERB_CONJ_VERBS.filter((candidate) => isVerbConjFormSupported(candidate, form.id))
+  const verb: VerbEntry = isVerbConjFormSupported(initiallySelectedVerb, form.id)
+    ? initiallySelectedVerb
+    : (randomItem(compatibleVerbs, random) ?? initiallySelectedVerb)
   const correct = conjugateVerb(verb.dict, verb.kind, form.id)
   const optionSet = new Set<string>([correct])
 
   for (const f of pool) {
-    if (f.id !== form.id) optionSet.add(conjugateVerb(verb.dict, verb.kind, f.id))
+    if (f.id !== form.id && isVerbConjFormSupported(verb, f.id)) {
+      optionSet.add(conjugateVerb(verb.dict, verb.kind, f.id))
+    }
   }
 
-  while (optionSet.size < 4) {
-    const other = randomItem(VERB_CONJ_VERBS, random)
-    optionSet.add(conjugateVerb(other.dict, other.kind, form.id))
+  if (compatibleVerbs.length > 0) {
+    let attempts = 0
+    const maxAttempts = Math.max(32, compatibleVerbs.length * 4)
+    while (optionSet.size < 4 && attempts < maxAttempts) {
+      attempts += 1
+      const other = randomItem(compatibleVerbs, random)
+      if (!isVerbConjFormSupported(other, form.id)) continue
+      optionSet.add(conjugateVerb(other.dict, other.kind, form.id))
+    }
   }
 
   return {

@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import dynamic from "next/dynamic"
 import { CheckCircle2, ChevronLeft, ChevronRight, PenTool, Volume2 } from "lucide-react"
 import type { Kana } from "@/data/kana-data"
@@ -62,6 +63,17 @@ export function KanaDetailModal({
   const isCheckingStrokeResource = !isWriting && !!currentChar && currentStrokeAvailability === "unknown"
   const isMissingStrokeResource = !isWriting && !!currentChar && currentStrokeAvailability === "missing"
   const titleId = "kana-detail-modal-title"
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null)
+
+  // The stroke toggle sits below the glyph on a short screen. Browsers scroll
+  // the focused button into view before React paints the new animation, which
+  // can leave the animation surface above the modal viewport. Reset the
+  // content scroll after entering stroke mode so the newly selected surface is
+  // immediately visible.
+  React.useEffect(() => {
+    if (!isWriting) return
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
+  }, [currentChar, isWriting])
 
   return (
     <Modal
@@ -69,13 +81,14 @@ export function KanaDetailModal({
       onClose={onClose}
       className="paper-sheet flex h-[min(76vh,46rem)] max-w-md flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"
       ariaLabelledBy={titleId}
+      stackKey="kana-detail"
     >
       {kana && (
         <div className="flex min-h-0 flex-1 flex-col">
           <h2 id={titleId} className="sr-only">
             {currentChar ? `${currentChar} ${kana.romaji}` : kana.romaji}
           </h2>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div ref={scrollContainerRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             <div className="flex min-h-full flex-col items-center justify-start space-y-7 px-5 py-8 sm:justify-center sm:px-8">
               <div className="font-scribble text-lg text-muted-foreground">
                 {kana.romaji}

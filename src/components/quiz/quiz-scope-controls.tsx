@@ -27,6 +27,7 @@ export function QuizScopeControls({
   onOnlyUnmasteredKanaChange,
   vocabScope,
   onVocabScopeChange,
+  vocabScopeDisabled = false,
   onlyUnlearnedVocab,
   onOnlyUnlearnedVocabChange,
 }: {
@@ -37,6 +38,7 @@ export function QuizScopeControls({
   onOnlyUnmasteredKanaChange: (value: boolean) => void
   vocabScope: VocabQuizScope
   onVocabScopeChange: (scope: VocabQuizScope) => void
+  vocabScopeDisabled?: boolean
   onlyUnlearnedVocab: boolean
   onOnlyUnlearnedVocabChange: (value: boolean) => void
 }) {
@@ -91,9 +93,10 @@ export function QuizScopeControls({
               key={scope}
               type="button"
               aria-pressed={vocabScope === scope}
+              disabled={vocabScopeDisabled}
               onClick={() => onVocabScopeChange(scope as VocabQuizScope)}
               data-testid={`quiz-vocab-scope-${scope}`}
-              className={scopeButtonClassName(vocabScope === scope)}
+              className={cn(scopeButtonClassName(vocabScope === scope), vocabScopeDisabled && "cursor-not-allowed opacity-50")}
             >
               {label}
             </button>

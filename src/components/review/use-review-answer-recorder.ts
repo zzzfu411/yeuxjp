@@ -5,6 +5,7 @@ import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { Question, QuestionResult } from "@/lib/questions"
 import { recordReviewQuestionPractice } from "@/lib/review-answer-recording"
+import type { ReviewAnswerRecordResult } from "@/lib/review-session"
 
 type LearningProgressApi = ReturnType<typeof useLearningProgress>
 type MistakeNotebookApi = ReturnType<typeof useMistakeNotebook>
@@ -18,7 +19,7 @@ export function useReviewAnswerRecorder({
 }: {
   progress: LearningProgressApi
   notebook: MistakeNotebookApi
-  recordAnswer: (answer: string, correct: boolean, beforeCommit?: () => boolean) => boolean
+  recordAnswer: (answer: string, correct: boolean, beforeCommit?: () => boolean) => ReviewAnswerRecordResult
   canRecord?: (result: QuestionResult) => boolean
   grade: (result: QuestionResult) => boolean
 }) {

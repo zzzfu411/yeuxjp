@@ -70,7 +70,7 @@ export function VocabularyToolbar({
         </div>
       </section>
 
-      <section aria-label="词汇筛选" className="sticky top-20 z-30 -mx-4 mt-7 space-y-4 border-y border-border/50 bg-card/95 px-4 py-4 backdrop-blur-[2px] sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12">
+      <section aria-label="词汇筛选" className="short-viewport-static sticky top-20 z-30 -mx-4 mt-7 space-y-4 border-y border-border/50 bg-card/95 px-4 py-4 backdrop-blur-[2px] sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12">
         <div className="scrollbar-hide flex items-end justify-start overflow-x-auto" aria-label="词汇等级">
           {levels.map((level) => (
             <button

@@ -59,6 +59,7 @@ export function VocabularyFocusModal({
       className="paper-sheet flex h-[min(76vh,46rem)] max-w-xl flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
+      stackKey="indexed-modal"
     >
       {vocab && (
         <>

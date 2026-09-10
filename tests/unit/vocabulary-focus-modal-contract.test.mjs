@@ -29,6 +29,7 @@ test("VocabularyFocusModal owns focused vocabulary card controls", () => {
   assert.match(source, /const descriptionId = "vocabulary-focus-modal-description"/)
   assert.match(source, /ariaLabelledBy=\{titleId\}/)
   assert.match(source, /ariaDescribedBy=\{descriptionId\}/)
+  assert.match(source, /stackKey="indexed-modal"/)
   assert.match(source, /id=\{titleId\}/)
   assert.match(source, /id=\{descriptionId\}/)
   assert.match(source, /const handleCardKeyDown = \(event: React\.KeyboardEvent<HTMLDivElement>\) => \{/)

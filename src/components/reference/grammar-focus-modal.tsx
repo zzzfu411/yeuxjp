@@ -34,6 +34,7 @@ export function GrammarFocusModal({
       className="paper-sheet flex h-[min(85vh,52rem)] max-w-3xl flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
+      stackKey="indexed-modal"
     >
       {point && (
         <>

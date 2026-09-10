@@ -17,6 +17,7 @@ import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { useLearningProfile } from "@/lib/learning-progress"
 import { getVocabReviewPromptModel, makeVocabReviewQuestion, pickVocabReviewDirection } from "@/lib/review-questions"
+import { shouldShowReviewSaveError } from "@/lib/review-session"
 import { defaultShowStudyRomaji } from "@/lib/romaji-visibility"
 import { createSeededRandom } from "@/lib/seeded-random"
 
@@ -60,14 +61,20 @@ export function VocabReviewSession({
 
   useEffect(() => {
     if (!currentId || vocabulary.loading || vocabulary.error) return
-    if (missingReviewEntry) {
+    if (!missingReviewEntry) return
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
       dropCurrent()
+    })
+    return () => {
+      cancelled = true
     }
   }, [currentId, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: promptModel?.autoPlayAudio ? promptModel.audio : undefined,
-    autoPlayKey: item?.id,
+    autoPlayKey: review.presentationVersion,
   })
 
   const recordAnswerSelection = useReviewAnswerRecorder({
@@ -126,7 +133,7 @@ export function VocabReviewSession({
 
   const handleSelect = (val: string) => {
     const recorded = recordAnswerSelection(question, val)
-    setSaveError(!recorded)
+    setSaveError(shouldShowReviewSaveError(recorded))
   }
 
   const handleNext = () => {

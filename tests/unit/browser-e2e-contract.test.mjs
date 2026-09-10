@@ -703,6 +703,9 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
   assert.match(e2e, /getByTestId\("path-next-learning"\)/)
   assert.match(e2e, /getByTestId\("speech-controls-open"\)\.click\(\)/)
   assert.match(e2e, /speechDialogName\.length > 0/)
+  assert.match(e2e, /speech settings dialog should escape the navbar stacking context/)
+  assert.match(e2e, /speech settings overlay should portal to document.body/)
+  assert.match(e2e, /speech settings overlay should stack above paper grain\/vignette/)
   assert.match(e2e, /getByTestId\("speech-repeat-2"\)\.click\(\)/)
   assert.match(e2e, /E2E_STORAGE_KEYS\.SPEECH_PREFS/)
   assert.match(e2e, /mobile speech settings should persist repeat changes/)
@@ -717,6 +720,16 @@ test("browser E2E includes a mobile viewport smoke pass for core routes", () => 
   assert.match(e2e, /getByText\("Know \(Data\)"\)/)
   assert.match(e2e, /function assertNoHorizontalOverflow/)
   assert.match(e2e, /scrollWidth <= size\.clientWidth \+ 1/)
+  assert.match(e2e, /setViewportSize\(\{ width: 280, height: 500 \}\)/)
+  assert.match(e2e, /getByRole\("heading", \{ name: "一页一课，循序展卷" \}\)/)
+  assert.match(e2e, /narrow path route/)
+  assert.match(e2e, /getByRole\("heading", \{ name: \/语义辨析\/ \}\)/)
+  assert.match(e2e, /narrow semantics route/)
+  assert.match(e2e, /setViewportSize\(\{ width: 280, height: 300 \}\)/)
+  assert.match(e2e, /getByTestId\("grammar-point-n5-wa"\)/)
+  assert.match(e2e, /short grammar modal/)
+  assert.match(e2e, /vocabulary-expand-/)
+  assert.match(e2e, /short vocabulary modal/)
   assert.match(e2e, /mobileContext\.close\(\)/)
 })
 
@@ -759,6 +772,7 @@ test("browser E2E verifies non-default vocabulary levels load dynamically", () =
 
 test("browser E2E verifies dynamic vocabulary load retry recovery", () => {
   const e2e = readBrowserE2ESources()
+  const fixtures = readBrowserFixtures()
   const harness = readE2EHarness()
   const loader = readSource("src/data/vocabulary/loader.ts")
 
@@ -799,8 +813,17 @@ test("browser E2E verifies dynamic vocabulary load retry recovery", () => {
   assert.match(e2e, /getByTestId\("review-retry-load"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("review-answer-flu-abs-1"\)/)
   assert.match(e2e, /seedMixedReviewState/)
+  assert.match(e2e, /seedVocabHeadedMixedReviewState/)
+  assert.match(fixtures, /export async function seedVocabHeadedMixedReviewState\(page, baseUrl\)/)
   assert.match(e2e, /getByTestId\("review-start-today"\)\.click\(\)/)
   assert.match(e2e, /getByTestId\("review-remaining"\)\.waitFor\(\{ state: "visible" \}\)/)
+  assert.match(e2e, /mixed today review should keep serving when vocab pool fails/)
+  assert.match(e2e, /defer-vocab should keep stranded vocab in the queue while serving the aligned head/)
+  assert.match(e2e, /vocab-headed mixed today-review should serve kana after aligning the queue head/)
+  assert.match(
+    e2e,
+    /review-start-today[\s\S]*review-remaining[\s\S]*review-answer-a[\s\S]*review-retry-load[\s\S]*review-answer-sur-g-1/
+  )
   assert.match(e2e, /getByTestId\("review-answer-sur-g-1"\)\.waitFor\(\{ state: "visible" \}\)/)
   assert.match(e2e, /item\.itemId === "sur-g-1"/)
   assert.match(e2e, /item\.itemType === "vocab"/)

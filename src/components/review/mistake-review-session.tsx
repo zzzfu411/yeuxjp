@@ -10,6 +10,7 @@ import { MistakeReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
+import { usePresentedReviewQuestion } from "@/components/review/use-presented-review-question"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import type { useLearningProgress } from "@/lib/learning-progress"
@@ -17,6 +18,7 @@ import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { mistakeToQuestion, questionUsesTypedReview } from "@/lib/review-questions"
+import { shouldShowReviewSaveError } from "@/lib/review-session"
 
 export function MistakeReviewSession({
   ids,
@@ -39,6 +41,8 @@ export function MistakeReviewSession({
 
   const currentId = review.currentItem
   const item = currentId ? notebook.byId.get(currentId) ?? null : null
+  const liveQuestion = item ? mistakeToQuestion(item) : null
+  const question = usePresentedReviewQuestion(liveQuestion, selected, `${currentId ?? ""}:${review.presentationVersion}`)
   const saveError = !!currentId && saveErrorId === currentId
 
   useEffect(() => {
@@ -56,7 +60,7 @@ export function MistakeReviewSession({
 
   const { playAudio } = useReviewAudio({
     autoPlayText: item?.questionAudio,
-    autoPlayKey: currentId,
+    autoPlayKey: review.presentationVersion,
   })
 
   const recordAnswerSelection = useReviewAnswerRecorder({
@@ -84,14 +88,13 @@ export function MistakeReviewSession({
     )
   }
 
-  if (!item) return null
+  if (!item || !question) return null
 
-  const question = mistakeToQuestion(item)
   const correct = question.correctAnswer
 
   const handleSelect = (val: string) => {
     const recorded = recordAnswerSelection(question, val)
-    setSaveErrorId(recorded ? null : item.id)
+    setSaveErrorId(shouldShowReviewSaveError(recorded) ? item.id : null)
   }
 
   const handleNext = () => {

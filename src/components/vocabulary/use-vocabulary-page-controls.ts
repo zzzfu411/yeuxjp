@@ -13,6 +13,7 @@ function parseVocabularyLevel(value: string | null): VocabLevel | null {
 
 // The mobile filter rail is 222px tall and sits 80px below the fixed navbar.
 const VOCABULARY_CATEGORY_SCROLL_OFFSET = 320
+const VOCABULARY_SHORT_VIEWPORT_SCROLL_OFFSET = 96
 
 export function useVocabularyPageControls() {
   const searchParams = useSearchParams()
@@ -65,7 +66,10 @@ export function useVocabularyPageControls() {
     if (!element) return
 
     const elementPosition = element.getBoundingClientRect().top
-    const offsetPosition = elementPosition + window.pageYOffset - VOCABULARY_CATEGORY_SCROLL_OFFSET
+    const scrollOffset = window.innerHeight <= 420
+      ? VOCABULARY_SHORT_VIEWPORT_SCROLL_OFFSET
+      : VOCABULARY_CATEGORY_SCROLL_OFFSET
+    const offsetPosition = elementPosition + window.pageYOffset - scrollOffset
 
     window.scrollTo({
       top: offsetPosition,

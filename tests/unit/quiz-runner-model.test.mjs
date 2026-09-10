@@ -47,6 +47,60 @@ test("quiz preflight reports vocabulary loading and load errors before generatin
   )
 })
 
+test("quiz preflight keeps a visible question while only the vocabulary pool is loading", () => {
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: true,
+      preflightReason: "loading",
+    }),
+    true
+  )
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: false,
+      preflightReason: "loading",
+    }),
+    false
+  )
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: true,
+      preflightReason: "load-error",
+    }),
+    false
+  )
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: true,
+      preflightReason: "pool-too-small",
+    }),
+    false
+  )
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: true,
+      preflightReason: null,
+    }),
+    false
+  )
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: true,
+      preflightReason: "loading",
+      advance: true,
+    }),
+    false
+  )
+  assert.equal(
+    model.shouldKeepCurrentQuizQuestionDuringPreflight({
+      hasCurrentQuestion: true,
+      preflightReason: "loading",
+      advance: false,
+    }),
+    true
+  )
+})
+
 test("quiz no-question reason distinguishes exhausted filters from undersized pools", () => {
   assert.equal(
     model.getQuizNoQuestionReason({

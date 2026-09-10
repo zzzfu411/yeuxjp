@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Vocabulary } from "@/data/vocabulary/types"
 import { cn } from "@/lib/utils"
 import { CheckCircle2, Volume2, RotateCw, Maximize2 } from "lucide-react"
-import { speakJapanese } from "@/lib/speech"
+import { cancelJapaneseSpeech, speakJapanese } from "@/lib/speech"
 
 interface FlashcardProps {
   vocab: Vocabulary
@@ -15,11 +15,18 @@ interface FlashcardProps {
 
 export function Flashcard({ vocab, onExpand, learned = false, showRomaji = true }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
   const example = vocab.exampleSentences?.[0]
+
+  useEffect(() => () => {
+    const utterance = utteranceRef.current
+    utteranceRef.current = null
+    if (utterance) cancelJapaneseSpeech(utterance)
+  }, [vocab.id])
 
   const handlePlay = (e?: React.MouseEvent) => {
     e?.stopPropagation()
-    speakJapanese(vocab.kana)
+    utteranceRef.current = speakJapanese(vocab.kana)
   }
 
   const handleExpand = (e: React.MouseEvent) => {

@@ -244,6 +244,7 @@
 
   .paper-slip {
     position: relative;
+    min-width: 0;
     border: 1px solid var(--ink-ghost);
     border-radius: var(--radius);
     background-color: color-mix(in srgb, var(--paper-hi) 90%, transparent);
@@ -540,6 +541,12 @@
   .cover-art {
     width: min(62vmin, 190px, 100%);
     margin-top: 0.25rem;
+  }
+
+  /* A short window cannot leave usable room below the fixed chrome for a
+     tall filter rail; let these controls scroll with the page instead. */
+  .short-viewport-static {
+    position: static;
   }
 }
 

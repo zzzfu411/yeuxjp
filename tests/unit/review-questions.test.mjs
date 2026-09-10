@@ -108,6 +108,121 @@ test("mistakeToQuestion preserves answers and de-duplicates options", () => {
   ])
 })
 
+test("answered typed review stays typed after lastWrongAnswer is recorded", () => {
+  const base = {
+    id: "type-flip",
+    type: "lesson:typing",
+    itemId: "sur-g-1",
+    itemType: "vocab",
+    mode: "recall",
+    questionText: "输入“你好”",
+    correctAnswer: "こんにちは",
+    options: [{ value: "こんにちは", display: "こんにちは" }],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  }
+  const before = review.mistakeToQuestion(base)
+  const after = review.mistakeToQuestion({
+    ...base,
+    lastWrongAnswer: "こんばんは",
+  })
+
+  assert.equal(review.questionUsesTypedReview(before), true)
+  assert.equal(review.questionUsesTypedReview(after), false)
+
+  const presentedWhileAnswered = review.presentedReviewQuestion(after, "こんばんは", before)
+  assert.equal(review.questionUsesTypedReview(presentedWhileAnswered), true)
+  assert.deepEqual(presentedWhileAnswered.options, before.options)
+  assert.equal(
+    presentedWhileAnswered.options.some((option) => option.value === "こんばんは"),
+    false
+  )
+
+  const presentedAfterAdvance = review.presentedReviewQuestion(after, null, before)
+  assert.equal(review.questionUsesTypedReview(presentedAfterAdvance), false)
+  assert.ok(presentedAfterAdvance.options.some((option) => option.value === "こんばんは"))
+  assert.notEqual(review.reviewQuestionPresentationKey(before), review.reviewQuestionPresentationKey(after))
+  assert.equal(review.reviewQuestionPresentationKey(before), review.reviewQuestionPresentationKey(presentedWhileAnswered))
+
+  const rebuiltBefore = {
+    ...before,
+    options: before.options.map((option) => ({ ...option })),
+  }
+  assert.equal(
+    review.reviewQuestionPresentationKey(before),
+    review.reviewQuestionPresentationKey(rebuiltBefore)
+  )
+
+  let current = null
+  let replacements = 0
+  for (let i = 0; i < 50; i += 1) {
+    const live = {
+      ...before,
+      options: before.options.map((option) => ({ ...option })),
+    }
+    if (review.reviewQuestionPresentationKey(current) !== review.reviewQuestionPresentationKey(live)) {
+      current = live
+      replacements += 1
+    }
+  }
+  assert.equal(replacements, 1)
+})
+
+test("presentation keys distinguish items that share an answer bank", () => {
+  const sharedOptions = [
+    { value: "は", display: "は" },
+    { value: "が", display: "が" },
+    { value: "を", display: "を" },
+  ]
+  const first = {
+    mistakeId: "m-particle-1",
+    itemId: "particle-wa",
+    questionText: "私＿学生です。",
+    explanation: "は marks the topic.",
+    correctAnswer: "は",
+    options: sharedOptions,
+  }
+  const second = {
+    mistakeId: "m-particle-2",
+    itemId: "particle-ga",
+    questionText: "雨＿降っています。",
+    explanation: "が marks the subject of 降る.",
+    correctAnswer: "は",
+    options: sharedOptions.map((option) => ({ ...option })),
+  }
+  const sameItemRebuilt = {
+    ...first,
+    options: first.options.map((option) => ({ ...option })),
+  }
+
+  const answerBankKey = (question) =>
+    `${question.correctAnswer}\0${question.options.map((option) => option.value).join("\0")}`
+  assert.equal(answerBankKey(first), answerBankKey(second))
+  assert.notEqual(review.reviewQuestionPresentationKey(first), review.reviewQuestionPresentationKey(second))
+  assert.equal(review.reviewQuestionPresentationKey(first), review.reviewQuestionPresentationKey(sameItemRebuilt))
+  assert.notEqual(
+    review.reviewQuestionPresentationKey(first, "mistakes:m-particle-1:0"),
+    review.reviewQuestionPresentationKey(second, "mistakes:m-particle-2:1")
+  )
+
+  let latched = first
+  const answerFirst = "が"
+  let selected = answerFirst
+  let presented = review.presentedReviewQuestion(first, selected, latched)
+  assert.equal(presented.questionText, first.questionText)
+  assert.equal(presented.mistakeId, first.mistakeId)
+
+  selected = null
+  if (review.reviewQuestionPresentationKey(latched) !== review.reviewQuestionPresentationKey(second)) {
+    latched = second
+  }
+  presented = review.presentedReviewQuestion(second, "を", latched)
+  assert.equal(presented.questionText, second.questionText)
+  assert.equal(presented.mistakeId, second.mistakeId)
+  assert.equal(presented.explanation, second.explanation)
+})
+
 test("typed review is used when a production mistake has no distractors", () => {
   const base = {
     id: "type-1",

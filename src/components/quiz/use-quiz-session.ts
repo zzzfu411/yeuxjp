@@ -20,6 +20,7 @@ import { useQuizVocabularyPools } from "@/components/quiz/use-quiz-vocabulary-po
 import {
   getQuizNoQuestionReason,
   getQuizPreflightEmptyReason,
+  shouldKeepCurrentQuizQuestionDuringPreflight,
   type QuizEmptyReason,
 } from "@/lib/quiz-runner-model"
 import {
@@ -44,6 +45,7 @@ export function useQuizSession(mode: QuizMode) {
     [learning.completedLessonIds, profile?.kanaLevel]
   )
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
+  const currentQuestionRef = useRef<Question | null>(null)
   const [emptyReason, setEmptyReason] = useState<QuizEmptyReason>("loading")
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [saveError, setSaveError] = useState(false)
@@ -83,13 +85,22 @@ export function useQuizSession(mode: QuizMode) {
     autoPlayEnabled: Boolean(currentQuestion?.autoPlayAudio),
   })
 
-  const generateQuestion = useCallback(() => {
+  const generateQuestion = useCallback((options?: { advance?: boolean }) => {
+    const advance = options?.advance === true
     const preflightReason = getQuizPreflightEmptyReason({
       mode,
       vocabLoading,
       vocabError: Boolean(vocabError),
     })
     if (preflightReason) {
+      if (shouldKeepCurrentQuizQuestionDuringPreflight({
+        hasCurrentQuestion: Boolean(currentQuestionRef.current),
+        preflightReason,
+        advance,
+      })) {
+        return
+      }
+      currentQuestionRef.current = null
       setCurrentQuestion(null)
       selectedOptionRef.current = null
       setSelectedOption(null)
@@ -115,6 +126,7 @@ export function useQuizSession(mode: QuizMode) {
 
     if (q) {
       lastQuestionKeyRef.current = getQuizQuestionKey(q)
+      currentQuestionRef.current = q
       setCurrentQuestion(q)
       selectedOptionRef.current = null
       setSelectedOption(null)
@@ -124,6 +136,7 @@ export function useQuizSession(mode: QuizMode) {
       return
     }
 
+    currentQuestionRef.current = null
     setCurrentQuestion(null)
     selectedOptionRef.current = null
     setSelectedOption(null)
@@ -142,6 +155,10 @@ export function useQuizSession(mode: QuizMode) {
     vocabLoading,
     vocabTargetPool,
   ])
+
+  const advanceQuestion = useCallback(() => {
+    generateQuestion({ advance: true })
+  }, [generateQuestion])
 
   useEffect(() => {
     if (!shouldAutoGenerateQuizQuestion({
@@ -187,7 +204,9 @@ export function useQuizSession(mode: QuizMode) {
     onlyUnlearnedVocab,
     setOnlyUnlearnedVocab,
     retryVocabulary,
+    vocabLoading,
     generateQuestion,
+    advanceQuestion,
     handleSelect,
     playAudio,
   }

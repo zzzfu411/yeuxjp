@@ -19,6 +19,20 @@ export const VERB_CONJ_FORMS: { id: VerbConjForm; label: string }[] = [
 
 export const VERB_CONJ_N5_FORMS = VERB_CONJ_FORMS.filter((form) => form.id === "masu" || form.id === "nai" || form.id === "te" || form.id === "ta")
 
+// できる already expresses ability and is not normally further inflected
+// into a potential or causative form in learner-facing questions.
+// かう's potential かえる collides with 帰る already in the same kana-only quiz bank.
+// わかる already expresses understanding; わかれる is not a learner-facing potential.
+export function isVerbConjFormSupported(verb: Pick<VerbEntry, "dict">, form: VerbConjForm) {
+  if (verb.dict === "できる" && (form === "potential" || form === "causative")) return false
+  if ((verb.dict === "かう" || verb.dict === "わかる") && form === "potential") return false
+  return true
+}
+
+export function getVerbConjFormsForVerb(verb: Pick<VerbEntry, "dict">) {
+  return VERB_CONJ_FORMS.filter((form) => isVerbConjFormSupported(verb, form.id))
+}
+
 export function verbConjFormsForCourse(nextTrack?: string | null, allLessonsDone = false) {
   if (allLessonsDone || nextTrack === "n4-core" || nextTrack === "n3-core" || nextTrack === "n2-core") {
     return VERB_CONJ_FORMS

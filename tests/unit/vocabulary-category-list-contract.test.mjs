@@ -57,6 +57,10 @@ test("VocabularyCategoryList owns category sections, cards, indexes, and status 
 test("Flashcard exposes stable browser hooks for expanding vocabulary cards", () => {
   const source = read("src/components/vocabulary/flashcard.tsx")
 
+  assert.match(source, /import \{ cancelJapaneseSpeech, speakJapanese \} from "@\/lib\/speech"/)
+  assert.match(source, /const utteranceRef = useRef<SpeechSynthesisUtterance \| null>\(null\)/)
+  assert.match(source, /if \(utterance\) cancelJapaneseSpeech\(utterance\)/)
+  assert.match(source, /utteranceRef\.current = speakJapanese\(vocab\.kana\)/)
   assert.match(source, /data-testid=\{`vocabulary-expand-\$\{vocab\.id\}`\}/)
   assert.match(source, /data-testid=\{`vocabulary-expand-back-\$\{vocab\.id\}`\}/)
   assert.match(source, /aria-label=\{`朗读 \$\{vocab\.kana\}`\}/)

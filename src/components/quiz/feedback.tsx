@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { isQuestionAnswerCorrect } from "@/lib/questions"
-import { VERB_CONJ_FORMS, conjugateVerb, type VerbConjForm, type VerbKind } from "@/lib/verb-conjugation"
+import { conjugateVerb, getVerbConjFormsForVerb, type VerbConjForm, type VerbKind } from "@/lib/verb-conjugation"
 
 function splitBlank(sentence: string) {
   const idx = sentence.indexOf("＿")
@@ -119,7 +119,7 @@ export function ConjugationComparison({
 
   const allForms: { id: "dict" | VerbConjForm; label: string; value: string }[] = [
     { id: "dict", label: "辞书形", value: verb.dict },
-    ...VERB_CONJ_FORMS.map((f) => ({
+    ...getVerbConjFormsForVerb(verb).map((f) => ({
       id: f.id,
       label: f.label,
       value: conjugateVerb(verb.dict, verb.kind, f.id),

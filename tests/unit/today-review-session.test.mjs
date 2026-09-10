@@ -3,6 +3,7 @@ import test from "node:test"
 import { loadTsModule } from "./load-ts-module.mjs"
 
 const today = await loadTsModule("src/lib/today-review-session.ts")
+const review = await loadTsModule("src/lib/review-typed-question.ts")
 
 test("today review completion copy distinguishes a capped batch from a cleared queue", () => {
   assert.equal(today.getTodayReviewBatchCompletionTitle(0), "今日复习完成")
@@ -166,6 +167,47 @@ test("createSeededRandom yields identical unit-interval sequences for identical 
   }
 })
 
+test("today review typed mistake stays typed after lastWrongAnswer lands mid-feedback", () => {
+  const typedMistake = {
+    id: "typed-m1",
+    type: "lesson:typing",
+    itemId: "sur-g-1",
+    itemType: "vocab",
+    mode: "recall",
+    questionText: "输入“你好”",
+    correctAnswer: "こんにちは",
+    correctDisplay: "こんにちは",
+    options: [{ value: "こんにちは", display: "こんにちは" }],
+    wrongCount: 1,
+    createdAt: 1,
+    lastWrongAt: 1,
+  }
+
+  const before = today.resolveTodayReviewItemData({
+    current: { deck: "mistakes", id: "typed-m1" },
+    vocabulary: vocabPool,
+    mistakes: new Map([["typed-m1", typedMistake]]),
+  })
+  const after = today.resolveTodayReviewItemData({
+    current: { deck: "mistakes", id: "typed-m1" },
+    vocabulary: vocabPool,
+    mistakes: new Map([["typed-m1", { ...typedMistake, lastWrongAnswer: "こんばんは" }]]),
+  })
+
+  assert.equal(before.data.question.options.length, 1)
+  assert.ok(after.data.question.options.some((option) => option.value === "こんばんは"))
+
+  assert.equal(review.questionUsesTypedReview(before.data.question), true)
+  assert.equal(review.questionUsesTypedReview(after.data.question), false)
+
+  const presentedWhileAnswered = review.presentedReviewQuestion(after.data.question, "こんばんは", before.data.question)
+  assert.equal(review.questionUsesTypedReview(presentedWhileAnswered), true)
+  assert.deepEqual(presentedWhileAnswered.options, before.data.question.options)
+
+  const presentedAfterAdvance = review.presentedReviewQuestion(after.data.question, null, before.data.question)
+  assert.equal(review.questionUsesTypedReview(presentedAfterAdvance), false)
+})
+
 test("today review adapter resolves mistakes and preserves mistake history metadata", () => {
   const item = mistake({ id: "m2", questionText: undefined, questionAudio: undefined })
   const resolved = today.resolveTodayReviewItemData({
@@ -228,6 +270,130 @@ test("today review adapter distinguishes missing records from undersized questio
     missingReviewEntry: false,
     insufficientQuestionOptions: true,
   })
+})
+
+test("mixed today-review can derive the next servable card while stranded vocab waits", () => {
+  const kana = { deck: "kana", id: "hiragana:a" }
+  const vocab = { deck: "vocab", id: "v1" }
+  const mistake = { deck: "mistakes", id: "m1" }
+
+  assert.deepEqual(today.getNextServableTodayReviewItem([vocab, kana, mistake]), kana)
+  assert.deepEqual(today.getNextServableTodayReviewItem([vocab, vocab, mistake]), mistake)
+  assert.equal(today.getNextServableTodayReviewItem([vocab, vocab]), null)
+  assert.equal(today.getNextServableTodayReviewItem([kana, vocab]), kana)
+  assert.equal(today.getNextServableTodayReviewItem([]), null)
+  assert.equal(today.getNextServableTodayReviewItem(null), null)
+})
+
+test("defer-vocab alignment makes the served card the queue head and is idempotent", async () => {
+  const session = await loadTsModule("src/lib/review-session.ts")
+  const kana = { deck: "kana", id: "hiragana:a" }
+  const vocab = { deck: "vocab", id: "v1" }
+  const vocab2 = { deck: "vocab", id: "v2" }
+  const mistake = { deck: "mistakes", id: "m1" }
+  const mixed = [vocab, kana, mistake]
+  const twoItem = [vocab, kana]
+  const leadingVocab = [vocab, vocab2, mistake]
+
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer(mixed), [kana, mistake, vocab])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer(leadingVocab), [mistake, vocab, vocab2])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer([kana, vocab]), [kana, vocab])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer([vocab, vocab]), [vocab, vocab])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer([]), [])
+  assert.deepEqual(today.alignTodayReviewQueueForVocabPoolDefer(null), [])
+
+  const aligned = today.alignTodayReviewQueueForVocabPoolDefer(twoItem)
+  const alignedAgain = today.alignTodayReviewQueueForVocabPoolDefer(aligned)
+  assert.deepEqual(aligned, [kana, vocab])
+  assert.deepEqual(alignedAgain, aligned)
+  assert.equal(aligned[0], today.getNextServableTodayReviewItem(twoItem))
+  assert.equal(today.shouldDeferTodayReviewVocabHead({ vocabPoolGate: "defer-vocab", isAnswered: false }), true)
+  assert.equal(today.shouldDeferTodayReviewVocabHead({ vocabPoolGate: "defer-vocab", isAnswered: true }), false)
+  assert.equal(today.shouldDeferTodayReviewVocabHead({ vocabPoolGate: "serve", isAnswered: false }), false)
+
+  // Painting kana while advancing the unaligned vocab head would drop vocab.
+  assert.deepEqual(session.advanceReviewQueue(twoItem, true), [kana])
+  assert.deepEqual(session.advanceReviewQueue(aligned, true), [vocab])
+  assert.deepEqual(session.advanceReviewQueue(aligned, false), [vocab, kana])
+
+  const applyDefer = (queue, answerPending = false) => {
+    if (!session.canDeferReviewItem({ answerPending })) return queue
+    const next = today.alignTodayReviewQueueForVocabPoolDefer(queue)
+    return session.reviewQueuesEqual(next, queue) ? queue : next
+  }
+
+  assert.deepEqual(applyDefer(applyDefer(twoItem)), [kana, vocab])
+  assert.deepEqual(applyDefer(twoItem, true), twoItem)
+})
+
+test("vocab pool failure is fatal only when every remaining today-review item needs it", () => {
+  const kana = { deck: "kana", id: "hiragana:a" }
+  const vocab = { deck: "vocab", id: "v1" }
+  const mistake = { deck: "mistakes", id: "m1" }
+
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: vocab,
+      remainingItems: [vocab],
+      vocabularyLoading: false,
+      vocabularyError: "复习题库加载失败",
+    }),
+    "error"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: vocab,
+      remainingItems: [vocab, vocab],
+      vocabularyLoading: false,
+      vocabularyError: "复习题库加载失败",
+    }),
+    "error"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: vocab,
+      remainingItems: [vocab, kana],
+      vocabularyLoading: false,
+      vocabularyError: "复习题库加载失败",
+    }),
+    "defer-vocab"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: kana,
+      remainingItems: [kana, vocab],
+      vocabularyLoading: false,
+      vocabularyError: "复习题库加载失败",
+    }),
+    "serve"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: mistake,
+      remainingItems: [mistake, vocab],
+      vocabularyLoading: true,
+      vocabularyError: null,
+    }),
+    "serve"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: vocab,
+      remainingItems: [vocab, kana],
+      vocabularyLoading: true,
+      vocabularyError: null,
+    }),
+    "loading"
+  )
+  assert.equal(
+    today.resolveTodayReviewVocabPoolGate({
+      current: kana,
+      remainingItems: [kana],
+      vocabularyLoading: false,
+      vocabularyError: null,
+    }),
+    "serve"
+  )
 })
 
 test("today review adapter centralizes SRS recordability, grading, and item keys", () => {

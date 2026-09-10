@@ -56,11 +56,13 @@ test("useReviewAnswerRecorder owns question result and learning record writes", 
   assert.match(model, /runLearningStorageTransaction/)
   assert.match(model, /recordQuestionPracticeWithoutTransaction/)
   assert.match(source, /canRecord\?: \(result: QuestionResult\) => boolean/)
+  assert.match(source, /ReviewAnswerRecordResult/)
   assert.match(model, /if \(canRecord && !canRecord\(result\)\) return false/)
   assert.match(model, /enrollReviewOnCorrect: false/)
   assert.match(model, /return grade\(result\)/)
   assert.doesNotMatch(source, /result\.question\.mistakeId && !result\.correct/)
   assert.match(model, /recordAnswer\(selectedAnswer, result\.correct, \(\) => \{/)
+  assert.match(model, /=> ReviewAnswerRecordResult/)
 })
 
 test("review sessions require existing SRS records before grading queued items", () => {
@@ -84,9 +86,13 @@ test("useReviewSessionState supports a before-commit guard for persisted answer 
 
   assert.match(source, /useRef\(false\)/)
   assert.match(source, /beforeCommit\?: \(\) => boolean/)
-  assert.match(source, /selectedAnswer != null \|\| answerPendingRef\.current/)
+  assert.match(source, /canStartReviewAnswerRecording\(\{/)
+  assert.match(source, /answerPending: answerPendingRef\.current/)
+  assert.match(source, /return "duplicate"/)
   assert.match(source, /if \(beforeCommit && !beforeCommit\(\)\) \{/)
   assert.match(source, /answerPendingRef\.current = false/)
+  assert.match(source, /return "failed"/)
+  assert.match(source, /return "ok"/)
   assert.match(source, /addLearningStoreListener/)
   assert.match(source, /shouldInvalidateReviewSession\(detail\.action, detail\.keys\)/)
   assert.match(source, /shouldInvalidateReviewSession\("storage", event\.key \? \[event\.key\] : \[\]\)/)

@@ -30,7 +30,8 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     onlyUnlearnedVocab,
     setOnlyUnlearnedVocab,
     retryVocabulary,
-    generateQuestion,
+    vocabLoading,
+    advanceQuestion,
     handleSelect,
     playAudio,
   } = useQuizSession(mode)
@@ -71,6 +72,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         onOnlyUnmasteredKanaChange={setOnlyUnmasteredKana}
         vocabScope={vocabScope}
         onVocabScopeChange={setVocabScope}
+        vocabScopeDisabled={vocabLoading}
         onlyUnlearnedVocab={onlyUnlearnedVocab}
         onOnlyUnlearnedVocabChange={setOnlyUnlearnedVocab}
       />
@@ -97,7 +99,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
 
       {selectedOption && (
         <Button
-          onClick={generateQuestion}
+          onClick={advanceQuestion}
           size="lg"
           className="w-full gap-2 animate-in fade-in slide-in-from-bottom-2"
           data-testid="quiz-next-question"

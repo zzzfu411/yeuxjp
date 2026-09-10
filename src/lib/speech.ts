@@ -24,8 +24,8 @@ export type SpeakCallbacks = {
   onStart?: () => void
   onEnd?: () => void
   onError?: (event: SpeechSynthesisErrorEvent) => void
+  onCancel?: () => void
 }
-
 export type SpeakOptions = SpeakCallbacks & {
   lang?: string
   rate?: number
@@ -33,26 +33,21 @@ export type SpeakOptions = SpeakCallbacks & {
   volume?: number
   cancel?: boolean
 }
-
 type SpeechDefaults = {
   lang: string
   rate?: number
   pitch?: number
   volume?: number
 }
-
 let speechDefaults: SpeechDefaults = {
   lang: "ja-JP",
 }
-
 export function setSpeechDefaults(next: Partial<SpeechDefaults>) {
   speechDefaults = { ...speechDefaults, ...next }
 }
-
 export function getSpeechDefaults() {
   return speechDefaults
 }
-
 export function isSpeechSupported() {
   return (
     typeof window !== "undefined" &&
@@ -60,7 +55,6 @@ export function isSpeechSupported() {
     typeof SpeechSynthesisUtterance !== "undefined"
   )
 }
-
 // Sequence playback chains utterances through onend callbacks and gap timers.
 // speechSynthesis.cancel() clears the utterance queue but cannot clear a
 // pending gap timer, so an interrupted sequence would otherwise "revive" and
@@ -68,17 +62,29 @@ export function isSpeechSupported() {
 // explicit cancel) bumps the generation; stale chains check it and stop.
 let speechGeneration = 0
 let activeUtterance: SpeechSynthesisUtterance | null = null
+let activePlaybackHandle: SpeechSynthesisUtterance | null = null // sequence root handle
+let activePlaybackCancel: (() => void) | null = null
 
 function nextSpeechGeneration() {
   speechGeneration += 1
   return speechGeneration
 }
-
+function clearActivePlayback(utterance?: SpeechSynthesisUtterance) {
+  if (utterance && activeUtterance && activeUtterance !== utterance) return
+  activeUtterance = null
+  activePlaybackHandle = null
+  activePlaybackCancel = null
+}
+function cancelActivePlayback() {
+  const onCancel = activePlaybackCancel
+  clearActivePlayback()
+  onCancel?.()
+}
 export function cancelJapaneseSpeech(expected?: SpeechSynthesisUtterance) {
-  if (expected && activeUtterance !== expected) return
+  if (expected && activeUtterance !== expected && activePlaybackHandle !== expected) return
 
   nextSpeechGeneration()
-  activeUtterance = null
+  cancelActivePlayback()
   if (!isSpeechSupported()) return
   window.speechSynthesis.cancel()
 }
@@ -94,7 +100,6 @@ function applyUtteranceDefaults(utterance: SpeechSynthesisUtterance, options: Sp
   if (typeof options.volume === "number") utterance.volume = options.volume
   else if (typeof speechDefaults.volume === "number") utterance.volume = speechDefaults.volume
 }
-
 export function speakJapanese(text: string, options: SpeakOptions = {}) {
   if (!isSpeechSupported()) return null
   if (!text?.trim()) return null
@@ -102,7 +107,7 @@ export function speakJapanese(text: string, options: SpeakOptions = {}) {
   const synth = window.speechSynthesis
   const generation = options.cancel !== false ? nextSpeechGeneration() : speechGeneration
   if (options.cancel !== false) {
-    activeUtterance = null
+    cancelActivePlayback()
     synth.cancel()
   }
   const utterance = new SpeechSynthesisUtterance(text)
@@ -113,23 +118,23 @@ export function speakJapanese(text: string, options: SpeakOptions = {}) {
   if (options.onStart) utterance.onstart = () => { if (generation === speechGeneration) options.onStart?.() }
   utterance.onend = () => {
     if (generation !== speechGeneration) return
-    if (activeUtterance === utterance) activeUtterance = null
+    clearActivePlayback(utterance)
     options.onEnd?.()
   }
   utterance.onerror = (event) => {
     if (generation !== speechGeneration) return
-    if (activeUtterance === utterance) activeUtterance = null
+    nextSpeechGeneration()
+    clearActivePlayback(utterance)
     options.onError?.(event)
   }
-  activeUtterance = utterance
+  activeUtterance = activePlaybackHandle = utterance
+  activePlaybackCancel = options.onCancel ?? null
   synth.speak(utterance)
   return utterance
 }
-
 export type SpeakSequenceOptions = SpeakOptions & {
   gapMs?: number
 }
-
 export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOptions = {}) {
   if (!isSpeechSupported()) return null
 
@@ -138,38 +143,36 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
 
   const synth = window.speechSynthesis
   const generation = nextSpeechGeneration()
+  cancelActivePlayback()
   if (options.cancel !== false) {
-    activeUtterance = null
     synth.cancel()
   }
-
   const voices = synth.getVoices?.() ?? []
   const voice = pickJapaneseVoice(voices)
   const gapMs = normalizeSpeechGapMs(options.gapMs)
 
   let index = 0
   let first: SpeechSynthesisUtterance | null = null
-
   const speakNext = () => {
     if (generation !== speechGeneration) return
 
     const current = cleaned[index]
     if (!current) {
-      activeUtterance = null
+      clearActivePlayback()
       options.onEnd?.()
       return
     }
-
     const utterance = new SpeechSynthesisUtterance(current)
     applyUtteranceDefaults(utterance, options)
     if (voice) utterance.voice = voice
 
-    if (!first) first = utterance
+    if (!first) first = activePlaybackHandle = utterance
     if (index === 0 && options.onStart) utterance.onstart = () => { if (generation === speechGeneration) options.onStart?.() }
 
     utterance.onerror = (event) => {
       if (generation !== speechGeneration) return
-      if (activeUtterance === utterance) activeUtterance = null
+      nextSpeechGeneration()
+      clearActivePlayback(utterance)
       options.onError?.(event)
       options.onEnd?.()
     }
@@ -177,9 +180,9 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
     utterance.onend = () => {
       if (generation !== speechGeneration) return
 
-      if (activeUtterance === utterance) activeUtterance = null
       index += 1
       if (index >= cleaned.length) {
+        clearActivePlayback(utterance)
         options.onEnd?.()
         return
       }
@@ -189,26 +192,23 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
     }
 
     activeUtterance = utterance
+    activePlaybackCancel = options.onCancel ?? null
     synth.speak(utterance)
   }
 
   speakNext()
   return first
 }
-
 export type SpeakRepeatOptions = SpeakSequenceOptions & {
   repeat?: number
 }
-
 export function speakJapaneseRepeated(text: string, options: SpeakRepeatOptions = {}) {
   const texts = buildRepeatedSpeechTexts(text, options.repeat)
   return speakJapaneseSequence(texts, options)
 }
-
 export const DEFAULT_SPEECH_PREFS_STORAGE_KEY = STORAGE_KEYS.SPEECH_PREFS
 export const SPEECH_PREFS_EVENT = "yasashi:speech-preferences:update"
 export { DEFAULT_SPEECH_PREFERENCES, type SpeechUserPreferences } from "@/lib/speech-preferences-model"
-
 export function applySpeechPreferences(prefs: SpeechUserPreferences) {
   setSpeechDefaults({ rate: prefs.rate })
 }

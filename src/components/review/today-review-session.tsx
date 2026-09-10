@@ -9,6 +9,7 @@ import { MixedReviewPrompt } from "@/components/review/review-prompt-content"
 import { ReviewNextButton, ReviewPromptCard, ReviewSessionFrame } from "@/components/review/review-session-frame"
 import { ReviewDone, ReviewEmptyQuestionState, ReviewErrorState, ReviewLoadingState } from "@/components/review/review-status"
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
+import { usePresentedReviewQuestion } from "@/components/review/use-presented-review-question"
 import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
@@ -18,12 +19,16 @@ import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { questionUsesTypedReview, shouldShowReviewSpecialFeedback, type TodayReviewItem } from "@/lib/review-questions"
+import { shouldShowReviewSaveError } from "@/lib/review-session"
 import {
+  alignTodayReviewQueueForVocabPoolDefer,
   canRecordTodayReviewItem,
   getTodayReviewBatchCompletionTitle,
   getTodayReviewItemKey,
   gradeTodayReviewItem,
   resolveTodayReviewItemData,
+  resolveTodayReviewVocabPoolGate,
+  shouldDeferTodayReviewVocabHead,
 } from "@/lib/today-review-session"
 
 export function TodayReviewSession({
@@ -56,9 +61,21 @@ export function TodayReviewSession({
   // mistake notebook or vocabulary pool references.
   const [reviewSeed] = useState(() => `today-${Math.random().toString(36).slice(2)}`)
   const review = useReviewSessionState(items)
-  const current = review.currentItem
+  const queuedCurrent = review.currentItem
   const selected = review.selectedAnswer
-  const { dropCurrent } = review
+  const { deferCurrent, dropCurrent } = review
+  const vocabPoolGate = resolveTodayReviewVocabPoolGate({
+    current: queuedCurrent,
+    remainingItems: review.remainingItems,
+    vocabularyLoading: vocabulary.loading,
+    vocabularyError: vocabulary.error,
+  })
+  // Rotate stranded vocab out of the head before paint so the served card and
+  // the queue head are the same item any answer / advance will mutate.
+  if (shouldDeferTodayReviewVocabHead({ vocabPoolGate, isAnswered: review.isAnswered })) {
+    deferCurrent(alignTodayReviewQueueForVocabPoolDefer)
+  }
+  const current = queuedCurrent
   const currentKey = getTodayReviewItemKey(current)
   const saveError = !!currentKey && saveErrorKey === currentKey
   const { data, missingReviewEntry, insufficientQuestionOptions } = useMemo(() => {
@@ -70,18 +87,33 @@ export function TodayReviewSession({
       showRomaji,
     })
   }, [current, notebook.byId, reviewSeed, showRomaji, vocabulary.data])
+  const presentedQuestion = usePresentedReviewQuestion(
+    data?.question,
+    selected,
+    `${currentKey ?? ""}:${review.presentationVersion}`
+  )
 
   useEffect(() => {
-    if (!current) return
-    if (current.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
-    if (missingReviewEntry) {
-      dropCurrent()
+    if (!queuedCurrent) return
+    if (shouldDeferTodayReviewVocabHead({ vocabPoolGate, isAnswered: review.isAnswered })) {
+      deferCurrent(alignTodayReviewQueueForVocabPoolDefer)
+      return
     }
-  }, [current, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
+    if (queuedCurrent.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
+    if (!missingReviewEntry) return
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
+      dropCurrent()
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [deferCurrent, dropCurrent, missingReviewEntry, queuedCurrent, review.isAnswered, vocabPoolGate, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.autoPlayAudio ? data.audio : undefined,
-    autoPlayKey: current?.id,
+    autoPlayKey: review.presentationVersion,
     autoPlayDelayMs: 350,
   })
 
@@ -109,11 +141,11 @@ export function TodayReviewSession({
     )
   }
 
-  if (vocabulary.loading) {
+  if (vocabPoolGate === "loading") {
     return <ReviewLoadingState label="正在加载今日复习题库..." />
   }
 
-  if (vocabulary.error) {
+  if (vocabPoolGate === "error") {
     return (
       <ReviewErrorState
         title="今日复习题库加载失败"
@@ -122,6 +154,10 @@ export function TodayReviewSession({
         onRetry={vocabulary.retry}
       />
     )
+  }
+
+  if (vocabPoolGate === "defer-vocab" && (!current || !data)) {
+    return <ReviewLoadingState label="正在加载今日复习题库..." />
   }
 
   if (insufficientQuestionOptions) {
@@ -143,9 +179,11 @@ export function TodayReviewSession({
     return null
   }
 
+  const question = presentedQuestion ?? data.question
+
   const handleSelect = (value: string) => {
-    const recorded = recordAnswerSelection(data.question, value)
-    setSaveErrorKey(recorded ? null : currentKey)
+    const recorded = recordAnswerSelection(question, value)
+    setSaveErrorKey(shouldShowReviewSaveError(recorded) ? currentKey : null)
   }
 
   const handleNext = () => {
@@ -167,7 +205,7 @@ export function TodayReviewSession({
         <MixedReviewPrompt prompt={data.prompt} sub={data.sub} hint={data.hint} audio={data.audio} onPlay={playAudio} />
       </ReviewPromptCard>
 
-      {questionUsesTypedReview(data.question) ? (
+      {questionUsesTypedReview(question) ? (
         <ReviewTypedAnswer
           key={`${currentKey}:${review.completionStats.answered}`}
           disabled={Boolean(selected)}
@@ -175,18 +213,20 @@ export function TodayReviewSession({
         />
       ) : (
         <ReviewOptionGrid
-          options={data.question.options}
-          correctAnswer={data.question.correctAnswer}
-          acceptedAnswers={data.question.acceptedAnswers}
+          options={question.options}
+          correctAnswer={question.correctAnswer}
+          acceptedAnswers={question.acceptedAnswers}
           selectedAnswer={selected}
           onSelect={handleSelect}
         />
       )}
 
       <ReviewAnswerFeedback
-        question={data.question}
+        question={question}
         selectedAnswer={selected}
-        showSpecialFeedback={shouldShowReviewSpecialFeedback(data.question.type)}
+        correct={review.lastAnswerCorrect}
+        showSelectedAnswer
+        showSpecialFeedback={shouldShowReviewSpecialFeedback(question.type)}
       />
 
       <PracticeSaveError show={saveError} />

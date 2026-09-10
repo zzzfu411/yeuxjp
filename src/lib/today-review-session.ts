@@ -70,6 +70,72 @@ export function getTodayReviewItemKey(item: TodayReviewItem | null) {
   return item ? `${item.deck}:${item.id}` : null
 }
 
+export type TodayReviewVocabPoolGate = "serve" | "loading" | "error" | "defer-vocab"
+
+function todayReviewItemsNeedVocabPool(items: readonly { deck: string }[] | null | undefined) {
+  if (!items?.length) return false
+  return items.every((item) => item.deck === "vocab")
+}
+
+export function getNextServableTodayReviewItem<T extends { deck: string }>(
+  remainingItems: readonly T[] | null | undefined
+): T | null {
+  if (!remainingItems?.length) return null
+  return remainingItems.find((item) => item.deck !== "vocab") ?? null
+}
+
+export function alignTodayReviewQueueForVocabPoolDefer<T extends { deck: string }>(
+  remainingItems: readonly T[] | null | undefined
+): T[] {
+  if (!remainingItems?.length) return remainingItems ? [...remainingItems] : []
+  const servable = getNextServableTodayReviewItem(remainingItems)
+  if (!servable) return remainingItems as T[]
+  const servableIndex = remainingItems.indexOf(servable)
+  if (servableIndex <= 0) return remainingItems as T[]
+  return [
+    ...remainingItems.slice(servableIndex),
+    ...remainingItems.slice(0, servableIndex),
+  ]
+}
+
+export function shouldDeferTodayReviewVocabHead({
+  vocabPoolGate,
+  isAnswered,
+}: {
+  vocabPoolGate: TodayReviewVocabPoolGate
+  isAnswered: boolean
+}) {
+  return vocabPoolGate === "defer-vocab" && !isAnswered
+}
+
+export function resolveTodayReviewVocabPoolGate({
+  current,
+  remainingItems,
+  vocabularyLoading,
+  vocabularyError,
+}: {
+  current: { deck: string } | null
+  remainingItems: readonly { deck: string }[]
+  vocabularyLoading: boolean
+  vocabularyError: unknown
+}): TodayReviewVocabPoolGate {
+  if (vocabularyError) {
+    // Fatal only when every remaining card needs the failed pool. Mixed
+    // queues keep serving kana / mistakes and defer stranded vocab cards
+    // so a later retry can still present them.
+    if (todayReviewItemsNeedVocabPool(remainingItems)) return "error"
+    if (current?.deck === "vocab") return "defer-vocab"
+    return "serve"
+  }
+
+  if (vocabularyLoading) {
+    if (current?.deck === "vocab" || todayReviewItemsNeedVocabPool(remainingItems)) return "loading"
+    return "serve"
+  }
+
+  return "serve"
+}
+
 export function resolveTodayReviewItemData({
   current,
   vocabulary,

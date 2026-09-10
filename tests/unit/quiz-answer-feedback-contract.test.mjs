@@ -45,5 +45,6 @@ test("special quiz feedback uses normalized answer checking", () => {
 
   assert.match(source, /isQuestionAnswerCorrect/)
   assert.match(source, /isFeedbackAnswerCorrect/)
+  assert.match(source, /getVerbConjFormsForVerb/)
   assert.doesNotMatch(source, /selected === correct/)
 })

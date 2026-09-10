@@ -4,11 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { addLearningStoreListener } from "@/lib/learning-events"
 import {
   advanceReviewQueue,
+  canDeferReviewItem,
+  canStartReviewAnswerRecording,
   createReviewStats,
   dropCurrentReviewItem,
   getReviewCompletionStats,
+  planReviewQueueDefer,
   recordReviewAnswer,
   shouldInvalidateReviewSession,
+  type ReviewAnswerRecordResult,
 } from "@/lib/review-session"
 
 export function useReviewSessionState<T>(initialQueue: T[]) {
@@ -19,6 +23,9 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
   const [initialCount] = useState(initialQueue.length)
   const [stats, setStats] = useState(createReviewStats)
   const [isInvalidated, setIsInvalidated] = useState(false)
+  // Increment only when the queue advances, so a requeued item gets a fresh
+  // autoplay/cancellation token without replaying while answer feedback is visible.
+  const [presentationVersion, setPresentationVersion] = useState(0)
 
   const currentItem = queue[0] ?? null
   const isComplete = queue.length === 0
@@ -33,6 +40,7 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
       answerPendingRef.current = false
       setIsInvalidated(true)
       setQueue([])
+      setPresentationVersion((prev) => prev + 1)
       setSelectedAnswer(null)
       setLastAnswerCorrect(null)
     }
@@ -55,19 +63,24 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     }
   }, [])
 
-  const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean) => {
-    if (selectedAnswer != null || answerPendingRef.current) return false
+  const recordAnswer = useCallback((answer: string, correct: boolean, beforeCommit?: () => boolean): ReviewAnswerRecordResult => {
+    if (!canStartReviewAnswerRecording({
+      selectedAnswer,
+      answerPending: answerPendingRef.current,
+    })) {
+      return "duplicate"
+    }
     answerPendingRef.current = true
 
     if (beforeCommit && !beforeCommit()) {
       answerPendingRef.current = false
-      return false
+      return "failed"
     }
 
     setSelectedAnswer(answer)
     setLastAnswerCorrect(correct)
     setStats((prev) => recordReviewAnswer(prev, correct))
-    return true
+    return "ok"
   }, [selectedAnswer])
 
   const advance = useCallback(() => {
@@ -75,29 +88,46 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     if (!answerPendingRef.current || lastAnswerCorrect === null) return
     answerPendingRef.current = false
     setQueue((prev) => advanceReviewQueue(prev, lastAnswerCorrect))
+    setPresentationVersion((prev) => prev + 1)
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
   }, [lastAnswerCorrect])
 
   const dropCurrent = useCallback(() => {
     setQueue((prev) => dropCurrentReviewItem(prev))
+    setPresentationVersion((prev) => prev + 1)
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
     answerPendingRef.current = false
   }, [])
 
+  const deferCurrent = useCallback((alignQueue?: (queue: T[]) => T[]) => {
+    if (!canDeferReviewItem({ answerPending: answerPendingRef.current })) return
+    // Compute the next queue before scheduling updates. A setState updater
+    // has not run yet, so a didChange flag written inside it stays false.
+    const planned = planReviewQueueDefer(queue, alignQueue)
+    if (!planned.didChange) return
+    setQueue(planned.queue)
+    setPresentationVersion((prev) => prev + 1)
+    setSelectedAnswer(null)
+    setLastAnswerCorrect(null)
+  }, [queue])
+
   return {
     queue,
     currentItem,
     isComplete,
+    remainingItems: queue,
     remainingCount: queue.length,
     selectedAnswer,
     lastAnswerCorrect,
     isAnswered,
     isInvalidated,
     completionStats,
+    presentationVersion,
     recordAnswer,
     advance,
     dropCurrent,
+    deferCurrent,
   }
 }

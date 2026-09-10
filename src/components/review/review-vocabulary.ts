@@ -5,6 +5,7 @@ import { loadVocabularyReviewPool } from "@/data/vocabulary/loader"
 import type { Vocabulary } from "@/data/vocabulary/types"
 
 const REVIEW_VOCABULARY_LOAD_ERROR = "复习题库加载失败"
+const EMPTY_VOCABULARY: Vocabulary[] = []
 
 export function useVocabularyReviewPool(ids: readonly string[], enabled: boolean) {
   const [state, setState] = useState<{ data: Vocabulary[]; loadedKey: string | null; error: string | null }>({
@@ -43,7 +44,7 @@ export function useVocabularyReviewPool(ids: readonly string[], enabled: boolean
   }, [enabled, key, retryToken])
 
   return {
-    data: enabled && state.loadedKey === key ? state.data : [],
+    data: enabled && state.loadedKey === key ? state.data : EMPTY_VOCABULARY,
     loading: enabled && state.loadedKey !== key,
     error: enabled && state.loadedKey === key ? state.error : null,
     retry,

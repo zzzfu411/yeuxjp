@@ -1,9 +1,20 @@
 "use client"
 
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { acquireModalOverflowLock, releaseModalOverflowLock } from "@/lib/modal-overflow-lock"
+import {
+  isTopOpenModal,
+  registerOpenModal,
+  remainingOpenModalTop,
+  restoreFocusOnModalClose,
+  unregisterOpenModal,
+} from "@/lib/open-modal-stack"
 import { Button } from "@/components/ui/button"
+
+export { isTopOpenModal } from "@/lib/open-modal-stack"
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -14,8 +25,6 @@ const FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(", ")
 
-const openModalStack: HTMLDivElement[] = []
-
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
@@ -23,6 +32,7 @@ interface ModalProps {
   className?: string
   ariaLabelledBy?: string
   ariaDescribedBy?: string
+  stackKey?: string
 }
 
 export function Modal({
@@ -32,12 +42,20 @@ export function Modal({
   className,
   ariaLabelledBy,
   ariaDescribedBy,
+  stackKey,
 }: ModalProps) {
   const [show, setShow] = React.useState(isOpen)
-  const previousOverflow = React.useRef<string | null>(null)
+  const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null)
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
   const onCloseRef = React.useRef(onClose)
+
+  React.useLayoutEffect(() => {
+    // Escape navbar / nested stacking contexts (paper grain sits at z-80/81).
+    // Layout timing portals before the focus-trap effect, so Escape is bound
+    // to the live dialog instead of a remounted SSR node.
+    setPortalTarget(document.body)
+  }, [])
 
   React.useEffect(() => {
     onCloseRef.current = onClose
@@ -56,46 +74,45 @@ export function Modal({
 
     if (isOpen) {
       setShow(true)
-      if (previousOverflow.current === null) {
-        previousOverflow.current = document.body.style.overflow
+      acquireModalOverflowLock(document.body)
+      // Remember the trigger so we can restore focus on close. Soft remounts
+      // under a still-open overlay must not latch that overlay's focus.
+      if (!remainingOpenModalTop(dialogRef.current)) {
+        previouslyFocused.current = (document.activeElement as HTMLElement | null) ?? null
       }
-      document.body.style.overflow = "hidden" // Prevent scrolling
-      // Remember the trigger so we can restore focus on close.
-      previouslyFocused.current = (document.activeElement as HTMLElement | null) ?? null
     } else {
       timer = setTimeout(() => setShow(false), 300) // Wait for animation
-      if (previousOverflow.current !== null) {
-        document.body.style.overflow = previousOverflow.current
-        previousOverflow.current = null
-      }
-      // Restore focus to the trigger.
-      const prev = previouslyFocused.current
-      if (prev && typeof prev.focus === "function") prev.focus()
-      previouslyFocused.current = null
     }
 
     return () => {
       if (timer) clearTimeout(timer)
-      if (previousOverflow.current !== null) {
-        document.body.style.overflow = previousOverflow.current
-        previousOverflow.current = null
+      // isOpen→false and unmount-while-open (URL-controlled closeHref /
+      // Escape / backdrop) share this path. The later keydown effect
+      // unregisters first; remainingOpenModalTop still hands off correctly.
+      if (isOpen) {
+        releaseModalOverflowLock(document.body)
+        restoreFocusOnModalClose(dialogRef.current, previouslyFocused.current)
+        previouslyFocused.current = null
       }
     }
   }, [isOpen])
 
   // Esc to close, trap tab focus, and focus dialog on open.
   React.useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || !show) return
     const dialog = dialogRef.current
-    if (dialog) openModalStack.push(dialog)
-    // Defer focus until after animation kicks in.
+    if (!dialog) return
+    registerOpenModal(dialog, stackKey)
+    // Defer focus until after animation kicks in. Soft remounts must not steal
+    // focus from a still-open overlay that remains top of the stack.
     const focusTimer = setTimeout(() => {
-      dialogRef.current?.focus()
+      const liveDialog = dialogRef.current
+      if (liveDialog && isTopOpenModal(liveDialog)) liveDialog.focus()
     }, 50)
 
     const onKey = (e: KeyboardEvent) => {
       const dialog = dialogRef.current
-      if (openModalStack.length > 0 && openModalStack.at(-1) !== dialog) return
+      if (!isTopOpenModal(dialog)) return
 
       if (e.key === "Escape") {
         e.stopPropagation()
@@ -137,21 +154,26 @@ export function Modal({
     return () => {
       clearTimeout(focusTimer)
       window.removeEventListener("keydown", onKey, true)
-      if (dialog) {
-        const stackIndex = openModalStack.lastIndexOf(dialog)
-        if (stackIndex >= 0) openModalStack.splice(stackIndex, 1)
-      }
+      unregisterOpenModal(dialog)
     }
-  }, [getFocusableElements, isOpen, show])
+  }, [getFocusableElements, isOpen, portalTarget, show, stackKey])
 
   if (!show) return null
 
-  return (
+  const overlay = (
     <div
       className={cn(
-        "fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6",
-        isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300"
+        // A fixed overlay can be a child of a `space-y-*` container. Those
+        // parent selectors add margin to every following sibling, which must
+        // not shift a viewport-sized modal backdrop. Portaling to body also
+        // escapes parent stacking contexts such as the navbar (z-60) so grain
+        // / vignette (z-80 / 81) cannot paint over the dialog.
+        "fixed inset-0 z-[100] !mt-0 flex items-center justify-center p-4 sm:p-6",
+        isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300 pointer-events-none"
       )}
+      style={!isOpen ? { zIndex: 99 } : undefined}
+      aria-hidden={!isOpen}
+      {...(!isOpen ? { inert: true } : {})}
     >
       {/* Backdrop */}
       <div
@@ -188,4 +210,8 @@ export function Modal({
       </div>
     </div>
   )
+
+  // Keep open-modal markup in the SSR/SSG tree so offline caches still contain
+  // detail copy. After mount, portal to body to escape nested stacking.
+  return portalTarget ? createPortal(overlay, portalTarget) : overlay
 }

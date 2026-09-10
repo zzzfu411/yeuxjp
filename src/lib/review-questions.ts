@@ -123,7 +123,7 @@ export function ensureQuestionOptions(question: Pick<Question, "correctAnswer" |
   return options
 }
 
-export { questionUsesTypedReview, shouldShowReviewSpecialFeedback, uniqueQuestionOptionCount } from "@/lib/review-typed-question"
+export { presentedReviewQuestion, questionUsesTypedReview, reviewQuestionPresentationKey, shouldShowReviewSpecialFeedback, uniqueQuestionOptionCount } from "@/lib/review-typed-question"
 
 export function mistakeToQuestion(item: MistakeItem): Question {
   const options = ensureQuestionOptions(item)
