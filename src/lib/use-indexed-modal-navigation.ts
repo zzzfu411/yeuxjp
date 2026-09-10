@@ -38,7 +38,7 @@ export function useIndexedModalNavigation(itemCount: number, onNavigate?: () => 
     if (selectedIndex === null) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      const direction = shouldHandleModalArrowNavigation(event)
+      const direction = shouldHandleModalArrowNavigation(event, "indexed-modal")
       if (direction === "ArrowRight") {
         event.preventDefault()
         goNext()

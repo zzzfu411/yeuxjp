@@ -98,7 +98,7 @@ export function KanaGrid({
     if (selectedIndex === null || selectedIndex < 0) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      const direction = shouldHandleModalArrowNavigation(e)
+      const direction = shouldHandleModalArrowNavigation(e, "kana-detail")
       if (direction === "ArrowRight") {
         e.preventDefault()
         handleNext()

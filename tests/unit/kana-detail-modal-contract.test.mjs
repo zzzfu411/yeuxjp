@@ -14,7 +14,7 @@ test("KanaGrid delegates kana detail modal rendering to KanaDetailModal", () => 
 
   assert.match(source, /from "\.\/kana-detail-modal"/)
   assert.match(source, /from "@\/lib\/modal-arrow-navigation"/)
-  assert.match(source, /shouldHandleModalArrowNavigation\(e\)/)
+  assert.match(source, /shouldHandleModalArrowNavigation\(e, "kana-detail"\)/)
   assert.match(source, /const \[selectedRomaji, setSelectedRomaji\] = useState<string \| null>\(null\)/)
   assert.match(source, /data\.findIndex\(\(item\) => item\.romaji === selectedRomaji\)/)
   assert.match(source, /selectedKana \? selectedIndex : null/)
@@ -32,6 +32,7 @@ test("KanaDetailModal owns stroke, speech, mastery, and navigation controls", ()
 
   assert.match(source, /export function KanaDetailModal/)
   assert.match(source, /<Modal[\s\S]*?isOpen=\{selectedIndex !== null\}/)
+  assert.match(source, /stackKey="kana-detail"/)
   assert.match(source, /className="paper-sheet flex h-\[min\(76vh,46rem\)\] max-w-md flex-col overflow-hidden/)
   assert.match(source, /className="flex min-h-0 flex-1 flex-col"/)
   assert.match(source, /className="min-h-0 flex-1 overflow-y-auto overscroll-contain"/)

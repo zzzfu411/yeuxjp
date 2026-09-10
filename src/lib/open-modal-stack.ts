@@ -111,9 +111,10 @@ export function createOpenModalStack() {
     syncLayering()
   }
 
-  function isTopOpenModal(member?: EventTarget | Node | null) {
+  function isTopOpenModal(member?: EventTarget | Node | string | null) {
     const top = topEntry()
     if (!top) return true
+    if (typeof member === "string") return top.stackKey === member
     if (member == null) return stack.length <= 1
     return isDialogMember(top.dialog, member)
   }

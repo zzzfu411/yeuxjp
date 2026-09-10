@@ -81,6 +81,7 @@ export function KanaDetailModal({
       onClose={onClose}
       className="paper-sheet flex h-[min(76vh,46rem)] max-w-md flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"
       ariaLabelledBy={titleId}
+      stackKey="kana-detail"
     >
       {kana && (
         <div className="flex min-h-0 flex-1 flex-col">

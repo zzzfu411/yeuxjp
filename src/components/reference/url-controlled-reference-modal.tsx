@@ -48,7 +48,7 @@ export function UrlControlledReferenceModal({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const direction = shouldHandleModalArrowNavigation(event)
+      const direction = shouldHandleModalArrowNavigation(event, "url-controlled-reference")
       if (direction === "ArrowRight") {
         event.preventDefault()
         navigate(nextHref)
