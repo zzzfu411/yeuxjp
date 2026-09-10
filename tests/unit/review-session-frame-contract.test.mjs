@@ -78,6 +78,29 @@ test("review session state owns a presentation version for audio replay", () => 
   assert.match(source, /remainingItems: queue,/)
   assert.match(source, /deferCurrent,/)
   assert.match(source, /canDeferReviewItem/)
-  assert.match(source, /reviewQueuesEqual/)
+  assert.match(source, /planReviewQueueDefer/)
   assert.match(source, /alignQueue/)
+})
+
+test("deferCurrent plans the next queue before scheduling a presentationVersion bump", () => {
+  const source = read("src/components/review/use-review-session-state.ts")
+  const deferFn = source.match(/const deferCurrent = useCallback\([\s\S]*?\}, \[\]\)/)
+  assert.ok(deferFn, "deferCurrent must be a useCallback")
+
+  const body = deferFn[0]
+  const planIdx = body.indexOf("planReviewQueueDefer")
+  const guardIdx = body.indexOf("if (!planned.didChange) return")
+  const setQueueIdx = body.indexOf("setQueue(planned.queue)")
+  const bumpIdx = body.indexOf("setPresentationVersion((prev) => prev + 1)")
+  const clearSelectedIdx = body.indexOf("setSelectedAnswer(null)")
+  const clearLastIdx = body.indexOf("setLastAnswerCorrect(null)")
+
+  assert.ok(planIdx >= 0, "deferCurrent must plan the next queue")
+  assert.ok(guardIdx > planIdx, "equality must be decided from the plan, not a setState updater")
+  assert.ok(setQueueIdx > guardIdx, "setQueue must run only after a changing plan")
+  assert.ok(bumpIdx > setQueueIdx, "presentationVersion must bump after the queue is scheduled")
+  assert.ok(clearSelectedIdx > bumpIdx, "defer must clear the selected answer like advance/drop")
+  assert.ok(clearLastIdx > clearSelectedIdx, "defer must clear lastAnswerCorrect like advance/drop")
+  assert.doesNotMatch(body, /let didChange = false/)
+  assert.doesNotMatch(body, /setQueue\(\(prev\) => \{/)
 })

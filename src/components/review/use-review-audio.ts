@@ -42,7 +42,10 @@ export function useReviewAudio({
   useEffect(() => () => cancelJapaneseSpeech(), [autoPlayKey])
 
   useEffect(() => {
-    if (!autoPlayText) return
+    if (!autoPlayText) {
+      cancelJapaneseSpeech()
+      return
+    }
 
     const autoPlay = speech?.prefs.autoPlay ?? true
     if (!autoPlay) return

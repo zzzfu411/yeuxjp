@@ -59,6 +59,16 @@ export function reviewQueuesEqual<T>(left: readonly T[], right: readonly T[]) {
   return left.length === right.length && left.every((item, index) => Object.is(item, right[index]))
 }
 
+export function planReviewQueueDefer<T>(
+  queue: readonly T[],
+  alignQueue?: (queue: T[]) => T[],
+): { queue: T[]; didChange: boolean } {
+  const current = queue as T[]
+  const next = alignQueue ? alignQueue(current) : deferCurrentReviewItem(current)
+  if (reviewQueuesEqual(next, current)) return { queue: current, didChange: false }
+  return { queue: next, didChange: true }
+}
+
 export function canDeferReviewItem({ answerPending }: { answerPending: boolean }) {
   return !answerPending
 }

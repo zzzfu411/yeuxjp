@@ -85,6 +85,122 @@ test("one-item defer cancels on a two-item queue, so vocab-pool defer must be id
   assert.equal(session.canDeferReviewItem({ answerPending: true }), false)
 })
 
+test("planReviewQueueDefer reports a queue change before any React setState would run", () => {
+  const mixed = ["vocab", "kana", "mistake"]
+  const planned = session.planReviewQueueDefer(mixed)
+
+  assert.equal(planned.didChange, true)
+  assert.deepEqual(planned.queue, ["kana", "mistake", "vocab"])
+  assert.deepEqual(mixed, ["vocab", "kana", "mistake"])
+
+  assert.deepEqual(session.planReviewQueueDefer(["vocab"]), { queue: ["vocab"], didChange: false })
+  assert.deepEqual(session.planReviewQueueDefer([]), { queue: [], didChange: false })
+  assert.deepEqual(
+    session.planReviewQueueDefer(planned.queue),
+    { queue: ["mistake", "vocab", "kana"], didChange: true },
+  )
+  assert.deepEqual(
+    session.planReviewQueueDefer(mixed, (queue) => [queue[1], queue[2], queue[0]]),
+    { queue: ["kana", "mistake", "vocab"], didChange: true },
+  )
+  assert.deepEqual(
+    session.planReviewQueueDefer(mixed, (queue) => queue),
+    { queue: mixed, didChange: false },
+  )
+})
+
+test("a successful defer that changes the queue bumps presentationVersion like advance/drop", async () => {
+  const today = await loadTsModule("src/lib/today-review-session.ts")
+  const vocab = { deck: "vocab", id: "v1" }
+  const kana = { deck: "kana", id: "hiragana:a" }
+  const mistake = { deck: "mistakes", id: "m1" }
+
+  const applyDeferCurrent = (state, alignQueue, answerPending = false) => {
+    if (!session.canDeferReviewItem({ answerPending })) return { ...state, bumped: false }
+    const planned = session.planReviewQueueDefer(state.queue, alignQueue)
+    if (!planned.didChange) return { ...state, queue: planned.queue, bumped: false }
+    return {
+      queue: planned.queue,
+      presentationVersion: state.presentationVersion + 1,
+      selectedAnswer: null,
+      lastAnswerCorrect: null,
+      bumped: true,
+    }
+  }
+
+  // The old hook wrote didChange inside a setQueue updater, then read it
+  // synchronously. React has not run that updater yet, so the bump was skipped.
+  const applyBuggyDeferCurrent = (state, alignQueue) => {
+    let didChange = false
+    const scheduled = []
+    scheduled.push((prev) => {
+      const next = alignQueue ? alignQueue(prev) : session.deferCurrentReviewItem(prev)
+      if (session.reviewQueuesEqual(next, prev)) return prev
+      didChange = true
+      return next
+    })
+    if (!didChange) {
+      return { ...state, bumped: false, scheduled }
+    }
+    return {
+      ...state,
+      presentationVersion: state.presentationVersion + 1,
+      selectedAnswer: null,
+      lastAnswerCorrect: null,
+      bumped: true,
+      scheduled,
+    }
+  }
+
+  const start = {
+    queue: [vocab, kana, mistake],
+    presentationVersion: 0,
+    selectedAnswer: "みず",
+    lastAnswerCorrect: false,
+  }
+
+  const buggy = applyBuggyDeferCurrent(start, today.alignTodayReviewQueueForVocabPoolDefer)
+  assert.equal(buggy.bumped, false)
+  assert.equal(buggy.presentationVersion, 0)
+  assert.equal(buggy.selectedAnswer, "みず")
+
+  const deferred = applyDeferCurrent(start, today.alignTodayReviewQueueForVocabPoolDefer)
+  assert.equal(deferred.bumped, true)
+  assert.equal(deferred.presentationVersion, 1)
+  assert.deepEqual(deferred.queue, [kana, mistake, vocab])
+  assert.equal(deferred.selectedAnswer, null)
+  assert.equal(deferred.lastAnswerCorrect, null)
+
+  const idempotent = applyDeferCurrent(deferred, today.alignTodayReviewQueueForVocabPoolDefer)
+  assert.equal(idempotent.bumped, false)
+  assert.equal(idempotent.presentationVersion, 1)
+  assert.deepEqual(idempotent.queue, [kana, mistake, vocab])
+
+  const defaultDefer = applyDeferCurrent({
+    queue: ["vocab", "kana"],
+    presentationVersion: 4,
+    selectedAnswer: null,
+    lastAnswerCorrect: null,
+  })
+  assert.equal(defaultDefer.bumped, true)
+  assert.equal(defaultDefer.presentationVersion, 5)
+  assert.deepEqual(defaultDefer.queue, ["kana", "vocab"])
+
+  const single = applyDeferCurrent({
+    queue: ["vocab"],
+    presentationVersion: 2,
+    selectedAnswer: "old",
+    lastAnswerCorrect: true,
+  })
+  assert.equal(single.bumped, false)
+  assert.equal(single.presentationVersion, 2)
+  assert.equal(single.selectedAnswer, "old")
+
+  const blocked = applyDeferCurrent(start, today.alignTodayReviewQueueForVocabPoolDefer, true)
+  assert.equal(blocked.bumped, false)
+  assert.equal(blocked.presentationVersion, 0)
+})
+
 test("review stats accumulate answers and completion display data", () => {
   let stats = session.createReviewStats()
   stats = session.recordReviewAnswer(stats, true)

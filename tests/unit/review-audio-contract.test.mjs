@@ -45,6 +45,7 @@ test("useReviewAudio owns repeated speech, autoplay timing, and presentation rep
   assert.match(source, /autoPlayKey/)
   assert.match(source, /autoPlayKey\?: string \| number \| null/)
   assert.match(source, /useEffect\(\(\) => \(\) => cancelJapaneseSpeech\(\), \[autoPlayKey\]\)/)
+  assert.match(source, /if \(!autoPlayText\) \{\s*cancelJapaneseSpeech\(\)\s*return\s*\}/)
 })
 
 test("every review session keys audio to its presentation version", () => {
