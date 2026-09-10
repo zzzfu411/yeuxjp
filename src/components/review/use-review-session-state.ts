@@ -18,8 +18,6 @@ import {
 export function useReviewSessionState<T>(initialQueue: T[]) {
   const answerPendingRef = useRef(false)
   const [queue, setQueue] = useState<T[]>(() => initialQueue)
-  const queueRef = useRef(queue)
-  queueRef.current = queue
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null)
   const [initialCount] = useState(initialQueue.length)
@@ -107,14 +105,13 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
     if (!canDeferReviewItem({ answerPending: answerPendingRef.current })) return
     // Compute the next queue before scheduling updates. A setState updater
     // has not run yet, so a didChange flag written inside it stays false.
-    const planned = planReviewQueueDefer(queueRef.current, alignQueue)
+    const planned = planReviewQueueDefer(queue, alignQueue)
     if (!planned.didChange) return
-    queueRef.current = planned.queue
     setQueue(planned.queue)
     setPresentationVersion((prev) => prev + 1)
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
-  }, [])
+  }, [queue])
 
   return {
     queue,

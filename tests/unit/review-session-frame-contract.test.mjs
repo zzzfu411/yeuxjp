@@ -84,7 +84,7 @@ test("review session state owns a presentation version for audio replay", () => 
 
 test("deferCurrent plans the next queue before scheduling a presentationVersion bump", () => {
   const source = read("src/components/review/use-review-session-state.ts")
-  const deferFn = source.match(/const deferCurrent = useCallback\([\s\S]*?\}, \[\]\)/)
+  const deferFn = source.match(/const deferCurrent = useCallback\([\s\S]*?\}, \[queue\]\)/)
   assert.ok(deferFn, "deferCurrent must be a useCallback")
 
   const body = deferFn[0]
