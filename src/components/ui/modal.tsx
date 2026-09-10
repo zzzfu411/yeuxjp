@@ -171,6 +171,7 @@ export function Modal({
         "fixed inset-0 z-[100] !mt-0 flex items-center justify-center p-4 sm:p-6",
         isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300 pointer-events-none"
       )}
+      style={!isOpen ? { zIndex: 99 } : undefined}
       aria-hidden={!isOpen}
       {...(!isOpen ? { inert: true } : {})}
     >

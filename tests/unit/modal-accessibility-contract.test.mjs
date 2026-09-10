@@ -47,6 +47,7 @@ test("Modal traps keyboard focus while preserving escape close behavior", () => 
     source,
     /isOpen \? "animate-in fade-in duration-300" : "animate-out fade-out duration-300 pointer-events-none"/
   )
+  assert.match(source, /style=\{!isOpen \? \{ zIndex: 99 \} : undefined\}/)
   assert.match(source, /aria-hidden=\{!isOpen\}/)
   assert.match(source, /\{\.\.\.\(!isOpen \? \{ inert: true \} : \{\}\)\}/)
   assert.match(source, /if \(!isOpen \|\| !show\) return/)
