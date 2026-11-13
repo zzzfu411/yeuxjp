@@ -5,7 +5,9 @@ import test from "node:test"
 
 const appRoot = path.resolve(import.meta.dirname, "..", "..")
 const workspaceRoot = path.resolve(appRoot, "..")
-const webReadme = fs.readFileSync(path.join(appRoot, "README.md"), "utf8")
+const webReadme = fs.readFileSync(path.join(appRoot, "docs", "ENGINEERING.md"), "utf8")
+const rootReadme = fs.readFileSync(path.join(appRoot, "README.md"), "utf8")
+const zhReadme = fs.readFileSync(path.join(appRoot, "README.zh-CN.md"), "utf8")
 const optionalDocs = ["CLAUDE.md", "README_CODEX.md", "PLAN.md"]
   .map((relPath) => ({ relPath, absPath: path.join(workspaceRoot, relPath) }))
   .filter(({ absPath }) => fs.existsSync(absPath))
@@ -139,6 +141,9 @@ test("agent docs describe centralized test storage keys", () => {
 test("agent docs contract supports nested workspaces and app-only CI checkouts", () => {
   assert.equal(fs.existsSync(path.join(appRoot, "package.json")), true)
   assert.equal(fs.existsSync(path.join(appRoot, "README.md")), true)
+  assert.equal(fs.existsSync(path.join(appRoot, "README.zh-CN.md")), true)
+  assert.match(rootReadme, /docs\/ENGINEERING\.md/)
+  assert.match(zhReadme, /docs\/ENGINEERING\.md/)
 
   for (const [name] of optionalDocs) {
     assert.ok(["CLAUDE.md", "README_CODEX.md", "PLAN.md"].includes(name))
