@@ -4,6 +4,8 @@ import { getNextCourseLesson as getNextUnsatisfiedCourseLesson } from "@/lib/les
 import { makeQuestionResult, type Question, type QuestionResult } from "@/lib/questions"
 import type { LessonStepAnswer, LessonStepAnswerMap } from "@/lib/lesson-step-answers"
 import { isLessonAttemptComplete } from "@/lib/lesson-attempt"
+import { getLessonStepVersion } from "@/lib/lesson-content-fingerprint"
+import { isCurrentLessonAnswer } from "@/lib/lesson-content-version"
 
 export type LessonPracticeStep = Extract<LessonStep, { itemId: string }>
 export type PersistedLessonStepAnswer = LessonStepAnswer
@@ -13,10 +15,12 @@ export function lessonStepToQuestion(step: LessonPracticeStep): Question {
   if (step.type === "multipleChoice") {
     return {
       type: `lesson:${step.type}`,
+      responseFormat: "choice",
+      questionVersion: getLessonStepVersion(step),
       itemId: step.itemId,
       itemType: step.itemType,
-      mode: step.mode,
-      questionText: step.prompt,
+      mode: step.mode === "production" ? "recognition" : step.mode,
+      questionText: step.passage ? `${step.passage}\n\n${step.prompt}` : step.prompt,
       questionAudio: step.audioText,
       correctAnswer: step.answer,
       acceptedAnswers: step.acceptedAnswers,
@@ -28,6 +32,8 @@ export function lessonStepToQuestion(step: LessonPracticeStep): Question {
   if (step.type === "typing" || step.type === "dictation") {
     return {
       type: `lesson:${step.type}`,
+      responseFormat: "input",
+      questionVersion: getLessonStepVersion(step),
       itemId: step.itemId,
       itemType: step.itemType,
       mode: step.mode,
@@ -41,11 +47,15 @@ export function lessonStepToQuestion(step: LessonPracticeStep): Question {
 
   return {
     type: "lesson:sentenceBuild",
+    chunks: step.chunks,
+    responseFormat: "assembly",
+    questionVersion: getLessonStepVersion(step),
     itemId: step.itemId,
     itemType: step.itemType,
-    mode: step.mode,
-    questionText: step.prompt,
+    mode: step.mode === "production" ? "recall" : step.mode,
+    questionText: `${step.prompt}\n\n${step.meaning}`,
     correctAnswer: step.answer,
+    acceptedAnswers: step.acceptedAnswers,
     options: [{ value: step.answer, display: step.answer }],
   }
 }
@@ -56,7 +66,7 @@ export function resolveLessonStepSubmission(
   persisted?: PersistedLessonStepAnswer
 ): { result: QuestionResult; shouldRecord: boolean } {
   const question = lessonStepToQuestion(step)
-  if (!persisted) {
+  if (!persisted || !isCurrentLessonAnswer(step, persisted)) {
     return { result: makeQuestionResult(question, answer), shouldRecord: true }
   }
 
@@ -95,6 +105,14 @@ export function countCorrectLessonAnswers(answered: Record<string, boolean>) {
   return Object.values(answered).filter((value) => value === true).length
 }
 
+export function filterCurrentLessonAnswers<T>(steps: readonly LessonStep[], answers: Record<string, T>): Record<string, T> {
+  const byId = new Map(steps.filter(step => "itemId" in step).map(step => [step.id, step]))
+  return Object.fromEntries(Object.entries(answers).filter(([id, answer]) => {
+    const step = byId.get(id)
+    return step && (typeof answer !== "object" || answer === null || isCurrentLessonAnswer(step, answer as unknown as LessonStepAnswer))
+  }))
+}
+
 export function calculateLessonStepProgress(stepIndex: number, stepCount: number) {
   if (!Number.isFinite(stepCount) || stepCount <= 0) return 0
   return ((clampLessonStepIndex(stepIndex, stepCount) + 1) / Math.floor(stepCount)) * 100
@@ -124,6 +142,7 @@ export function buildLessonRunnerViewModel({
   lessonUnlocked,
   completedLessonIds,
   kanaLevel,
+  entryOrder = 1,
 }: {
   lesson: Lesson
   courseLessons: readonly Omit<Lesson, "steps">[]
@@ -135,14 +154,15 @@ export function buildLessonRunnerViewModel({
   lessonUnlocked: boolean
   completedLessonIds?: ReadonlySet<string>
   kanaLevel?: KanaLevel | null
+  entryOrder?: number
 }) {
-  const correctCount = countCorrectLessonAnswers(answered)
+  const correctCount = countCorrectLessonAnswers(filterCurrentLessonAnswers(lesson.steps, answered))
   const satisfiedLessonIds = new Set(completedLessonIds)
   satisfiedLessonIds.add(lesson.id)
 
   return {
     lessonPosition: getLessonCoursePosition(courseLessons, lesson.id),
-    nextLesson: getNextUnsatisfiedCourseLesson(courseLessons, satisfiedLessonIds, kanaLevel),
+    nextLesson: getNextUnsatisfiedCourseLesson(courseLessons, satisfiedLessonIds, kanaLevel, entryOrder),
     stepProgress: calculateLessonStepProgress(stepIndex, lesson.steps.length),
     correctCount,
     completionScore: calculateLessonCompletionScore(correctCount, practiceSteps),
@@ -157,13 +177,14 @@ export function getLatestLessonStepAnswers(
   results: readonly PracticeResult[],
   attemptId?: string
 ): PersistedLessonStepAnswerMap {
-  const practiceStepIds = new Set(steps.filter((step): step is LessonPracticeStep => "itemId" in step).map((step) => step.id))
+  const practiceSteps = new Map(steps.filter((step): step is LessonPracticeStep => "itemId" in step).map((step) => [step.id, step]))
   const latestByStep = new Map<string, PersistedLessonStepAnswer>()
 
   for (const result of results) {
     if (result.lessonId !== lessonId) continue
     if (result.lessonAttemptId !== attemptId) continue
-    if (!result.lessonStepId || !practiceStepIds.has(result.lessonStepId)) continue
+    const step = result.lessonStepId ? practiceSteps.get(result.lessonStepId) : undefined
+    if (!result.lessonStepId || !step || !isCurrentLessonAnswer(step, result)) continue
     const createdAt = finiteNumber(result.createdAt, 0)
     const existing = latestByStep.get(result.lessonStepId)
     if (existing && createdAt < existing.createdAt) {
@@ -174,6 +195,7 @@ export function getLatestLessonStepAnswers(
       correct: result.correct,
       createdAt,
       ...(result.assisted ? { assisted: true } : {}),
+      ...(result.questionVersion ? { questionVersion: result.questionVersion } : {}),
     })
   }
 

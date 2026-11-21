@@ -4,6 +4,7 @@ import { KANA_SCRIPTS, makeKanaId } from "@/lib/kana-id"
 import type { VocabLevelStat } from "@/data/vocabulary/stats"
 import { SKILL_TREE, type SkillId, type SkillNode } from "@/lib/skill-tree"
 import { averageMastery, getAssessedModes, type ItemProgressMap } from "@/lib/learning-progress-model"
+import { getUnverifiedAssessmentModes } from "@/lib/assessment-evidence"
 
 export type SkillStatus = "locked" | "available" | "in-progress" | "done"
 
@@ -27,9 +28,12 @@ export interface PathVocabStats {
 }
 
 export interface PathMasterySummary {
+  unverifiedItems: number
   avg: number
   attempts: number
   production: number | null
+  productionAttempts: number
+  productionItems: number
 }
 
 export interface SkillStatusResult {
@@ -103,6 +107,7 @@ export type CourseRecommendationHint = {
   allLessonsDone?: boolean
   goal?: "balanced" | "travel" | "jlpt" | "media" | null
   kanaLevel?: "none" | "some" | "solid" | null
+  entryOrder?: number
 }
 
 const COURSE_TRACK_RANK: Record<string, number> = {
@@ -130,6 +135,11 @@ export function getRecommendedSkillId(
   vocabStats: PathVocabStats,
   course?: CourseRecommendationHint
 ): SkillId {
+  if (course?.entryOrder && course.entryOrder > 1) {
+    if (course.nextTrack === "n4-core") return "grammar-n4"
+    if (course.nextTrack === "n3-core") return "grammar-n3"
+    if (course.nextTrack === "n2-core") return "grammar-n2"
+  }
   const seionThreshold = seionRecommendationThreshold(course?.kanaLevel)
   const survivalThreshold = course?.goal === "travel" ? 0.4 : course?.goal === "jlpt" ? 0.15 : 0.25
   if (clampRatio(kanaStats.seion.ratio) < seionThreshold) return "kana-seion"
@@ -164,6 +174,7 @@ export function isSkillUnlocked(
   if (!node?.prerequisites?.length) return true
 
   return node.prerequisites.every((prerequisite) => {
+    if ((course?.entryOrder ?? 1) > 1 && ["kana-seion", "kana-sokuon", "particles-basic", "vocab-survival"].includes(prerequisite)) return true
     if (prerequisite === "kana-seion") return clampRatio(kanaStats.seion.ratio) >= 0.4
     if (prerequisite === "kana-sokuon") return clampRatio(kanaStats.special.ratio) >= 0.2
     if (prerequisite === "particles-basic") return clampRatio(kanaStats.seion.ratio) >= 0.4
@@ -176,11 +187,9 @@ export function isSkillUnlocked(
   })
 }
 
-function statusFromStat(stat: PathProgressStat, doneRatio: number, emptyBadge: string): SkillStatusResult {
-  const progressRatio = clampRatio(stat.ratio)
+function statusFromStat(stat: PathProgressStat, emptyBadge: string): SkillStatusResult {
   const done = safeDone(stat.done, safeCount(stat.total))
-  if (progressRatio >= doneRatio) return { status: "done", badge: `已掌握 ${ratioText(done, stat.total)}` }
-  if (done > 0) return { status: "in-progress", badge: `进度 ${ratioText(done, stat.total)}` }
+  if (done > 0) return { status: "in-progress", badge: `已标记 ${ratioText(done, stat.total)}` }
   return { status: "available", badge: emptyBadge }
 }
 
@@ -192,19 +201,19 @@ export function getSkillStatus(
   course?: CourseRecommendationHint
 ): SkillStatusResult {
   if (!isSkillUnlocked(skillId, kanaStats, vocabStats, skillTree, course)) {
-    if (skillId === "grammar-n4") return { status: "locked", badge: "先完成 N5 课程" }
-    if (skillId === "grammar-n3") return { status: "locked", badge: "先完成 N4 课程" }
-    if (skillId === "grammar-n2") return { status: "locked", badge: "先完成 N3 课程" }
+    if (skillId === "grammar-n4") return { status: "locked", badge: "建议先学 N5 基础" }
+    if (skillId === "grammar-n3") return { status: "locked", badge: "建议先学 N4 基础" }
+    if (skillId === "grammar-n2") return { status: "locked", badge: "建议先学 N3 基础" }
     return { status: "locked", badge: "建议稍后" }
   }
 
-  if (skillId === "kana-seion") return statusFromStat(kanaStats.seion, 0.9, "从这里开始")
-  if (skillId === "kana-dakuon") return statusFromStat(kanaStats.dakuon, 0.85, "建议学习")
-  if (skillId === "kana-yoon") return statusFromStat(kanaStats.yoon, 0.85, "建议学习")
-  if (skillId === "kana-sokuon") return statusFromStat(kanaStats.special, 0.95, "建议学习")
-  if (skillId === "vocab-survival") return statusFromStat(vocabStats.survival, 0.6, "建议学习")
-  if (skillId === "vocab-daily") return statusFromStat(vocabStats.daily, 0.5, "建议学习")
-  if (skillId === "vocab-fluent") return statusFromStat(vocabStats.fluent, 0.4, "建议学习")
+  if (skillId === "kana-seion") return statusFromStat(kanaStats.seion, "从这里开始")
+  if (skillId === "kana-dakuon") return statusFromStat(kanaStats.dakuon, "建议学习")
+  if (skillId === "kana-yoon") return statusFromStat(kanaStats.yoon, "建议学习")
+  if (skillId === "kana-sokuon") return statusFromStat(kanaStats.special, "建议学习")
+  if (skillId === "vocab-survival") return statusFromStat(vocabStats.survival, "建议学习")
+  if (skillId === "vocab-daily") return statusFromStat(vocabStats.daily, "建议学习")
+  if (skillId === "vocab-fluent") return statusFromStat(vocabStats.fluent, "建议学习")
 
   const grammarStatus = getGrammarSkillProgress(skillId, course)
   if (grammarStatus) return grammarStatus
@@ -224,7 +233,7 @@ export function getGrammarSkillProgress(skillId: SkillId, course?: CourseRecomme
   if (!track) return null
   const need = COURSE_TRACK_RANK[track] ?? 0
   const now = course?.allLessonsDone ? 4 : COURSE_TRACK_RANK[course?.nextTrack ?? "starter-45"] ?? 0
-  if (now > need) return { status: "done", badge: "课程已完成该阶段" }
+  if (now > need) return { status: "available", badge: "可回顾的基础分区" }
   if (now === need) return { status: "in-progress", badge: "当前阶段" }
   return { status: "available", badge: "可练习" }
 }
@@ -233,11 +242,13 @@ export function getPathMasterySummary(items: ItemProgressMap): PathMasterySummar
   const values = Object.values(items)
   const measured = values.filter(item => getAssessedModes(item).length > 0)
   const output = values.filter(item => getAssessedModes(item).includes("production"))
-  if (!values.length) return { avg: 0, attempts: 0, production: null }
 
   return {
     avg: measured.length ? Math.round(measured.reduce((acc, item) => acc + averageMastery(item), 0) / measured.length) : 0,
+    unverifiedItems: values.filter(item => getUnverifiedAssessmentModes(item).length > 0).length,
     attempts: values.reduce((acc, item) => acc + safeCount(item.attempts), 0),
-    production: output.length ? Math.round(output.reduce((acc, item) => acc + safeScore(item.production), 0) / output.length) : null,
+    production: output.length ? Math.round(output.reduce((acc, item) => acc + safeScore(item.outputEvidence?.score ?? 0), 0) / output.length) : null,
+    productionAttempts: output.reduce((acc, item) => acc + safeCount(item.outputEvidence?.attempts ?? 0), 0),
+    productionItems: output.length,
   }
 }

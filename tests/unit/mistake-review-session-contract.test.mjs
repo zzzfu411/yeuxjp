@@ -36,7 +36,7 @@ test("MistakeReviewSession owns mistake question conversion, removal, feedback, 
   assert.match(source, /cancelled = true/)
   assert.match(source, /if \(!item\) return null/)
   assert.doesNotMatch(source, /错题不存在/)
-  assert.match(source, /mistakeToQuestion\(item\)/)
+  assert.match(source, /mistakeToQuestion\(item, String\(review.presentationVersion\)\)/)
   assert.match(source, /const handleRemove = async \(\) => \{/)
   assert.match(source, /const removed = await runLearningWrite\(\(\) => notebook\.remove\(item\.id\)\)/)
   assert.match(source, /setSaveErrorId\(removed \? null : item\.id\)/)

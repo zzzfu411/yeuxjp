@@ -9,31 +9,34 @@ export function isKanaFoundationLesson(lesson: Pick<Lesson, "track" | "order">) 
 
 export function isLessonSkipped(
   lesson: Pick<Lesson, "track" | "order">,
-  kanaLevel?: KanaLevel | null
+  kanaLevel?: KanaLevel | null,
+  entryOrder = 1
 ) {
-  return kanaLevel === "solid" && isKanaFoundationLesson(lesson)
+  return ([46, 91, 136].includes(entryOrder) && lesson.order < entryOrder) || (kanaLevel === "solid" && isKanaFoundationLesson(lesson))
 }
 
 export function isLessonSatisfied(
   lesson: Pick<Lesson, "id" | "track" | "order">,
   completedLessonIds: ReadonlySet<string>,
-  kanaLevel?: KanaLevel | null
+  kanaLevel?: KanaLevel | null,
+  entryOrder = 1
 ) {
-  return completedLessonIds.has(lesson.id) || isLessonSkipped(lesson, kanaLevel)
+  return completedLessonIds.has(lesson.id) || isLessonSkipped(lesson, kanaLevel, entryOrder)
 }
 
 export function getNextCourseLesson<T extends Pick<Lesson, "id" | "track" | "order" | "prerequisites">>(
   lessons: readonly T[],
   completedLessonIds: ReadonlySet<string>,
-  kanaLevel?: KanaLevel | null
+  kanaLevel?: KanaLevel | null,
+  entryOrder = 1
 ) {
   const byId = new Map(lessons.map((lesson) => [lesson.id, lesson]))
   return (
     lessons.find((lesson) => {
-      if (isLessonSatisfied(lesson, completedLessonIds, kanaLevel)) return false
+      if (isLessonSatisfied(lesson, completedLessonIds, kanaLevel, entryOrder)) return false
       return lesson.prerequisites.every((id) => {
         const prerequisite = byId.get(id)
-        return prerequisite ? isLessonSatisfied(prerequisite, completedLessonIds, kanaLevel) : completedLessonIds.has(id)
+        return prerequisite ? isLessonSatisfied(prerequisite, completedLessonIds, kanaLevel, entryOrder) : completedLessonIds.has(id)
       })
     }) ?? null
   )
@@ -42,7 +45,8 @@ export function getNextCourseLesson<T extends Pick<Lesson, "id" | "track" | "ord
 export function countSatisfiedLessons(
   lessons: readonly Pick<Lesson, "id" | "track" | "order">[],
   completedLessonIds: ReadonlySet<string>,
-  kanaLevel?: KanaLevel | null
+  kanaLevel?: KanaLevel | null,
+  entryOrder = 1
 ) {
-  return lessons.filter((lesson) => isLessonSatisfied(lesson, completedLessonIds, kanaLevel)).length
+  return lessons.filter((lesson) => isLessonSatisfied(lesson, completedLessonIds, kanaLevel, entryOrder)).length
 }

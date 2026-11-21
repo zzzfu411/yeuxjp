@@ -36,7 +36,7 @@ test("LessonRunner restores answered practice state from persisted results", () 
   assert.match(source, /buildLessonRunnerViewModel\(\{/)
   assert.match(source, /answered,/)
   assert.match(session, /countCorrectLessonAnswers/)
-  assert.match(session, /const correctCount = countCorrectLessonAnswers\(answered\)/)
+  assert.match(session, /const correctCount = countCorrectLessonAnswers\(filterCurrentLessonAnswers\(lesson.steps, answered\)\)/)
   assert.match(runner, /persistedAnswers: persistedStepAnswers/)
   assert.match(runner, /restoredAnswer: persistedStepAnswers\[current\.id\]/)
 })
@@ -51,12 +51,12 @@ test("LessonRunner saves step position through the shared learning progress faca
   assert.match(source, /saveLessonPosition\(lesson\.id, stepIndex, step\?\.id, \{ attemptId: savedLessonProgress\?\.attemptId \}\)/)
   assert.match(source, /then\(saved => \{ if \(!cancelled\) setSaveError\(!saved\) \}\)/)
   assert.match(source, /return \(\) => \{ cancelled = true \}/)
-  assert.match(source, /return completeLesson\(lesson\.id, score, \{ attemptId: savedLessonProgress\?\.attemptId \}\)/)
+  assert.match(source, /return completeLesson\(lesson\.id, score, \{\s+attemptId: savedLessonProgress\?\.attemptId,/)
   assert.match(source, /buildLessonRunnerViewModel/)
   assert.match(source, /completionScore/)
   assert.match(source, /setManualStep\(\{ lessonId: lesson\.id, index, attemptId: savedLessonProgress\?\.attemptId \}\)/)
-  assert.match(runner, /setManualStepIndex\(Math\.min\(stepIndex \+ 1, lesson\.steps\.length - 1\)\)/)
-  assert.match(runner, /setManualStepIndex\(Math\.max\(stepIndex - 1, 0\)\)/)
+  assert.match(runner, /setManualStepIndex\(nextLessonStepIndex\(lesson, stepIndex, 1, savedLessonProgress\?\.updateStepIds\)\)/)
+  assert.match(runner, /setManualStepIndex\(nextLessonStepIndex\(lesson, stepIndex, -1, savedLessonProgress\?\.updateStepIds\)\)/)
   assert.doesNotMatch(source, /localStorage\.setItem/)
 })
 
@@ -67,8 +67,8 @@ test("LessonRunner warns on locked direct lesson visits without auto-starting pr
 
   assert.match(state, /from "@\/lib\/learning-entry"/)
   assert.match(source, /from "@\/components\/lesson\/lesson-locked-preview"/)
-  assert.match(state, /isLessonUnlocked\(lesson, progress\.completedLessonIds, kanaLevel\)/)
-  assert.match(state, /getNextLesson\(progress\.completedLessonIds, kanaLevel\)/)
+  assert.match(state, /isLessonUnlocked\(lesson, progress\.completedLessonIds, kanaLevel, entryOrder\)/)
+  assert.match(state, /getNextLesson\(progress\.completedLessonIds, kanaLevel, entryOrder\)/)
   assert.match(state, /if \(!loaded\) return/)
   assert.match(state, /if \(!lessonUnlocked\) return/)
   assert.match(source, /<LessonLockedPreview recommendedLesson=\{recommendedLesson\} \/>/)
@@ -112,7 +112,7 @@ test("LessonRunner exposes stable completed lesson follow-up targets", () => {
 })
 
 test("learning progress preserves compatible lesson keys while adding resume fields", () => {
-  const progress = read("src/lib/learning-progress.ts")
+  const progress = read("src/lib/learning-progress.ts") + read("src/lib/learning-progress-reader.ts")
   const storage = read("src/lib/learning-progress-storage.ts")
   const model = read("src/lib/learning-progress-model.ts") + read("src/lib/learning-progress-types.ts")
 
@@ -136,7 +136,7 @@ test("learning progress preserves compatible lesson keys while adding resume fie
 })
 
 test("learning progress listens for cross-tab storage updates", () => {
-  const progress = read("src/lib/learning-progress.ts") + read("src/lib/learning-profile.ts")
+  const progress = read("src/lib/learning-progress-reader.ts") + read("src/lib/learning-profile.ts")
   const keys = read("src/lib/learning-progress-keys.ts")
 
   assert.match(progress, /from "@\/lib\/learning-progress-keys"/)

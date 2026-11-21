@@ -13,11 +13,13 @@ import { runLearningWrite } from "@/lib/learning-write-lock"
 import { useLearningStatus } from "@/lib/learning-status"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { makeQuestionResult, type QuestionResult } from "@/lib/questions"
+import { generateSafeId } from "@/lib/safe-id"
 
 type PracticePhase = "idle" | "active" | "complete"
 
 export function GrammarPracticePanel({ point }: { point: GrammarPoint }) {
-  const questions = useMemo(() => buildGrammarPracticeQuestions(point), [point])
+  const [attemptSeed, setAttemptSeed] = useState("preview")
+  const questions = useMemo(() => buildGrammarPracticeQuestions(point, attemptSeed), [point, attemptSeed])
   const learning = useLearningStatus()
   const notebook = useMistakeNotebook()
   const [phase, setPhase] = useState<PracticePhase>("idle")
@@ -38,6 +40,7 @@ export function GrammarPracticePanel({ point }: { point: GrammarPoint }) {
   const correctCount = results.filter((item) => item.correct).length
 
   function startPractice() {
+    setAttemptSeed(generateSafeId())
     setPhase("active")
     setQuestionIndex(0)
     setResult(null)
@@ -55,7 +58,7 @@ export function GrammarPracticePanel({ point }: { point: GrammarPoint }) {
       progress: learning,
       notebook,
       result: nextResult,
-      enrollReviewOnCorrect: false,
+      enrollReviewOnCorrect: true,
     }))
 
     if (!mountedRef.current) return

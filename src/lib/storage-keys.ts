@@ -12,6 +12,7 @@ export const STORAGE_KEYS = {
   SRS_KANA: "yasashi.srs.kana.v1",
   SRS_VOCAB: "yasashi.srs.vocab.v1",
   SRS_MISTAKES: "yasashi.srs.mistakes.v1",
+  KNOWLEDGE_REVIEWS: "yasashi.knowledge.reviews.v1",
 
   // 错题本
   MISTAKES: "yasashi.mistakes.v1",
@@ -25,6 +26,10 @@ export const STORAGE_KEYS = {
   ITEM_PROGRESS: "yasashi.learning.items.v1",
   PRACTICE_RESULTS: "yasashi.learning.practice.v1",
   STUDY_CALENDAR: "yasashi.learning.calendar.v1",
+  WRITTEN_WORKS: "yasashi.learning.works.v1",
+  DAILY_STUDY_PLANS: "yasashi.learning.daily.plans.v1",
+  DIAGNOSTICS: "yasashi.learning.diagnostics.v1",
+  KANJI_READINGS: "yasashi.learning.kanji.readings.v1",
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

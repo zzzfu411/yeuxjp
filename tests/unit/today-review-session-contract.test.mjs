@@ -32,7 +32,7 @@ test("TodayReviewSession delegates mixed queue data, shared prompts, and SRS dec
   assert.match(source, /export function TodayReviewSession/)
   assert.match(source, /remainingDueAfterBatch: number/)
   assert.match(source, /getTodayReviewBatchCompletionTitle\(remainingDueAfterBatch\)/)
-  assert.match(source, /useReviewSessionState\(items\)/)
+  assert.match(source, /useReviewSessionState\(items, !singlePass\)/)
   assert.match(source, /const \{ dropCurrent \} = review/)
   assert.match(source, /const vocabIds = useMemo/)
   assert.match(source, /useVocabularyReviewPool\(vocabIds, vocabIds\.length > 0\)/)

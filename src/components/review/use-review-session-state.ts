@@ -11,7 +11,7 @@ import {
   shouldInvalidateReviewSession,
 } from "@/lib/review-session"
 
-export function useReviewSessionState<T>(initialQueue: T[]) {
+export function useReviewSessionState<T>(initialQueue: T[], repeatWrong = true) {
   const answerPendingRef = useRef(false)
   const invalidatedRef = useRef(false)
   const [queue, setQueue] = useState<T[]>(() => initialQueue)
@@ -72,19 +72,19 @@ export function useReviewSessionState<T>(initialQueue: T[]) {
 
     setSelectedAnswer(answer)
     setLastAnswerCorrect(correct)
-    setStats((prev) => recordReviewAnswer(prev, correct))
+    setStats((prev) => recordReviewAnswer(prev, correct, repeatWrong))
     return true
-  }, [selectedAnswer])
+  }, [repeatWrong, selectedAnswer])
 
   const advance = useCallback(() => {
     // Consume the answer token synchronously so rapid activations cannot process two queue items.
     if (!answerPendingRef.current || lastAnswerCorrect === null) return
     answerPendingRef.current = false
-    setQueue((prev) => advanceReviewQueue(prev, lastAnswerCorrect))
+    setQueue((prev) => advanceReviewQueue(prev, lastAnswerCorrect, repeatWrong))
     setPresentationVersion((prev) => prev + 1)
     setSelectedAnswer(null)
     setLastAnswerCorrect(null)
-  }, [lastAnswerCorrect])
+  }, [lastAnswerCorrect, repeatWrong])
 
   const dropCurrent = useCallback(() => {
     setQueue((prev) => dropCurrentReviewItem(prev))

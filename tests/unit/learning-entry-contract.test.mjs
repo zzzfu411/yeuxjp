@@ -40,12 +40,13 @@ test("learning entry surfaces share the centralized entry model", () => {
 
 test("course path renders locked future lessons as non-link cards", () => {
   const pathPage = read("src/components/path/skill-tree-page.tsx")
-  assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
+  assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} lessons=\{learning\.lessons\} \/>/)
   assert.doesNotMatch(pathPage, /getLessonEntryStatus\(lesson, learning\.completedLessonIds, nextLesson\?\.id\)/)
 
   const pathStarterLessons = read("src/components/path/path-starter-lessons.tsx")
-  assert.match(pathStarterLessons, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId, kanaLevel\)/)
-  assert.match(pathStarterLessons, /if \(locked\)/)
-  assert.match(pathStarterLessons, /aria-disabled="true"/)
-  assert.match(pathStarterLessons, /href=\{`\/learn\/\$\{lesson\.id\}`\}/)
+  assert.match(pathStarterLessons, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId, kanaLevel, entryOrder\)/)
+  assert.match(pathStarterLessons, /return status === "locked" \? <div data-course-lesson=\{lesson\.id\} aria-disabled="true"[^>]*>\{content\}<\/div>\s*: <Link data-course-lesson=\{lesson\.id\} href=\{`\/learn\/\$\{lesson\.id\}`\}/)
+  const browserCoverage = read("scripts/verify-product-ux.mjs")
+  assert.match(browserCoverage, /expanding a unit must not unlock its lessons/)
+  assert.match(browserCoverage, /all 175 lessons must remain in the course map/)
 })

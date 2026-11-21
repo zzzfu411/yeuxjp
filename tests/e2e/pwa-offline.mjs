@@ -289,7 +289,7 @@ try {
   await page.reload({ waitUntil: "domcontentloaded" })
   await page.getByTestId("home-start-learning").waitFor({ state: "visible", timeout: 10_000 })
   const wasDark = await page.locator("html").evaluate((element) => element.classList.contains("dark"))
-  await page.getByRole("button", { name: "Toggle theme" }).click()
+  await page.getByTestId("theme-toggle").click()
   await page.waitForFunction((previous) => document.documentElement.classList.contains("dark") !== previous, wasDark)
   await waitForRealImages(page)
   await context.setOffline(false)

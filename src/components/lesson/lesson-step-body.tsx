@@ -16,6 +16,7 @@ import { useLearningProfile } from "@/lib/learning-progress"
 import { defaultShowRomaji } from "@/lib/romaji-visibility"
 import { cn } from "@/lib/utils"
 import { getLessonPresentation, isComposingAnswer } from "@/lib/lesson-presentation"
+import { SENTENCE_ASSEMBLY_INSTRUCTION } from "@/lib/sentence-assembly"
 
 export function LessonStepBody({
   step,
@@ -89,6 +90,7 @@ export function LessonStepBody({
   if (step.type === "multipleChoice") {
     return (
       <div className="space-y-5">
+        {step.passage && <div className="space-y-3 border-y border-border/50 py-5"><h3 className="text-base font-semibold">根据课文作答</h3><p lang="ja" className="font-jp text-xl leading-10 [overflow-wrap:anywhere]">{step.passage}</p></div>}
         {step.audioText ? (
           <Button type="button" variant="outline" className="gap-2" onClick={() => onPlay(step.audioText!)}>
             <Headphones className="h-4 w-4" />
@@ -185,6 +187,7 @@ export function LessonStepBody({
         <div className="lesson-prompt p-5">
           <div className="text-lg font-semibold">{step.prompt}</div>
           <div className="mt-2 text-sm text-muted-foreground">{step.meaning}</div>
+          <p className="mt-3 text-sm text-muted-foreground">{SENTENCE_ASSEMBLY_INSTRUCTION}</p>
         </div>
         <div lang="ja" className="sentence-stage min-h-16 p-4 text-xl font-semibold">
           {built.length ? built.join(" ") : <span className="text-sm font-normal text-muted-foreground">点击下方词块组句</span>}
@@ -219,7 +222,7 @@ export function LessonStepBody({
           <Button
             type="button"
             onClick={onSubmitSentence}
-            disabled={readOnly || !built.length || !!result}
+            disabled={readOnly || built.length !== step.chunks.length || !!result}
             data-testid="lesson-submit-sentence"
           >
             提交句子

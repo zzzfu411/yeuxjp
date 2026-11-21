@@ -62,7 +62,7 @@ export function LessonProgressSidebar({
             {savedProgress.attemptId ? <span className="block">{savedProgress.attemptCompletedAt ? `本次重练 ${savedProgress.attemptScore ?? completionScore} 分` : "正在重新练习，首次记录保留"}</span> : null}
           </div>
         )}
-        <div className="sr-only">N5–N2 · Day {lessonPosition}/{STARTER_LESSONS.length}</div>
+        <div className="sr-only">N5–N2 · 第 {lessonPosition} 课/{STARTER_LESSONS.length}</div>
       </div>
     </aside>
   )

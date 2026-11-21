@@ -11,6 +11,9 @@ import {
   type LessonRecapVocabWord,
 } from "@/lib/lesson-recap-model"
 import { useLearningStatus } from "@/lib/learning-status"
+import { courseKanaHref, getCourseKanaIds } from "@/lib/course-kana"
+import { getLessonCoursePhase } from "@/lib/course-phases"
+import { LessonReviewSummary } from "@/components/lesson/lesson-review-summary"
 
 export function LessonCompletionRecap({ lesson }: { lesson: Lesson }) {
   const { isVocabLearned, isKanaMastered } = useLearningStatus()
@@ -73,6 +76,9 @@ export function LessonCompletionRecap({ lesson }: { lesson: Lesson }) {
       >
         {recap.cta}
       </Link>
+      {getCourseKanaIds(lesson).length > 0 && recap.href !== courseKanaHref(lesson) && <Link href={courseKanaHref(lesson)} prefetch={false} className="ml-4 mt-3 inline-flex border-b border-accent text-sm font-semibold text-accent">补练本课假名 →</Link>}
+      {[45, 90, 135, 175].includes(lesson.order) && <Link href={`/checkpoints/${getLessonCoursePhase(lesson).id}`} className="mt-4 block text-base font-semibold underline underline-offset-4">完成本阶段迁移作品 →</Link>}
+      <LessonReviewSummary lesson={lesson} />
     </div>
   )
 }

@@ -35,6 +35,8 @@ interface ModalProps {
   ariaDescribedBy?: string
 }
 
+const emptySubscribe = () => () => {}
+
 export function Modal({
   isOpen,
   onClose,
@@ -43,18 +45,18 @@ export function Modal({
   ariaLabelledBy,
   ariaDescribedBy,
 }: ModalProps) {
-  const [show, setShow] = React.useState(isOpen)
-  const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null)
+  const [prevOpen, setPrevOpen] = React.useState(isOpen)
+  const [closing, setClosing] = React.useState(false)
+  if (isOpen !== prevOpen) {
+    setPrevOpen(isOpen)
+    setClosing(!isOpen)
+  }
+  const show = isOpen || closing
+  const isClient = React.useSyncExternalStore(emptySubscribe, () => true, () => false)
+  const portalTarget = isClient ? document.body : null
   const dialogRef = React.useRef<HTMLDivElement | null>(null)
   const previouslyFocused = React.useRef<HTMLElement | null>(null)
   const onCloseRef = React.useRef(onClose)
-
-  React.useLayoutEffect(() => {
-    // Escape navbar / nested stacking contexts (paper grain sits at z-80/81).
-    // Layout timing portals before the focus-trap effect, so Escape is bound
-    // to the live dialog instead of a remounted SSR node.
-    setPortalTarget(document.body)
-  }, [])
 
   React.useEffect(() => {
     onCloseRef.current = onClose
@@ -69,24 +71,18 @@ export function Modal({
   }, [])
 
   React.useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | undefined
-
     if (isOpen) {
-      setShow(true)
       // Remember the trigger so we can restore focus on close.
       previouslyFocused.current = (document.activeElement as HTMLElement | null) ?? null
-    } else {
-      timer = setTimeout(() => setShow(false), 300) // Wait for animation
-      // Restore focus to the trigger.
-      const prev = previouslyFocused.current
-      if (prev && typeof prev.focus === "function") prev.focus()
-      previouslyFocused.current = null
+      return
     }
-
-    return () => {
-      if (timer) clearTimeout(timer)
-    }
-  }, [isOpen])
+    const prev = previouslyFocused.current
+    if (prev && typeof prev.focus === "function") prev.focus()
+    previouslyFocused.current = null
+    if (!closing) return
+    const timer = setTimeout(() => setClosing(false), 300) // Wait for animation
+    return () => clearTimeout(timer)
+  }, [closing, isOpen])
 
   // Esc to close, trap tab focus, and focus dialog on open.
   React.useEffect(() => {
@@ -96,9 +92,12 @@ export function Modal({
     pruneOpenModalStack()
     openModalStack.push(dialog)
     const releaseIsolation = isolateModalBackground(dialog)
-    // Defer focus until after animation kicks in.
+    // Defer focus until after animation kicks in, without stealing focus already inside the dialog.
     const focusTimer = setTimeout(() => {
-      dialogRef.current?.focus()
+      const currentDialog = dialogRef.current
+      if (currentDialog && !currentDialog.contains(document.activeElement)) {
+        currentDialog.focus()
+      }
     }, 50)
 
     const onKey = (e: KeyboardEvent) => {
@@ -161,6 +160,7 @@ export function Modal({
   const overlay = (
     <div
       data-modal-layer
+      aria-hidden={!isOpen || undefined}
       className={cn(
         // A fixed overlay can be a child of a `space-y-*` container. Those
         // parent selectors add margin to every following sibling, which must
@@ -168,7 +168,7 @@ export function Modal({
         // escapes parent stacking contexts such as the navbar (z-60) so grain
         // / vignette (z-80 / 81) cannot paint over the dialog.
         "fixed inset-0 z-[100] !mt-0 flex items-center justify-center p-4 sm:p-6",
-        isOpen ? "animate-in fade-in duration-300" : "animate-out fade-out duration-300"
+        isOpen ? "animate-in fade-in duration-300" : "pointer-events-none animate-out fade-out duration-300"
       )}
     >
       {/* Backdrop */}

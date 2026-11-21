@@ -28,7 +28,7 @@ test("all public quiz modes expose progress metadata for learning-session writes
     { mode: "audio-kana", itemType: "kana", practiceMode: "listening" },
     { mode: "audio-sokuon", itemType: "kana", practiceMode: "listening" },
     { mode: "audio-longvowel", itemType: "kana", practiceMode: "listening" },
-    { mode: "verb-conjugation", itemType: "grammar", practiceMode: "production" },
+    { mode: "verb-conjugation", itemType: "grammar", practiceMode: "recognition" },
     { mode: "particle", itemType: "grammar", practiceMode: "recognition" },
     { mode: "meaning-vocab", itemType: "vocab", practiceMode: "meaning" },
   ]

@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { LEARNING_STORE_EVENT, queueLearningNotification, runLearningStorageTransaction } from "@/lib/learning-store"
+import { runLearningStorageTransaction } from "@/lib/learning-storage-transaction"
+import { LEARNING_STORE_EVENT, queueLearningNotification } from "@/lib/learning-events"
 import { clearSrs, gradeSrs, removeSrs } from "@/lib/srs"
 import { buildMistakeId, removeMistakeById, upsertWrongMistake, type MistakeItem, type RecordMistakeInput } from "@/lib/mistake-notebook-model"
 import {
@@ -12,6 +13,7 @@ import {
   writeMistakeList,
 } from "@/lib/mistake-notebook-storage"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import { partitionReviewMistakes } from "@/lib/mistake-review-compatibility"
 
 export type { MistakeItem, MistakeMeta, MistakeOption, RecordMistakeInput } from "@/lib/mistake-notebook-model"
 
@@ -64,7 +66,8 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
     }
   }, [storageKey])
 
-  const byId = useMemo(() => new Map(list.map((item) => [item.id, item])), [list])
+  const { active, retired } = useMemo(() => partitionReviewMistakes(list), [list])
+  const byId = useMemo(() => new Map(active.map((item) => [item.id, item])), [active])
 
   const recordWrong = useCallback(
     (input: RecordMistakeInput) => {
@@ -125,5 +128,5 @@ export function useMistakeNotebook(storageKey: string = DEFAULT_STORAGE_KEY) {
     return true
   }, [storageKey])
 
-  return { list, byId, loaded, recordWrong, remove, clear }
+  return { list: active, retired, byId, loaded, recordWrong, remove, clear }
 }

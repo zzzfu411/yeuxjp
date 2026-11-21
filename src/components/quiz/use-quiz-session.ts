@@ -5,6 +5,7 @@ import { getNextLesson } from "@/data/lesson-catalog"
 import { useLearningProfile } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { useLearningStatus } from "@/lib/learning-status"
+import { useStageDiagnostics } from "@/lib/use-stage-diagnostics"
 import type { Question } from "@/lib/questions"
 import {
   canStartQuizAnswerSubmission,
@@ -40,9 +41,10 @@ export function useQuizSession(mode: QuizMode) {
   const mistakes = useMistakeNotebook()
   const learning = useLearningStatus()
   const { profile } = useLearningProfile()
+  const { entryOrder } = useStageDiagnostics()
   const nextLesson = useMemo(
-    () => getNextLesson(learning.completedLessonIds, profile?.kanaLevel),
-    [learning.completedLessonIds, profile?.kanaLevel]
+    () => getNextLesson(learning.completedLessonIds, profile?.kanaLevel, entryOrder),
+    [learning.completedLessonIds, profile?.kanaLevel, entryOrder]
   )
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const currentQuestionRef = useRef<Question | null>(null)

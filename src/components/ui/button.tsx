@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "anime-button-primary",
-        destructive: "border-destructive bg-destructive text-destructive-foreground shadow-[4px_4px_0_hsl(var(--destructive)/0.28)]",
+        destructive: "anime-button-destructive",
         outline: "anime-button-outline",
         secondary: "anime-button-secondary",
         ghost: "anime-button-ghost shadow-none",

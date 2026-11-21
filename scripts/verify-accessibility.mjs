@@ -9,7 +9,8 @@ export async function verifyAccessibility(browser, baseUrl) {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: theme, serviceWorkers: "block" })
     const page = await context.newPage()
     try {
-      const cases = ["/", "/path", "/kana", "/vocabulary", "/grammar", "/semantics", "/pragmatics", "/quiz", "/review", "/settings", "/learn/day-1-a-row-hello",
+      const cases = ["/", "/path", "/placement", "/placement/n5", "/checkpoints/n5", "/checkpoints/n5/kanji", "/kana", "/vocabulary", "/grammar", "/semantics", "/pragmatics", "/quiz", "/review", "/settings", "/learn/day-1-a-row-hello",
+        "/semantics/s-shiru-wakaru", "/pragmatics/p-aisatsu-morning", "/practice/media-address", "/practice/media-N2-evidence",
         "/vocabulary?level=survival&item=sur-g-1", "/grammar?level=N5&item=n5-wa", "/kana?item=hiragana%3Aa"]
       for (const route of cases) {
         await page.goto(baseUrl + route, { waitUntil: "networkidle" })

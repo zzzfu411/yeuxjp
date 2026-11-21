@@ -139,9 +139,9 @@ function VocabularyPageContent() {
   }, [])
 
   const handleConfirmClearLearned = useCallback(async () => {
-    setConfirmClearOpen(false)
     const saved = await runLearningWrite(() => clearLearned())
     setSaveError(!saved)
+    setConfirmClearOpen(false)
   }, [clearLearned])
 
   const handleCancelClearLearned = useCallback(() => {

@@ -9,6 +9,7 @@ import {
   startProductionServer,
 } from "./harness.mjs"
 import { verifyMaturityUi } from "../../scripts/verify-maturity-ui.mjs"
+import { verifyCoursebookUi } from "../../scripts/verify-coursebook-ui.mjs"
 import { verifyLearningConcurrency } from "../../scripts/verify-learning-concurrency.mjs"
 import { verifyAccessibility } from "../../scripts/verify-accessibility.mjs"
 import {
@@ -76,20 +77,26 @@ try {
 
   await verifyLessonFlow(page, baseUrl)
   await verifyLessonIntegrity(page, baseUrl)
+  console.log("Lesson answer, resume and evidence integrity flows passed")
   await verifyInitialReviewEmptyState(page, baseUrl)
   await verifyConfirmDialogKeyboardFlow(page, baseUrl)
   await verifyVocabularyLoadRetryFlow(page, baseUrl)
   await verifyKanaAndVocabularyFlow(page, baseUrl)
   await verifyReferenceKeyboardFlow(page, baseUrl)
+  console.log("Reference, keyboard, kana and vocabulary flows passed")
   await verifyQuizAndMistakeFlow(page, baseUrl)
   await verifyDueReviewFlow(page, baseUrl)
+  console.log("Quiz modes and due-review flows passed")
   await verifyProfileSaveFailureFlow(page, baseUrl)
   await verifyPracticeSaveFailureFlow(page, baseUrl)
   await verifyProgressSaveFailureFlow(page, baseUrl)
   await verifySpeechPreferenceSaveFailureFlow(page, baseUrl)
+  console.log("Failed-save recovery flows passed")
   await verifyLearningDataFlow(page, baseUrl)
   await verifyPwaUpdateBannerFlow(page, baseUrl)
+  console.log("Backup, restore and update-banner flows passed")
   await verifyMobileSmoke(browser, baseUrl, issueCollector)
+  await verifyCoursebookUi(browser, baseUrl)
   await verifyMaturityUi(baseUrl)
   await verifyAccessibility(browser, baseUrl)
   issueCollector.assertNoIssues()

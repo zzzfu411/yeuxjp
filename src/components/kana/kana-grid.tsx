@@ -1,7 +1,7 @@
 "use client"
 
 import { useItemDeepLink } from "@/lib/use-item-deep-link"
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { Kana } from "@/data/kana-data"
 import { KanaCard } from "./kana-card"
 import { cn } from "@/lib/utils"
@@ -44,6 +44,7 @@ export function KanaGrid({
   const [isPlaying, setIsPlaying] = useState(false)
   const [isWriting, setIsWriting] = useState(false)
   const [strokeAvailability, setStrokeAvailability] = useState<Record<string, StrokeAvailability>>({})
+  const checkedStrokeKeysRef = useRef<Set<string>>(new Set())
 
   const selectedIndex = selectedRomaji === null
     ? null
@@ -120,36 +121,56 @@ export function KanaGrid({
     if (!currentChar) return
 
     const key = cacheKeyForChar(currentChar)
-    if (strokeAvailability[key] && strokeAvailability[key] !== "unknown") return
+    if (checkedStrokeKeysRef.current.has(key)) return
+    checkedStrokeKeysRef.current.add(key)
 
     let cancelled = false
-    checkStrokeAvailability(currentChar).then((available) => {
-      if (cancelled) return
-      setStrokeAvailability((prev) => ({ ...prev, [key]: available ? "available" : "missing" }))
-    })
+    checkStrokeAvailability(currentChar)
+      .then((available) => {
+        if (cancelled) return
+        setStrokeAvailability((prev) => ({ ...prev, [key]: available ? "available" : "missing" }))
+      })
+      .catch(() => {
+        checkedStrokeKeysRef.current.delete(key)
+      })
 
     return () => {
       cancelled = true
     }
-  }, [currentChar, strokeAvailability])
+  }, [currentChar])
 
   useEffect(() => {
     if (selectedIndex === null || selectedIndex < 0) return
 
-    const indexes = getAdjacentKanaIndexes(selectedIndex, data.length)
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      if (cancelled) return
+      const indexes = getAdjacentKanaIndexes(selectedIndex, data.length)
 
-    for (const index of indexes) {
-      const item = data[index]
-      if (!item) continue
-      const char = mode === "hiragana" ? item.hiragana : item.katakana
-      const key = cacheKeyForChar(char)
-      prefetchStrokeSvgs(char)
-      if (strokeAvailability[key]) continue
-      checkStrokeAvailability(char).then((available) => {
-        setStrokeAvailability((prev) => ({ ...prev, [key]: available ? "available" : "missing" }))
-      })
+      for (const index of indexes) {
+        const item = data[index]
+        if (!item) continue
+        const char = mode === "hiragana" ? item.hiragana : item.katakana
+        const key = cacheKeyForChar(char)
+        prefetchStrokeSvgs(char)
+        if (checkedStrokeKeysRef.current.has(key)) continue
+        checkedStrokeKeysRef.current.add(key)
+        checkStrokeAvailability(char)
+          .then((available) => {
+            if (cancelled) return
+            setStrokeAvailability((prev) => ({ ...prev, [key]: available ? "available" : "missing" }))
+          })
+          .catch(() => {
+            checkedStrokeKeysRef.current.delete(key)
+          })
+      }
+    }, 180)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
     }
-  }, [data, mode, selectedIndex, strokeAvailability])
+  }, [data, mode, selectedIndex])
 
   const handlePlay = () => {
     if (!selectedKana) return

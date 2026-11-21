@@ -1,6 +1,6 @@
 import type { Kana } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
-import { makeKanaId } from "@/lib/kana-id"
+import { makeKanaId, type KanaScript } from "@/lib/kana-id"
 import { pickRandomListItem, pickUniqueQuestionOptions, shuffleList } from "@/lib/question-options"
 import { LONG_VOWEL_MINIMAL_PAIRS, PARTICLE_QUESTIONS, SOKUON_MINIMAL_PAIRS } from "@/lib/quiz-data"
 import type { QuizMode } from "@/lib/quiz-types"
@@ -17,6 +17,7 @@ import {
 
 type RandomFn = () => number
 type MinimalPair = { plain: string; special: string }
+const KANA_AUDIO_EQUIVALENTS: Readonly<Record<string, string>> = { di: "ji", du: "zu", wo: "o" }
 
 function randomItem<T>(items: readonly T[], random: RandomFn) {
   return pickRandomListItem(items, random) ?? items[0]!
@@ -26,23 +27,28 @@ export function generateKanaQuizQuestion({
   mode,
   basePool,
   targetPool,
+  script = "hiragana",
   random = Math.random,
 }: {
   mode: Extract<QuizMode, "hiragana-romaji" | "audio-kana">
   basePool: Kana[]
   targetPool: Kana[]
+  script?: KanaScript
   random?: RandomFn
 }): Question | null {
   if (targetPool.length === 0) return null
 
   const target = randomItem(targetPool, random)
-  const itemId = makeKanaId("hiragana", target.romaji)
+  const itemId = makeKanaId(script, target.romaji)
   if (!itemId) return null
 
   const options = pickUniqueQuestionOptions({
     target,
     pool: basePool,
-    getValue: (kana) => kana.romaji,
+    // Isolated audio cannot distinguish these spellings in standard Japanese.
+    getValue: (kana) => mode === "audio-kana"
+      ? (KANA_AUDIO_EQUIVALENTS[kana.romaji] ?? kana.romaji)
+      : kana.romaji,
     random,
   })
   if (!options) return null
@@ -53,7 +59,7 @@ export function generateKanaQuizQuestion({
       itemId,
       itemType: "kana",
       mode: "recognition",
-      questionText: target.hiragana,
+      questionText: target[script],
       correctAnswer: target.romaji,
       options: options.map((k) => ({ value: k.romaji, display: k.romaji })),
     }
@@ -64,10 +70,10 @@ export function generateKanaQuizQuestion({
     itemId,
     itemType: "kana",
     mode: "listening",
-    questionAudio: target.hiragana,
+    questionAudio: target[script],
     autoPlayAudio: true,
     correctAnswer: target.romaji,
-    options: options.map((k) => ({ value: k.romaji, display: k.hiragana })),
+    options: options.map((k) => ({ value: k.romaji, display: k[script] })),
   }
 }
 
@@ -144,7 +150,8 @@ export function generateVerbConjugationQuestion(
     type: "verb-conjugation",
     itemId: `verb:${verb.dict}:${form.id}`,
     itemType: "grammar",
-    mode: "production",
+    mode: "recognition",
+    responseFormat: "choice",
     questionText: `${verb.dict}（${verb.meaning}）→ ${form.label}`,
     correctAnswer: correct,
     options: shuffleList(Array.from(optionSet).slice(0, 4), random).map((text) => ({ value: text, display: text })),

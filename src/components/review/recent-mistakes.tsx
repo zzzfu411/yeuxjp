@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import type { MistakeItem } from "@/lib/mistake-notebook"
-import { mistakeReviewDeckLabel } from "@/lib/today-review-session"
+import { mistakeReviewDeckLabel } from "@/lib/mistake-review-kind"
 
 interface RecentMistakesProps {
   mistakes: MistakeItem[]

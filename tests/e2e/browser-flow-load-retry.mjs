@@ -186,7 +186,9 @@ async function failNextVocabularyLoad(page, level) {
       },
       body: makeTransientFailingVocabularyChunk(body, exportName, level),
     })
-    await page.unroute(VOCABULARY_CHUNK_ROUTE_PATTERN, handler)
+    // Keep the handler installed until the scenario has finished. Removing
+    // interception here races other callbacks still awaiting route.fetch().
+    // The scenario owner drains those callbacks before disabling interception.
   }
 
   await page.route(VOCABULARY_CHUNK_ROUTE_PATTERN, handler)
@@ -290,8 +292,27 @@ async function verifyTodayReviewVocabularyLoadRetry(page, baseUrl) {
 }
 
 export async function verifyVocabularyLoadRetryFlow(page, baseUrl) {
-  await verifyQuizVocabularyLoadRetry(page, baseUrl)
-  await verifyVocabularyPageLoadRetry(page, baseUrl)
-  await verifyReviewVocabularyLoadRetry(page, baseUrl)
-  await verifyTodayReviewVocabularyLoadRetry(page, baseUrl)
+  // Own this page's routes, so draining them cannot remove another flow's
+  // interception. The shared context still exercises an already warmed HTTP
+  // cache, and each scenario keeps its existing real failure/retry assertions.
+  const retryPage = await page.context().newPage()
+  try {
+    for (const verify of [
+      verifyQuizVocabularyLoadRetry,
+      verifyVocabularyPageLoadRetry,
+      verifyReviewVocabularyLoadRetry,
+      verifyTodayReviewVocabularyLoadRetry,
+    ]) {
+      try {
+        await verify(retryPage, baseUrl)
+      } finally {
+        // This must run outside the handler: waiting inside it would wait for
+        // that same invocation. `wait` preserves failures instead of ignoring
+        // late exceptions or closing the target while a fetch is in flight.
+        await retryPage.unrouteAll({ behavior: "wait" })
+      }
+    }
+  } finally {
+    await retryPage.close()
+  }
 }

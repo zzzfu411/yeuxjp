@@ -1,3 +1,5 @@
+import { extractAnimCjkGeometry, type AnimCjkGeometry } from "@/lib/animcjk-geometry"
+
 export const SMALL_KANA_MAP: Record<string, string> = {
   "ぁ": "あ",
   "ぃ": "い",
@@ -38,6 +40,7 @@ export interface ParsedAnimCjkSvg {
   strokeCount: number
   starts: ParsedStroke[]
   viewBox: string
+  geometry?: AnimCjkGeometry
 }
 
 export const ANIMCJK_SPEEDS = [
@@ -83,6 +86,7 @@ export function getAnimCjkKanaUrls(text: string) {
 
 export function parseAnimCJK(rawSvg: string): ParsedAnimCjkSvg {
   let svg = sanitizeAnimCjkSvg(rawSvg)
+  const geometry = extractAnimCjkGeometry(svg)
 
   const viewBoxMatch = svg.match(/viewBox="([^"]+)"/)
   const viewBox = viewBoxMatch?.[1] ?? "0 0 1024 1024"
@@ -148,7 +152,7 @@ export function parseAnimCJK(rawSvg: string): ParsedAnimCjkSvg {
     }
   }
 
-  return { html: svg, strokeCount: totalStrokes, starts, viewBox }
+  return { html: svg, strokeCount: totalStrokes, starts, viewBox, geometry }
 }
 
 export function sanitizeAnimCjkSvg(rawSvg: string) {

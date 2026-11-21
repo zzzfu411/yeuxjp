@@ -40,10 +40,12 @@ export async function verifyLessonIntegrity(page, baseUrl) {
   assert.equal((await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS))["sur-g-1"].recall, 0)
   assert.equal((await readJsonStorage(page, E2E_STORAGE_KEYS.SRS_VOCAB))?.["sur-g-1"], undefined)
   await page.getByTestId("lesson-next").click()
+  await page.getByRole("button", { name: "学生", exact: true }).click()
+  await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-completed-summary").waitFor()
   const first = (await readJsonStorage(page, E2E_STORAGE_KEYS.LESSON_PROGRESS))[lessonId]
-  assert.equal(first.score, 67)
+  assert.equal(first.score, 75)
   await page.getByRole("button", { name: "重新练习本课", exact: true }).click()
   await page.getByRole("heading", { name: "先抓住日语的元音", exact: true }).waitFor()
   await page.reload({ waitUntil: "networkidle" })

@@ -1,4 +1,5 @@
 export type LessonStepAnswer = {
+  questionVersion?: string
   answer?: string
   correct: boolean
   createdAt: number
@@ -23,12 +24,13 @@ export function normalizeLessonStepAnswerMap(input: unknown): LessonStepAnswerMa
       createdAt: finiteNumber(obj.createdAt, 0),
       answer: typeof obj.answer === "string" ? obj.answer : undefined,
       ...(obj.assisted === true ? { assisted: true } : {}),
+      ...(typeof obj.questionVersion === "string" ? { questionVersion: obj.questionVersion } : {}),
     }
   }
   return Object.keys(out).length ? out : undefined
 }
 
-export function applyLessonStepAnswer<T extends { stepAnswers?: LessonStepAnswerMap; updatedAt?: number }>(
+export function applyLessonStepAnswer<T extends { stepAnswers?: LessonStepAnswerMap; supersededAnswers?: LessonStepAnswerMap; updatedAt?: number }>(
   lessons: Record<string, T>,
   lessonId: string,
   stepId: string,
@@ -37,11 +39,16 @@ export function applyLessonStepAnswer<T extends { stepAnswers?: LessonStepAnswer
 ): Record<string, T> | null {
   const current = lessons[lessonId]
   if (!current || !stepId) return null
+  const previous = current.stepAnswers?.[stepId]
+  const archive = previous && previous.questionVersion !== answer.questionVersion
+    ? { ...current.supersededAnswers, [`${stepId}@${previous.questionVersion ?? "legacy"}`]: previous }
+    : current.supersededAnswers
   return {
     ...lessons,
     [lessonId]: {
       ...current,
       stepAnswers: { ...current.stepAnswers, [stepId]: answer },
+      ...(archive ? { supersededAnswers: archive } : {}),
       updatedAt: now,
     },
   }

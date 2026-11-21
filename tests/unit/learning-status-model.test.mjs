@@ -16,6 +16,8 @@ function item(overrides) {
     attempts: 0,
     correct: 0,
     updatedAt: 1,
+    // These fixtures represent scored practice from the corrected assessment edition.
+    assessmentEvidence: Object.fromEntries(["recognition", "listening", "meaning", "recall"].filter(mode => overrides[mode] > 0).map(mode => [mode, { score: overrides[mode], attempts: overrides.attempts ?? 1, correct: overrides.correct ?? 0 }])),
     ...overrides,
   }
 }

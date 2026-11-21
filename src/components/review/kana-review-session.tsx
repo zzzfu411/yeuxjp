@@ -16,6 +16,11 @@ import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { makeKanaReviewQuestion } from "@/lib/review-questions"
+import { gradeSrs } from "@/lib/srs"
+import { STORAGE_KEYS } from "@/lib/storage-keys"
+import { makeCourseKanaQuestion, type CourseKanaDirection } from "@/lib/course-kana"
+import { createSeededRandom } from "@/lib/seeded-random"
+import { CourseKanaPrompt } from "@/components/lesson/course-kana-prompt"
 
 export function KanaReviewSession({
   ids,
@@ -23,21 +28,28 @@ export function KanaReviewSession({
   notebook,
   learning,
   srs,
+  practice = false,
+  practiceDirection = "recognition",
 }: {
   ids: string[]
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
   learning: ReturnType<typeof useLearningProgress>
   srs: ReturnType<typeof useSrsDeck>
+  practice?: boolean
+  practiceDirection?: CourseKanaDirection
 }) {
   const [saveError, setSaveError] = useState(false)
+  const [seed] = useState(() => `kana-${Math.random().toString(36).slice(2)}`)
   const review = useReviewSessionState(ids)
   const selected = review.selectedAnswer
   const { dropCurrent } = review
 
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? getKanaById(currentId) : null), [currentId])
-  const question = useMemo(() => (item ? makeKanaReviewQuestion(item.id) : null), [item])
+  const question = useMemo(() => item ? (practice
+    ? makeCourseKanaQuestion(item.id, practiceDirection, createSeededRandom(`${seed}:${item.id}`))
+    : makeKanaReviewQuestion(item.id, createSeededRandom(`${seed}:${item.id}`))) : null, [item, practice, practiceDirection, seed])
 
   useEffect(() => {
     if (currentId && !item) {
@@ -46,7 +58,7 @@ export function KanaReviewSession({
   }, [currentId, dropCurrent, item])
 
   const { playAudio } = useReviewAudio({
-    autoPlayText: question ? item?.kana[item.script] : undefined,
+    autoPlayText: question && (!practice || practiceDirection === "listening") ? item?.kana[item.script] : undefined,
     autoPlayKey: review.presentationVersion,
   })
 
@@ -56,12 +68,13 @@ export function KanaReviewSession({
     recordAnswer: review.recordAnswer,
     canRecord: useCallback(() => {
       if (!item) return false
-      return srs.has(item.id)
-    }, [item, srs]),
+      return practice || srs.has(item.id)
+    }, [item, practice, srs]),
     grade: useCallback((result: QuestionResult) => {
       if (!item) return false
+      if (practice) return gradeSrs(STORAGE_KEYS.SRS_KANA, item.id, result.correct ? "good" : "again")
       return srs.gradeExisting(item.id, result.correct ? "good" : "again")
-    }, [item, srs]),
+    }, [item, practice, srs]),
   })
 
   if (review.isComplete) {
@@ -105,7 +118,8 @@ export function KanaReviewSession({
     >
 
       <ReviewPromptCard>
-        <KanaReviewPrompt glyph={item.kana[item.script]} script={item.script} onPlay={playAudio} />
+        {practice ? <CourseKanaPrompt direction={practiceDirection} glyph={item.kana[item.script]} answered={review.isAnswered} onPlay={playAudio} />
+          : <KanaReviewPrompt glyph={item.kana[item.script]} script={item.script} onPlay={playAudio} />}
       </ReviewPromptCard>
 
       <ReviewOptionGrid

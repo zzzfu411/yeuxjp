@@ -4,6 +4,7 @@ import { loadTsModule } from "./load-ts-module.mjs"
 const attempt = await loadTsModule("src/lib/lesson-attempt.ts")
 const session = await loadTsModule("src/lib/lesson-session.ts")
 const model = await loadTsModule("src/lib/learning-progress-model.ts")
+const { getLessonStepVersion } = await loadTsModule("src/lib/lesson-content-fingerprint.ts")
 
 test("restarting keeps the original completion and score while clearing this attempt", () => {
   const previous = {lessonId:"a",status:"completed",startedAt:10,completedAt:20,score:67,stepAnswers:{q:{correct:false,createdAt:11}},hintedStepIds:["q"]}
@@ -29,7 +30,8 @@ test("restarting keeps the original completion and score while clearing this att
 
 test("previous attempts cannot restore answers into a fresh lesson run", () => {
   const steps=[{id:"q",itemId:"sur-g-1"}]
-  const results=[{lessonId:"a",lessonStepId:"q",correct:true,createdAt:10},{lessonId:"a",lessonStepId:"q",lessonAttemptId:"second",correct:false,createdAt:20}]
+  const questionVersion=getLessonStepVersion(steps[0])
+  const results=[{lessonId:"a",lessonStepId:"q",questionVersion,correct:true,createdAt:10},{lessonId:"a",lessonStepId:"q",questionVersion,lessonAttemptId:"second",correct:false,createdAt:20}]
   assert.equal(session.getLatestLessonStepAnswers("a",steps,results).q.correct,true)
   assert.equal(session.getLatestLessonStepAnswers("a",steps,results,"second").q.correct,false)
   assert.deepEqual(session.getLatestLessonStepAnswers("a",steps,results,"third"),{})

@@ -34,7 +34,7 @@ export async function verifyReferenceKeyboardFlow(page, baseUrl) {
   })
 
   await page.getByTestId("grammar-practice-start").click()
-  await page.getByTestId("grammar-practice-answer-1").click()
+  await page.getByTestId(/^grammar-practice-answer-/).filter({ hasText: /^が$/ }).click()
   await page.getByTestId("grammar-practice-feedback").waitFor({ state: "visible" })
 
   const grammarPracticeState = await page.evaluate((storageKeys) => {
@@ -72,18 +72,22 @@ export async function verifyReferenceKeyboardFlow(page, baseUrl) {
 
   await page.goto(`${baseUrl}/semantics?item=s-shiru-wakaru`, { waitUntil: "networkidle" })
   await page.waitForURL(/\/semantics\/s-shiru-wakaru$/)
-  await page.getByRole("dialog").waitFor({ state: "visible" })
+  await page.getByTestId("reference-document").waitFor({ state: "visible" })
+  assert.equal(await page.getByRole("dialog").count(), 0, "standalone references should use document scrolling")
+  await page.getByRole("heading", { level: 1 }).click()
 
   await page.keyboard.press("ArrowRight")
   await page.waitForURL(/\/semantics\/s-miru-kinds$/)
-  await page.getByRole("dialog").waitFor({ state: "visible" })
+  await page.getByTestId("reference-document").waitFor({ state: "visible" })
+  await page.getByRole("heading", { level: 1 }).click()
 
   await page.keyboard.press("Escape")
   await page.waitForURL(/\/semantics$/)
   await page.getByRole("dialog").waitFor({ state: "hidden" })
 
   await page.goto(`${baseUrl}/pragmatics/p-aisatsu-morning`, { waitUntil: "networkidle" })
-  await page.getByRole("dialog").waitFor({ state: "visible" })
+  await page.getByTestId("reference-document").waitFor({ state: "visible" })
+  await page.getByRole("heading", { level: 1 }).click()
 
   await page.keyboard.press("Escape")
   await page.waitForURL(/\/pragmatics$/)

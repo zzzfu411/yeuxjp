@@ -51,13 +51,13 @@ test("countTodayPracticeResults returns zero for an invalid today date", () => {
   assert.equal(count, 0)
 })
 
-test("getDailyPracticeTarget converts minutes into a clamped question target", () => {
-  assert.equal(dailyGoal.getDailyPracticeTarget(10), 20)
-  assert.equal(dailyGoal.getDailyPracticeTarget(5), 10)
-  assert.equal(dailyGoal.getDailyPracticeTarget(1), 10)
-  assert.equal(dailyGoal.getDailyPracticeTarget(60), 60)
-  assert.equal(dailyGoal.getDailyPracticeTarget(undefined), 20)
-  assert.equal(dailyGoal.getDailyPracticeTarget(Number.NaN), 20)
+test("daily budget normalizes minutes without converting them to answer counts", () => {
+  assert.equal(dailyGoal.normalizeDailyMinutes(10), 10)
+  assert.equal(dailyGoal.normalizeDailyMinutes(5), 5)
+  assert.equal(dailyGoal.normalizeDailyMinutes(1), 5)
+  assert.equal(dailyGoal.normalizeDailyMinutes(60), 30)
+  assert.equal(dailyGoal.normalizeDailyMinutes(undefined), 10)
+  assert.equal(dailyGoal.normalizeDailyMinutes(Number.NaN), 10)
 })
 
 test("millisecondsUntilNextLocalDay schedules the learner's next midnight", () => {

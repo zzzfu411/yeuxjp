@@ -19,11 +19,10 @@ export function countTodayPracticeResults(results: readonly PracticeResult[], to
   return count
 }
 
-export function getDailyPracticeTarget(minutesPerDay: unknown) {
-  const minutes = typeof minutesPerDay === "number" && Number.isFinite(minutesPerDay)
+export function normalizeDailyMinutes(minutesPerDay: unknown) {
+  return typeof minutesPerDay === "number" && Number.isFinite(minutesPerDay)
     ? Math.min(Math.max(Math.round(minutesPerDay), 5), 30)
     : 10
-  return minutes * 2
 }
 
 export function millisecondsUntilNextLocalDay(now: Date = new Date()) {

@@ -16,6 +16,7 @@ const item = (overrides) => ({
   attempts: 0,
   correct: 0,
   updatedAt: 1,
+  assessmentEvidence: Object.fromEntries(["recognition", "listening", "meaning", "recall"].filter(mode => overrides[mode] > 0).map(mode => [mode, { score: overrides[mode], attempts: overrides.attempts ?? 1, correct: overrides.correct ?? 0 }])),
   ...overrides,
 })
 
@@ -113,7 +114,7 @@ test("home page model resolves completed starter courses to review and finds the
   assert.equal(home.nextLesson, null)
   assert.equal(home.learningEntry.kind, "review")
   assert.equal(home.completedCount, lessons.STARTER_LESSONS.length)
-  assert.deepEqual(home.weakest, { id: "weak", display: "语法练习", label: "\u8bed\u6cd5", score: 30, itemType: "grammar" })
+  assert.deepEqual(home.weakest, { id: "weak", display: "语法练习", label: "\u8bed\u6cd5", score: 25, itemType: "grammar" })
   assert.equal(home.weakestHref, "/grammar")
 })
 

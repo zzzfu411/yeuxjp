@@ -10,7 +10,7 @@ function read(relPath) {
 }
 
 test("learning progress records practice from current storage snapshots", () => {
-  const source = read("src/lib/learning-progress.ts")
+  const source = read("src/lib/learning-progress-practice.ts")
 
   assert.match(source, /const previousResultsResult = readPracticeResultsResult\(\)/)
   assert.match(source, /const previousItemsResult = readItemProgressMapResult\(\)/)
@@ -24,7 +24,7 @@ test("learning progress records practice from current storage snapshots", () => 
 })
 
 test("learning progress treats practice history and item progress as one write", () => {
-  const source = read("src/lib/learning-progress.ts")
+  const source = read("src/lib/learning-progress-practice.ts") + read("src/lib/learning-progress.ts")
 
   assert.match(source, /if \(!nextResult\) return false/)
   assert.match(source, /runLearningStorageTransaction/)

@@ -1,7 +1,7 @@
 "use client"
 
 import { recordQuestionPracticeWithoutTransaction } from "@/lib/learning-session"
-import { runLearningStorageTransaction } from "@/lib/learning-store"
+import { runLearningStorageTransaction } from "@/lib/learning-storage-transaction"
 import { makeQuestionResult, type Question, type QuestionResult } from "@/lib/questions"
 
 type QuestionPracticeParams = Parameters<typeof recordQuestionPracticeWithoutTransaction>[0]
@@ -32,6 +32,7 @@ export function commitReviewQuestionPractice({
       notebook,
       result,
       enrollReviewOnCorrect: false,
+      activitySource: "review",
     })
     if (!recorded) return false
     return grade(result)

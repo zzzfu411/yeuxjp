@@ -4,6 +4,7 @@ import { ConjugationComparison, ParticleFillFeedback, type ConjugationVerbMeta }
 import { cn } from "@/lib/utils"
 import type { Question } from "@/lib/questions"
 import type { VerbConjForm } from "@/lib/verb-conjugation"
+import { SentenceAnswerNotes } from "@/components/quiz/sentence-answer-notes"
 
 type ReviewFeedbackQuestion = Pick<
   Question,
@@ -48,6 +49,7 @@ export function ReviewAnswerFeedback({
 
   const selectedDisplay = getSelectedDisplay(question, selectedAnswer)
   const correctDisplay = getCorrectDisplay(question)
+  const isSentence = question.type === "lesson:sentenceBuild"
   const canShowParticle = showSpecialFeedback && question.type === "particle" && question.questionText
   const canShowConjugation =
     showSpecialFeedback &&
@@ -85,17 +87,18 @@ export function ReviewAnswerFeedback({
             <div className="space-y-2">
               <div className="text-sm">
                 你的答案：<span className={cn("font-semibold", correct === true ? "text-foreground" : "text-accent")}>{selectedDisplay}</span>
-                <span className="text-muted-foreground"> · 正确：<span className="font-semibold text-foreground">{correctDisplay}</span></span>
+                <span className="text-muted-foreground"> · {isSentence ? "示例" : "正确"}：<span className="font-semibold text-foreground">{correctDisplay}</span></span>
               </div>
               {question.explanation ? <div>{question.explanation}</div> : null}
             </div>
           </>
         ) : (
           <>
-            正确答案：<span className="font-semibold text-foreground">{correctDisplay}</span>
+            {isSentence ? "示例答案：" : "正确答案："}<span className="font-semibold text-foreground">{correctDisplay}</span>
             {question.explanation ? <div className="mt-2">{question.explanation}</div> : null}
           </>
         )}
+        {isSentence ? <SentenceAnswerNotes answer={question.correctAnswer} acceptedAnswers={question.acceptedAnswers} wrong={correct === false} /> : null}
       </div>
     </div>
   )

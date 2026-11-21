@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle } from "lucide-react"
 import { canEnrollReviewItem } from "@/lib/learning-session"
 import type { LessonPracticeStep } from "@/lib/lesson-session"
 import { cn } from "@/lib/utils"
+import { SentenceAnswerNotes } from "@/components/quiz/sentence-answer-notes"
 
 export function LessonPracticeFeedback({
   step,
@@ -31,7 +32,8 @@ export function LessonPracticeFeedback({
         {result === "correct" ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
         {result === "correct" ? "答对了" : "再看一眼"}
       </div>
-      正确答案：<span className="font-semibold">{step.answer}</span>
+      {step.type === "sentenceBuild" ? "示例答案：" : "正确答案："}<span className="font-semibold" lang="ja">{step.answer}</span>
+      {step.type === "sentenceBuild" ? <SentenceAnswerNotes answer={step.answer} acceptedAnswers={step.acceptedAnswers} wrong={result === "wrong"} /> : null}
       {"explanation" in step && step.explanation ? <div className="mt-1">{step.explanation}</div> : null}
       {assisted && result === "correct" ? <div className="mt-1">借助提示答对，本题保留练习记录，不增加独立回忆掌握度。下次试试不看提示。</div> : null}
       {result === "wrong" ? <div className="mt-1">这道题已加入错题本，稍后会在复习页出现。</div> : null}

@@ -42,9 +42,9 @@ function KanaPageContent() {
   }, [])
 
   const handleConfirmClearMastered = useCallback(async () => {
-    setConfirmClearOpen(false)
     const saved = await runLearningWrite(() => clearMastered())
     setSaveError(!saved)
+    setConfirmClearOpen(false)
   }, [clearMastered])
 
   const handleCancelClearMastered = useCallback(() => {

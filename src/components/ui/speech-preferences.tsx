@@ -5,7 +5,7 @@ import { runLearningWrite } from "@/lib/learning-write-lock"
 import * as React from "react"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { Button } from "@/components/ui/button"
-import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-events"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { cn } from "@/lib/utils"
 import {
@@ -169,7 +169,7 @@ export function SpeechSettingsBar({
               variant="outline"
               size="sm"
               className={cn(
-                "rounded-none border-border/55 bg-transparent font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
+                "rounded-none border-border/55 bg-transparent text-foreground font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
                 index > 0 && "-ml-px",
                 prefs.rate === opt.value && "z-[1] border-accent bg-accent/[0.05] text-accent"
               )}
@@ -195,7 +195,7 @@ export function SpeechSettingsBar({
                 variant="outline"
                 size="sm"
                 className={cn(
-                  "rounded-none border-border/55 bg-transparent font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
+                  "rounded-none border-border/55 bg-transparent text-foreground font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
                   index > 0 && "-ml-px",
                   prefs.repeat === n && "z-[1] border-accent bg-accent/[0.05] text-accent"
                 )}
@@ -213,7 +213,7 @@ export function SpeechSettingsBar({
             variant="outline"
             size="sm"
             className={cn(
-              "ml-2 rounded-sm border-border/55 bg-transparent font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
+              "ml-2 rounded-sm border-border/55 bg-transparent text-foreground font-normal shadow-none hover:translate-y-0 hover:bg-muted/35",
               prefs.autoPlay && "border-accent bg-accent/[0.05] text-accent"
             )}
             data-testid="speech-autoplay-toggle"

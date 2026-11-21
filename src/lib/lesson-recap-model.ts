@@ -1,6 +1,7 @@
 import type { Lesson } from "@/data/lesson-types"
-import { getKnownVocabularyLevelForId } from "@/data/vocabulary/id-registry"
+import { courseVocabularyHref, getCourseVocabularyIds } from "@/lib/course-vocabulary"
 import { getKanaById } from "@/lib/kana-id"
+import { courseKanaHref } from "@/lib/course-kana"
 
 export type LessonRecapModel = {
   summary: string
@@ -55,13 +56,13 @@ export function lessonRecapVocabLabels(items: readonly { kanji?: string; kana: s
 }
 
 export function buildLessonCompletionRecapModel(
-  lesson: Pick<Lesson, "newItemIds" | "steps">,
+  lesson: Pick<Lesson, "id" | "newItemIds" | "steps">,
   isVocabLearned: (id: string) => boolean,
   isKanaMastered: (id: string) => boolean = () => false
 ): LessonRecapModel {
   const kanaItems = lesson.newItemIds.filter((item) => item.type === "kana")
   const vocabItems = lesson.newItemIds.filter((item) => item.type === "vocab")
-  const vocabIds = vocabItems.map((item) => item.id)
+  const vocabIds = getCourseVocabularyIds(lesson)
   const grammarCount = lesson.newItemIds.filter((item) => item.type === "grammar").length
   const sentenceCount = countLessonRecapSentences(lesson)
   const learnedCount = vocabItems.filter((item) => isVocabLearned(item.id)).length
@@ -81,16 +82,10 @@ export function buildLessonCompletionRecapModel(
   if (sentenceCount) parts.push(`造句 ${sentenceCount}`)
 
   if (vocabItems.length) {
-    const levels = new Set(
-      vocabItems
-        .map((item) => getKnownVocabularyLevelForId(item.id))
-        .filter((level): level is NonNullable<typeof level> => Boolean(level))
-    )
-    const level = levels.size === 1 ? [...levels][0] : null
     return {
       summary: parts.join(" · "),
-      href: level ? `/vocabulary?level=${level}` : "/vocabulary",
-      cta: "用闪卡把本课词评成记住 →",
+      href: courseVocabularyHref(lesson),
+      cta: "补练本课词汇 →",
       highlights,
       vocabIds,
     }
@@ -99,8 +94,8 @@ export function buildLessonCompletionRecapModel(
   if (kanaItems.length) {
     return {
       summary: parts.join(" · ") || `假名 ${kanaMasteredCount}/${kanaItems.length}`,
-      href: "/kana",
-      cta: "去五十音巩固假名 →",
+      href: courseKanaHref(lesson),
+      cta: "补练本课假名 →",
       highlights,
       vocabIds,
     }

@@ -80,6 +80,10 @@ test("E2E app health recognizes current app pages", () => {
     "/review",
     "/settings",
     "/path",
+    "/placement",
+    "/placement/n5",
+    "/checkpoints/n5",
+    "/checkpoints/n5/kanji",
     "/grammar",
     "/semantics",
     "/semantics/s-shiru-wakaru",
@@ -99,7 +103,10 @@ test("E2E app health recognizes current app pages", () => {
   assert.equal(pageLooksLikeYasashi("<html>Grammar Dojo</html>", "/grammar"), false)
   assert.equal(pageLooksLikeYasashi('<html data-route-shell="grammar"></html>', "/grammar"), true)
   assert.equal(pageLooksLikeYasashi("<html>learning-data-panel</html>", "/review"), false)
-  assert.equal(pageLooksLikeYasashi("<html>learning-data-panel review-empty-state</html>", "/review"), true)
+  assert.equal(pageLooksLikeYasashi("<html>learning-data-panel review-empty-state</html>", "/review"), false)
+  assert.equal(pageLooksLikeYasashi('<section data-route-shell="review"></section>', "/review"), false)
+  assert.equal(pageLooksLikeYasashi('<section data-route-shell="review">正在读取复习安排…</section>', "/review"), true)
+  assert.equal(pageLooksLikeYasashi('<section data-route-shell="review">learning-data-panel review-empty-state</section>', "/review"), true)
   assert.equal(pageLooksLikeYasashi("<html>Different local app</html>"), false)
 })
 
@@ -108,6 +115,8 @@ test("E2E app health declares expected not-found routes", () => {
     "/learn/__missing__",
     "/semantics/__missing__",
     "/pragmatics/__missing__",
+    "/placement/__missing__",
+    "/checkpoints/__missing__/kanji",
   ])
 })
 

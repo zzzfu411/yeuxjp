@@ -11,6 +11,8 @@ import { ReviewDone, ReviewEmptyQuestionState, ReviewErrorState, ReviewLoadingSt
 import { useReviewSessionState } from "@/components/review/use-review-session-state"
 import { useVocabularyReviewPool } from "@/components/review/review-vocabulary"
 import { useReviewAudio } from "@/components/review/use-review-audio"
+import { useKnowledgeReviews } from "@/lib/use-knowledge-reviews"
+import { ReviewSentenceBuild } from "@/components/review/review-sentence-build"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { useLearningProfile, type useLearningProgress } from "@/lib/learning-progress"
 import { defaultShowStudyRomaji } from "@/lib/romaji-visibility"
@@ -29,6 +31,7 @@ import {
 export function TodayReviewSession({
   items,
   remainingDueAfterBatch,
+  singlePass = false,
   onExit,
   notebook,
   learning,
@@ -38,6 +41,7 @@ export function TodayReviewSession({
 }: {
   items: TodayReviewItem[]
   remainingDueAfterBatch: number
+  singlePass?: boolean
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
   learning: ReturnType<typeof useLearningProgress>
@@ -46,6 +50,7 @@ export function TodayReviewSession({
   mistakeSrs: ReturnType<typeof useSrsDeck>
 }) {
   const vocabIds = useMemo(() => items.filter((item) => item.deck === "vocab").map((item) => item.id), [items])
+  const knowledge = useKnowledgeReviews()
   const vocabulary = useVocabularyReviewPool(vocabIds, vocabIds.length > 0)
   const { profile } = useLearningProfile()
   const showRomaji = defaultShowStudyRomaji(profile?.romajiMode)
@@ -55,7 +60,8 @@ export function TodayReviewSession({
   // stay stable when the resolve memo recomputes after an answer mutates the
   // mistake notebook or vocabulary pool references.
   const [reviewSeed] = useState(() => `today-${Math.random().toString(36).slice(2)}`)
-  const review = useReviewSessionState(items)
+  const [startedAt] = useState(() => Date.now())
+  const review = useReviewSessionState(items, !singlePass)
   const current = review.currentItem
   const selected = review.selectedAnswer
   const { dropCurrent } = review
@@ -66,18 +72,21 @@ export function TodayReviewSession({
       current,
       vocabulary: vocabulary.data,
       mistakes: notebook.byId,
+      knowledge: knowledge.cards,
       seed: reviewSeed,
       showRomaji,
+      now: startedAt,
     })
-  }, [current, notebook.byId, reviewSeed, showRomaji, vocabulary.data])
+  }, [current, knowledge.cards, notebook.byId, reviewSeed, showRomaji, startedAt, vocabulary.data])
 
   useEffect(() => {
     if (!current) return
+    if (current.deck === "knowledge" && (!knowledge.loaded || knowledge.error)) return
     if (current.deck === "vocab" && (vocabulary.loading || vocabulary.error)) return
     if (missingReviewEntry) {
       dropCurrent()
     }
-  }, [current, dropCurrent, missingReviewEntry, vocabulary.error, vocabulary.loading])
+  }, [current, dropCurrent, knowledge.error, knowledge.loaded, missingReviewEntry, vocabulary.error, vocabulary.loading])
 
   const { playAudio } = useReviewAudio({
     autoPlayText: data?.autoPlayAudio ? data.audio : undefined,
@@ -90,11 +99,11 @@ export function TodayReviewSession({
     notebook,
     recordAnswer: review.recordAnswer,
     canRecord: useCallback(() => {
-      return canRecordTodayReviewItem(current, { kana: kanaSrs, vocab: vocabSrs, mistakes: mistakeSrs })
-    }, [current, kanaSrs, mistakeSrs, vocabSrs]),
+      return canRecordTodayReviewItem(current, { kana: kanaSrs, vocab: vocabSrs, mistakes: mistakeSrs, knowledge })
+    }, [current, kanaSrs, knowledge, mistakeSrs, vocabSrs]),
     grade: useCallback((result: QuestionResult) => {
-      return gradeTodayReviewItem(current, result, { kana: kanaSrs, vocab: vocabSrs, mistakes: mistakeSrs })
-    }, [current, kanaSrs, mistakeSrs, vocabSrs]),
+      return gradeTodayReviewItem(current, result, { kana: kanaSrs, vocab: vocabSrs, mistakes: mistakeSrs, knowledge })
+    }, [current, kanaSrs, knowledge, mistakeSrs, vocabSrs]),
   })
 
   if (review.isComplete) {
@@ -102,14 +111,14 @@ export function TodayReviewSession({
       <ReviewDone
         title={review.isInvalidated
           ? "学习数据已更新，请重新开始复习"
-          : getTodayReviewBatchCompletionTitle(remainingDueAfterBatch)}
+          : singlePass ? "本次安排已完成，未巩固的内容保留待复习" : getTodayReviewBatchCompletionTitle(remainingDueAfterBatch)}
         onExit={onExit}
         stats={review.isInvalidated ? undefined : review.completionStats}
       />
     )
   }
 
-  if (vocabulary.loading) {
+  if (vocabulary.loading || (current?.deck === "knowledge" && !knowledge.loaded)) {
     return <ReviewLoadingState label="正在加载今日复习题库..." />
   }
 
@@ -123,6 +132,7 @@ export function TodayReviewSession({
       />
     )
   }
+  if (current?.deck === "knowledge" && knowledge.error) return <ReviewErrorState title="语法与句子复习记录无法读取" message="已暂停本轮以保护原始数据，请返回学习数据面板检查或恢复备份。" onExit={onExit} />
 
   if (insufficientQuestionOptions) {
     return (
@@ -160,14 +170,17 @@ export function TodayReviewSession({
     >
 
       <div className="w-full border-y border-dashed border-border/60 bg-primary/5 p-4 text-sm leading-relaxed text-muted-foreground">
-        当前：<span className="font-semibold text-foreground">{data.deckLabel}</span> · 答错后会在本轮再次出现；答对后，系统会安排下次复习。
+        当前：<span className="font-semibold text-foreground">{data.deckLabel}</span> · {singlePass ? "按今日预算，每题本轮只作答一次。答错仍会安排近期复习。" : "答错后会在本轮再次出现；答对后，系统会安排下次复习。"}
       </div>
 
       <ReviewPromptCard minHeightClassName="min-h-[240px]">
-        <MixedReviewPrompt prompt={data.prompt} sub={data.sub} hint={data.hint} audio={data.audio} onPlay={playAudio} />
+        <MixedReviewPrompt prompt={data.prompt} sub={singlePass && current.deck === "mistakes" ? "按本次预算练习，错题记录会保留" : data.sub} hint={data.hint} audio={data.audio} onPlay={playAudio} />
       </ReviewPromptCard>
 
-      {questionUsesTypedReview(data.question) ? (
+      {current.deck === "knowledge" && data.question.chunks?.length ? <ReviewSentenceBuild
+        question={data.question}
+        key={`${currentKey}:${review.presentationVersion}`} chunks={data.question.chunks} disabled={selected !== null}
+        seed={`${reviewSeed}:${currentKey}`} onSubmit={handleSelect} /> : questionUsesTypedReview(data.question) ? (
         <ReviewTypedAnswer
           key={`${currentKey}:${review.completionStats.answered}`}
           disabled={Boolean(selected)}

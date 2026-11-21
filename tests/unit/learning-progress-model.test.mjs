@@ -453,7 +453,7 @@ test("learning progress helpers merge maps, normalize step indexes, and average 
       correct: 1,
       updatedAt: 1,
     }),
-    50
+    58
   )
   assert.equal(
     model.averageMastery({
@@ -468,7 +468,7 @@ test("learning progress helpers merge maps, normalize step indexes, and average 
       correct: 1,
       updatedAt: 1,
     }),
-    30
+    50
   )
 })
 

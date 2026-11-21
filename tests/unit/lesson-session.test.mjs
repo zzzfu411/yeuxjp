@@ -32,14 +32,15 @@ test("lesson practice steps convert to shared Question objects", () => {
   assert.deepEqual(typingQuestion.options, [{ value: typing.answer, display: typing.answer }])
 })
 
-test("sentence build lesson steps become production questions", () => {
+test("sentence build lesson steps remain constrained assembly instead of independent production", () => {
   const lesson = lessons.STARTER_LESSONS.find((item) => item.id === "day-4-na-ha-ma-intro-sentence")
   const step = lesson.steps.find((item) => item.type === "sentenceBuild")
   const question = session.lessonStepToQuestion(step)
 
   assert.equal(question.type, "lesson:sentenceBuild")
   assert.equal(question.itemType, "sentence")
-  assert.equal(question.mode, "production")
+  assert.equal(question.mode, "recall")
+  assert.equal(question.responseFormat, "assembly")
   assert.equal(question.correctAnswer, step.answer)
 })
 
@@ -60,7 +61,7 @@ test("lesson kana item ids use a hiragana or katakana script prefix", () => {
 test("lesson practice counts and completion scores are deterministic", () => {
   const lesson = lessons.STARTER_LESSONS[0]
 
-  assert.equal(session.countPracticeSteps(lesson.steps), 3)
+  assert.equal(session.countPracticeSteps(lesson.steps), 4)
   assert.equal(session.calculateLessonCompletionScore(0, 0), 100)
   assert.equal(session.calculateLessonCompletionScore(2, 3), 67)
   assert.equal(session.calculateLessonCompletionScore(3, 3), 100)

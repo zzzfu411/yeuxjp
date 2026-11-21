@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { CheckCircle2, ChevronLeft, ChevronRight, RotateCw, Volume2 } from "lucide-react"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Modal } from "@/components/ui/modal"
 import { VocabCourseAppearances } from "@/components/vocabulary/vocab-course-appearances"
 import { VocabularySelfAssessmentControls } from "@/components/vocabulary/vocabulary-self-assessment-controls"
+import { shouldHandleGlobalShortcutEvent } from "@/lib/keyboard-shortcuts"
 import type { VocabularySelfAssessment } from "@/lib/vocabulary-self-assessment"
 
 export function VocabularyFocusModal({
@@ -45,6 +47,22 @@ export function VocabularyFocusModal({
   const titleId = "vocabulary-focus-modal-title"
   const descriptionId = "vocabulary-focus-modal-description"
 
+  useEffect(() => {
+    if (!vocab) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!shouldHandleGlobalShortcutEvent(event)) return
+      if (event.key === " " || event.code === "Space") {
+        event.preventDefault()
+        onFlip()
+      } else if (event.key === "r" || event.key === "R") {
+        event.preventDefault()
+        onPlay()
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [vocab, onFlip, onPlay])
+
   return (
     <Modal
       isOpen={vocab !== null}
@@ -74,9 +92,20 @@ export function VocabularyFocusModal({
                     <h2 className="font-jp text-6xl font-medium text-foreground sm:text-7xl" lang="ja">{vocab.kanji || vocab.kana}</h2>
                     {vocab.kanji && <p className="text-2xl text-muted-foreground/80" lang="ja">{vocab.kana}</p>}
                   </div>
-                  <div className="flex justify-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onPlay()
+                      }}
+                    >
+                      <Volume2 className="h-4 w-4" /> 朗读词条
+                    </Button>
                     <div className="font-scribble flex items-center gap-2 border-b border-dashed border-border/70 px-1 pb-1 text-sm text-muted-foreground">
-                      <RotateCw className="h-3 w-3" /> 用上方按钮查看释义
+                      <RotateCw className="h-3 w-3" /> 用上方按钮查看释义 · 空格翻面 / R 朗读
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,8 @@
 import { normalizeKanaPracticeRecord, normalizeKanaPracticeResultItemId } from "@/lib/kana-id"
 import { normalizeLessonStepAnswerMap } from "@/lib/lesson-step-answers"
+import { normalizeAssessmentEvidence, updateAssessmentEvidence, getRecordedAssessmentModes } from "@/lib/assessment-evidence"
+import { isSafeRecordKey } from "@/lib/safe-id"
+export { getAssessedModes, averageMastery } from "@/lib/assessment-evidence"
 export type * from "@/lib/learning-progress-types"
 import type { LearningGoal, KanaLevel, RomajiMode, UserProfile, PracticeItemType, PracticeMode, PracticeResult, ItemProgress, LessonProgress, LessonProgressMap, ItemProgressMap } from "@/lib/learning-progress-types"
 const PRACTICE_RESULT_LIMIT = 300
@@ -27,10 +30,6 @@ function finiteNumberOrUndefined(value: unknown) {
 
 function nonNegativeInteger(value: unknown, fallback = 0) {
   return Math.max(0, Math.floor(finiteNumber(value, fallback)))
-}
-
-function masteryScore(value: unknown) {
-  return typeof value === "number" ? clampScore(value) : 0
 }
 
 export function createItemProgress(itemId: string, itemType: PracticeItemType, now = Date.now()): ItemProgress {
@@ -68,6 +67,8 @@ export function normalizeProfile(input: unknown, now = Date.now()): UserProfile 
 
   return {
     goal,
+    ...(["N5", "N4", "N3", "N2"].includes(obj.jlptTarget ?? "") ? { jlptTarget: obj.jlptTarget } : {}),
+    ...(["unknown", "N5", "N4", "N3", "N2"].includes(obj.selfAssessedLevel ?? "") ? { selfAssessedLevel: obj.selfAssessedLevel } : {}),
     minutesPerDay,
     kanaLevel,
     romajiMode,
@@ -80,7 +81,7 @@ export function normalizeLessonProgressMap(input: unknown, now = Date.now()): Le
   if (!input || typeof input !== "object") return {}
   const out: LessonProgressMap = {}
   for (const [lessonId, value] of Object.entries(input as Record<string, unknown>)) {
-    if (!value || typeof value !== "object") continue
+    if (!isSafeRecordKey(lessonId) || !value || typeof value !== "object") continue
     const obj = value as Partial<LessonProgress>
     if (typeof obj.lessonId !== "string") continue
     if (obj.lessonId !== lessonId) continue
@@ -91,6 +92,13 @@ export function normalizeLessonProgressMap(input: unknown, now = Date.now()): Le
       completedAt: finiteNumberOrUndefined(obj.completedAt),
       score: typeof obj.score === "number" ? clampScore(obj.score) : undefined,
     }
+    if (typeof obj.completedContentVersion === "string") normalized.completedContentVersion = obj.completedContentVersion
+    if (obj.completedStepVersions && typeof obj.completedStepVersions === "object" && !Array.isArray(obj.completedStepVersions)) {
+      normalized.completedStepVersions = Object.fromEntries(Object.entries(obj.completedStepVersions).filter(([, value]) => typeof value === "string"))
+    }
+    if (Array.isArray(obj.updateStepIds)) normalized.updateStepIds = [...new Set(obj.updateStepIds.filter(id => typeof id === "string"))]
+    const superseded = normalizeLessonStepAnswerMap(obj.supersededAnswers)
+    if (superseded) normalized.supersededAnswers = superseded
     if (typeof obj.currentStepIndex === "number" && Number.isFinite(obj.currentStepIndex)) {
       normalized.currentStepIndex = Math.max(0, Math.floor(obj.currentStepIndex))
     }
@@ -116,7 +124,7 @@ export function normalizeItemProgressMap(input: unknown, now = Date.now()): Item
   const out: ItemProgressMap = {}
   const normalizedInput = normalizeKanaPracticeRecord(input as Record<string, unknown>)
   for (const [itemId, value] of Object.entries(normalizedInput)) {
-    if (!value || typeof value !== "object") continue
+    if (!isSafeRecordKey(itemId) || !value || typeof value !== "object") continue
     const obj = value as Partial<ItemProgress>
     const itemType = obj.itemType ?? "lesson"
     if (!isPracticeItemType(itemType)) continue
@@ -124,11 +132,16 @@ export function normalizeItemProgressMap(input: unknown, now = Date.now()): Item
       itemId,
       itemType,
       ...(Array.isArray(obj.assessedModes) ? { assessedModes: [...new Set(obj.assessedModes.filter(isPracticeMode))] } : {}),
+      ...(obj.assessmentEvidence ? { assessmentEvidence: normalizeAssessmentEvidence(obj.assessmentEvidence) } : {}),
       recognition: clampScore(obj.recognition ?? 0),
       listening: clampScore(obj.listening ?? 0),
       meaning: clampScore(obj.meaning ?? 0),
       recall: clampScore(obj.recall ?? 0),
       production: clampScore(obj.production ?? 0),
+      ...(obj.outputEvidence && typeof obj.outputEvidence === "object" ? { outputEvidence: {
+        score: clampScore(obj.outputEvidence.score), attempts: nonNegativeInteger(obj.outputEvidence.attempts),
+        correct: Math.min(nonNegativeInteger(obj.outputEvidence.correct), nonNegativeInteger(obj.outputEvidence.attempts)),
+      } } : {}),
       attempts: nonNegativeInteger(obj.attempts),
       correct: nonNegativeInteger(obj.correct),
       updatedAt: finiteNumber(obj.updatedAt, now),
@@ -156,6 +169,10 @@ export function normalizePracticeResults(input: unknown, now = Date.now()): Prac
       lessonId: typeof item.lessonId === "string" ? item.lessonId : undefined,
       lessonStepId: typeof item.lessonStepId === "string" ? item.lessonStepId : undefined,
       ...(typeof item.lessonAttemptId === "string" ? { lessonAttemptId: item.lessonAttemptId } : {}),
+      ...(typeof item.questionVersion === "string" ? { questionVersion: item.questionVersion } : {}),
+      ...(typeof item.assessmentRevision === "string" ? { assessmentRevision: item.assessmentRevision } : {}),
+      ...(item.activitySource === "review" ? { activitySource: "review" as const } : {}),
+      ...(["choice", "assembly", "input"].includes(item.responseFormat ?? "") ? { responseFormat: item.responseFormat } : {}),
       ...(item.assisted === true ? { assisted: true } : {}),
       itemId,
       itemType: item.itemType ?? "lesson",
@@ -184,14 +201,23 @@ export function updateItemProgressForPractice(previous: unknown, result: Practic
   const current = base[itemId] ?? createItemProgress(itemId, result.itemType, updatedAt)
   const delta = result.assisted ? 0 : result.correct ? 18 : -10
   const nextScore = clampScore(current[result.mode] + delta)
+  const independent = result.mode === "production" && result.responseFormat === "input" && !result.assisted
+  const outputEvidence = independent ? {
+    score: clampScore((current.outputEvidence?.score ?? 0) + delta),
+    attempts: (current.outputEvidence?.attempts ?? 0) + 1,
+    correct: (current.outputEvidence?.correct ?? 0) + (result.correct ? 1 : 0),
+  } : current.outputEvidence
+  const assessmentEvidence = updateAssessmentEvidence(current, result)
 
   return {
     ...base,
     [itemId]: {
       ...current,
       itemType: result.itemType,
-      assessedModes: [...new Set([...getAssessedModes(current), ...(result.assisted ? [] : [result.mode])])],
+      assessedModes: [...new Set([...getRecordedAssessmentModes(current), ...(result.assisted ? [] : [result.mode])])],
+      ...(assessmentEvidence ? { assessmentEvidence } : {}),
       [result.mode]: nextScore,
+      ...(outputEvidence ? { outputEvidence } : {}),
       attempts: current.attempts + 1,
       correct: current.correct + (result.correct && !result.assisted ? 1 : 0),
       updatedAt,
@@ -248,17 +274,4 @@ export function mergeLessonProgressMaps(stored: LessonProgressMap, current: Less
 export function normalizeStepIndex(stepIndex: number) {
   if (!Number.isFinite(stepIndex)) return 0
   return Math.max(0, Math.floor(stepIndex))
-}
-
-export function getAssessedModes(item: ItemProgress): PracticeMode[] {
-  return Array.isArray(item.assessedModes)
-    ? [...new Set(item.assessedModes.filter(isPracticeMode))]
-    : [...PRACTICE_MODES].filter(mode => Number.isFinite(item[mode]) && item[mode] > 0)
-}
-
-export function averageMastery(item?: ItemProgress) {
-  if (!item) return 0
-  const scores = getAssessedModes(item).map(mode => masteryScore(item[mode]))
-  if (!scores.length) return 0
-  return Math.round(scores.reduce((total, score) => total + score, 0) / scores.length)
 }

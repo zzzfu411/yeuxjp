@@ -1,5 +1,6 @@
 import type { PracticeItemType, PracticeMode } from "@/lib/learning-progress"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
+import type { PracticeResponseFormat } from "@/lib/learning-progress-types"
 
 export type QuestionOption = {
   value: string
@@ -9,6 +10,9 @@ export type QuestionOption = {
 export type QuestionMeta = MistakeItem["meta"]
 
 export interface Question {
+  chunks?: string[]
+  responseFormat?: PracticeResponseFormat
+  questionVersion?: string
   type: string
   itemId?: string
   itemType?: PracticeItemType
@@ -42,6 +46,21 @@ export function normalizeAnswer(value: string) {
     .toLowerCase()
 }
 
+export function getQuestionResponseFormat(question: Question): PracticeResponseFormat {
+  // Mistake review chooses its UI from the option count, regardless of the original task type.
+  if (question.mistakeId) return new Set([question.correctAnswer, ...question.options.map(o => o.value)].map(normalizeAnswer)).size < 2 ? "input" : "choice"
+  if (question.responseFormat) return question.responseFormat
+  if (question.type === "lesson:typing" || question.type === "lesson:dictation") return "input"
+  if (question.type === "lesson:sentenceBuild") return "assembly"
+  return "choice"
+}
+
+export function getQuestionPracticeMode(question: Question) {
+  if (question.mode !== "production") return question.mode
+  const format = getQuestionResponseFormat(question)
+  return format === "choice" ? "recognition" : format === "assembly" ? "recall" : "production"
+}
+
 export function isQuestionAnswerCorrect(question: Pick<Question, "correctAnswer" | "acceptedAnswers">, selectedAnswer: string) {
   const accepted = [question.correctAnswer, ...(question.acceptedAnswers ?? [])]
   const normalized = normalizeAnswer(selectedAnswer)
@@ -71,6 +90,7 @@ export function questionToMistakeInput(result: QuestionResult) {
   const { question } = result
   return {
     type: question.type,
+    ...(question.questionVersion ? { questionVersion: question.questionVersion } : {}),
     questionText: question.questionText,
     questionAudio: question.questionAudio,
     itemId: question.itemId,

@@ -159,6 +159,17 @@ jobs:
       - name: Run strict browser interaction gate
         run: npm run e2e:browser:required
 
+      - name: Run required audit regressions against the built app
+        run: npm run e2e:audit:required
+
+      - name: Preserve audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-browser-evidence
+          path: output/audit-release/
+          if-no-files-found: ignore
+
   pwa-check:
     name: PWA Browser Gate
     needs: detect-pwa-changes
@@ -207,3 +218,11 @@ jobs:
 
       - name: Run release gate
         run: npm run check:release
+
+      - name: Preserve release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-evidence
+          path: output/
+          if-no-files-found: ignore

@@ -10,7 +10,7 @@ function read(relPath) {
 }
 
 test("incremental learning mutations reject untrusted storage snapshots", () => {
-  const learning = read("src/lib/learning-progress.ts")
+  const learning = read("src/lib/learning-progress.ts") + read("src/lib/learning-progress-practice.ts")
   const kana = read("src/lib/kana-progress.ts")
   const vocab = read("src/lib/vocab-progress.ts")
   const mistakes = read("src/lib/mistake-notebook.ts")
@@ -39,6 +39,7 @@ test("destructive reset paths explicitly replace invalid storage", () => {
 test("incremental writes compare the raw snapshot before persistence", () => {
   for (const relPath of [
     "src/lib/learning-progress.ts",
+    "src/lib/learning-progress-practice.ts",
     "src/lib/kana-progress.ts",
     "src/lib/vocab-progress.ts",
     "src/lib/mistake-notebook.ts",

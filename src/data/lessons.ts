@@ -22,10 +22,11 @@ import { DAYS_22_45 } from "./lessons/days-22-45"
 import { DAYS_46_90 } from "./lessons/days-46-90"
 import { DAYS_91_135 } from "./lessons/days-91-135"
 import { DAYS_136_175 } from "./lessons/days-136-175"
+import { enrichCourseLessons } from "./coursebook"
 
-export const STARTER_LESSONS: Lesson[] = [
+export const STARTER_LESSONS: Lesson[] = enrichCourseLessons([
   ...DAYS_01_21, ...DAYS_22_45, ...DAYS_46_90, ...DAYS_91_135, ...DAYS_136_175,
-]
+])
 
 export const STARTER_LESSON_BY_ID = Object.fromEntries(STARTER_LESSONS.map((lesson) => [lesson.id, lesson])) as Record<string, Lesson>
 
@@ -33,8 +34,8 @@ export function getLessonById(id: string) {
   return STARTER_LESSON_BY_ID[id] ?? null
 }
 
-export function getNextLesson(completedLessonIds: ReadonlySet<string>, kanaLevel?: KanaLevel | null) {
-  return getNextCourseLesson(STARTER_LESSONS, completedLessonIds, kanaLevel)
+export function getNextLesson(completedLessonIds: ReadonlySet<string>, kanaLevel?: KanaLevel | null, entryOrder = 1) {
+  return getNextCourseLesson(STARTER_LESSONS, completedLessonIds, kanaLevel, entryOrder)
 }
 
 export function getLessonSummary(lessonId: string) {

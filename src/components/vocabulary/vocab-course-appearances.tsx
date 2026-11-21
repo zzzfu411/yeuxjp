@@ -10,12 +10,16 @@ export function VocabCourseAppearances({ vocabId }: { vocabId: string }) {
   useEffect(() => {
     let cancelled = false
     Promise.all([
-      import("@/data/lessons"),
+      import("@/data/lesson-catalog"),
       import("@/lib/lesson-item-coverage"),
-    ]).then(([lessons, coverage]) => {
-      if (cancelled) return
-      setAppearances(coverage.getVocabLessonAppearances(lessons.STARTER_LESSONS, vocabId))
-    })
+    ])
+      .then(([lessons, coverage]) => {
+        if (cancelled) return
+        setAppearances(coverage.getVocabLessonAppearances(lessons.STARTER_LESSONS, vocabId))
+      })
+      .catch(() => {
+        if (!cancelled) setAppearances([])
+      })
     return () => {
       cancelled = true
     }
@@ -33,7 +37,7 @@ export function VocabCourseAppearances({ vocabId }: { vocabId: string }) {
           onClick={(event) => event.stopPropagation()}
           className="font-scribble border-b border-dashed border-border/70 px-0.5 text-sm text-muted-foreground transition-colors hover:border-accent hover:text-accent"
         >
-          课程 Day {item.order}
+          第 {item.order} 课
         </Link>
       ))}
     </div>

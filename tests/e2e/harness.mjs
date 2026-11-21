@@ -274,11 +274,20 @@ export function createServerController() {
       const runningServer = server
       if (server?.pid) {
         if (process.platform === "win32") {
-          spawnSync("taskkill", ["/pid", String(server.pid), "/t", "/f"], { stdio: "ignore" })
+          const result = spawnSync("taskkill", ["/pid", String(server.pid), "/t", "/f"], {
+            stdio: "ignore", windowsHide: true, timeout: 10_000,
+          })
+          // Restricted Windows runners may deny taskkill even for this child.
+          // Terminate the server we spawned directly rather than leaving a
+          // listening process behind after the build lock is released.
+          if (result.status !== 0) server.kill("SIGTERM")
         } else {
           server.kill("SIGTERM")
         }
         await waitForProcessExit(runningServer)
+        if (runningServer.exitCode === null && runningServer.signalCode === null) {
+          throw new Error(`E2E server ${runningServer.pid} did not stop; keep its build lock until it exits`)
+        }
       }
       server?.stdout.destroy()
       server?.stderr.destroy()

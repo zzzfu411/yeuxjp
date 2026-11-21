@@ -41,7 +41,7 @@ export function MixedReviewPrompt({
     <>
       {audio ? <ReviewAudioButton text={audio} onPlay={onPlay} /> : null}
       <div className="mt-6 space-y-2 px-6 text-center">
-        <div className="break-words font-jp text-4xl font-semibold leading-snug">{prompt}</div>
+        <div className="whitespace-pre-line break-words font-jp text-4xl font-semibold leading-snug">{prompt}</div>
         {sub ? <div className="text-sm text-muted-foreground">{sub}</div> : null}
         {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
       </div>
@@ -121,7 +121,7 @@ export function MistakeReviewPrompt({
 
   return (
     <div className="space-y-3 px-6 text-center">
-      <div className="break-words font-jp text-3xl font-semibold leading-snug">{questionText ?? "（无题干）"}</div>
+      <div className={`whitespace-pre-line break-words font-jp ${questionText && questionText.length > 120 ? "text-xl leading-9" : "text-3xl font-semibold leading-snug"}`}>{questionText ?? "（无题干）"}</div>
       <div className="text-xs text-muted-foreground">{type}</div>
     </div>
   )

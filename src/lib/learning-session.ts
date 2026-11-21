@@ -1,7 +1,7 @@
 "use client"
 
 import { enrollSrs } from "@/lib/srs"
-import { runLearningStorageTransaction } from "@/lib/learning-store"
+import { runLearningStorageTransaction } from "@/lib/learning-storage-transaction"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { isReviewableKanaId } from "@/lib/review-visibility"
@@ -9,8 +9,10 @@ import type { PracticeResult } from "@/lib/learning-progress"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { Question, QuestionResult } from "@/lib/questions"
-import { questionToMistakeInput } from "@/lib/questions"
+import { questionToMistakeInput, getQuestionResponseFormat, getQuestionPracticeMode } from "@/lib/questions"
 import { readLessonProgressMapResult } from "@/lib/learning-progress-storage"
+import { CURRENT_ASSESSMENT_REVISION } from "@/lib/assessment-evidence"
+import { enrollKnowledgeReview } from "@/lib/knowledge-review-storage"
 
 type LearningProgressApi = ReturnType<typeof useLearningProgress>
 type MistakeNotebookApi = ReturnType<typeof useMistakeNotebook>
@@ -132,6 +134,7 @@ export function recordLessonQuestionPractice({
       answer: result.selectedAnswer,
       correct: result.correct,
       createdAt: result.answeredAt,
+      ...(result.question.questionVersion ? { questionVersion: result.question.questionVersion } : {}),
       ...(result.assisted ? { assisted: true } : {}),
     })
   })
@@ -145,6 +148,7 @@ export function recordQuestionPracticeWithoutTransaction({
   lessonStepId,
   enrollReviewOnCorrect,
   lessonAttemptId,
+  activitySource,
 }: {
   progress?: LearningProgressApi
   notebook?: MistakeNotebookApi
@@ -153,6 +157,7 @@ export function recordQuestionPracticeWithoutTransaction({
   lessonStepId?: string
   enrollReviewOnCorrect?: boolean
   lessonAttemptId?: string
+  activitySource?: "review"
 }) {
   const { question } = result
 
@@ -163,16 +168,23 @@ export function recordQuestionPracticeWithoutTransaction({
       lessonStepId,
       itemId: question.itemId,
       itemType: question.itemType,
-      mode: question.mode,
+      mode: getQuestionPracticeMode(question) ?? question.mode,
+      responseFormat: getQuestionResponseFormat(question),
+      assessmentRevision: CURRENT_ASSESSMENT_REVISION,
+      ...(activitySource ? { activitySource } : {}),
       correct: result.correct,
       answer: result.selectedAnswer,
       ...(lessonAttemptId ? { lessonAttemptId } : {}),
+      ...(question.questionVersion ? { questionVersion: question.questionVersion } : {}),
       ...(result.assisted ? { assisted: true } : {}),
     }, { enrollReviewOnCorrect })) {
       return false
     }
   }
 
+  if (result.correct && !result.assisted && enrollReviewOnCorrect !== false && ["grammar", "sentence"].includes(question.itemType ?? "")) {
+    if (!enrollKnowledgeReview(question)) return false
+  }
   if (notebook) {
     return recordMistakeIfWrong(notebook, result)
   }

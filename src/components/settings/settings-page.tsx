@@ -32,7 +32,7 @@ export function SettingsPage() {
     <SpeechSettingsBar showQuizOptions />
     <section className="paper-sheet space-y-3 p-5 text-sm leading-7" aria-labelledby="storage-help-title">
       <h2 id="storage-help-title" className="text-lg font-semibold">保存与离线使用</h2>
-      <p>备份包含课程、练习、学习日历、掌握标记、错题、复习安排和朗读设置。导入会替换当前记录，请先导出已有数据。备份可在其他设备的本应用中导入。</p>
+      <p>备份包含课程、练习、学习日历、表达草稿与自查、旧版本作品、阶段诊断与定位、汉字读音与复习、掌握标记、错题、复习安排和朗读设置。导入会替换当前记录，请先导出已有数据。备份可在其他设备的本应用中导入。</p>
       <p>没有账号或云端同步。浏览器清理站点数据、使用隐私窗口或更换站点地址，都可能使原有记录不可用。</p>
       <p>离线时只能使用已缓存的页面与资源。新课程、未缓存的词库和部分语音需要联网；系统是否提供离线日语声音取决于设备。</p>
       <p>多页面保存会排队处理；导入、重置或应用升级后，请刷新其他已打开的旧页面，再继续学习。</p>

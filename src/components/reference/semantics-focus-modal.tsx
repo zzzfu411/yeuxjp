@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { ReferenceContextLink as Link } from "@/components/reference/reference-context-link"
 import { ArrowRightLeft, ChevronLeft, ChevronRight, Lightbulb } from "lucide-react"
 import type { NuancePoint } from "@/data/semantics-data"
 import { buttonVariants } from "@/components/ui/button"
@@ -12,6 +12,7 @@ interface SemanticsFocusModalProps {
   closeHref: string
   nextHref: string
   prevHref: string
+  presentation?: "modal" | "page"
 }
 
 export function SemanticsFocusModal({
@@ -21,28 +22,33 @@ export function SemanticsFocusModal({
   closeHref,
   nextHref,
   prevHref,
+  presentation = "modal",
 }: SemanticsFocusModalProps) {
   const titleId = "semantics-focus-modal-title"
   const descriptionId = "semantics-focus-modal-description"
+  const Heading = presentation === "page" ? "h1" : "h2"
+  const SectionHeading = presentation === "page" ? "h2" : "h3"
 
   return (
     <UrlControlledReferenceModal
       closeHref={closeHref}
       nextHref={nextHref}
       prevHref={prevHref}
-      className="paper-sheet flex h-[min(85vh,52rem)] max-w-3xl flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"
+      presentation={presentation}
+      backLabel="返回语义辨析"
+      className={presentation === "page" ? "min-w-0" : "paper-sheet flex h-[min(85vh,52rem)] max-w-3xl flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"}
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
     >
-      <span className="paper-tape top-0" aria-hidden="true" />
-      <div className="flex-1 space-y-8 overflow-y-auto px-5 pb-8 pt-10 sm:px-8">
+      {presentation === "modal" && <span className="paper-tape top-0" aria-hidden="true" />}
+      <div className={presentation === "page" ? "space-y-8 pb-10" : "flex-1 space-y-8 overflow-y-auto px-5 pb-8 pt-10 sm:px-8"}>
         <div className="border-b border-border/50 pb-6 text-center">
-          <p className="eyebrow mb-3">意味 · Nuance note</p>
-          <h2 id={titleId} className="flex flex-wrap items-center justify-center gap-3 font-jp text-3xl font-medium sm:text-4xl" lang="ja">
+          <p className="eyebrow mb-3">语义辨析</p>
+          <Heading id={titleId} className="flex flex-wrap items-center justify-center gap-3 font-jp text-3xl font-medium sm:text-4xl" lang="ja">
             <span>{point.pair[0]}</span>
             <ArrowRightLeft className="h-6 w-6 shrink-0 text-muted-foreground/55 sm:h-7 sm:w-7" />
             <span>{point.pair[1]}</span>
-          </h2>
+          </Heading>
           <div className="font-scribble mt-2 text-lg text-muted-foreground">
             {point.title}
           </div>
@@ -53,7 +59,7 @@ export function SemanticsFocusModal({
             <div className="flex items-start gap-3">
               <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
               <div>
-                <h3 className="eyebrow mb-2 text-base text-foreground">核心差异 · distinction</h3>
+                <SectionHeading className="eyebrow mb-2 text-base text-foreground">核心差异</SectionHeading>
                 <p id={descriptionId} className="text-base leading-relaxed text-foreground/85 sm:text-lg">
                   {point.explanation}
                 </p>
@@ -75,7 +81,7 @@ export function SemanticsFocusModal({
           <div className="space-y-5">
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-border/70" />
-              <span className="eyebrow text-sm">语境例句 · in context</span>
+              <SectionHeading className="eyebrow text-sm">语境例句</SectionHeading>
               <div className="h-px flex-1 bg-border/70" />
             </div>
 

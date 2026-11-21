@@ -7,6 +7,8 @@ import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { useLearningProgress } from "@/lib/learning-progress"
 import type { ReviewSession } from "@/lib/review-session"
 import type { TodayReviewItem } from "@/lib/review-questions"
+import { useKnowledgeReviews } from "@/lib/use-knowledge-reviews"
+import { snapshotKnowledgeReviewItems } from "@/lib/knowledge-review-snapshot"
 
 export type { ReviewSession } from "@/lib/review-session"
 
@@ -50,11 +52,12 @@ export function ReviewRunner({
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
 }) {
-  if (session.deck === "today") {
+  if (session.deck === "today" || session.deck === "knowledge") {
     return (
       <TodayReview
-        items={session.items}
-        remainingDueAfterBatch={session.remainingDueAfterBatch}
+        items={session.deck === "today" ? session.items : session.ids.map(id => ({ deck: "knowledge", id }))}
+        remainingDueAfterBatch={session.deck === "today" ? session.remainingDueAfterBatch : 0}
+        singlePass={session.deck === "today" && session.singlePass}
         onExit={onExit}
         notebook={notebook}
       />
@@ -68,11 +71,13 @@ export function ReviewRunner({
 function TodayReview({
   items,
   remainingDueAfterBatch,
+  singlePass,
   onExit,
   notebook,
 }: {
   items: TodayReviewItem[]
   remainingDueAfterBatch: number
+  singlePass?: boolean
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
 }) {
@@ -80,10 +85,13 @@ function TodayReview({
   const vocabSrs = useSrsDeck(VOCAB_SRS_STORAGE_KEY)
   const mistakeSrs = useSrsDeck(MISTAKE_SRS_STORAGE_KEY)
   const learning = useLearningProgress()
+  const knowledge = useKnowledgeReviews()
+  if (items.some(item => item.deck === "knowledge") && !knowledge.loaded) return <ReviewSessionLoading />
   return (
     <TodayReviewSession
-      items={items}
+      items={snapshotKnowledgeReviewItems(items, knowledge.cards)}
       remainingDueAfterBatch={remainingDueAfterBatch}
+      singlePass={singlePass}
       onExit={onExit}
       notebook={notebook}
       learning={learning}

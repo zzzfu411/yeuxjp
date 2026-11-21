@@ -1,3 +1,5 @@
+import type { LessonStudy } from "./coursebook/types"
+
 export type LessonTrack = "starter-45" | "n4-core" | "n3-core" | "n2-core"
 export type LessonItemType = "kana" | "vocab" | "grammar" | "sentence"
 export type LessonPracticeMode = "recognition" | "listening" | "meaning" | "recall" | "production"
@@ -29,6 +31,7 @@ export interface ExampleStep extends LessonStepBase {
 
 export interface ChoiceStep extends LessonStepBase {
   type: "multipleChoice"
+  passage?: string
   prompt: string
   options: string[]
   answer: string
@@ -69,6 +72,7 @@ export interface SentenceBuildStep extends LessonStepBase {
   prompt: string
   chunks: string[]
   answer: string
+  acceptedAnswers?: string[]
   meaning: string
   itemId: string
   itemType: LessonItemType
@@ -102,4 +106,6 @@ export interface Lesson {
   skillIds: string[]
   newItemIds: LessonItemRef[]
   steps: LessonStep[]
+  study?: LessonStudy
+  unit?: { number: number; title: string }
 }

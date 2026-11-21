@@ -342,10 +342,10 @@ test("root package remains a dependency-free forwarding entrypoint", () => {
 })
 
 test("app-local check command matches the root quality gate", () => {
-  assert.match(webPackage, /"validate:data": "node scripts\/generate-learning-index\.mjs --check && node scripts\/validate-data\.mjs"/)
+  assert.match(webPackage, /"validate:data": "node scripts\/generate-learning-index\.mjs --check && node scripts\/validate-data\.mjs && node scripts\/validate-coursebook\.mjs"/)
   assert.equal(webPackageJson.scripts.build, "node scripts/build.mjs")
   assert.match(webPackage, /"check": "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e"/)
-  assert.match(webPackage, /"check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required"/)
+  assert.match(webPackage, /"check:release": "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required && npm run e2e:audit:required"/)
   assert.match(webPackage, /"e2e:install": "playwright install chromium"/)
   assert.match(webPackage, /"e2e:install:ci": "playwright install --with-deps chromium"/)
   assert.match(webPackage, /"playwright": "\^1\.60\.0"/)
@@ -360,5 +360,5 @@ test("app-local lint command scans source-owned code instead of generated assets
 
 test("E2E gate contracts support app-only CI checkouts", () => {
   assert.equal(webPackageJson.scripts.check, "npm run validate:data && npm run lint && npm run test && npm run build && npm run e2e")
-  assert.equal(webPackageJson.scripts["check:release"], "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required")
+  assert.equal(webPackageJson.scripts["check:release"], "npm run check && npm run e2e:browser:required && npm run e2e:pwa:required && npm run e2e:audit:required")
 })

@@ -1,6 +1,11 @@
 import { getKanaById } from "@/lib/kana-id"
 import type { Vocabulary } from "@/data/vocabulary/types"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
+import type { KnowledgeReviewCard } from "@/lib/knowledge-review-model"
+import { isCurrentKnowledgeCard } from "@/lib/knowledge-review-model"
+import { shuffleList } from "@/lib/question-options"
+import { reviewPromptAudio } from "@/lib/review-prompt-audio"
+import { getKnowledgeReviewVariant } from "@/lib/knowledge-review-variant"
 import type { Question, QuestionResult } from "@/lib/questions"
 import type { SrsResult } from "@/lib/srs-model"
 import { createSeededRandom } from "@/lib/seeded-random"
@@ -38,7 +43,7 @@ export type TodayReviewSrsDeck = {
   gradeExisting: (id: string, result: SrsResult) => boolean
 }
 
-export type TodayReviewSrsDecks = Record<ReviewDeck, TodayReviewSrsDeck>
+export type TodayReviewSrsDecks = Record<Exclude<ReviewDeck, "knowledge">, TodayReviewSrsDeck> & { knowledge?: TodayReviewSrsDeck }
 
 function emptyResolution(overrides: Partial<TodayReviewItemResolution> = {}): TodayReviewItemResolution {
   return {
@@ -50,7 +55,6 @@ function emptyResolution(overrides: Partial<TodayReviewItemResolution> = {}): To
 }
 
 export function mistakeReviewSub(mistake: Pick<MistakeItem, "itemType" | "explanation">) {
-  if (mistake.explanation?.trim()) return mistake.explanation.trim()
   if (mistake.itemType === "grammar") return "错题会留在今日队列，答对后才离开"
   return undefined
 }
@@ -74,16 +78,29 @@ export function resolveTodayReviewItemData({
   current,
   vocabulary,
   mistakes,
+  knowledge,
   seed = "",
   showRomaji = false,
+  now = Date.now(),
 }: {
   current: TodayReviewItem | null
   vocabulary: readonly Vocabulary[]
   mistakes: ReadonlyMap<string, MistakeItem>
+  knowledge?: ReadonlyMap<string, KnowledgeReviewCard>
   seed?: string
   showRomaji?: boolean
+  now?: number
 }): TodayReviewItemResolution {
   if (!current) return emptyResolution()
+  if (current.deck === "knowledge") {
+    const card = knowledge?.get(current.id)
+    if (!card || !isCurrentKnowledgeCard(card)) return emptyResolution({ missingReviewEntry: true })
+    const variant = getKnowledgeReviewVariant(card, current.knowledgeReviewState ?? card.srs, now)
+    const question = { ...variant.question, options: shuffleList(variant.question.options, createSeededRandom(`${seed}:${card.id}`)) }
+    return { data: { deckLabel: question.itemType === "grammar" ? "语法巩固" : "句子巩固",
+      prompt: variant.prompt, hint: variant.note, audio: question.mode === "listening" ? question.questionAudio : undefined,
+      autoPlayAudio: question.mode === "listening", question }, missingReviewEntry: false, insufficientQuestionOptions: false }
+  }
 
   if (current.deck === "kana") {
     const parsedKana = getKanaById(current.id)
@@ -135,15 +152,16 @@ export function resolveTodayReviewItemData({
 
   const mistake = mistakes.get(current.id)
   if (!mistake) return emptyResolution({ missingReviewEntry: true })
+  const audio = reviewPromptAudio(mistake)
 
   return {
     data: {
       deckLabel: mistakeReviewDeckLabel(mistake),
-      prompt: mistake.questionText ?? mistake.questionAudio ?? "\uff08\u65e0\u9898\u5e72\uff09",
+      prompt: mistake.questionText ?? (audio ? "听音作答" : "完成这道复习题"),
       sub: mistakeReviewSub(mistake),
-      audio: mistake.questionAudio,
-      autoPlayAudio: Boolean(mistake.questionAudio),
-      question: mistakeToQuestion(mistake),
+      audio,
+      autoPlayAudio: Boolean(audio),
+      question: mistakeToQuestion(mistake, seed),
     },
     missingReviewEntry: false,
     insufficientQuestionOptions: false,
@@ -152,7 +170,7 @@ export function resolveTodayReviewItemData({
 
 export function canRecordTodayReviewItem(current: TodayReviewItem | null, decks: TodayReviewSrsDecks) {
   if (!current) return false
-  return decks[current.deck].has(current.id)
+  return decks[current.deck]?.has(current.id) ?? false
 }
 
 export function gradeTodayReviewItem(
@@ -166,5 +184,5 @@ export function gradeTodayReviewItem(
     return decks.mistakes.gradeExisting(current.id, "good")
   }
 
-  return decks[current.deck].gradeExisting(current.id, result.correct ? "good" : "again")
+  return decks[current.deck]?.gradeExisting(current.id, result.correct ? "good" : "again") ?? false
 }

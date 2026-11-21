@@ -116,15 +116,15 @@ test("path page model soft-locks skills and formats progress badges", () => {
   })
   assert.deepEqual(model.getSkillStatus("kana-seion", kanaStats({ seion: stat(40, 100) }), vocabStats()), {
     status: "in-progress",
-    badge: "\u8fdb\u5ea6 40/100",
+    badge: "已标记 40/100",
   })
   assert.deepEqual(model.getSkillStatus("kana-seion", kanaStats({ seion: stat(90, 100) }), vocabStats()), {
-    status: "done",
-    badge: "\u5df2\u638c\u63e1 90/100",
+    status: "in-progress",
+    badge: "已标记 90/100",
   })
   assert.deepEqual(model.getSkillStatus("vocab-survival", kanaStats(), vocabStats({ survival: stat(303, 505) })), {
-    status: "done",
-    badge: "\u5df2\u638c\u63e1 303/505",
+    status: "in-progress",
+    badge: "已标记 303/505",
   })
   assert.equal(model.ratioText(Number.POSITIVE_INFINITY, Number.NaN), "0/0")
   assert.equal(model.ratioText(12, 10), "10/10")
@@ -132,7 +132,7 @@ test("path page model soft-locks skills and formats progress badges", () => {
     model.getSkillStatus("kana-seion", kanaStats({ seion: { done: 999, total: 100, ratio: Number.NaN } }), vocabStats()),
     {
       status: "in-progress",
-      badge: "\u8fdb\u5ea6 100/100",
+      badge: "已标记 100/100",
     }
   )
   assert.equal(
@@ -146,7 +146,7 @@ test("path page model soft-locks skills and formats progress badges", () => {
   assert.equal(model.isSkillUnlocked("grammar-n2", kanaStats(), vocabStats(), undefined, { allLessonsDone: true }), true)
   assert.deepEqual(model.getSkillStatus("grammar-n4", kanaStats(), vocabStats(), undefined, { nextTrack: "starter-45" }), {
     status: "locked",
-    badge: "先完成 N5 课程",
+    badge: "建议先学 N5 基础",
   })
   assert.deepEqual(model.getSkillStatus("grammar-n5", kanaStats(), vocabStats(), undefined, { nextTrack: "starter-45" }), {
     status: "in-progress",
@@ -157,18 +157,18 @@ test("path page model soft-locks skills and formats progress badges", () => {
     badge: "当前阶段",
   })
   assert.deepEqual(model.getSkillStatus("grammar-n5", kanaStats(), vocabStats(), undefined, { nextTrack: "n4-core" }), {
-    status: "done",
-    badge: "课程已完成该阶段",
+    status: "available",
+    badge: "可回顾的基础分区",
   })
   assert.deepEqual(model.getSkillStatus("grammar-n2", kanaStats(), vocabStats(), undefined, { allLessonsDone: true }), {
-    status: "done",
-    badge: "课程已完成该阶段",
+    status: "available",
+    badge: "可回顾的基础分区",
   })
   assert.equal(model.isSkillUnlocked("pragmatics", lockedKana, vocabStats()), false)
   assert.equal(model.isSkillUnlocked("pragmatics", kanaStats(), vocabStats()), true)
 })
 
-test("path page model summarizes five-dimension mastery", () => {
+test("path page model excludes unverified legacy output while preserving other measured skills", () => {
   const summary = model.getPathMasterySummary({
     a: {
       itemId: "a",
@@ -196,7 +196,7 @@ test("path page model summarizes five-dimension mastery", () => {
     },
   })
 
-  assert.deepEqual(summary, { avg: 49, attempts: 5, production: 53 })
+  assert.deepEqual(summary, { avg: 49, attempts: 5, production: null, productionAttempts: 0, productionItems: 0, unverifiedItems: 0 })
   assert.deepEqual(
     model.getPathMasterySummary({
       broken: {
@@ -224,9 +224,9 @@ test("path page model summarizes five-dimension mastery", () => {
         updatedAt: 2,
       },
     }),
-    { avg: 100, attempts: 2, production: 100 }
+    { avg: 100, attempts: 2, production: null, productionAttempts: 0, productionItems: 0, unverifiedItems: 0 }
   )
-  assert.deepEqual(model.getPathMasterySummary({}), { avg: 0, attempts: 0, production: null })
+  assert.deepEqual(model.getPathMasterySummary({}), { avg: 0, attempts: 0, production: null, productionAttempts: 0, productionItems: 0, unverifiedItems: 0 })
 })
 
 test("path and next-step surfaces consume the shared recommendation hook", () => {
@@ -259,22 +259,32 @@ test("path and next-step surfaces consume the shared recommendation hook", () =>
   assert.match(pathPage, /vocabStats\.survival/)
   assert.match(pathPage, /STARTER_LESSONS\.length/)
   assert.match(pathPage, /from "@\/components\/path\/path-starter-lessons"/)
-  assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} \/>/)
+  assert.match(pathPage, /<PathStarterLessons completedLessonIds=\{learning\.completedLessonIds\} activeLessonId=\{nextLesson\?\.id\} lessons=\{learning\.lessons\} \/>/)
   assert.match(pathPage, /aside className="progress-panel min-w-0/)
   assert.doesNotMatch(pathPage, /STARTER_LESSONS\.slice/)
 })
 
-test("PathStarterLessons renders the complete starter course", () => {
+test("PathStarterLessons renders the complete starter course in expandable units", async () => {
   const source = fs.readFileSync(path.join(root, "src/components/path/path-starter-lessons.tsx"), "utf8")
 
   assert.match(source, /export function PathStarterLessons/)
   assert.match(source, /completedLessonIds: ReadonlySet<string>/)
   assert.match(source, /activeLessonId: string \| null \| undefined/)
-  assert.match(source, /STARTER_LESSONS\.map/)
+  assert.match(source, /COURSE_PHASES\.map/)
+  assert.match(source, /STARTER_LESSONS\.filter\(lesson => lesson\.track === phase\.track\)/)
+  assert.match(source, /unit\.lessons\.map\(lesson => <PathLessonRow/)
   assert.doesNotMatch(source, /STARTER_LESSONS\.slice/)
-  assert.match(source, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId, kanaLevel\)/)
+  assert.match(source, /getLessonEntryStatus\(lesson, completedLessonIds, activeLessonId, kanaLevel, entryOrder\)/)
   assert.match(source, /getLessonEntryBadge\(status\)/)
   assert.match(source, /countSatisfiedLessons/)
   assert.match(source, /STARTER_LESSONS\.length/)
   assert.match(source, /className="min-w-0"/)
+  const { STARTER_LESSONS } = await loadTsModule("src/data/lesson-catalog.ts")
+  const { COURSE_PHASES } = await loadTsModule("src/lib/course-phases.ts")
+  assert.equal(STARTER_LESSONS.length, 175)
+  const tracks = new Set(COURSE_PHASES.map(phase => phase.track))
+  assert.ok(STARTER_LESSONS.every(lesson => tracks.has(lesson.track)), "every course must belong to a rendered phase")
+  const units = Map.groupBy(STARTER_LESSONS, lesson => lesson.unit.number)
+  assert.equal(units.size, 35)
+  assert.ok([...units.values()].every(lessons => lessons.length === 5), "unit disclosure must preserve all five lessons")
 })

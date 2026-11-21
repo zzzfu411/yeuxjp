@@ -85,6 +85,7 @@ export function TodayReviewPanel({
         </p>
         <div className="text-xs text-muted-foreground">
           错题 {counts.mistakesDue} · 假名 {counts.kanaDue} · 单词 {counts.vocabDue}
+          {counts.knowledgeDue !== undefined ? ` · 语法与句子 ${counts.knowledgeDue}` : null}
           {!todayQueueLength ? ` · 下一次 ${nextDueLabel}` : null}
         </div>
       </div>

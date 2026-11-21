@@ -1,0 +1,4613 @@
+{
+  "reviewedAt": "2026-09-10",
+  "reviewer": "Codex linguistic review; not native-teacher sign-off",
+  "rows": [
+    {
+      "key": "day-4-na-ha-ma-intro-sentence/build-intro",
+      "day": 4,
+      "version": "v1-0584ba5262fc162a",
+      "answer": "わたしはがくせいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-5-se-so-te-to/build-ohayou",
+      "day": 5,
+      "version": "v1-d17c46bd3681fac7",
+      "answer": "おはようございます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-6-na-row-complete/build-hai-sou",
+      "day": 6,
+      "version": "v1-82670a10efa20744",
+      "answer": "はいそうです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-7-ha-row-complete/build-konbanwa",
+      "day": 7,
+      "version": "v1-d69b5a703d743dce",
+      "answer": "こんばんは",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-8-ma-ya-rows/build-sayounara",
+      "day": 8,
+      "version": "v1-0bf7c4065e27956e",
+      "answer": "さようなら",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-9-ra-wa-n-complete/build-oyasumi",
+      "day": 9,
+      "version": "v1-2b5864a646eb5cee",
+      "answer": "おやすみなさい",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-10-seion-checkpoint/build-intro-formula",
+      "day": 10,
+      "version": "v1-05722b55f3388961",
+      "answer": "はじめましてよろしくおねがいします",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-14-yoon-core/build-ocha",
+      "day": 14,
+      "version": "v1-221526320a193564",
+      "answer": "おちゃです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-15-yoon-rest/build-gyuunyuu",
+      "day": 15,
+      "version": "v1-3e92693455100f04",
+      "answer": "ぎゅうにゅうです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-16-yoon-finish-checkpoint/build-intro-review",
+      "day": 16,
+      "version": "v1-ceacb3c7d59f34a7",
+      "answer": "わたしはがくせいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-20-katakana-dakuon-chouon/build-coffee",
+      "day": 20,
+      "version": "v1-14e63e33e16c3561",
+      "answer": "コーヒーをください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-21-kana-graduation/build-greeting-intro",
+      "day": 21,
+      "version": "v1-36fb1deb5fc6b7a1",
+      "answer": "こんにちはわたしはがくせいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-22-wa-ga-no/d22-build-gakusei",
+      "day": 22,
+      "version": "v1-bd01ff32090544b2",
+      "answer": "わたしはがくせいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-22-wa-ga-no/d22-build-hon",
+      "day": 22,
+      "version": "v1-75731d1ed7e5995e",
+      "answer": "これはわたしのほんです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-23-wo-mo-food/d23-build-pan",
+      "day": 23,
+      "version": "v1-2fac392f84d26dd7",
+      "answer": "パンをたべます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-23-wo-mo-food/d23-build-mizu-mo",
+      "day": 23,
+      "version": "v1-fb1b7f848b665e60",
+      "answer": "みずものみます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-24-ni-de-existence/d24-build-neko",
+      "day": 24,
+      "version": "v1-69b61cd998403001",
+      "answer": "へやにねこがいます",
+      "acceptedAnswers": [
+        "ねこがへやにいます"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-24-ni-de-existence/d24-build-toshokan",
+      "day": 24,
+      "version": "v1-8f391e7ab5ab0a8e",
+      "answer": "としょかんでべんきょうします",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-25-e-to-ya-move/d25-build-tokyo",
+      "day": 25,
+      "version": "v1-cf2cd66a63422ff8",
+      "answer": "とうきょうへいきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-25-e-to-ya-move/d25-build-tomodachi",
+      "day": 25,
+      "version": "v1-b91d53e23576c32e",
+      "answer": "ともだちといきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-26-masu-verb-groups/d26-build-benkyou",
+      "day": 26,
+      "version": "v1-c3586da3f2ece163",
+      "answer": "まいにちべんきょうします",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-27-masen-invitation/d27-build-invite",
+      "day": 27,
+      "version": "v1-06c7bc13893236ff",
+      "answer": "いっしょにいきませんか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-27-masen-invitation/d27-build-niku",
+      "day": 27,
+      "version": "v1-77213d076d99ed09",
+      "answer": "にくをたべません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-28-te-form/d28-build-sequence",
+      "day": 28,
+      "version": "v1-12e2ba47709df6a3",
+      "answer": "ごはんをたべてがっこうへいきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-29-te-kudasai-te-iru/d29-build-matte",
+      "day": 29,
+      "version": "v1-2d7c289b184e4a03",
+      "answer": "まってください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-29-te-kudasai-te-iru/d29-build-benkyou",
+      "day": 29,
+      "version": "v1-7874da094adba0c3",
+      "answer": "べんきょうしています",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-30-tai-mashou/d30-build-tabetai",
+      "day": 30,
+      "version": "v1-893d19bf41b54a3b",
+      "answer": "すしをたべたいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-30-tai-mashou/d30-build-mashou",
+      "day": 30,
+      "version": "v1-0d8f674792d72ac5",
+      "answer": "いっしょにいきましょう",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-31-past-polite/d31-build-iku",
+      "day": 31,
+      "version": "v1-1b1524ad8db30555",
+      "answer": "きのういきました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-31-past-polite/d31-build-neg",
+      "day": 31,
+      "version": "v1-bc18877dc7c7cb3b",
+      "answer": "きのういきませんでした",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-32-i-adjectives/d32-build-takai",
+      "day": 32,
+      "version": "v1-7024f996841e44ea",
+      "answer": "このほんはたかいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-33-na-adjectives-da/d33-build-shizuka",
+      "day": 33,
+      "version": "v1-4a1ccaf3c7948b47",
+      "answer": "きょうしつはしずかです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-33-na-adjectives-da/d33-build-ame",
+      "day": 33,
+      "version": "v1-ef4db4050a175c75",
+      "answer": "きょうはあめだ",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-34-demonstratives/d34-build-kore",
+      "day": 34,
+      "version": "v1-2dc0b584a7cc528a",
+      "answer": "これはほんです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-34-demonstratives/d34-build-koko",
+      "day": 34,
+      "version": "v1-137efa58d1584248",
+      "answer": "ここはとしょかんです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-35-questions/d35-build-dare",
+      "day": 35,
+      "version": "v1-aa0b774b74583c13",
+      "answer": "だれがきますか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-35-questions/d35-build-ikura",
+      "day": 35,
+      "version": "v1-fa90edde8a25f8fe",
+      "answer": "これはいくらですか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-36-numbers-time/d36-build-okiru",
+      "day": 36,
+      "version": "v1-41cfd73228e50d9c",
+      "answer": "7じにおきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-37-counters/d37-build-ringo",
+      "day": 37,
+      "version": "v1-3431d80bee97af41",
+      "answer": "りんごをみっつください",
+      "acceptedAnswers": [],
+      "decision": "把点单省略短语改为完整请求，区别于名词短语。",
+      "changed": true
+    },
+    {
+      "key": "day-37-counters/d37-build-coffee",
+      "day": 37,
+      "version": "v1-387c74c64c275b44",
+      "answer": "コーヒーをにはいください",
+      "acceptedAnswers": [],
+      "decision": "把点单省略短语改为完整请求，数量位于对象助词之后。",
+      "changed": true
+    },
+    {
+      "key": "day-38-kara-made-reason/d38-build-range",
+      "day": 38,
+      "version": "v1-3d146a40200fc07e",
+      "answer": "9じから5じまで",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-38-kara-made-reason/d38-build-bus",
+      "day": 38,
+      "version": "v1-7f6f0d24d7e15cf4",
+      "answer": "バスでいきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-39-plain-nai-ta/d39-build-ikanai",
+      "day": 39,
+      "version": "v1-874d4fca36860842",
+      "answer": "きょうはいかない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-40-hoshii-suki-yori/d40-build-hoshii",
+      "day": 40,
+      "version": "v1-e2bfb15e99a9fc44",
+      "answer": "みずがほしいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-40-hoshii-suki-yori/d40-build-suki",
+      "day": 40,
+      "version": "v1-fb7f6287a093c2fb",
+      "answer": "すしがすきです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-41-shopping/d41-build-kudasai",
+      "day": 41,
+      "version": "v1-4cde0a0241cbd75c",
+      "answer": "これをください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-41-shopping/d41-build-ikura",
+      "day": 41,
+      "version": "v1-1e8e46b5829815ad",
+      "answer": "いくらですか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-42-asking-directions/d42-build-eki",
+      "day": 42,
+      "version": "v1-773f1cdc710c02c2",
+      "answer": "えきはどこですか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-42-asking-directions/d42-build-migi",
+      "day": 42,
+      "version": "v1-33adbf8a09ee038c",
+      "answer": "みぎにまがってください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-43-restaurant/d43-build-menu",
+      "day": 43,
+      "version": "v1-58e1ec3918dfbd0f",
+      "answer": "メニューをください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-43-restaurant/d43-build-oishii",
+      "day": 43,
+      "version": "v1-28044edaf33b8a24",
+      "answer": "おいしいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-44-n5-checkpoint/d44-build",
+      "day": 44,
+      "version": "v1-23e542598b74ce1f",
+      "answer": "これをください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-45-graduation/d45-build-gakusei",
+      "day": 45,
+      "version": "v1-15be0bdbcdf12b47",
+      "answer": "わたしはがくせいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-45-graduation/d45-build-invite",
+      "day": 45,
+      "version": "v1-e64ed2d617f7018a",
+      "answer": "いっしょにいきませんか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-46-n4-tara/d46-build-hima",
+      "day": 46,
+      "version": "v1-07ee1338165dcec2",
+      "answer": "ひまだったらいきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-46-n4-tara/d46-build-ame",
+      "day": 46,
+      "version": "v1-63c8199e5cf128bc",
+      "answer": "あめだったらいきません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-47-n4-ba-nara/d47-build-ba",
+      "day": 47,
+      "version": "v1-ec55f3f5ccb9547f",
+      "answer": "じかんがなければやすみます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-47-n4-ba-nara/d47-build-nara",
+      "day": 47,
+      "version": "v1-cb7182496e13fca5",
+      "answer": "あしたならいきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-48-n4-to-cond/d48-build-mado",
+      "day": 48,
+      "version": "v1-7888205fed891d3b",
+      "answer": "まどをあけるとさむいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-48-n4-to-cond/d48-build-natsu",
+      "day": 48,
+      "version": "v1-ab811b9faff0e811",
+      "answer": "なつになるとあついです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-49-n4-conditions-checkpoint/d49-build",
+      "day": 49,
+      "version": "v1-0856663bfee3bc2b",
+      "answer": "ひまだったらいきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-50-n4-dekiru/d50-build-hanasu",
+      "day": 50,
+      "version": "v1-9ae262c7db7cb44b",
+      "answer": "にほんごをはなすことができます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-50-n4-dekiru/d50-build-oyogu",
+      "day": 50,
+      "version": "v1-c71766c4bc70b86a",
+      "answer": "およぐことができません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-51-n4-volitional/d51-build-ikou",
+      "day": 51,
+      "version": "v1-e065a9b3349769ed",
+      "answer": "いっしょにいこう",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-51-n4-volitional/d51-build-shiyou",
+      "day": 51,
+      "version": "v1-47e285ea3b1e7422",
+      "answer": "べんきょうしよう",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-52-n4-tsumori/d52-build-tsumori",
+      "day": 52,
+      "version": "v1-da69ab3c30a976d8",
+      "answer": "あしたいくつもりです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-52-n4-tsumori/d52-build-omou",
+      "day": 52,
+      "version": "v1-91e4e97c99c0d9f0",
+      "answer": "あしたはあめだとおもいます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-53-n4-maybe/d53-build-kamo",
+      "day": 53,
+      "version": "v1-e306483e1570e906",
+      "answer": "あめがふるかもしれません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-53-n4-maybe/d53-build-deshou",
+      "day": 53,
+      "version": "v1-cf24827fb3c6d115",
+      "answer": "あしたはあついでしょう",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-54-n4-ndesu/d54-build-itai",
+      "day": 54,
+      "version": "v1-4176c986f7f5bd06",
+      "answer": "あたまがいたいんです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-54-n4-ndesu/d54-build-ask",
+      "day": 54,
+      "version": "v1-45e4681882c7e848",
+      "answer": "どうしたんですか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-55-n4-intent-checkpoint/d55-build",
+      "day": 55,
+      "version": "v1-ffd4c009ea1d972d",
+      "answer": "あめがふるかもしれません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-56-n4-te-miru/d56-build-tabete",
+      "day": 56,
+      "version": "v1-3f1b4bceb60a634c",
+      "answer": "すしをたべてみます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-56-n4-te-miru/d56-build-kiite",
+      "day": 56,
+      "version": "v1-6efbc66a7dbf3020",
+      "answer": "きいてみます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-57-n4-te-shimau/d57-build-kasa",
+      "day": 57,
+      "version": "v1-92fafd58dfead68a",
+      "answer": "かさをわすれてしまいました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-57-n4-te-shimau/d57-build-tabete",
+      "day": 57,
+      "version": "v1-139e292c24a810c8",
+      "answer": "たべてしまいました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-58-n4-te-oku/d58-build-oku",
+      "day": 58,
+      "version": "v1-1f56200325efa191",
+      "answer": "まどをあけておきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-58-n4-te-oku/d58-build-aru",
+      "day": 58,
+      "version": "v1-6f7df6bdbaa1cefd",
+      "answer": "なまえがかいてあります",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-59-n4-te-iku/d59-build-motte",
+      "day": 59,
+      "version": "v1-0614d718be9eb498",
+      "answer": "ほんをもっていきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-59-n4-te-iku/d59-build-samuku",
+      "day": 59,
+      "version": "v1-6efdbf7b41166b3f",
+      "answer": "さむくなっていきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-60-n4-te-aux-checkpoint/d60-build",
+      "day": 60,
+      "version": "v1-67a22f6fa48e3183",
+      "answer": "まどをあけておきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-61-n4-ageru/d61-build-kashi",
+      "day": 61,
+      "version": "v1-286abcdef008a8fc",
+      "answer": "ともだちにほんをかしてあげます",
+      "acceptedAnswers": [
+        "ほんをともだちにかしてあげます"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-61-n4-ageru/d61-build-tetsudau",
+      "day": 61,
+      "version": "v1-9f5dc0f110aab81b",
+      "answer": "ともだちをてつだってあげます",
+      "acceptedAnswers": [],
+      "decision": "手伝う 的对象用 を；てあげる 不会把原动词的格一律改成 に。",
+      "changed": true
+    },
+    {
+      "key": "day-62-n4-kureru/d62-build-sensei",
+      "day": 62,
+      "version": "v1-0d4863cf0d044b6f",
+      "answer": "せんせいがかしてくれました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-62-n4-kureru/d62-build-tasuke",
+      "day": 62,
+      "version": "v1-9e11f2fe3d929f10",
+      "answer": "ともだちがたすけてくれました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-63-n4-morau/d63-build-tetsudau",
+      "day": 63,
+      "version": "v1-5b7cc7b3be75f1fb",
+      "answer": "ともだちにてつだってもらいました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-63-n4-morau/d63-build-kari",
+      "day": 63,
+      "version": "v1-746b8ddc50d2dcee",
+      "answer": "せんせいにじしょをかしてもらいました",
+      "acceptedAnswers": [
+        "じしょをせんせいにかしてもらいました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。 老师是借出者，用 貸してもらう；借りてもらう 是请对方替自己借入。",
+      "changed": true
+    },
+    {
+      "key": "day-64-n4-giving-checkpoint/d64-build",
+      "day": 64,
+      "version": "v1-5bc379f869f2fb9e",
+      "answer": "ともだちにてつだってもらいました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-65-n4-nakereba/d65-build-shukudai",
+      "day": 65,
+      "version": "v1-062b06cb2e0414b9",
+      "answer": "しゅくだいをしなければなりません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-65-n4-nakereba/d65-build-kaeru",
+      "day": 65,
+      "version": "v1-217db235fe4ef2af",
+      "answer": "かえらなければなりません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-66-n4-nakutemo/d66-build-iku",
+      "day": 66,
+      "version": "v1-827cb7d04f88fd54",
+      "answer": "きょうはいかなくてもいいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-66-n4-nakutemo/d66-build-suru",
+      "day": 66,
+      "version": "v1-875e54af05d27a3f",
+      "answer": "しなくてもいいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-67-n4-hou-ga-ii/d67-build-neru",
+      "day": 67,
+      "version": "v1-6298fbf13259390f",
+      "answer": "ねたほうがいいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-67-n4-hou-ga-ii/d67-build-iku",
+      "day": 67,
+      "version": "v1-8b5fe4d1da55b92f",
+      "answer": "いかないほうがいいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-68-n4-nai-de/d68-build-hashiru",
+      "day": 68,
+      "version": "v1-1c50b5408d1e5870",
+      "answer": "はしらないでください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-68-n4-nai-de/d68-build-wasureru",
+      "day": 68,
+      "version": "v1-6ab1148bdf595803",
+      "answer": "わすれないでください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-69-n4-advice-checkpoint/d69-build",
+      "day": 69,
+      "version": "v1-44c2811f3053af11",
+      "answer": "はしらないでください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-70-n4-passive/d70-build-hon",
+      "day": 70,
+      "version": "v1-958b908652640dd4",
+      "answer": "このほんはよまれています",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-70-n4-passive/d70-build-yobareru",
+      "day": 70,
+      "version": "v1-362fd481a3185a9b",
+      "answer": "わたしはせんせいによばれました",
+      "acceptedAnswers": [
+        "せんせいにわたしはよばれました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-71-n4-causative/d71-build-tabesaseru",
+      "day": 71,
+      "version": "v1-3fa225c49f4a4644",
+      "answer": "こどもにやさいをたべさせます",
+      "acceptedAnswers": [
+        "やさいをこどもにたべさせます"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-71-n4-causative/d71-build-ikaseru",
+      "day": 71,
+      "version": "v1-1ab3e4f6fce44aae",
+      "answer": "こどもをいかせます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-72-n4-sou/d72-build-ame",
+      "day": 72,
+      "version": "v1-0c8ed2dec5481f06",
+      "answer": "あしたはあめだそうです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-72-n4-sou/d72-build-kuru",
+      "day": 72,
+      "version": "v1-7c2babe0ce46e64a",
+      "answer": "くるそうです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-73-n4-sou-looks/d73-build-oishii",
+      "day": 73,
+      "version": "v1-7423e75fdfc62823",
+      "answer": "おいしそうです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-73-n4-sou-looks/d73-build-furi",
+      "day": 73,
+      "version": "v1-6ea019feeb8ad3c6",
+      "answer": "あめがふりそうです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-74-n4-mitai/d74-build-kodomo",
+      "day": 74,
+      "version": "v1-d3d23317ea1b7b5b",
+      "answer": "こどもみたいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-74-n4-mitai/d74-build-ame",
+      "day": 74,
+      "version": "v1-20c4bdd991292717",
+      "answer": "あめみたいです",
+      "acceptedAnswers": [],
+      "decision": "名词＋みたい 推测是雨天；不再把句子限定成将要开始降雨。",
+      "changed": true
+    },
+    {
+      "key": "day-75-n4-modality-checkpoint/d75-build",
+      "day": 75,
+      "version": "v1-c2f0614450cd70b6",
+      "answer": "こどもにやさいをたべさせます",
+      "acceptedAnswers": [
+        "やさいをこどもにたべさせます"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-76-n4-toki/d76-build-kodomo",
+      "day": 76,
+      "version": "v1-799d077fefdc4a05",
+      "answer": "こどものときよくあそびました",
+      "acceptedAnswers": [
+        "よくこどものときあそびました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-76-n4-toki/d76-build-kaetta",
+      "day": 76,
+      "version": "v1-d906a338d31fe5fa",
+      "answer": "うちへかえったときてをあらいます",
+      "acceptedAnswers": [],
+      "decision": "归家时间从句保持完整；不把 手を 附着到 帰った。",
+      "changed": false
+    },
+    {
+      "key": "day-77-n4-mae-ato/d77-build-mae",
+      "day": 77,
+      "version": "v1-75c6ed1493be85c4",
+      "answer": "たべるまえにてをあらいます",
+      "acceptedAnswers": [],
+      "decision": "保持 吃饭前 与 洗手 的动作关系，不能变成‘吃手’。",
+      "changed": false
+    },
+    {
+      "key": "day-77-n4-mae-ato/d77-build-ato",
+      "day": 77,
+      "version": "v1-bda504908e354222",
+      "answer": "たべたあとではをみがきます",
+      "acceptedAnswers": [],
+      "decision": "保持 吃饭后 与 刷牙 的动作关系。",
+      "changed": false
+    },
+    {
+      "key": "day-78-n4-nagara-tari/d78-build-nagara",
+      "day": 78,
+      "version": "v1-3a0b9bbac822aa42",
+      "answer": "おんがくをききながらべんきょうします",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-78-n4-nagara-tari/d78-build-tari",
+      "day": 78,
+      "version": "v1-d4cbc7767a43d06e",
+      "answer": "えいがをみたりほんをよんだりします",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-79-n4-ta-koto-aru/d79-build-itta",
+      "day": 79,
+      "version": "v1-f214a06e0b723450",
+      "answer": "にほんへいったことがあります",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-79-n4-ta-koto-aru/d79-build-tabeta",
+      "day": 79,
+      "version": "v1-3e67d357dd51d237",
+      "answer": "すしをたべたことがありません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-80-n4-time-checkpoint/d80-build",
+      "day": 80,
+      "version": "v1-c85d3c393cdb677b",
+      "answer": "にほんへいったことがあります",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-81-n4-you-ni-naru/d81-build-okiru",
+      "day": 81,
+      "version": "v1-3d3b040aec50b56c",
+      "answer": "はやくおきるようになりました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-81-n4-you-ni-naru/d81-build-hanasu",
+      "day": 81,
+      "version": "v1-04d9b18d1ede5f5b",
+      "answer": "にほんごがはなせるようになりました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-82-n4-ni-suru/d82-build-koohii",
+      "day": 82,
+      "version": "v1-6887956852d77128",
+      "answer": "コーヒーにします",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-82-n4-ni-suru/d82-build-koto",
+      "day": 82,
+      "version": "v1-bc6453343280ee7e",
+      "answer": "あしたいくことにします",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-83-n4-yasui-nikui/d83-build-yasui",
+      "day": 83,
+      "version": "v1-1415a5c954216a09",
+      "answer": "このほんはわかりやすいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-83-n4-yasui-nikui/d83-build-nikui",
+      "day": 83,
+      "version": "v1-70c729de8864401c",
+      "answer": "これはよみにくいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-84-n4-kata/d84-build-tsukai",
+      "day": 84,
+      "version": "v1-af89e4ebebfd6971",
+      "answer": "つかいかたがわかりません",
+      "acceptedAnswers": [],
+      "decision": "把生硬的‘不会用法’改为自然且准确的中文。",
+      "changed": true
+    },
+    {
+      "key": "day-84-n4-kata/d84-build-tsukuri",
+      "day": 84,
+      "version": "v1-eb4c71fc52a2fc0a",
+      "answer": "つくりかたをおしえてください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-85-n4-o-polite/d85-build-onamae",
+      "day": 85,
+      "version": "v1-459968de9f155f02",
+      "answer": "おなまえをかいてください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-85-n4-o-polite/d85-build-omachi",
+      "day": 85,
+      "version": "v1-d3b327da399edbee",
+      "answer": "おまちください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-86-n4-shi/d86-build-mise",
+      "day": 86,
+      "version": "v1-1efaf21efb6df434",
+      "answer": "やすいしおいしいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-86-n4-shi/d86-build-isogashii",
+      "day": 86,
+      "version": "v1-370faa63005ecbf1",
+      "answer": "いそがしいしつかれます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-87-n4-work-life/d87-build-kaigi",
+      "day": 87,
+      "version": "v1-b8aef3b6b88cfb46",
+      "answer": "きょうはかいぎがあるんです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-87-n4-work-life/d87-build-zangyou",
+      "day": 87,
+      "version": "v1-031c80c222e89906",
+      "answer": "きょうはざんぎょうがあるんです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-88-n4-travel/d88-build-kamo",
+      "day": 88,
+      "version": "v1-e415bab05e6ea86e",
+      "answer": "でんしゃがおくれるかもしれません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-88-n4-travel/d88-build-kippu",
+      "day": 88,
+      "version": "v1-27f5252cc3327a3c",
+      "answer": "きっぷをかいます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-89-n4-checkpoint/d89-build",
+      "day": 89,
+      "version": "v1-abc1516ba90180ab",
+      "answer": "ひまだったらいきます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-90-n4-graduation/d90-build",
+      "day": 90,
+      "version": "v1-fcca97575a5ba437",
+      "answer": "あしたはあめだそうです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-91-n3-tame/d91-build",
+      "day": 91,
+      "version": "v1-3ddfab646ab466b2",
+      "answer": "日本語を勉強するために日本へ来ました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-91-n3-tame/d91-build-health",
+      "day": 91,
+      "version": "v1-b97ee1bb8b258e9f",
+      "answer": "健康のために走り始めました",
+      "acceptedAnswers": [],
+      "decision": "简化 开始跑步 的表达，保留目的句型。",
+      "changed": true
+    },
+    {
+      "key": "day-92-n3-you-ni/d92-build",
+      "day": 92,
+      "version": "v1-3120ba16f54acc8e",
+      "answer": "忘れないように手帳に書きます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-92-n3-you-ni/d92-build-pray",
+      "day": 92,
+      "version": "v1-6f52a287adb47edf",
+      "answer": "合格できるように祈っています",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-93-n3-ni-yotte/d93-build",
+      "day": 93,
+      "version": "v1-5dfc7de53bf76089",
+      "answer": "国によって文化が違います",
+      "acceptedAnswers": [
+        "文化が国によって違います"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-93-n3-ni-yotte/d93-build-jiko",
+      "day": 93,
+      "version": "v1-1efd79baba365b52",
+      "answer": "事故によって電車が遅れました",
+      "acceptedAnswers": [
+        "電車が事故によって遅れました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-94-n3-ni-taishite/d94-build",
+      "day": 94,
+      "version": "v1-cff81f32a9fc33ac",
+      "answer": "お客様に対して丁寧に話してください",
+      "acceptedAnswers": [
+        "丁寧にお客様に対して話してください"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-94-n3-ni-taishite/d94-build-iken",
+      "day": 94,
+      "version": "v1-ad1d0ab43e5decf4",
+      "answer": "この意見に対して反対です",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-95-n3-toshite/d95-build",
+      "day": 95,
+      "version": "v1-da94e9c3c165702d",
+      "answer": "公務員として市役所で働いています",
+      "acceptedAnswers": [
+        "市役所で公務員として働いています"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-95-n3-toshite/d95-build-gakusei",
+      "day": 95,
+      "version": "v1-fd5e22f480028fe8",
+      "answer": "学生として真面目でなければなりません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-96-n3-nitsuite/d96-build",
+      "day": 96,
+      "version": "v1-4a16d34211c9f744",
+      "answer": "日本の歴史について調べています",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-96-n3-nitsuite/d96-build-iken",
+      "day": 96,
+      "version": "v1-e0bee06cadeb1cca",
+      "answer": "この問題について意見があります",
+      "acceptedAnswers": [],
+      "decision": "改用自然的 について＋意見；不将‘对……感兴趣’教成固定 について 接续。",
+      "changed": true
+    },
+    {
+      "key": "day-97-n3-totte/d97-build",
+      "day": 97,
+      "version": "v1-ed270922f2626e20",
+      "answer": "私にとって家族が一番大切です",
+      "acceptedAnswers": [
+        "家族が私にとって一番大切です"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-97-n3-totte/d97-build-yume",
+      "day": 97,
+      "version": "v1-7cb6ac8c2ba90eda",
+      "answer": "子供にとって夢は希望です",
+      "acceptedAnswers": [
+        "夢は子供にとって希望です"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-98-n3-baai/d98-build",
+      "day": 98,
+      "version": "v1-9d5d09f145fb883d",
+      "answer": "遅れた場合は電話してください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-98-n3-baai/d98-build-ame",
+      "day": 98,
+      "version": "v1-e82252ec069ee91a",
+      "answer": "雨の場合は中止です",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-99-n3-aida-uchi/d99-build-aida",
+      "day": 99,
+      "version": "v1-5a57ab26fc54f214",
+      "answer": "子供が寝ているあいだに映画を見ました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-99-n3-aida-uchi/d99-build-uchi",
+      "day": 99,
+      "version": "v1-cce02a744d7a1dba",
+      "answer": "若いうちに旅行を続けます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-100-n3-stance-checkpoint/d100-build",
+      "day": 100,
+      "version": "v1-dc07aeecd523fa48",
+      "answer": "私にとって家族が一番大切です",
+      "acceptedAnswers": [
+        "家族が私にとって一番大切です"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-101-n3-hazu/d101-build",
+      "day": 101,
+      "version": "v1-c58d26695b079ba7",
+      "answer": "締め切りは明日のはずです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-101-n3-hazu/d101-build-tsuku",
+      "day": 101,
+      "version": "v1-416b6a38e1f9bfb8",
+      "answer": "今もう着いているはずです",
+      "acceptedAnswers": [
+        "もう今着いているはずです"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-102-n3-wake-da/d102-build",
+      "day": 102,
+      "version": "v1-b244ecd10ad80e5f",
+      "answer": "雨ですから道が混んでいるわけです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-102-n3-wake-da/d102-build-tsumari",
+      "day": 102,
+      "version": "v1-2969efd26e87e568",
+      "answer": "つまり時間が足りないわけです",
+      "acceptedAnswers": [],
+      "decision": "明确题目要求的句首连接方式；不把其他篇章语序宣称为语法错误。",
+      "changed": true
+    },
+    {
+      "key": "day-103-n3-wake-ga-nai/d103-build",
+      "day": 103,
+      "version": "v1-7015c563051073c5",
+      "answer": "準備なしで成功するわけがありません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-103-n3-wake-ga-nai/d103-build-kodomo",
+      "day": 103,
+      "version": "v1-5d9ebd5c62d65362",
+      "answer": "子供が一人でできるわけがありません",
+      "acceptedAnswers": [],
+      "decision": "保持‘孩子独自完成’的解释，不接受可能被读成‘独自生孩子’的换序。",
+      "changed": false
+    },
+    {
+      "key": "day-104-n3-wake-niwa/d104-build",
+      "day": 104,
+      "version": "v1-4b46482776d7c75d",
+      "answer": "約束したから行かないわけにはいきません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-104-n3-wake-niwa/d104-build-shukudai",
+      "day": 104,
+      "version": "v1-11b8142c44a062a2",
+      "answer": "宿題を出さないわけにはいきません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-105-n3-koto-ni-suru/d105-build",
+      "day": 105,
+      "version": "v1-cc96007b92331a1f",
+      "answer": "来週から早起きすることにしました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-105-n3-koto-ni-suru/d105-build-kyuka",
+      "day": 105,
+      "version": "v1-1de75d1aa5d9a582",
+      "answer": "休暇を取ることにしました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-106-n3-koto-ni-natteiru/d106-build",
+      "day": 106,
+      "version": "v1-281cc6bd7a7fdea5",
+      "answer": "ここでは靴を脱ぐことになっています",
+      "acceptedAnswers": [
+        "靴をここでは脱ぐことになっています"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-106-n3-koto-ni-natteiru/d106-build-heijitsu",
+      "day": 106,
+      "version": "v1-f36852576a9fd949",
+      "answer": "平日は7時に学校へ行くことになっています",
+      "acceptedAnswers": [
+        "7時に平日は学校へ行くことになっています"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-107-n3-mono-da/d107-build",
+      "day": 107,
+      "version": "v1-612d1be83b81bc78",
+      "answer": "子供のころよく川で遊んだものです",
+      "acceptedAnswers": [
+        "子供のころ川でよく遊んだものです",
+        "よく子供のころ川で遊んだものです",
+        "川で子供のころよく遊んだものです",
+        "川でよく子供のころ遊んだものです",
+        "よく川で子供のころ遊んだものです"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-107-n3-mono-da/d107-build-gakusei",
+      "day": 107,
+      "version": "v1-5b52b944bb57ff82",
+      "answer": "学生は勉強するものです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-108-n3-koto-da/d108-build",
+      "day": 108,
+      "version": "v1-159158d5dd099a31",
+      "answer": "風邪のときはゆっくり休むことです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-108-n3-koto-da/d108-build-undou",
+      "day": 108,
+      "version": "v1-baa9ba96e7fb67fe",
+      "answer": "健康のためには運動することです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-109-n3-toiu/d109-build",
+      "day": 109,
+      "version": "v1-e9f4ad130945af2d",
+      "answer": "これは寿司という食べ物です",
+      "acceptedAnswers": [],
+      "decision": "使用课内已有的真实命名例句，替换‘叫做会议的安排’。",
+      "changed": true
+    },
+    {
+      "key": "day-109-n3-toiu/d109-build-wake",
+      "day": 109,
+      "version": "v1-3b28303158425f8d",
+      "answer": "遅れたというのは事故があったからです",
+      "acceptedAnswers": [],
+      "decision": "消除题干‘电车晚点’与日文‘事故’不一致。",
+      "changed": true
+    },
+    {
+      "key": "day-110-n3-explain-checkpoint/d110-build",
+      "day": 110,
+      "version": "v1-59f1eec17b67ec31",
+      "answer": "来週から早起きすることにしました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-111-n3-te-shimau/d111-build",
+      "day": 111,
+      "version": "v1-135805bfb29faabf",
+      "answer": "宿題を忘れてしまいました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-111-n3-te-shimau/d111-build-otosu",
+      "day": 111,
+      "version": "v1-6e521ab70d93b6a7",
+      "answer": "財布を落としてしまいました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-112-n3-bakari/d112-build",
+      "day": 112,
+      "version": "v1-c62f7fa7004a5b55",
+      "answer": "週末は漫画を読んでばかりいます",
+      "acceptedAnswers": [
+        "漫画を週末は読んでばかりいます"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-112-n3-bakari/d112-build-tsuita",
+      "day": 112,
+      "version": "v1-e06cf373ae972851",
+      "answer": "今着いたばかりです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-113-n3-sae/d113-build",
+      "day": 113,
+      "version": "v1-c6f31f1d83ff5893",
+      "answer": "名前さえ思い出せませんでした",
+      "acceptedAnswers": [],
+      "decision": "中文补出过去语境，与 ませんでした 一致。",
+      "changed": true
+    },
+    {
+      "key": "day-113-n3-sae/d113-build-mizu",
+      "day": 113,
+      "version": "v1-16a85d0653bb3a38",
+      "answer": "水さえ飲めませんでした",
+      "acceptedAnswers": [],
+      "decision": "中文补出过去语境，与 ませんでした 一致。",
+      "changed": true
+    },
+    {
+      "key": "day-114-n3-rashii-ppoi/d114-build-rashii",
+      "day": 114,
+      "version": "v1-d6e0629f1f5caaa1",
+      "answer": "今日は春らしい天気です",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-114-n3-rashii-ppoi/d114-build-ppoi",
+      "day": 114,
+      "version": "v1-859158943e73bb66",
+      "answer": "その話は嘘っぽいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-115-n3-gimi/d115-build",
+      "day": 115,
+      "version": "v1-5d4c3f0dd19ee97d",
+      "answer": "今日は風邪気味ですから早く帰ります",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-115-n3-gimi/d115-build-tsukare",
+      "day": 115,
+      "version": "v1-07f1abf31c64fdc9",
+      "answer": "最近疲れ気味です",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-116-n3-okage/d116-build",
+      "day": 116,
+      "version": "v1-b6190825ca4625d9",
+      "answer": "先生のおかげで試験に合格しました",
+      "acceptedAnswers": [
+        "試験に先生のおかげで合格しました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-116-n3-okage/d116-build-senpai",
+      "day": 116,
+      "version": "v1-cdc1e54ca7093e64",
+      "answer": "先輩が助けてくれたおかげで成功しました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-117-n3-seide/d117-build",
+      "day": 117,
+      "version": "v1-d1720f67950ae66b",
+      "answer": "雨のせいで試合が中止になりました",
+      "acceptedAnswers": [
+        "試合が雨のせいで中止になりました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-117-n3-seide/d117-build-konzatsu",
+      "day": 117,
+      "version": "v1-fdceecf8763738bc",
+      "answer": "混雑のせいで遅れました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-118-n3-chigainai/d118-build",
+      "day": 118,
+      "version": "v1-18cccc29a476e433",
+      "answer": "あれは田中さんに違いありません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-118-n3-chigainai/d118-build-jiko",
+      "day": 118,
+      "version": "v1-d786555a597093ce",
+      "answer": "事故に違いありません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-119-n3-tokoro/d119-build",
+      "day": 119,
+      "version": "v1-6baec196806c5782",
+      "answer": "これから出かけるところです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-119-n3-tokoro/d119-build-eiga",
+      "day": 119,
+      "version": "v1-c3c9063a015e1fae",
+      "answer": "映画が始まるところです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-120-n3-nuance-checkpoint/d120-build",
+      "day": 120,
+      "version": "v1-bf13ebb38f8eab9b",
+      "answer": "週末は漫画を読んでばかりいます",
+      "acceptedAnswers": [
+        "漫画を週末は読んでばかりいます"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-121-n3-mama/d121-build",
+      "day": 121,
+      "version": "v1-02c69709fcfeaf83",
+      "answer": "電気をつけたまま出かけてしまいました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-121-n3-mama/d121-build-kutsu",
+      "day": 121,
+      "version": "v1-919a92ef26489023",
+      "answer": "靴を履いたまま入らないでください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-122-n3-tabi-ni/d122-build",
+      "day": 122,
+      "version": "v1-7af1d8a3ce1be845",
+      "answer": "この音楽を聞くたびに思い出します",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-122-n3-tabi-ni/d122-build-ryokou",
+      "day": 122,
+      "version": "v1-6d9e831e66f89762",
+      "answer": "旅行のたびに計画を見直します",
+      "acceptedAnswers": [
+        "計画を旅行のたびに見直します"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-123-n3-tsutsu/d123-build",
+      "day": 123,
+      "version": "v1-f7aebc90c868d294",
+      "answer": "準備をしつつ友達に伝えました",
+      "acceptedAnswers": [
+        "友達に準備をしつつ伝えました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-123-n3-tsutsu/d123-build-shiritsutsu",
+      "day": 123,
+      "version": "v1-972cc15f21a6384f",
+      "answer": "悪いと知りつつやってしまいました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-124-n3-kagiri/d124-build",
+      "day": 124,
+      "version": "v1-5321cd80748d3810",
+      "answer": "私の知る限り問題はありません",
+      "acceptedAnswers": [
+        "問題は私の知る限りありません"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-124-n3-kagiri/d124-build-gakusei",
+      "day": 124,
+      "version": "v1-14856846c3da7e50",
+      "answer": "学生である限り図書館が使えます",
+      "acceptedAnswers": [],
+      "decision": "学生是使用者；不能把 図書館が 放进‘是学生’条件从句。",
+      "changed": false
+    },
+    {
+      "key": "day-125-n3-saserareru/d125-build",
+      "day": 125,
+      "version": "v1-aa6c44e989d53559",
+      "answer": "部長に残業をさせられました",
+      "acceptedAnswers": [
+        "残業を部長にさせられました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-125-n3-saserareru/d125-build-hakobu",
+      "day": 125,
+      "version": "v1-294872c7277df8d9",
+      "answer": "書類を運ばされました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-126-n3-te-hoshii/d126-build",
+      "day": 126,
+      "version": "v1-837325ba7288e708",
+      "answer": "この書類を書き直してほしいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-126-n3-te-hoshii/d126-build-shizuka",
+      "day": 126,
+      "version": "v1-c4e3f36f0b00d2d3",
+      "answer": "もう少し静かにしてほしいです",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-127-n3-ue-de/d127-build",
+      "day": 127,
+      "version": "v1-5ae9b5a0243ceaf4",
+      "answer": "よく調べた上で申し込むことにします",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-127-n3-ue-de/d127-build-kurabe",
+      "day": 127,
+      "version": "v1-dc3e626db1321b7f",
+      "answer": "比べた上で決めます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-128-n3-ni-shitagatte/d128-build",
+      "day": 128,
+      "version": "v1-1fe0758fd0f00b63",
+      "answer": "説明に従って操作してください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-128-n3-ni-shitagatte/d128-build-kawaru",
+      "day": 128,
+      "version": "v1-1503efd4c5952832",
+      "answer": "練習を重ねるに従って上手になります",
+      "acceptedAnswers": [],
+      "decision": "把笼统的生活变化改为能具体观察的熟练程度变化。",
+      "changed": true
+    },
+    {
+      "key": "day-129-n3-kiru-kake/d129-build-kake",
+      "day": 129,
+      "version": "v1-65f75b82798459c6",
+      "answer": "読みかけの本をバッグに入れました",
+      "acceptedAnswers": [
+        "バッグに読みかけの本を入れました"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-129-n3-kiru-kake/d129-build-kiru",
+      "day": 129,
+      "version": "v1-786bcf8945924aa1",
+      "answer": "疲れきっています",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-130-n3-opinion/d130-build",
+      "day": 130,
+      "version": "v1-3c0d70ba7a16bc84",
+      "answer": "要するにこの計画は無理だということです",
+      "acceptedAnswers": [
+        "この計画は要するに無理だということです"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。 明确 ということです 用于归结前文判断，避免含混的自我转述。",
+      "changed": true
+    },
+    {
+      "key": "day-130-n3-opinion/d130-build-ippou",
+      "day": 130,
+      "version": "v1-5d45489e63428954",
+      "answer": "一方で反対という声もあります",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-131-n3-work/d131-build",
+      "day": 131,
+      "version": "v1-ae42ed4600b94c58",
+      "answer": "営業として事務所で働いています",
+      "acceptedAnswers": [
+        "事務所で営業として働いています"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-131-n3-work/d131-build-meishi",
+      "day": 131,
+      "version": "v1-0474d4c4e46e4ee2",
+      "answer": "名刺を受け取ってください",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-132-n3-news-light/d132-build",
+      "day": 132,
+      "version": "v1-2f21a7bd211aab0b",
+      "answer": "事故によって電車が遅れています",
+      "acceptedAnswers": [
+        "電車が事故によって遅れています"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-132-n3-news-light/d132-build-police",
+      "day": 132,
+      "version": "v1-eedacebf7d8b1f59",
+      "answer": "警察によって発表されました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-133-n3-apology-thanks/d133-build-sorry",
+      "day": 133,
+      "version": "v1-5141a00d32495d03",
+      "answer": "私のせいで待たせてしまいすみません",
+      "acceptedAnswers": [],
+      "decision": "补全 せいで 后具体造成的结果，与本课例句和听写一致。",
+      "changed": true
+    },
+    {
+      "key": "day-133-n3-apology-thanks/d133-build-thanks",
+      "day": 133,
+      "version": "v1-0836be2393821461",
+      "answer": "皆さんのおかげで成功しました",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-134-n3-checkpoint/d134-build",
+      "day": 134,
+      "version": "v1-a8ca62780d0896e4",
+      "answer": "私にとって家族が一番大切です",
+      "acceptedAnswers": [
+        "家族が私にとって一番大切です"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-135-n3-graduation/d135-build",
+      "day": 135,
+      "version": "v1-2698444f6e9753d7",
+      "answer": "毎日少しずつ続けることです",
+      "acceptedAnswers": [
+        "少しずつ毎日続けることです"
+      ],
+      "decision": "保留已审核的副词换序。",
+      "changed": false
+    },
+    {
+      "key": "day-135-n3-graduation/d135-build-toshite",
+      "day": 135,
+      "version": "v1-16ec72e74913f61d",
+      "answer": "学生として真面目でなければなりません",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-136-n2-temo/d136-build-kaigi",
+      "day": 136,
+      "version": "v1-5a7c536d2c12ffb9",
+      "answer": "たとえ雨が降っても会議は行われます",
+      "acceptedAnswers": [
+        "会議はたとえ雨が降っても行われます"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-136-n2-temo/d136-build-taisaku",
+      "day": 136,
+      "version": "v1-63e7449a8a1fff16",
+      "answer": "災害が起きても対策は必要だ",
+      "acceptedAnswers": [
+        "対策は災害が起きても必要だ"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-137-n2-zuni/d137-build-kakunin",
+      "day": 137,
+      "version": "v1-2e3d7555a6e2f14b",
+      "answer": "情報を確認せずに判断してはいけない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-137-n2-zuni/d137-build-iwazu",
+      "day": 137,
+      "version": "v1-b5bb3fec493770e2",
+      "answer": "何も言わずに退席した",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-138-n2-beki/d138-build-houkoku",
+      "day": 138,
+      "version": "v1-e651aeade1eb8f7b",
+      "answer": "担当者は事実を報告すべきだ",
+      "acceptedAnswers": [
+        "事実を担当者は報告すべきだ"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-138-n2-beki/d138-build-kijun",
+      "day": 138,
+      "version": "v1-747bb570db6796a6",
+      "answer": "基準を守るべきだ",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-139-n2-shikanai/d139-build-matsu",
+      "day": 139,
+      "version": "v1-f42213e7ae8ad49d",
+      "answer": "現状では待つしかない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-139-n2-shikanai/d139-build-shisaku",
+      "day": 139,
+      "version": "v1-8a1952cd9fc5c5fd",
+      "answer": "施策を変えるしかない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-140-n2-zaruenai/d140-build-seisaku",
+      "day": 140,
+      "version": "v1-ef4df7db1932a57f",
+      "answer": "政策を見直さざるを得ない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-140-n2-zaruenai/d140-build-keiyaku",
+      "day": 140,
+      "version": "v1-3fb1e1dad318870e",
+      "answer": "したがって契約を変更せざるを得ない",
+      "acceptedAnswers": [],
+      "decision": "明确题目要求的句首连接方式；不把其他篇章语序宣称为语法错误。",
+      "changed": true
+    },
+    {
+      "key": "day-141-n2-wake-dewa-nai/d141-build-hinshitsu",
+      "day": 141,
+      "version": "v1-96fe62ce3f43012e",
+      "answer": "高いからといって品質がいいわけではない",
+      "acceptedAnswers": [],
+      "decision": "价格是高低判断的对象，不把 品質が 接到 高い 前改变关系。",
+      "changed": false
+    },
+    {
+      "key": "day-141-n2-wake-dewa-nai/d141-build-honshitsu",
+      "day": 141,
+      "version": "v1-626719874f1ed497",
+      "answer": "それが本質だというわけではない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-142-n2-koto-wanai/d142-build-fuan",
+      "day": 142,
+      "version": "v1-939b563c6911515c",
+      "answer": "不安がることはない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-142-n2-koto-wanai/d142-build-kikai",
+      "day": 142,
+      "version": "v1-fef4139a5f836690",
+      "answer": "機会をあきらめることはない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-143-n2-ni-suginai/d143-build-mikomi",
+      "day": 143,
+      "version": "v1-f7c0a86704d56825",
+      "answer": "それはまだ見込みにすぎない",
+      "acceptedAnswers": [
+        "まだそれは見込みにすぎない"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-143-n2-ni-suginai/d143-build-kouka",
+      "day": 143,
+      "version": "v1-a3de397af4abdb42",
+      "answer": "それは一時的な効果にすぎない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-144-n2-ni-hokanaranai/d144-build-genin",
+      "day": 144,
+      "version": "v1-4d3b76f4d7c10dc2",
+      "answer": "失敗の原因は準備不足にほかならない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-144-n2-ni-hokanaranai/d144-build-kachi",
+      "day": 144,
+      "version": "v1-8952196cffbbe382",
+      "answer": "それがこの仕事の価値にほかならない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-145-n2-logic-checkpoint/d145-build",
+      "day": 145,
+      "version": "v1-a19f67baa2e5e668",
+      "answer": "現状を認めざるを得ない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-146-n2-ue-ni/d146-build-jisseki",
+      "day": 146,
+      "version": "v1-94bb117098a10d54",
+      "answer": "実績がある上に評価も高い",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-146-n2-ue-ni/d146-build-gyoumu",
+      "day": 146,
+      "version": "v1-ab45fa08e0eb1014",
+      "answer": "業務が増えた上に人手も足りない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-147-n2-ippo/d147-build-keizai",
+      "day": 147,
+      "version": "v1-b9e1a875dd43afe5",
+      "answer": "経済は回復する一方で少子化が進んでいる",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-147-n2-ippo/d147-build-koureika",
+      "day": 147,
+      "version": "v1-d166e993ad919aeb",
+      "answer": "一方で高齢化も進んでいる",
+      "acceptedAnswers": [],
+      "decision": "明确题目要求的句首连接方式；不把其他篇章语序宣称为语法错误。",
+      "changed": true
+    },
+    {
+      "key": "day-148-n2-hanmen/d148-build-rieki",
+      "day": 148,
+      "version": "v1-f242f5f64bbafb42",
+      "answer": "利益が出る反面損失も大きい",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-148-n2-hanmen/d148-build-eikyou",
+      "day": 148,
+      "version": "v1-48b39d88782e4ca2",
+      "answer": "影響は大きい反面コストも高い",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-149-n2-bakari-ka/d149-build-uriage",
+      "day": 149,
+      "version": "v1-32c15ca9f1b1c25d",
+      "answer": "売上ばかりか市場シェアまで減少した",
+      "acceptedAnswers": [],
+      "decision": "明确两个下降指标，替换含混的‘丢掉营业额’搭配。",
+      "changed": true
+    },
+    {
+      "key": "day-149-n2-bakari-ka/d149-build-kenri",
+      "day": 149,
+      "version": "v1-941f9f53d929d5bd",
+      "answer": "権利ばかりか義務もある",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-150-n2-dokoroka/d150-build-shuueki",
+      "day": 150,
+      "version": "v1-8d84a45ffcd72991",
+      "answer": "収益が出るどころか損失が続いた",
+      "acceptedAnswers": [],
+      "decision": "中文译文对应过去持续的结果，不暗示目前仍在继续。",
+      "changed": true
+    },
+    {
+      "key": "day-150-n2-dokoroka/d150-build-situbou",
+      "day": 150,
+      "version": "v1-23ea489f1978ee11",
+      "answer": "安心するどころか失望した",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-151-n2-kuse-ni/d151-build-jijou",
+      "day": 151,
+      "version": "v1-9d22c23f2a8612ab",
+      "answer": "事情を知っているくせに何も言わない",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-151-n2-kuse-ni/d151-build-yakuwari",
+      "day": 151,
+      "version": "v1-0c13e45fa182c3ab",
+      "answer": "役割があるくせに人に押しつける",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-152-n2-ageku/d152-build-koushou",
+      "day": 152,
+      "version": "v1-eedbfe352cbfaf67",
+      "answer": "長い交渉のあげく契約は成立しなかった",
+      "acceptedAnswers": [
+        "契約は長い交渉のあげく成立しなかった"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。 契約 搭配 成立しなかった；保留漫长过程后失败的 あげく。",
+      "changed": true
+    },
+    {
+      "key": "day-152-n2-ageku/d152-build-ringi",
+      "day": 152,
+      "version": "v1-8774bb50c58da61e",
+      "answer": "稟議を重ねたあげく締め切りに間に合わなかった",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-153-n2-gachi/d153-build-wasure",
+      "day": 153,
+      "version": "v1-03020f40a1f0dcc6",
+      "answer": "忙しいと確認を忘れがちだ",
+      "acceptedAnswers": [],
+      "decision": "保留条件‘忙的时候’与主句‘忘记确认’的边界。",
+      "changed": false
+    },
+    {
+      "key": "day-153-n2-gachi/d153-build-ochikomu",
+      "day": 153,
+      "version": "v1-a2ce19abe7cc9c2b",
+      "answer": "一人で担当すると落ち込みがちだ",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-154-n2-kaneru/d154-build-kaneru",
+      "day": 154,
+      "version": "v1-bdc443000f43712c",
+      "answer": "その提案には賛成しかねます",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-154-n2-kaneru/d154-build-gatai",
+      "day": 154,
+      "version": "v1-bd247b53d236025d",
+      "answer": "それは信じがたい分析結果だ",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-155-n2-eval-checkpoint/d155-build",
+      "day": 155,
+      "version": "v1-497979a406d1fa30",
+      "answer": "休むどころか残業が続いた",
+      "acceptedAnswers": [],
+      "decision": "明确 続いた 回顾过去的语境。",
+      "changed": true
+    },
+    {
+      "key": "day-156-n2-shidai/d156-build-nouki",
+      "day": 156,
+      "version": "v1-8690b053a6e08af1",
+      "answer": "納期が分かり次第ご連絡します",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-156-n2-shidai/d156-build-torihiki",
+      "day": 156,
+      "version": "v1-6226da9436c2cc62",
+      "answer": "取引が終わり次第組織に知らせる",
+      "acceptedAnswers": [
+        "組織に取引が終わり次第知らせる"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-157-n2-tsutsu-aru/d157-build-kaihatsu",
+      "day": 157,
+      "version": "v1-f3d93f113e44e6ef",
+      "answer": "新しい技術が開発されつつある",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-157-n2-tsutsu-aru/d157-build-genshou",
+      "day": 157,
+      "version": "v1-0e8add2d8f551fa9",
+      "answer": "その現象は都市で広がりつつある",
+      "acceptedAnswers": [
+        "都市でその現象は広がりつつある"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-158-n2-ni-atatte/d158-build-jigyou",
+      "day": 158,
+      "version": "v1-0c9c2cb2bb1396b2",
+      "answer": "事業の開始にあたって目標を示す",
+      "acceptedAnswers": [
+        "目標を事業の開始にあたって示す"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-158-n2-ni-atatte/d158-build-senkyo",
+      "day": 158,
+      "version": "v1-162344019dbd56e3",
+      "answer": "選挙にあたって組織は決意を示した",
+      "acceptedAnswers": [
+        "組織は選挙にあたって決意を示した",
+        "選挙にあたって決意を組織は示した"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-159-n2-ni-saishite/d159-build-keiyaku",
+      "day": 159,
+      "version": "v1-21c1e9706e149e50",
+      "answer": "契約に際して条件を確認すべきだ",
+      "acceptedAnswers": [
+        "条件を契約に際して確認すべきだ"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-159-n2-ni-saishite/d159-build-jiken",
+      "day": 159,
+      "version": "v1-cde78bfb19c5fe0d",
+      "answer": "事件に際して要点を整理する",
+      "acceptedAnswers": [
+        "要点を事件に際して整理する"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-160-n2-wo-megutte/d160-build-kenpou",
+      "day": 160,
+      "version": "v1-e2f654f7e6b43a67",
+      "answer": "憲法改正をめぐって議論が続いている",
+      "acceptedAnswers": [
+        "議論が憲法改正をめぐって続いている"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-160-n2-wo-megutte/d160-build-seiji",
+      "day": 160,
+      "version": "v1-915e688ee818255e",
+      "answer": "政治改革をめぐって世論が割れた",
+      "acceptedAnswers": [
+        "世論が政治改革をめぐって割れた"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-161-n2-wo-towazu/d161-build-jinzai",
+      "day": 161,
+      "version": "v1-0b5cad525baa919a",
+      "answer": "経験を問わず人材を募集します",
+      "acceptedAnswers": [
+        "人材を経験を問わず募集します"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-161-n2-wo-towazu/d161-build-chiiki",
+      "day": 161,
+      "version": "v1-e5768d9b6093af01",
+      "answer": "地域や分野を問わず交流する",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-162-n2-ni-motozuite/d162-build-chousa",
+      "day": 162,
+      "version": "v1-3134f7a013725ea2",
+      "answer": "調査に基づいて方針を決める",
+      "acceptedAnswers": [
+        "方針を調査に基づいて決める"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-162-n2-ni-motozuite/d162-build-toukei",
+      "day": 162,
+      "version": "v1-fc8bb51742901cbd",
+      "answer": "この研究は統計に基づいている",
+      "acceptedAnswers": [
+        "統計にこの研究は基づいている"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-163-n2-kakawarazu/d163-build-ame",
+      "day": 163,
+      "version": "v1-8d927ae1cc534c57",
+      "answer": "雨にもかかわらず試合は行われた",
+      "acceptedAnswers": [
+        "試合は雨にもかかわらず行われた"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-163-n2-kakawarazu/d163-build-hinkon",
+      "day": 163,
+      "version": "v1-2422bf8e05fd7306",
+      "answer": "貧困であるにもかかわらず福祉が届かない",
+      "acceptedAnswers": [],
+      "decision": "贫困指人群，不将 福祉が 移入贫困条件从句。",
+      "changed": false
+    },
+    {
+      "key": "day-164-n2-sae-ba/d164-build-kiso",
+      "day": 164,
+      "version": "v1-938c422126e49a1b",
+      "answer": "基礎さえあれば技術は後から学べる",
+      "acceptedAnswers": [
+        "技術は基礎さえあれば後から学べる"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-164-n2-sae-ba/d164-build-shikin",
+      "day": 164,
+      "version": "v1-463dc7926a6f20b4",
+      "answer": "資金さえあれば要素は揃えられる",
+      "acceptedAnswers": [
+        "要素は資金さえあれば揃えられる"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-165-n2-connect-checkpoint/d165-build",
+      "day": 165,
+      "version": "v1-4b4bfac3f0228807",
+      "answer": "データに基づいて判断する",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-166-n2-monoka/d166-build-houshin",
+      "day": 166,
+      "version": "v1-a0884974c80b136a",
+      "answer": "そんな方針に賛成するものか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-166-n2-monoka/d166-build-gainen",
+      "day": 166,
+      "version": "v1-9552f3cacc132326",
+      "answer": "そんな概念は認めるものか",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-167-n2-mai/d167-build-shippai",
+      "day": 167,
+      "version": "v1-3ee58b6c93edcd0c",
+      "answer": "二度と同じ失敗はするまい",
+      "acceptedAnswers": [
+        "同じ失敗は二度とするまい"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-167-n2-mai/d167-build-koudou",
+      "day": 167,
+      "version": "v1-ee13028e7ec9c20a",
+      "answer": "そんな行動は取るまい",
+      "acceptedAnswers": [],
+      "decision": "まい 表否定意志，本句没有 二度と，不额外限定为再次采取。",
+      "changed": true
+    },
+    {
+      "key": "day-168-n2-nu/d168-build-shiranu",
+      "day": 168,
+      "version": "v1-89e91b82a1608dae",
+      "answer": "意図は知らぬが犯罪は許されぬ",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-168-n2-nu/d168-build-saiban",
+      "day": 168,
+      "version": "v1-55f06eded8821d2c",
+      "answer": "裁判を経ずして罰してはならぬ",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-169-n2-yara/d169-build-zei",
+      "day": 169,
+      "version": "v1-f92822cab977e0a8",
+      "answer": "税金やら経費やらで手元に残らない",
+      "acceptedAnswers": [],
+      "decision": "やら 枚举次序受两个现有词块分别带 やら／やらで 限定。",
+      "changed": false
+    },
+    {
+      "key": "day-169-n2-yara/d169-build-uou",
+      "day": 169,
+      "version": "v1-15d684fe3abcaa04",
+      "answer": "指示やら質問やらで右往左往だ",
+      "acceptedAnswers": [],
+      "decision": "やら 枚举次序受两个现有词块分别带 やら／やらで 限定。",
+      "changed": true
+    },
+    {
+      "key": "day-170-n2-dake-atte/d170-build-keiei",
+      "day": 170,
+      "version": "v1-58a3c96c57033448",
+      "answer": "長年経営してきただけあって判断が速い",
+      "acceptedAnswers": [],
+      "decision": "经营多年的是经营者，不把 判断が 接成从句主语。",
+      "changed": false
+    },
+    {
+      "key": "day-170-n2-dake-atte/d170-build-kyoiku",
+      "day": 170,
+      "version": "v1-eaa069ae0b32eda8",
+      "answer": "教育に力を入れているだけあって人材の層が厚い",
+      "acceptedAnswers": [],
+      "decision": "使用 人材の層が厚い 表达人才储备雄厚。",
+      "changed": true
+    },
+    {
+      "key": "day-171-n2-koto-kara/d171-build-juyou",
+      "day": 171,
+      "version": "v1-9de730befb94a7bc",
+      "answer": "需要が増えたことから市場が注目されている",
+      "acceptedAnswers": [],
+      "decision": "保留需求增加为原因、市场受关注为结果的因果关系。",
+      "changed": false
+    },
+    {
+      "key": "day-171-n2-koto-kara/d171-build-kousei",
+      "day": 171,
+      "version": "v1-0d57a7b024f717dc",
+      "answer": "構成が似ていることから構造も同じだと考えられる",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-172-n2-tomonatte/d172-build-jinkou",
+      "day": 172,
+      "version": "v1-47ec3074927f512a",
+      "answer": "人口の増加に伴って需要も伸びた",
+      "acceptedAnswers": [
+        "需要も人口の増加に伴って伸びた"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-172-n2-tomonatte/d172-build-kyoukyuu",
+      "day": 172,
+      "version": "v1-b6f22509c78269f9",
+      "answer": "供給の増加に伴い価格が安定してきた",
+      "acceptedAnswers": [
+        "価格が供給の増加に伴い安定してきた"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-173-n2-news/d173-build-news",
+      "day": 173,
+      "version": "v1-40ad8454960c051e",
+      "answer": "報道は調査に基づいて人口の増加を示した",
+      "acceptedAnswers": [
+        "調査に基づいて報道は人口の増加を示した",
+        "報道は人口の増加を調査に基づいて示した"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。 补出人口这一具体增长对象，与本课例文一致。",
+      "changed": true
+    },
+    {
+      "key": "day-173-n2-news/d173-build-mitooshi",
+      "day": 173,
+      "version": "v1-a676dc5b4cdae47d",
+      "answer": "政府は調査に基づいて見通しを発表した",
+      "acceptedAnswers": [
+        "調査に基づいて政府は見通しを発表した",
+        "政府は見通しを調査に基づいて発表した"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。 将‘发表了前景’改为自然的中文‘公布前景预测’。",
+      "changed": true
+    },
+    {
+      "key": "day-174-n2-checkpoint/d174-build",
+      "day": 174,
+      "version": "v1-6ce0803d7b7e27cd",
+      "answer": "調査に基づいて対策を取らざるを得ない",
+      "acceptedAnswers": [
+        "対策を調査に基づいて取らざるを得ない"
+      ],
+      "decision": "接受保持格关系与句意的语序变体；不拆散固定接续。",
+      "changed": true
+    },
+    {
+      "key": "day-175-n2-graduation/d175-build-data",
+      "day": 175,
+      "version": "v1-e49cd8de91159182",
+      "answer": "データに基づいて判断する",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    },
+    {
+      "key": "day-175-n2-graduation/d175-build-dekiru",
+      "day": 175,
+      "version": "v1-9b09df0c89fceace",
+      "answer": "できることから始めればいい",
+      "acceptedAnswers": [],
+      "decision": "保留现有组合；当前词块的修饰、助词或固定接续限制了常规排列。",
+      "changed": false
+    }
+  ],
+  "changed": [
+    {
+      "lessonId": "day-24-ni-de-existence",
+      "before": {
+        "id": "d24-build-neko",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“房间里有猫”。",
+        "chunks": [
+          "へや",
+          "に",
+          "ねこ",
+          "が",
+          "います"
+        ],
+        "answer": "へやにねこがいます",
+        "meaning": "房间里有猫。",
+        "itemId": "sentence-d24-heya-neko",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-69b61cd998403001"
+    },
+    {
+      "lessonId": "day-37-counters",
+      "before": {
+        "id": "d37-dictation",
+        "type": "dictation",
+        "title": "听写短语",
+        "prompt": "听发音，输入完整假名或片假名。",
+        "audioText": "コーヒーをにはい",
+        "answer": "コーヒーをにはい",
+        "acceptedAnswers": [
+          "こーひーをにはい",
+          "コーヒーをにはい。"
+        ],
+        "hint": "コーヒー / を / にはい",
+        "itemId": "sentence-d37-coffee-nihai-listen",
+        "itemType": "sentence",
+        "mode": "listening"
+      },
+      "afterVersion": "v1-d259fbd25b8c5e56"
+    },
+    {
+      "lessonId": "day-37-counters",
+      "before": {
+        "id": "d37-build-ringo",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“三个苹果”。",
+        "chunks": [
+          "りんご",
+          "を",
+          "みっつ"
+        ],
+        "answer": "りんごをみっつ",
+        "meaning": "三个苹果。",
+        "itemId": "sentence-d37-ringo-mittsu",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-3431d80bee97af41"
+    },
+    {
+      "lessonId": "day-37-counters",
+      "before": {
+        "id": "d37-build-coffee",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“两杯咖啡”。",
+        "chunks": [
+          "コーヒー",
+          "を",
+          "にはい"
+        ],
+        "answer": "コーヒーをにはい",
+        "meaning": "两杯咖啡。",
+        "itemId": "sentence-d37-coffee-nihai",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-387c74c64c275b44"
+    },
+    {
+      "lessonId": "day-61-n4-ageru",
+      "before": {
+        "id": "d61-build-kashi",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“把书借给朋友”。",
+        "chunks": [
+          "ともだちに",
+          "ほんを",
+          "かして",
+          "あげます"
+        ],
+        "answer": "ともだちにほんをかしてあげます",
+        "meaning": "把书借给朋友。",
+        "itemId": "sentence-d61-kashite-ageru",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-286abcdef008a8fc"
+    },
+    {
+      "lessonId": "day-61-n4-ageru",
+      "before": {
+        "id": "d61-build-tetsudau",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“帮朋友忙”。",
+        "chunks": [
+          "ともだちに",
+          "てつだって",
+          "あげます"
+        ],
+        "answer": "ともだちにてつだってあげます",
+        "meaning": "帮朋友忙。",
+        "itemId": "sentence-d61-tetsudatte-ageru",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-9f5dc0f110aab81b"
+    },
+    {
+      "lessonId": "day-63-n4-morau",
+      "before": {
+        "id": "d63-build-kari",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“请老师借词典给我”。",
+        "chunks": [
+          "せんせいに",
+          "じしょを",
+          "かりて",
+          "もらいました"
+        ],
+        "answer": "せんせいにじしょをかりてもらいました",
+        "meaning": "请老师把词典借给了我。",
+        "itemId": "sentence-d63-karite-morau",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-746b8ddc50d2dcee"
+    },
+    {
+      "lessonId": "day-70-n4-passive",
+      "before": {
+        "id": "d70-build-yobareru",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“我被老师叫了”。",
+        "chunks": [
+          "わたしは",
+          "せんせいに",
+          "よばれました"
+        ],
+        "answer": "わたしはせんせいによばれました",
+        "meaning": "我被老师叫了。",
+        "itemId": "sentence-d70-yobareta",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-362fd481a3185a9b"
+    },
+    {
+      "lessonId": "day-71-n4-causative",
+      "before": {
+        "id": "d71-build-tabesaseru",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“让孩子吃蔬菜”。",
+        "chunks": [
+          "こどもに",
+          "やさいを",
+          "たべさせます"
+        ],
+        "answer": "こどもにやさいをたべさせます",
+        "meaning": "让孩子吃蔬菜。",
+        "itemId": "sentence-d71-tabesaseru",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-3fa225c49f4a4644"
+    },
+    {
+      "lessonId": "day-74-n4-mitai",
+      "before": {
+        "id": "d74-build-ame",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“好像要下雨”。",
+        "chunks": [
+          "あめ",
+          "みたいです"
+        ],
+        "answer": "あめみたいです",
+        "meaning": "好像是雨 / 好像要下雨。",
+        "itemId": "sentence-d74-ame-mitai",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-20c4bdd991292717"
+    },
+    {
+      "lessonId": "day-75-n4-modality-checkpoint",
+      "before": {
+        "id": "d75-build",
+        "type": "sentenceBuild",
+        "title": "综合：组句",
+        "prompt": "组出“让孩子吃蔬菜”。",
+        "chunks": [
+          "こどもに",
+          "やさいを",
+          "たべさせます"
+        ],
+        "answer": "こどもにやさいをたべさせます",
+        "meaning": "让孩子吃蔬菜。",
+        "itemId": "sentence-d75-tabesaseru",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-c2f0614450cd70b6"
+    },
+    {
+      "lessonId": "day-76-n4-toki",
+      "before": {
+        "id": "d76-build-kodomo",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“小时候常常玩”。",
+        "chunks": [
+          "こどものとき",
+          "よく",
+          "あそびました"
+        ],
+        "answer": "こどものときよくあそびました",
+        "meaning": "小时候常常玩。",
+        "itemId": "sentence-d76-kodomo-toki",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-799d077fefdc4a05"
+    },
+    {
+      "lessonId": "day-84-n4-kata",
+      "before": {
+        "id": "d84-build-tsukai",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“不会用法”。",
+        "chunks": [
+          "つかいかたが",
+          "わかりません"
+        ],
+        "answer": "つかいかたがわかりません",
+        "meaning": "不会用法。",
+        "itemId": "sentence-d84-tsukaikata",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-af89e4ebebfd6971"
+    },
+    {
+      "lessonId": "day-91-n3-tame",
+      "before": {
+        "id": "d91-build-health",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“为了健康，开始跑步”。",
+        "chunks": [
+          "始めました",
+          "のために",
+          "健康",
+          "走ることを"
+        ],
+        "answer": "健康のために走ることを始めました",
+        "meaning": "为了健康，开始跑步。",
+        "itemId": "sentence-d91-kenkou-tame",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-b97ee1bb8b258e9f"
+    },
+    {
+      "lessonId": "day-93-n3-ni-yotte",
+      "before": {
+        "id": "d93-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“文化因国家而不同”。",
+        "chunks": [
+          "違います",
+          "文化が",
+          "によって",
+          "国"
+        ],
+        "answer": "国によって文化が違います",
+        "meaning": "文化因国家而不同。",
+        "itemId": "sentence-d93-kuni-bunka",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-5dfc7de53bf76089"
+    },
+    {
+      "lessonId": "day-93-n3-ni-yotte",
+      "before": {
+        "id": "d93-build-jiko",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“由于事故，电车晚点了”。",
+        "chunks": [
+          "遅れました",
+          "電車が",
+          "によって",
+          "事故"
+        ],
+        "answer": "事故によって電車が遅れました",
+        "meaning": "由于事故，电车晚点了。",
+        "itemId": "sentence-d93-jiko-okure",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-1efd79baba365b52"
+    },
+    {
+      "lessonId": "day-94-n3-ni-taishite",
+      "before": {
+        "id": "d94-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“请对客人礼貌地说话”。",
+        "chunks": [
+          "話してください",
+          "丁寧に",
+          "に対して",
+          "お客様"
+        ],
+        "answer": "お客様に対して丁寧に話してください",
+        "meaning": "请对客人礼貌地说话。",
+        "itemId": "sentence-d94-okyaku-teinei",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-cff81f32a9fc33ac"
+    },
+    {
+      "lessonId": "day-95-n3-toshite",
+      "before": {
+        "id": "d95-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“作为公务员在市政府工作”。",
+        "chunks": [
+          "働いています",
+          "市役所で",
+          "として",
+          "公務員"
+        ],
+        "answer": "公務員として市役所で働いています",
+        "meaning": "作为公务员在市政府工作。",
+        "itemId": "sentence-d95-koumuin",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-da94e9c3c165702d"
+    },
+    {
+      "lessonId": "day-96-n3-nitsuite",
+      "before": {
+        "id": "d96-build-iken",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“关于这个问题，有兴趣”。",
+        "chunks": [
+          "興味があります",
+          "について",
+          "この問題"
+        ],
+        "answer": "この問題について興味があります",
+        "meaning": "关于这个问题，有兴趣。",
+        "itemId": "sentence-d96-mondai-kyoumi",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-e0bee06cadeb1cca"
+    },
+    {
+      "lessonId": "day-97-n3-totte",
+      "before": {
+        "id": "d97-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“对我来说，家人最重要”。",
+        "chunks": [
+          "大切です",
+          "一番",
+          "家族が",
+          "にとって",
+          "私"
+        ],
+        "answer": "私にとって家族が一番大切です",
+        "meaning": "对我来说，家人最重要。",
+        "itemId": "sentence-d97-kazoku-taisetsu",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-ed270922f2626e20"
+    },
+    {
+      "lessonId": "day-97-n3-totte",
+      "before": {
+        "id": "d97-build-yume",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“对孩子来说，梦想是希望”。",
+        "chunks": [
+          "希望です",
+          "夢は",
+          "にとって",
+          "子供"
+        ],
+        "answer": "子供にとって夢は希望です",
+        "meaning": "对孩子来说，梦想是希望。",
+        "itemId": "sentence-d97-kodomo-yume",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-7cb6ac8c2ba90eda"
+    },
+    {
+      "lessonId": "day-100-n3-stance-checkpoint",
+      "before": {
+        "id": "d100-build",
+        "type": "sentenceBuild",
+        "title": "综合：组句",
+        "prompt": "组出“对我来说，家人最重要”。",
+        "chunks": [
+          "大切です",
+          "一番",
+          "家族が",
+          "にとって",
+          "私"
+        ],
+        "answer": "私にとって家族が一番大切です",
+        "meaning": "对我来说，家人最重要。",
+        "itemId": "sentence-d100-totte-kazoku",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-dc07aeecd523fa48"
+    },
+    {
+      "lessonId": "day-101-n3-hazu",
+      "before": {
+        "id": "d101-build-tsuku",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“他现在应该已经到了”。",
+        "chunks": [
+          "はずです",
+          "着いている",
+          "もう",
+          "今"
+        ],
+        "answer": "今もう着いているはずです",
+        "meaning": "他现在应该已经到了。",
+        "itemId": "sentence-d101-tsuiteiru-hazu",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-416b6a38e1f9bfb8"
+    },
+    {
+      "lessonId": "day-102-n3-wake-da",
+      "before": {
+        "id": "d102-build-tsumari",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“也就是说，时间不够”。",
+        "chunks": [
+          "わけです",
+          "足りない",
+          "時間が",
+          "つまり"
+        ],
+        "answer": "つまり時間が足りないわけです",
+        "meaning": "也就是说，时间不够。",
+        "itemId": "sentence-d102-tsumari-jikan",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-2969efd26e87e568"
+    },
+    {
+      "lessonId": "day-106-n3-koto-ni-natteiru",
+      "before": {
+        "id": "d106-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“这里规定要脱鞋”。",
+        "chunks": [
+          "ことになっています",
+          "脱ぐ",
+          "靴を",
+          "ここでは"
+        ],
+        "answer": "ここでは靴を脱ぐことになっています",
+        "meaning": "这里规定要脱鞋。",
+        "itemId": "sentence-d106-kutsu-nugu",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-281cc6bd7a7fdea5"
+    },
+    {
+      "lessonId": "day-106-n3-koto-ni-natteiru",
+      "before": {
+        "id": "d106-build-heijitsu",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“工作日七点上学是规定”。",
+        "chunks": [
+          "ことになっています",
+          "学校へ行く",
+          "7時に",
+          "平日は"
+        ],
+        "answer": "平日は7時に学校へ行くことになっています",
+        "meaning": "工作日七点上学是规定。",
+        "itemId": "sentence-d106-heijitsu-shichi",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-f36852576a9fd949"
+    },
+    {
+      "lessonId": "day-107-n3-mono-da",
+      "before": {
+        "id": "d107-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“小时候常常在河边玩”。",
+        "chunks": [
+          "ものです",
+          "遊んだ",
+          "川で",
+          "よく",
+          "子供のころ"
+        ],
+        "answer": "子供のころよく川で遊んだものです",
+        "meaning": "小时候常常在河边玩。",
+        "itemId": "sentence-d107-kawa-asonda",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-612d1be83b81bc78"
+    },
+    {
+      "lessonId": "day-109-n3-toiu",
+      "before": {
+        "id": "d109-dictation",
+        "type": "dictation",
+        "title": "听写整句",
+        "prompt": "听发音，输入完整假名。",
+        "audioText": "これはかいぎというよていです",
+        "answer": "これはかいぎというよていです",
+        "acceptedAnswers": [
+          "これはかいぎというよていです。"
+        ],
+        "itemId": "sentence-d109-kaigi-listen",
+        "itemType": "sentence",
+        "mode": "listening"
+      },
+      "afterVersion": "v1-eedb66831112979f"
+    },
+    {
+      "lessonId": "day-109-n3-toiu",
+      "before": {
+        "id": "d109-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“这是叫做会议的安排”。",
+        "chunks": [
+          "予定です",
+          "という",
+          "会議",
+          "これは"
+        ],
+        "answer": "これは会議という予定です",
+        "meaning": "这是叫做会议的安排。",
+        "itemId": "sentence-d109-kaigi-yotei",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-e9f4ad130945af2d"
+    },
+    {
+      "lessonId": "day-109-n3-toiu",
+      "before": {
+        "id": "d109-build-wake",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“迟到是因为电车晚点了”。",
+        "chunks": [
+          "からです",
+          "事故があった",
+          "というのは",
+          "遅れた"
+        ],
+        "answer": "遅れたというのは事故があったからです",
+        "meaning": "迟到是因为出了事故。",
+        "itemId": "sentence-d109-okure-toiunowa",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-3b28303158425f8d"
+    },
+    {
+      "lessonId": "day-112-n3-bakari",
+      "before": {
+        "id": "d112-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“周末净是在看漫画”。",
+        "chunks": [
+          "います",
+          "ばかり",
+          "読んで",
+          "漫画を",
+          "週末は"
+        ],
+        "answer": "週末は漫画を読んでばかりいます",
+        "meaning": "周末净是在看漫画。",
+        "itemId": "sentence-d112-manga-bakari",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-c62f7fa7004a5b55"
+    },
+    {
+      "lessonId": "day-113-n3-sae",
+      "before": {
+        "id": "d113-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“连名字都想不起来”。",
+        "chunks": [
+          "思い出せませんでした",
+          "さえ",
+          "名前"
+        ],
+        "answer": "名前さえ思い出せませんでした",
+        "meaning": "连名字都想不起来。",
+        "itemId": "sentence-d113-namae-sae",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-c6f31f1d83ff5893"
+    },
+    {
+      "lessonId": "day-113-n3-sae",
+      "before": {
+        "id": "d113-build-mizu",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“连水都喝不了”。",
+        "chunks": [
+          "飲めませんでした",
+          "さえ",
+          "水"
+        ],
+        "answer": "水さえ飲めませんでした",
+        "meaning": "连水都喝不了。",
+        "itemId": "sentence-d113-mizu-sae",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-16a85d0653bb3a38"
+    },
+    {
+      "lessonId": "day-116-n3-okage",
+      "before": {
+        "id": "d116-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“多亏老师，考试合格了”。",
+        "chunks": [
+          "合格しました",
+          "試験に",
+          "おかげで",
+          "の",
+          "先生"
+        ],
+        "answer": "先生のおかげで試験に合格しました",
+        "meaning": "多亏老师，考试合格了。",
+        "itemId": "sentence-d116-sensei-okage",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-b6190825ca4625d9"
+    },
+    {
+      "lessonId": "day-117-n3-seide",
+      "before": {
+        "id": "d117-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“都怪下雨，比赛中止了”。",
+        "chunks": [
+          "なりました",
+          "中止に",
+          "試合が",
+          "せいで",
+          "の",
+          "雨"
+        ],
+        "answer": "雨のせいで試合が中止になりました",
+        "meaning": "都怪下雨，比赛中止了。",
+        "itemId": "sentence-d117-ame-sei",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-d1720f67950ae66b"
+    },
+    {
+      "lessonId": "day-120-n3-nuance-checkpoint",
+      "before": {
+        "id": "d120-build",
+        "type": "sentenceBuild",
+        "title": "综合：组句",
+        "prompt": "组出“周末净是在看漫画”。",
+        "chunks": [
+          "います",
+          "ばかり",
+          "読んで",
+          "漫画を",
+          "週末は"
+        ],
+        "answer": "週末は漫画を読んでばかりいます",
+        "meaning": "周末净是在看漫画。",
+        "itemId": "sentence-d120-bakari-manga",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-bf13ebb38f8eab9b"
+    },
+    {
+      "lessonId": "day-122-n3-tabi-ni",
+      "before": {
+        "id": "d122-build-ryokou",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“每次旅行都重新审视计划”。",
+        "chunks": [
+          "見直します",
+          "計画を",
+          "たびに",
+          "の",
+          "旅行"
+        ],
+        "answer": "旅行のたびに計画を見直します",
+        "meaning": "每次旅行都重新审视计划。",
+        "itemId": "sentence-d122-ryokou-tabi",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-6d9e831e66f89762"
+    },
+    {
+      "lessonId": "day-123-n3-tsutsu",
+      "before": {
+        "id": "d123-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“一边准备，一边通知了朋友”。",
+        "chunks": [
+          "伝えました",
+          "友達に",
+          "しつつ",
+          "準備を"
+        ],
+        "answer": "準備をしつつ友達に伝えました",
+        "meaning": "一边准备，一边通知了朋友。",
+        "itemId": "sentence-d123-junbi-tsutsu",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-f7aebc90c868d294"
+    },
+    {
+      "lessonId": "day-124-n3-kagiri",
+      "before": {
+        "id": "d124-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“就我所知，没有问题”。",
+        "chunks": [
+          "ありません",
+          "問題は",
+          "限り",
+          "知る",
+          "の",
+          "私"
+        ],
+        "answer": "私の知る限り問題はありません",
+        "meaning": "就我所知，没有问题。",
+        "itemId": "sentence-d124-shiru-kagiri",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-5321cd80748d3810"
+    },
+    {
+      "lessonId": "day-125-n3-saserareru",
+      "before": {
+        "id": "d125-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“被部长要求加班了”。",
+        "chunks": [
+          "させられました",
+          "残業を",
+          "に",
+          "部長"
+        ],
+        "answer": "部長に残業をさせられました",
+        "meaning": "被部长要求加班了。",
+        "itemId": "sentence-d125-buchou-zangyou",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-aa6c44e989d53559"
+    },
+    {
+      "lessonId": "day-128-n3-ni-shitagatte",
+      "before": {
+        "id": "d128-build-kawaru",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“随着练习，生活会改变”。",
+        "chunks": [
+          "変わります",
+          "生活が",
+          "に従って",
+          "練習する"
+        ],
+        "answer": "練習するに従って生活が変わります",
+        "meaning": "随着练习，生活会改变。",
+        "itemId": "sentence-d128-renshuu-shitagatte",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-1503efd4c5952832"
+    },
+    {
+      "lessonId": "day-129-n3-kiru-kake",
+      "before": {
+        "id": "d129-build-kake",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“把读到一半的书放进包里了”。",
+        "chunks": [
+          "入れました",
+          "バッグに",
+          "本を",
+          "の",
+          "読みかけ"
+        ],
+        "answer": "読みかけの本をバッグに入れました",
+        "meaning": "把读到一半的书放进包里了。",
+        "itemId": "sentence-d129-yomikake-hon",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-65f75b82798459c6"
+    },
+    {
+      "lessonId": "day-130-n3-opinion",
+      "before": {
+        "id": "d130-dictation",
+        "type": "dictation",
+        "title": "听写整句",
+        "prompt": "听发音，输入完整假名。",
+        "audioText": "わたしのいけんではこのけいかくはむりだということです",
+        "answer": "わたしのいけんではこのけいかくはむりだということです",
+        "acceptedAnswers": [
+          "わたしのいけんでは、このけいかくはむりだということです",
+          "わたしのいけんではこのけいかくはむりだということです。"
+        ],
+        "itemId": "sentence-d130-iken-listen",
+        "itemType": "sentence",
+        "mode": "listening"
+      },
+      "afterVersion": "v1-bf11147e7f9a3306"
+    },
+    {
+      "lessonId": "day-130-n3-opinion",
+      "before": {
+        "id": "d130-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“依我看，这个计划行不通”。",
+        "chunks": [
+          "ことです",
+          "という",
+          "無理だ",
+          "計画は",
+          "この",
+          "では",
+          "意見",
+          "の",
+          "私"
+        ],
+        "answer": "私の意見ではこの計画は無理だということです",
+        "meaning": "依我看，这个计划行不通。",
+        "itemId": "sentence-d130-iken-muri",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-3c0d70ba7a16bc84"
+    },
+    {
+      "lessonId": "day-131-n3-work",
+      "before": {
+        "id": "d131-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“作为销售在事务所工作”。",
+        "chunks": [
+          "働いています",
+          "事務所で",
+          "として",
+          "営業"
+        ],
+        "answer": "営業として事務所で働いています",
+        "meaning": "作为销售在事务所工作。",
+        "itemId": "sentence-d131-eigyou-toshite",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-ae42ed4600b94c58"
+    },
+    {
+      "lessonId": "day-132-n3-news-light",
+      "before": {
+        "id": "d132-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“由于事故，电车正在晚点”。",
+        "chunks": [
+          "遅れています",
+          "電車が",
+          "によって",
+          "事故"
+        ],
+        "answer": "事故によって電車が遅れています",
+        "meaning": "由于事故，电车正在晚点。",
+        "itemId": "sentence-d132-jiko-okure",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-2f21a7bd211aab0b"
+    },
+    {
+      "lessonId": "day-133-n3-apology-thanks",
+      "before": {
+        "id": "d133-build-sorry",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“都怪我，对不起”。",
+        "chunks": [
+          "すみません",
+          "せいで",
+          "の",
+          "私"
+        ],
+        "answer": "私のせいですみません",
+        "meaning": "都怪我，对不起。",
+        "itemId": "sentence-d133-sei-sumimasen",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-5141a00d32495d03"
+    },
+    {
+      "lessonId": "day-134-n3-checkpoint",
+      "before": {
+        "id": "d134-build",
+        "type": "sentenceBuild",
+        "title": "综合：组句",
+        "prompt": "组出“对我来说，家人最重要”。",
+        "chunks": [
+          "大切です",
+          "一番",
+          "家族が",
+          "にとって",
+          "私"
+        ],
+        "answer": "私にとって家族が一番大切です",
+        "meaning": "对我来说，家人最重要。",
+        "itemId": "sentence-d134-totte",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-a8ca62780d0896e4"
+    },
+    {
+      "lessonId": "day-136-n2-temo",
+      "before": {
+        "id": "d136-build-kaigi",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“即使下雨，会议也会举行”。",
+        "chunks": [
+          "たとえ",
+          "雨が",
+          "降っても",
+          "会議は",
+          "行われます"
+        ],
+        "answer": "たとえ雨が降っても会議は行われます",
+        "meaning": "即使下雨，会议也会举行。",
+        "itemId": "sentence-d136-ame-temo",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-5a7c536d2c12ffb9"
+    },
+    {
+      "lessonId": "day-136-n2-temo",
+      "before": {
+        "id": "d136-build-taisaku",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“即使发生灾害，对策也是必要的”。",
+        "chunks": [
+          "災害が",
+          "起きても",
+          "対策は",
+          "必要だ"
+        ],
+        "answer": "災害が起きても対策は必要だ",
+        "meaning": "即使发生灾害，对策也是必要的。",
+        "itemId": "sentence-d136-saigai-temo",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-63e7449a8a1fff16"
+    },
+    {
+      "lessonId": "day-138-n2-beki",
+      "before": {
+        "id": "d138-build-houkoku",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“负责人应该报告事实”。",
+        "chunks": [
+          "担当者は",
+          "事実を",
+          "報告すべきだ"
+        ],
+        "answer": "担当者は事実を報告すべきだ",
+        "meaning": "负责人应该报告事实。",
+        "itemId": "sentence-d138-houkoku-beki",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-e651aeade1eb8f7b"
+    },
+    {
+      "lessonId": "day-140-n2-zaruenai",
+      "before": {
+        "id": "d140-build-keiyaku",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“因此不得不修改合同”。",
+        "chunks": [
+          "したがって",
+          "契約を",
+          "変更せざるを得ない"
+        ],
+        "answer": "したがって契約を変更せざるを得ない",
+        "meaning": "因此不得不修改合同。",
+        "itemId": "sentence-d140-keiyaku-zaru",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-3fb1e1dad318870e"
+    },
+    {
+      "lessonId": "day-143-n2-ni-suginai",
+      "before": {
+        "id": "d143-build-mikomi",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“那还只不过是预期而已”。",
+        "chunks": [
+          "それは",
+          "まだ",
+          "見込みにすぎない"
+        ],
+        "answer": "それはまだ見込みにすぎない",
+        "meaning": "那还只不过是预期而已。",
+        "itemId": "sentence-d143-mikomi",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-f7c0a86704d56825"
+    },
+    {
+      "lessonId": "day-147-n2-ippo",
+      "before": {
+        "id": "d147-build-koureika",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“另一方面，老龄化也在加深”。",
+        "chunks": [
+          "一方で",
+          "高齢化も",
+          "進んでいる"
+        ],
+        "answer": "一方で高齢化も進んでいる",
+        "meaning": "另一方面，老龄化也在加深。",
+        "itemId": "sentence-d147-koureika-ippo",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-d166e993ad919aeb"
+    },
+    {
+      "lessonId": "day-149-n2-bakari-ka",
+      "before": {
+        "id": "d149-mc-form",
+        "type": "multipleChoice",
+        "title": "形式：ばかりか",
+        "prompt": "「売上＿市場まで失った」应选？",
+        "options": [
+          "ばかりか",
+          "どころか",
+          "くせに",
+          "あげく"
+        ],
+        "answer": "ばかりか",
+        "itemId": "n2-bakari-ka",
+        "itemType": "grammar",
+        "mode": "recognition",
+        "explanation": "本题应选「ばかりか」。相关结构：Plain / N + ばかりか。ばかりか 先说已经够明显的，再加更进一步的内容。 ばかりか相当于不仅如此，后项常配も、まで，增加更进一步的信息。两项可以同为积极或消极。原文咨询记录不仅减少重复问题，还帮助交接；不能把它读成仅有前一项效果，或把还字当作未来尚未发生。"
+      },
+      "afterVersion": "v1-b8b0e8b3e5d1fc05"
+    },
+    {
+      "lessonId": "day-149-n2-bakari-ka",
+      "before": {
+        "id": "d149-dictation",
+        "type": "dictation",
+        "title": "听写整句",
+        "prompt": "听发音，输入句子。",
+        "audioText": "うりあげばかりかしじょうまでうしなった",
+        "answer": "売上ばかりか市場まで失った",
+        "acceptedAnswers": [
+          "うりあげばかりかしじょうまでうしなった"
+        ],
+        "hint": "売上ばかりか／市場まで失った",
+        "itemId": "sentence-d149-uriage-bakari-listen",
+        "itemType": "sentence",
+        "mode": "listening"
+      },
+      "afterVersion": "v1-6ac8c515b56a97df"
+    },
+    {
+      "lessonId": "day-149-n2-bakari-ka",
+      "before": {
+        "id": "d149-build-uriage",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“不但营业额，连市场都丢掉了”。",
+        "chunks": [
+          "売上ばかりか",
+          "市場まで",
+          "失った"
+        ],
+        "answer": "売上ばかりか市場まで失った",
+        "meaning": "不但营业额，连市场都丢掉了。",
+        "itemId": "sentence-d149-uriage-bakari",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-32c15ca9f1b1c25d"
+    },
+    {
+      "lessonId": "day-150-n2-dokoroka",
+      "before": {
+        "id": "d150-build-shuueki",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“别说有收益，损失还在继续”。",
+        "chunks": [
+          "収益が",
+          "出るどころか",
+          "損失が",
+          "続いた"
+        ],
+        "answer": "収益が出るどころか損失が続いた",
+        "meaning": "别说有收益，损失还在继续。",
+        "itemId": "sentence-d150-shuueki-dokoro",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-8d84a45ffcd72991"
+    },
+    {
+      "lessonId": "day-152-n2-ageku",
+      "before": {
+        "id": "d152-dictation",
+        "type": "dictation",
+        "title": "听写整句",
+        "prompt": "听发音，输入句子。",
+        "audioText": "ながいこうしょうのあげくけいやくはけつれつした",
+        "answer": "長い交渉のあげく契約は決裂した",
+        "acceptedAnswers": [
+          "ながいこうしょうのあげくけいやくはけつれつした"
+        ],
+        "hint": "長い交渉のあげく／契約は決裂した",
+        "itemId": "sentence-d152-koushou-ageku-listen",
+        "itemType": "sentence",
+        "mode": "listening"
+      },
+      "afterVersion": "v1-153e965dcb5b002d"
+    },
+    {
+      "lessonId": "day-152-n2-ageku",
+      "before": {
+        "id": "d152-build-koushou",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“漫长谈判的结果，合同破裂了”。",
+        "chunks": [
+          "長い",
+          "交渉のあげく",
+          "契約は",
+          "決裂した"
+        ],
+        "answer": "長い交渉のあげく契約は決裂した",
+        "meaning": "漫长谈判的结果，合同破裂了。",
+        "itemId": "sentence-d152-koushou-ageku",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-eedbfe352cbfaf67"
+    },
+    {
+      "lessonId": "day-155-n2-eval-checkpoint",
+      "before": {
+        "id": "d155-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“别说休息，加班还在继续”。",
+        "chunks": [
+          "休むどころか",
+          "残業が",
+          "続いた"
+        ],
+        "answer": "休むどころか残業が続いた",
+        "meaning": "别说休息，加班还在继续。",
+        "itemId": "sentence-d155-dokoro",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-497979a406d1fa30"
+    },
+    {
+      "lessonId": "day-156-n2-shidai",
+      "before": {
+        "id": "d156-build-torihiki",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“交易一结束就通知组织”。",
+        "chunks": [
+          "取引が",
+          "終わり次第",
+          "組織に",
+          "知らせる"
+        ],
+        "answer": "取引が終わり次第組織に知らせる",
+        "meaning": "交易一结束就通知组织。",
+        "itemId": "sentence-d156-torihiki-shidai",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-6226da9436c2cc62"
+    },
+    {
+      "lessonId": "day-157-n2-tsutsu-aru",
+      "before": {
+        "id": "d157-build-genshou",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“那种现象正在都市扩大”。",
+        "chunks": [
+          "その",
+          "現象は",
+          "都市で",
+          "広がりつつある"
+        ],
+        "answer": "その現象は都市で広がりつつある",
+        "meaning": "那种现象正在都市扩大。",
+        "itemId": "sentence-d157-genshou-tsutsu",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-0e8add2d8f551fa9"
+    },
+    {
+      "lessonId": "day-158-n2-ni-atatte",
+      "before": {
+        "id": "d158-build-jigyou",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“值此事业启动之际，展示目标”。",
+        "chunks": [
+          "事業の",
+          "開始にあたって",
+          "目標を",
+          "示す"
+        ],
+        "answer": "事業の開始にあたって目標を示す",
+        "meaning": "值此事业启动之际，展示目标。",
+        "itemId": "sentence-d158-jigyou-atatte",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-0c9c2cb2bb1396b2"
+    },
+    {
+      "lessonId": "day-158-n2-ni-atatte",
+      "before": {
+        "id": "d158-build-senkyo",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“值此选举之际，组织表示了决心”。",
+        "chunks": [
+          "選挙にあたって",
+          "組織は",
+          "決意を",
+          "示した"
+        ],
+        "answer": "選挙にあたって組織は決意を示した",
+        "meaning": "值此选举之际，组织表示了决心。",
+        "itemId": "sentence-d158-senkyo-atatte",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-162344019dbd56e3"
+    },
+    {
+      "lessonId": "day-159-n2-ni-saishite",
+      "before": {
+        "id": "d159-build-keiyaku",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“签约之际应该确认条件”。",
+        "chunks": [
+          "契約に際して",
+          "条件を",
+          "確認すべきだ"
+        ],
+        "answer": "契約に際して条件を確認すべきだ",
+        "meaning": "签约之际应该确认条件。",
+        "itemId": "sentence-d159-keiyaku-saishi",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-21c1e9706e149e50"
+    },
+    {
+      "lessonId": "day-159-n2-ni-saishite",
+      "before": {
+        "id": "d159-build-jiken",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“事件发生之际先整理要点”。",
+        "chunks": [
+          "事件に際して",
+          "要点を",
+          "整理する"
+        ],
+        "answer": "事件に際して要点を整理する",
+        "meaning": "事件发生之际先整理要点。",
+        "itemId": "sentence-d159-jiken-saishi",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-cde78bfb19c5fe0d"
+    },
+    {
+      "lessonId": "day-160-n2-wo-megutte",
+      "before": {
+        "id": "d160-build-kenpou",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“围绕宪法修订，讨论仍在继续”。",
+        "chunks": [
+          "憲法改正を",
+          "めぐって",
+          "議論が",
+          "続いている"
+        ],
+        "answer": "憲法改正をめぐって議論が続いている",
+        "meaning": "围绕宪法修订，讨论仍在继续。",
+        "itemId": "sentence-d160-kenpou-megutte",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-e2f654f7e6b43a67"
+    },
+    {
+      "lessonId": "day-160-n2-wo-megutte",
+      "before": {
+        "id": "d160-build-seiji",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“围绕政治改革，舆论有了分歧”。",
+        "chunks": [
+          "政治改革を",
+          "めぐって",
+          "世論が",
+          "割れた"
+        ],
+        "answer": "政治改革をめぐって世論が割れた",
+        "meaning": "围绕政治改革，舆论有了分歧。",
+        "itemId": "sentence-d160-seiji-megutte",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-915e688ee818255e"
+    },
+    {
+      "lessonId": "day-161-n2-wo-towazu",
+      "before": {
+        "id": "d161-build-jinzai",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“不论经验如何都招募人才”。",
+        "chunks": [
+          "経験を",
+          "問わず",
+          "人材を",
+          "募集します"
+        ],
+        "answer": "経験を問わず人材を募集します",
+        "meaning": "不论经验如何都招募人才。",
+        "itemId": "sentence-d161-jinzai-towazu",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-0b5cad525baa919a"
+    },
+    {
+      "lessonId": "day-162-n2-ni-motozuite",
+      "before": {
+        "id": "d162-build-chousa",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“根据调查决定方针”。",
+        "chunks": [
+          "調査に",
+          "基づいて",
+          "方針を",
+          "決める"
+        ],
+        "answer": "調査に基づいて方針を決める",
+        "meaning": "根据调查决定方针。",
+        "itemId": "sentence-d162-chousa-motozuku",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-3134f7a013725ea2"
+    },
+    {
+      "lessonId": "day-162-n2-ni-motozuite",
+      "before": {
+        "id": "d162-build-toukei",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“这项研究以统计为根据”。",
+        "chunks": [
+          "この",
+          "研究は",
+          "統計に",
+          "基づいている"
+        ],
+        "answer": "この研究は統計に基づいている",
+        "meaning": "这项研究以统计为根据。",
+        "itemId": "sentence-d162-kenkyuu-motozuku",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-fc8bb51742901cbd"
+    },
+    {
+      "lessonId": "day-163-n2-kakawarazu",
+      "before": {
+        "id": "d163-build-ame",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“尽管下雨，比赛仍举行了”。",
+        "chunks": [
+          "雨にも",
+          "かかわらず",
+          "試合は",
+          "行われた"
+        ],
+        "answer": "雨にもかかわらず試合は行われた",
+        "meaning": "尽管下雨，比赛仍举行了。",
+        "itemId": "sentence-d163-ame-kakawara",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-8d927ae1cc534c57"
+    },
+    {
+      "lessonId": "day-164-n2-sae-ba",
+      "before": {
+        "id": "d164-build-kiso",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“只要有基础，技术可以以后再学”。",
+        "chunks": [
+          "基礎さえ",
+          "あれば",
+          "技術は",
+          "後から学べる"
+        ],
+        "answer": "基礎さえあれば技術は後から学べる",
+        "meaning": "只要有基础，技术可以以后再学。",
+        "itemId": "sentence-d164-kiso-saeba",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-938c422126e49a1b"
+    },
+    {
+      "lessonId": "day-164-n2-sae-ba",
+      "before": {
+        "id": "d164-build-shikin",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“只要有资金，就能补齐要素”。",
+        "chunks": [
+          "資金さえ",
+          "あれば",
+          "要素は",
+          "揃えられる"
+        ],
+        "answer": "資金さえあれば要素は揃えられる",
+        "meaning": "只要有资金，就能补齐要素。",
+        "itemId": "sentence-d164-shikin-saeba",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-463dc7926a6f20b4"
+    },
+    {
+      "lessonId": "day-167-n2-mai",
+      "before": {
+        "id": "d167-build-shippai",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“同样的失败我再也不会犯”。",
+        "chunks": [
+          "二度と",
+          "同じ",
+          "失敗は",
+          "するまい"
+        ],
+        "answer": "二度と同じ失敗はするまい",
+        "meaning": "同样的失败我再也不会犯。",
+        "itemId": "sentence-d167-shippai-mai",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-3ee58b6c93edcd0c"
+    },
+    {
+      "lessonId": "day-167-n2-mai",
+      "before": {
+        "id": "d167-build-koudou",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“那种行动我不会再采取”。",
+        "chunks": [
+          "そんな",
+          "行動は",
+          "取るまい"
+        ],
+        "answer": "そんな行動は取るまい",
+        "meaning": "那种行动我不会再采取。",
+        "itemId": "sentence-d167-koudou-mai",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-ee13028e7ec9c20a"
+    },
+    {
+      "lessonId": "day-169-n2-yara",
+      "before": {
+        "id": "d169-mc-pitfall",
+        "type": "multipleChoice",
+        "title": "对比：や",
+        "prompt": "精确说“买苹果和香蕉”更自然的是？",
+        "options": [
+          "とりんごを買った",
+          "やらりんごやらバナナ",
+          "りんごものかバナナ",
+          "りんごずにバナナ"
+        ],
+        "answer": "とりんごを買った",
+        "explanation": "やら 不适合干净清单。 名词或普通形等接やら〜やら，常带纷杂、忙乱或感慨，通常不是中性的完整清单。『不安やら期待やら』表多种反应并存，不代表只有两种或所有人意见相同。正式纪要可再归类为费用、用途、安全等可讨论的论点。",
+        "itemId": "n2-yara",
+        "itemType": "grammar",
+        "mode": "recognition"
+      },
+      "afterVersion": "v1-e30dd68a0f267594"
+    },
+    {
+      "lessonId": "day-169-n2-yara",
+      "before": {
+        "id": "d169-build-uou",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“会议室里又是指示又是提问，一片手忙脚乱”。",
+        "chunks": [
+          "指示やら",
+          "質問やらで",
+          "右往左往だ"
+        ],
+        "answer": "指示やら質問やらで右往左往だ",
+        "meaning": "会议室里又是指示又是提问，一片手忙脚乱。",
+        "itemId": "sentence-d169-uou-yara",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-15d684fe3abcaa04"
+    },
+    {
+      "lessonId": "day-170-n2-dake-atte",
+      "before": {
+        "id": "d170-build-kyoiku",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“不愧是重视教育，人才很厚实”。",
+        "chunks": [
+          "教育に",
+          "力を入れているだけあって",
+          "人材が",
+          "厚い"
+        ],
+        "answer": "教育に力を入れているだけあって人材が厚い",
+        "meaning": "不愧是重视教育，人才很厚实。",
+        "itemId": "sentence-d170-kyoiku-dake",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-eaa069ae0b32eda8"
+    },
+    {
+      "lessonId": "day-172-n2-tomonatte",
+      "before": {
+        "id": "d172-build-jinkou",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“随着人口增加，需求也上升了”。",
+        "chunks": [
+          "人口の",
+          "増加に伴って",
+          "需要も",
+          "伸びた"
+        ],
+        "answer": "人口の増加に伴って需要も伸びた",
+        "meaning": "随着人口增加，需求也上升了。",
+        "itemId": "sentence-d172-jinkou-tomo",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-47ec3074927f512a"
+    },
+    {
+      "lessonId": "day-172-n2-tomonatte",
+      "before": {
+        "id": "d172-build-kyoukyuu",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“随着供给增加，价格趋于稳定”。",
+        "chunks": [
+          "供給の",
+          "増加に伴い",
+          "価格が",
+          "安定してきた"
+        ],
+        "answer": "供給の増加に伴い価格が安定してきた",
+        "meaning": "随着供给增加，价格趋于稳定。",
+        "itemId": "sentence-d172-kyoukyuu-tomo",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-b6f22509c78269f9"
+    },
+    {
+      "lessonId": "day-173-n2-news",
+      "before": {
+        "id": "d173-mc-motozuku",
+        "type": "multipleChoice",
+        "title": "新闻：に基づいて",
+        "prompt": "「報道は調査＿増加を示した」应选？",
+        "options": [
+          "に基づいて",
+          "を問わず",
+          "ものか",
+          "やら"
+        ],
+        "answer": "に基づいて",
+        "itemId": "n2-ni-motozuite",
+        "itemType": "grammar",
+        "mode": "recognition",
+        "explanation": "本题应选「に基づいて」。相关结构：N + に基づいて。に基づいて 表示按照调查、数据、规定来做。书面、商务常用。 新闻综合阅读可给句子标注三类：已经宣布的安排、相关群体的评价、专家对解释方法的提醒。引用动词発表した、指摘した、話す帮助确定来源。居民欢迎不等于全体支持；专家提醒有混杂因素不等于否定试行价值。"
+      },
+      "afterVersion": "v1-ecd67f8247802f38"
+    },
+    {
+      "lessonId": "day-173-n2-news",
+      "before": {
+        "id": "d173-dictation",
+        "type": "dictation",
+        "title": "听写整句",
+        "prompt": "听发音，输入句子。",
+        "audioText": "ほうどうはちょうさにもとづいてぞうかをしめした",
+        "answer": "報道は調査に基づいて増加を示した",
+        "acceptedAnswers": [
+          "ほうどうはちょうさにもとづいてぞうかをしめした"
+        ],
+        "hint": "報道は／調査に基づいて／増加を示した",
+        "itemId": "sentence-d173-houdou-news-listen",
+        "itemType": "sentence",
+        "mode": "listening"
+      },
+      "afterVersion": "v1-5c2d0d36c17fe02c"
+    },
+    {
+      "lessonId": "day-173-n2-news",
+      "before": {
+        "id": "d173-build-news",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“报道根据调查表明了增加”。",
+        "chunks": [
+          "報道は",
+          "調査に基づいて",
+          "増加を",
+          "示した"
+        ],
+        "answer": "報道は調査に基づいて増加を示した",
+        "meaning": "报道根据调查表明了增加。",
+        "itemId": "sentence-d173-houdou-news",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-40ad8454960c051e"
+    },
+    {
+      "lessonId": "day-173-n2-news",
+      "before": {
+        "id": "d173-build-mitooshi",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“政府根据调查发表了前景”。",
+        "chunks": [
+          "政府は",
+          "調査に基づいて",
+          "見通しを",
+          "発表した"
+        ],
+        "answer": "政府は調査に基づいて見通しを発表した",
+        "meaning": "政府根据调查发表了前景。",
+        "itemId": "sentence-d173-mitooshi-news",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-a676dc5b4cdae47d"
+    },
+    {
+      "lessonId": "day-174-n2-checkpoint",
+      "before": {
+        "id": "d174-build",
+        "type": "sentenceBuild",
+        "title": "组句",
+        "prompt": "组出“根据调查，不得不采取措施”。",
+        "chunks": [
+          "調査に",
+          "基づいて",
+          "対策を",
+          "取らざるを得ない"
+        ],
+        "answer": "調査に基づいて対策を取らざるを得ない",
+        "meaning": "根据调查，不得不采取措施。",
+        "itemId": "sentence-d174-chousa-zaru",
+        "itemType": "sentence",
+        "mode": "production"
+      },
+      "afterVersion": "v1-6ce0803d7b7e27cd"
+    }
+  ]
+}

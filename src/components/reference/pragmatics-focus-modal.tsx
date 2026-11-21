@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { ReferenceContextLink as Link } from "@/components/reference/reference-context-link"
 import { CheckCircle2, ChevronLeft, ChevronRight, Crown, MessageCircle, XCircle } from "lucide-react"
 import type { PragmaticScenario } from "@/data/pragmatics-data"
 import { buttonVariants } from "@/components/ui/button"
@@ -20,6 +20,7 @@ interface PragmaticsFocusModalProps {
   closeHref: string
   nextHref: string
   prevHref: string
+  presentation?: "modal" | "page"
 }
 
 export function PragmaticsFocusModal({
@@ -29,43 +30,48 @@ export function PragmaticsFocusModal({
   closeHref,
   nextHref,
   prevHref,
+  presentation = "modal",
 }: PragmaticsFocusModalProps) {
   const titleId = "pragmatics-focus-modal-title"
   const descriptionId = "pragmatics-focus-modal-description"
+  const Heading = presentation === "page" ? "h1" : "h2"
+  const SectionHeading = presentation === "page" ? "h2" : "h3"
 
   return (
     <UrlControlledReferenceModal
       closeHref={closeHref}
       nextHref={nextHref}
       prevHref={prevHref}
-      className="paper-sheet flex h-[min(85vh,52rem)] max-w-2xl flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"
+      presentation={presentation}
+      backLabel="返回情境列表"
+      className={presentation === "page" ? "min-w-0" : "paper-sheet flex h-[min(85vh,52rem)] max-w-2xl flex-col overflow-hidden border border-border/60 bg-card p-0 shadow-paper"}
       ariaLabelledBy={titleId}
       ariaDescribedBy={descriptionId}
     >
-      <span className="paper-tape top-0" aria-hidden="true" />
-      <div className="flex-1 space-y-8 overflow-y-auto px-5 pb-8 pt-10 sm:px-8">
+      {presentation === "modal" && <span className="paper-tape top-0" aria-hidden="true" />}
+      <div className={presentation === "page" ? "space-y-8 pb-10" : "flex-1 space-y-8 overflow-y-auto px-5 pb-8 pt-10 sm:px-8"}>
         <div className="space-y-4 border-b border-border/45 pb-7">
           <div className="eyebrow flex items-center gap-2 text-base text-accent">
             <MessageCircle className="w-4 h-4" />
             场景：{scenario.situation}
           </div>
-          <h2 id={titleId} className="font-brush text-3xl font-normal sm:text-4xl">{scenario.title}</h2>
-          <div id={descriptionId} className="ledger-row border-y border-border/45 px-4 py-5 text-lg font-medium leading-relaxed text-foreground sm:text-xl">
+          <Heading id={titleId} className="font-brush text-3xl font-normal sm:text-4xl">{scenario.title}</Heading>
+          <div id={descriptionId} className="text-lg leading-relaxed text-muted-foreground sm:text-xl">
             {scenario.context}
           </div>
         </div>
 
-        <div className="border-l-2 border-accent/45 bg-primary/[0.035] px-5 py-4 text-base italic leading-relaxed text-muted-foreground">
+        <div className="border-l-2 border-accent/45 bg-primary/[0.035] px-5 py-4 text-base leading-relaxed text-muted-foreground">
           <span className="eyebrow mb-2 block text-sm not-italic text-foreground">
-            使用背景 · context
+            使用背景
           </span>
           {scenario.culturalNote}
         </div>
 
         <div className="space-y-5">
-          <h3 className="eyebrow border-b border-border/45 pb-2 text-base text-foreground">
-            表达说明 · response notes
-          </h3>
+          <SectionHeading className="eyebrow border-b border-border/45 pb-2 text-base text-foreground">
+            表达说明
+          </SectionHeading>
           <div className="border-t border-border/30">
             {scenario.responses.map((response, index) => {
               const isBad = response.type === "Bad"

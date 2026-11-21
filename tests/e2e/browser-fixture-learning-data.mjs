@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import { loadTsModule } from "../unit/load-ts-module.mjs"
 
 import { E2E_STORAGE_KEYS, managedLearningBackupKeys } from "./storage-keys.mjs"
 
@@ -131,4 +132,19 @@ export async function seedLearningDataBackupState(page, baseUrl) {
     localStorage.setItem(storageKeys.SPEECH_PREFS, JSON.stringify({ rate: 1, repeat: 2, autoPlay: false, gapMs: 500 }))
     localStorage.setItem(storageKeys.STUDY_CALENDAR, JSON.stringify({}))
   }, E2E_STORAGE_KEYS)
+  // Include the newer stores so export/reset/restore exercises real v8 data too.
+  const { createDiagnosticAttempt, normalizeDiagnosticStore } = await loadTsModule("src/lib/stage-diagnostic-model.ts")
+  const { STAGE_KANJI } = await loadTsModule("src/data/stage-kanji.ts")
+  const { nextKanjiReadingRecord, normalizeKanjiReadingStore } = await loadTsModule("src/lib/kanji-reading-model.ts")
+  const { kanjiReadingKey } = await loadTsModule("src/lib/kanji-reading-question.ts")
+  const question = STAGE_KANJI.n5[0]
+  const reading = nextKanjiReadingRecord(question, question.reading, undefined, Date.now())
+  const entries = {
+    [E2E_STORAGE_KEYS.KNOWLEDGE_REVIEWS]: "{}",
+    [E2E_STORAGE_KEYS.WRITTEN_WORKS]: "{}",
+    [E2E_STORAGE_KEYS.DAILY_STUDY_PLANS]: "{}",
+    [E2E_STORAGE_KEYS.DIAGNOSTICS]: JSON.stringify(normalizeDiagnosticStore({ attempts: { backup: createDiagnosticAttempt("n5", "backup", Date.now()) } })),
+    [E2E_STORAGE_KEYS.KANJI_READINGS]: JSON.stringify(normalizeKanjiReadingStore({ [kanjiReadingKey(question)]: reading })),
+  }
+  await page.evaluate(entries => { for (const [key, raw] of Object.entries(entries)) localStorage.setItem(key, raw) }, entries)
 }

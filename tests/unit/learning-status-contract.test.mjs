@@ -10,7 +10,7 @@ function read(relPath) {
 }
 
 test("useLearningStatus is the shared read facade over legacy marks and item progress", () => {
-  const source = read("src/lib/learning-status.ts")
+  const source = read("src/lib/learning-status.ts") + read("src/lib/learning-status-reader.ts")
 
   assert.match(source, /"use client"/)
   assert.match(source, /useKanaProgress/)
@@ -32,7 +32,7 @@ test("useLearningStatus is the shared read facade over legacy marks and item pro
 
 test("high-level recommendation and review surfaces use the shared learning status facade", () => {
   const recommendationHook = read("src/lib/learning-recommendation.ts")
-  assert.match(recommendationHook, /useLearningStatus\(\)/)
+  assert.match(recommendationHook, /useLearningStatusSnapshot\(\)/)
   assert.match(recommendationHook, /buildLearningRecommendationModel\(/)
   assert.doesNotMatch(recommendationHook, /summarizeLearnedVocabIds/)
 

@@ -3,7 +3,7 @@ import { readLearningJsonResult, writeLearningJson } from "@/lib/learning-storag
 import { invalidJsonStorageValue, validJsonStorageValue } from "@/lib/storage-read-result"
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { readLessonProgressMapResult, readPracticeResultsResult } from "@/lib/learning-progress-storage"
-import { addLessonToCalendar, addPracticeToCalendar, mergeLegacyStudyCalendar, normalizeStudyCalendar, type StudyCalendar } from "@/lib/study-calendar-model"
+import { addLessonToCalendar, addPracticeToCalendar, addSelfReportedStudyToCalendar, mergeLegacyStudyCalendar, normalizeStudyCalendar, type StudyCalendar } from "@/lib/study-calendar-model"
 import type { PracticeResult } from "@/lib/learning-progress-model"
 
 export function readStudyCalendarResult() {
@@ -14,12 +14,13 @@ export function readStudyCalendarResult() {
 }
 
 // Prepare before changing history, then commit inside the caller's transaction.
-export function prepareStudyCalendarWrite(activity: PracticeResult | number) {
+export function prepareStudyCalendarWrite(activity: PracticeResult | number | { kind: "self-reported"; createdAt: number }) {
   const stored = readStudyCalendarResult()
   const lessons = readLessonProgressMapResult()
   const results = readPracticeResultsResult()
   if (!stored.ok || !lessons.ok || !results.ok) return null
   const base = mergeLegacyStudyCalendar(stored.value, lessons.value, results.value)
-  const next = typeof activity === "number" ? addLessonToCalendar(base, activity) : addPracticeToCalendar(base, activity)
+  const next = typeof activity === "number" ? addLessonToCalendar(base, activity)
+    : "kind" in activity ? addSelfReportedStudyToCalendar(base, activity.createdAt) : addPracticeToCalendar(base, activity)
   return () => writeLearningJson(STORAGE_KEYS.STUDY_CALENDAR, next, { expectedRaw: stored.raw })
 }

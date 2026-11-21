@@ -6,6 +6,9 @@
   :root {
     color-scheme: light;
     --paper: #fffdf9;
+    --manga-ink: #08090b;
+    --button-paper: #fffdf9;
+    --button-ink: #17191d;
     --paper-hi: #ffffff;
     --paper-lo: #f6f0f0;
     --paper-edge: #162035;
@@ -62,43 +65,45 @@
 
   .dark {
     color-scheme: dark;
-    --paper: #1e202b;
-    --paper-hi: #292c39;
-    --paper-lo: #242633;
-    --paper-edge: #dbe7ff;
-    --ink: #f3f0ed;
-    --ink-soft: #c0bdca;
-    --seal: #dda3b0;
-    --signal-blue: #aeb9bb;
-    --blue-text: #b1d8f4;
-    --accent-text: 347 46% 76%;
-    --signal-pink: #dda3b0;
-    --signal-yellow: #c8bfaa;
-    --signal-violet: #bfaeb6;
-    --signal-mint: #adbfaf;
+    --paper: #191b20;
+    --paper-hi: #272a30;
+    --paper-lo: #22252b;
+    --paper-edge: #08090b;
+    --ink: #f2efe7;
+    --ink-soft: #b7bcc5;
+    --seal: #e4c180;
+    --signal-blue: #a9c5d4;
+    --blue-text: #a9c5d4;
+    --accent-text: 39 65% 70%;
+    --signal-pink: #d4aca9;
+    --signal-yellow: #e4c180;
+    --signal-violet: #b1b5c7;
+    --signal-mint: #a9c5b2;
+    --button-paper: #deded9;
+    --button-ink: #17191d;
     --panel-shadow: rgba(0, 0, 0, 0.42);
     --shadow: none;
     --shadow-soft: none;
     --grain-o: 0.1;
-    --background: 231 18% 14%;
-    --foreground: 48 15% 94%;
-    --card: 229 16% 19%;
-    --card-foreground: 48 15% 94%;
-    --popover: 229 16% 19%;
-    --popover-foreground: 48 15% 94%;
-    --primary: 347 46% 76%;
+    --background: 223 12% 11%;
+    --foreground: 44 30% 93%;
+    --card: 220 10% 17%;
+    --card-foreground: 44 30% 93%;
+    --popover: 220 10% 17%;
+    --popover-foreground: 44 30% 93%;
+    --primary: 39 65% 70%;
     --primary-foreground: 220 11% 11%;
-    --secondary: 232 17% 17%;
+    --secondary: 220 10% 20%;
     --secondary-foreground: 48 15% 94%;
-    --muted: 232 17% 17%;
-    --muted-foreground: 254 11% 77%;
-    --accent: 347 46% 76%;
+    --muted: 220 10% 20%;
+    --muted-foreground: 219 11% 75%;
+    --accent: 39 65% 70%;
     --accent-foreground: 220 11% 11%;
     --destructive: 350 88% 67%;
     --destructive-foreground: 220 11% 11%;
-    --border: 220 5% 44%;
-    --input: 220 5% 44%;
-    --ring: 347 46% 76%;
+    --border: 220 10% 43%;
+    --input: 220 10% 43%;
+    --ring: 201 33% 75%;
   }
 
   *, *::before, *::after {
@@ -149,11 +154,15 @@
 .skip-link:focus { transform: none; }
 
 
-.paper-nav { border-bottom: 2px solid var(--ink); background: var(--paper); }
+.paper-nav { border-bottom: 2px solid var(--manga-ink); background: var(--paper); box-shadow: 0 1px 0 var(--ink-ghost); }
 .nav-inner { display: flex; height: 4.5rem; width: min(calc(100% - 4rem), 1240px); align-items: center; justify-content: space-between; gap: 2rem; margin-inline: auto; }
-.brand-lockup { display: flex; align-items: baseline; gap: 1rem; }
-.brand-lockup > span:first-child { font-family: var(--font-display); font-size: 1.65rem; font-weight: 800; letter-spacing: -0.04em; }
-.brand-caption { color: var(--ink-soft); font-family: var(--font-ui); font-size: 0.875rem; }
+.brand-lockup { display: flex; align-items: center; gap: 0.85rem; flex-shrink: 0; }
+.brand-mark { display: grid; place-items: center; width: 52px; height: 52px; background: transparent; transform: rotate(-3deg); mix-blend-mode: multiply; }
+.brand-mark img { width: 52px; height: 52px; object-fit: contain; }
+.dark .brand-mark { mix-blend-mode: screen; }
+.dark .brand-mark img { filter: invert(1); opacity: 0.92; }
+.brand-caption { display: grid; gap: 0.1rem; color: var(--ink-soft); font-size: 0.75rem; }
+.brand-caption strong { font-family: var(--font-latin); color: var(--ink); font-size: 1.125rem; font-weight: 800; letter-spacing: 0.15em; line-height: 1.1; }
 .nav-signpost { display: inline-block; color: var(--ink-soft); font-size: 1rem; font-weight: 500; }
 .nav-signpost:hover, .nav-signpost.is-active { color: var(--ink); }
 .nav-signpost.is-active { font-weight: 700; text-decoration: underline; text-decoration-thickness: 3px; text-decoration-color: hsl(var(--primary)); text-underline-offset: 8px; }
@@ -170,20 +179,24 @@
   .seal-stamp { display: inline-flex; min-height: 1.6rem; align-items: center; justify-content: center; border: 1px solid var(--ink-ghost); border-radius: 4px; padding: 0.2rem 0.5rem; color: var(--ink-soft); font-size: 0.75rem; font-weight: 500; line-height: 1; }
   .ledger-row { position: relative; border-color: var(--ink-ghost); transition: background-color 160ms ease; }
   .ledger-row:hover, .ledger-row:focus-within { background: var(--paper-lo); }
-  .anime-button { position: relative; border-width: 1px; border-radius: 3px; letter-spacing: 0; box-shadow: none; }
-  .anime-button-primary { border-color: var(--ink); background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: 2px 2px 0 var(--ink); }
-  .anime-button-primary:hover { background: color-mix(in srgb, hsl(var(--primary)) 90%, var(--ink)); }
-  .anime-button-primary:active { transform: translateY(1px); }
-  .anime-button-outline { border-color: var(--ink-faint); background: transparent; color: var(--ink); }
-  .anime-button-outline:hover, .anime-button-secondary:hover { background: var(--paper-lo); }
-  .anime-button-secondary { border-color: var(--ink-ghost); background: var(--paper-lo); color: var(--ink); }
-  .anime-button-ghost { border-color: transparent; background: transparent; color: var(--ink-soft); }
+  .anime-button { position: relative; isolation: isolate; border: 2px solid var(--manga-ink); border-radius: 3px 7px 2px 5px / 5px 2px 5px 2px; letter-spacing: 0.015em; box-shadow: 3px 3px 0 var(--manga-ink); }
+  .anime-button-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: 4px 4px 0 var(--manga-ink); }
+  .anime-button-primary::before, .anime-button-destructive::before { content: ""; position: absolute; inset: 3px; border: 1px solid currentColor; opacity: 0.32; border-radius: 1px 3px 1px 3px; pointer-events: none; }
+  .anime-button-primary:hover { background: color-mix(in srgb, hsl(var(--primary)) 90%, white); transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--manga-ink); }
+  .anime-button:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--manga-ink); }
+  .anime-button-outline { background: var(--button-paper); color: var(--button-ink); }
+  .anime-button-outline:hover { background: color-mix(in srgb, var(--button-paper) 88%, var(--signal-blue)); transform: translateY(-1px); }
+  .anime-button-secondary { background: var(--paper-lo); color: var(--ink); box-shadow: 2px 2px 0 var(--manga-ink), inset 0 0 0 1px var(--ink-ghost); }
+  .anime-button-secondary:hover { background: var(--paper-hi); }
+  .anime-button-destructive { background: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); }
+  .anime-button:disabled { box-shadow: none; transform: none; }
+  .anime-button-ghost { border-color: transparent; border-radius: 3px; background: transparent; color: var(--ink-soft); box-shadow: none; }
   .anime-button-ghost:hover { color: var(--ink); background: var(--paper-lo); }
   .anime-input { border: 1px solid var(--ink-faint); border-radius: 5px; background: var(--paper-hi); }
   .anime-input:focus-visible { border-color: var(--blue-text); outline: 2px solid var(--blue-text); outline-offset: 2px; }
   .choice-card[aria-pressed="true"] { border-color: hsl(var(--primary)); background: color-mix(in srgb, var(--signal-pink) 7%, var(--paper-hi)); }
-  .filter-chip { border: 1px solid var(--ink-faint); border-radius: 3px; background: transparent; }
-  .filter-chip.is-selected, .filter-chip[aria-pressed="true"] { border-color: var(--ink); background: var(--paper-lo); box-shadow: 2px 2px 0 var(--ink); }
+  .filter-chip { border: 2px solid var(--manga-ink); border-radius: 3px; background: var(--paper-hi); box-shadow: inset 0 0 0 1px var(--ink-ghost); }
+  .filter-chip.is-selected, .filter-chip[aria-pressed="true"] { border-color: var(--manga-ink); background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: 2px 2px 0 var(--manga-ink); }
   .level-tab { border-bottom: 2px solid transparent; }
   .level-tab.is-selected { border-bottom-color: hsl(var(--primary)); }
   .category-filter { border: 1px solid transparent; }
@@ -195,9 +208,9 @@
   .course-row[aria-current="step"] .course-day { color: hsl(var(--accent-text)); }
   .progress-panel, .lesson-sidebar { border-radius: 6px; box-shadow: none; }
   .skill-route-row:hover, .skill-route-row:focus-within { background: var(--paper-lo); }
-  .kana-tile { border: 1px solid var(--ink-faint); border-radius: 3px; box-shadow: 2px 2px 0 var(--ink-ghost); }
+  .kana-tile { border: 2px solid var(--manga-ink); border-radius: 3px; box-shadow: 2px 2px 0 var(--manga-ink), inset 0 0 0 1px var(--ink-ghost); }
   .kana-tile:hover, .kana-tile:focus-visible { background: var(--paper-lo); border-color: var(--ink-faint); }
-  .vocab-flashcard { border: 1px solid var(--ink-faint); border-radius: 3px; box-shadow: 3px 3px 0 var(--ink-ghost); }
+  .vocab-flashcard { border: 2px solid var(--manga-ink); border-radius: 3px; box-shadow: 3px 3px 0 var(--manga-ink), inset 0 0 0 1px var(--ink-ghost); }
   .recall-option { border: 1px solid var(--ink-faint); border-radius: 5px; background: var(--paper-hi); }
   .recall-option.is-selected { border-color: hsl(var(--primary)); background: var(--paper-lo); box-shadow: 0 0 0 1px hsl(var(--primary)); }
   .category-icon { border: 0; border-radius: 0; background: transparent; color: var(--ink-soft); }
@@ -209,16 +222,16 @@
   .completion-burst { display: grid; place-items: center; }
   .completion-burst-main { font-family: var(--font-jp); color: hsl(var(--accent-text)); font-size: 3rem; }
   .completion-burst-line { display: none; }
-  .quiz-mode-card { border: 1px solid var(--ink-faint); border-radius: 3px; background: var(--paper-hi); box-shadow: 3px 3px 0 var(--ink-ghost); }
+  .quiz-mode-card { border: 2px solid var(--manga-ink); border-radius: 3px; background: var(--paper-hi); box-shadow: 3px 3px 0 var(--manga-ink), inset 0 0 0 1px var(--ink-ghost); }
   .quiz-mode-card .mode-icon { border: 0; background: transparent; color: var(--ink-soft); }
   .quiz-mode-card:hover { background: var(--paper-lo); }
   .lesson-progress-track > div { background: hsl(var(--primary)); }
   .lesson-prompt { border: 0; border-left: 3px solid var(--ink); border-radius: 0; background: var(--paper-lo); }
-  .lesson-example-frame { border: 1px solid var(--ink-faint); border-radius: 3px; background: var(--paper-hi); box-shadow: 3px 3px 0 var(--ink-ghost); }
+  .lesson-example-frame { border: 2px solid var(--manga-ink); border-radius: 3px; background: var(--paper-hi); box-shadow: 3px 3px 0 var(--manga-ink), inset 0 0 0 1px var(--ink-ghost); }
   .sentence-stage { border: 1px solid var(--ink-ghost); border-radius: 6px; background: var(--paper-hi); }
-  .option-button { min-height: 4rem; justify-content: space-between; border: 1px solid var(--ink-faint); border-radius: 6px; background: var(--paper-hi); box-shadow: none; }
-  .option-button:hover { border-color: var(--ink-soft); background: var(--paper-lo); }
-  .visual-novel-dialog { border: 2px solid var(--ink); border-radius: 4px; background: var(--paper-hi); box-shadow: 5px 5px 0 var(--ink); }
+  .option-button { min-height: 4rem; justify-content: space-between; border: 2px solid var(--manga-ink); background: var(--paper-hi); color: var(--ink); box-shadow: 2px 3px 0 var(--manga-ink), inset 0 0 0 1px var(--ink-ghost); }
+  .option-button:hover { background: var(--paper-lo); }
+  .visual-novel-dialog { border: 3px solid var(--manga-ink); border-radius: 3px; background: var(--paper-hi); box-shadow: 7px 7px 0 var(--manga-ink), inset 0 0 0 1px var(--ink-ghost); }
   .dialog-close-button { border: 0; border-radius: 5px; box-shadow: none; }
 }
 /* Reading pages use restrained panel lines; decoration stays outside study text. */

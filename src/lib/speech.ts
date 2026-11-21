@@ -1,24 +1,10 @@
 import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { writeManagedLearningStorage } from "@/lib/managed-learning-storage"
-import {
-  DEFAULT_SPEECH_PREFERENCES,
-  mergeSpeechPreferencesPatch,
-  normalizeSpeechPreferences,
-  type SpeechUserPreferences,
-} from "@/lib/speech-preferences-model"
-import {
-  buildRepeatedSpeechTexts,
-  normalizeSpeechGapMs,
-  normalizeSpeechSequenceTexts,
-  pickJapaneseVoice,
-} from "@/lib/speech-playback-model"
-import {
-  canWriteJsonStorage,
-  invalidJsonStorageValue,
-  readJsonStorage,
-  validJsonStorageValue,
-  type JsonStorageWriteOptions,
-} from "@/lib/storage-read-result"
+import { DEFAULT_SPEECH_PREFERENCES, mergeSpeechPreferencesPatch, normalizeSpeechPreferences, type SpeechUserPreferences } from "@/lib/speech-preferences-model"
+import { buildRepeatedSpeechTexts, normalizeSpeechGapMs, normalizeSpeechSequenceTexts, pickJapaneseVoice } from "@/lib/speech-playback-model"
+import { ensureJapaneseVoicesReady, hasJapaneseVoice, readCurrentJapaneseVoices } from "@/lib/speech-voices"
+export { ensureJapaneseVoicesReady, hasJapaneseVoice }
+import { canWriteJsonStorage, invalidJsonStorageValue, readJsonStorage, validJsonStorageValue, type JsonStorageWriteOptions } from "@/lib/storage-read-result"
 
 export type SpeakCallbacks = {
   onStart?: () => void
@@ -112,7 +98,7 @@ export function speakJapanese(text: string, options: SpeakOptions = {}) {
   }
   const utterance = new SpeechSynthesisUtterance(text)
   applyUtteranceDefaults(utterance, options)
-  const voices = synth.getVoices?.() ?? []
+  const voices = readCurrentJapaneseVoices()
   const voice = pickJapaneseVoice(voices)
   if (voice) utterance.voice = voice
   if (options.onStart) utterance.onstart = () => { if (generation === speechGeneration) options.onStart?.() }
@@ -147,7 +133,7 @@ export function speakJapaneseSequence(texts: string[], options: SpeakSequenceOpt
   if (options.cancel !== false) {
     synth.cancel()
   }
-  const voices = synth.getVoices?.() ?? []
+  const voices = readCurrentJapaneseVoices()
   const voice = pickJapaneseVoice(voices)
   const gapMs = normalizeSpeechGapMs(options.gapMs)
 

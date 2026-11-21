@@ -8,15 +8,20 @@ import { STARTER_LESSONS, getNextLesson } from "@/data/lesson-catalog"
 import { useLearningProgress, useLearningProfile } from "@/lib/learning-progress"
 import { useMistakeNotebook } from "@/lib/mistake-notebook"
 import { isLessonUnlocked } from "@/lib/learning-entry"
+import { useStageDiagnostics } from "@/lib/use-stage-diagnostics"
 import {
   buildLessonRunnerViewModel,
   countPracticeSteps,
+  calculateLessonCompletionScore,
+  filterCurrentLessonAnswers,
   getLatestLessonStepAnswers,
   getLessonAnsweredFromStepMap,
   resolveLessonResumeStepIndex,
 } from "@/lib/lesson-session"
 import { mergeLessonStepAnswers } from "@/lib/lesson-step-answers"
 import { readLessonProgressMapResult } from "@/lib/learning-progress-storage"
+import { getLessonUpdates } from "@/lib/lesson-content-version"
+import { getLessonContentVersion, getLessonStepVersions } from "@/lib/lesson-content-fingerprint"
 
 export function useLessonRunnerState(lesson: Lesson) {
   const restartPending = useRef(false)
@@ -28,14 +33,17 @@ export function useLessonRunnerState(lesson: Lesson) {
   const [answeredDraft, setAnsweredDraft] = useState<{ lessonId: string; answers: Record<string, boolean>; attemptId?: string } | null>(null)
   const [saveError, setSaveError] = useState(false)
   const savedLessonProgress = lessons[lesson.id]
+  const lessonUpdates = useMemo(() => getLessonUpdates(lesson, savedLessonProgress), [lesson, savedLessonProgress])
   const kanaLevel = profile?.kanaLevel
+  const placement = useStageDiagnostics()
+  const entryOrder = placement.entryOrder
   const lessonUnlocked = useMemo(() => {
-    if (!loaded) return true
-    return isLessonUnlocked(lesson, progress.completedLessonIds, kanaLevel)
-  }, [kanaLevel, lesson, loaded, progress.completedLessonIds])
+    if (!loaded || !placement.loaded) return false
+    return isLessonUnlocked(lesson, progress.completedLessonIds, kanaLevel, entryOrder)
+  }, [kanaLevel, lesson, loaded, progress.completedLessonIds, placement.loaded, entryOrder])
   const recommendedLesson = useMemo(
-    () => getNextLesson(progress.completedLessonIds, kanaLevel),
-    [kanaLevel, progress.completedLessonIds]
+    () => getNextLesson(progress.completedLessonIds, kanaLevel, entryOrder),
+    [kanaLevel, progress.completedLessonIds, entryOrder]
   )
 
   useEffect(() => {
@@ -66,10 +74,10 @@ export function useLessonRunnerState(lesson: Lesson) {
   const isLast = stepIndex === lesson.steps.length - 1
   const practiceSteps = useMemo(() => countPracticeSteps(lesson.steps), [lesson.steps])
   const persistedStepAnswers = useMemo(() => {
-    return mergeLessonStepAnswers(
+    return filterCurrentLessonAnswers(lesson.steps, mergeLessonStepAnswers(
       savedLessonProgress?.stepAnswers,
       getLatestLessonStepAnswers(lesson.id, lesson.steps, results, savedLessonProgress?.attemptId)
-    )
+    ))
   }, [lesson.id, lesson.steps, results, savedLessonProgress?.stepAnswers, savedLessonProgress?.attemptId])
   const restoredAnswered = useMemo(() => {
     return getLessonAnsweredFromStepMap(persistedStepAnswers)
@@ -106,8 +114,9 @@ export function useLessonRunnerState(lesson: Lesson) {
       lessonUnlocked,
       completedLessonIds: progress.completedLessonIds,
       kanaLevel,
+      entryOrder,
     })
-  }, [answered, kanaLevel, lesson, lessons, loaded, lessonUnlocked, practiceSteps, progress.completedLessonIds, stepIndex])
+  }, [answered, kanaLevel, lesson, lessons, loaded, lessonUnlocked, practiceSteps, progress.completedLessonIds, stepIndex, entryOrder])
 
   const setManualStepIndex = useCallback(
     (index: number) => {
@@ -121,13 +130,17 @@ export function useLessonRunnerState(lesson: Lesson) {
       setSaveError(!await runLearningWrite(() => {
         const stored = readLessonProgressMapResult()
         if (!stored.ok) return false
-        const answers = stored.value[lesson.id]?.stepAnswers ?? {}
+        const answers = filterCurrentLessonAnswers(lesson.steps, stored.value[lesson.id]?.stepAnswers ?? {})
         const correct = Object.values(answers).filter(answer => answer.correct && !answer.assisted).length
-        const score = practiceSteps > 0 ? Math.round(correct / practiceSteps * 100) : completionScore
-        return completeLesson(lesson.id, score, { attemptId: savedLessonProgress?.attemptId })
+        const score = practiceSteps > 0 ? calculateLessonCompletionScore(correct, practiceSteps) : completionScore
+        return completeLesson(lesson.id, score, {
+          attemptId: savedLessonProgress?.attemptId,
+          contentVersion: getLessonContentVersion(lesson),
+          stepVersions: getLessonStepVersions(lesson),
+        })
       }))
     },
-    [completeLesson, lesson.id, practiceSteps, savedLessonProgress?.attemptId]
+    [completeLesson, lesson, practiceSteps, savedLessonProgress?.attemptId]
   )
 
   const restartCurrentLesson = async () => {
@@ -145,6 +158,15 @@ export function useLessonRunnerState(lesson: Lesson) {
   const revealCurrentHint = async () => {
     if (!loaded || !lessonUnlocked) return
     setSaveError(!await runLearningWrite(() => progress.revealLessonHint(lesson.id, current.id, savedLessonProgress?.attemptId)))
+  }
+
+  const resumeUpdatedContent = async (consolidation = false) => {
+    if (!loaded || !lessonUnlocked || restartPending.current) return
+    restartPending.current = true
+    const saved = await runLearningWrite(() => progress.resumeLessonUpdates(lesson, consolidation))
+    restartPending.current = false
+    setSaveError(!saved)
+    if (saved) { setManualStep(null); setAnsweredDraft(null) }
   }
 
   return {
@@ -167,5 +189,7 @@ export function useLessonRunnerState(lesson: Lesson) {
     completeCurrentLesson,
     restartCurrentLesson,
     revealCurrentHint,
+    lessonUpdates,
+    resumeUpdatedContent,
   }
 }

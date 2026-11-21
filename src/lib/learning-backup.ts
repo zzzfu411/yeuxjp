@@ -1,4 +1,9 @@
 import { STORAGE_KEYS } from "@/lib/storage-keys"
+import { normalizeKnowledgeReviews } from "@/lib/knowledge-review-model"
+import { normalizeWrittenWorks } from "@/lib/written-work-model"
+import { normalizeDailyStudyPlans } from "@/lib/daily-study-plan"
+import { normalizeDiagnosticStore } from "@/lib/stage-diagnostic-model"
+import { normalizeKanjiReadingStore } from "@/lib/kanji-reading-model"
 import { filterKnownVocabularyIds, isKnownVocabularyId } from "@/data/vocabulary/id-registry"
 import { MANAGED_LEARNING_STORAGE_KEYS } from "@/lib/managed-learning-keys"
 import { normalizeKanaIdList, normalizeKanaIdRecord } from "@/lib/kana-id"
@@ -13,10 +18,11 @@ import { normalizeProgressList } from "@/lib/progress-list-storage"
 import { isReviewableKanaId } from "@/lib/review-visibility"
 import { normalizeSpeechPreferences } from "@/lib/speech-preferences-model"
 import { normalizeSrsState } from "@/lib/srs-model"
+import { isSafeRecordKey } from "@/lib/safe-id"
 import { normalizeStudyCalendar } from "@/lib/study-calendar-model"
 
-export const LEARNING_BACKUP_VERSION = 4
-const LEGACY_LEARNING_BACKUP_VERSIONS = new Set([1, 2, 3])
+export const LEARNING_BACKUP_VERSION = 8
+const LEGACY_LEARNING_BACKUP_VERSIONS = new Set([1, 2, 3, 4, 5, 6, 7])
 export const BACKUP_KEYS = MANAGED_LEARNING_STORAGE_KEYS
 
 export type LearningBackupKey = (typeof BACKUP_KEYS)[number]
@@ -59,7 +65,7 @@ function normalizeSrsMapForBackup(input: unknown, isAllowedId: (id: string) => b
   const out: Record<string, ReturnType<typeof normalizeSrsState>> = {}
   for (const [id, value] of Object.entries(input)) {
     const itemId = id.trim()
-    if (!itemId || !isPlainObject(value)) return null
+    if (!itemId || !isSafeRecordKey(itemId) || !isPlainObject(value)) return null
     if (!isAllowedId(itemId)) continue
     out[itemId] = normalizeSrsState(value, safeNow)
   }
@@ -72,6 +78,26 @@ export function normalizeBackupEntry(key: LearningBackupKey, rawValue: string, n
   if (!parsed.ok) return null
 
   switch (key) {
+    case STORAGE_KEYS.KANJI_READINGS: {
+      const store = normalizeKanjiReadingStore(parsed.value)
+      return store ? JSON.stringify(store) : null
+    }
+    case STORAGE_KEYS.DIAGNOSTICS: {
+      const store = normalizeDiagnosticStore(parsed.value)
+      return store ? JSON.stringify(store) : null
+    }
+    case STORAGE_KEYS.DAILY_STUDY_PLANS: {
+      const plans = normalizeDailyStudyPlans(parsed.value)
+      return plans ? JSON.stringify(plans) : null
+    }
+    case STORAGE_KEYS.WRITTEN_WORKS: {
+      const works = normalizeWrittenWorks(parsed.value)
+      return works ? JSON.stringify(works) : null
+    }
+    case STORAGE_KEYS.KNOWLEDGE_REVIEWS: {
+      const cards = normalizeKnowledgeReviews(parsed.value)
+      return cards ? JSON.stringify(cards) : null
+    }
     case STORAGE_KEYS.STUDY_CALENDAR: {
       const calendar = normalizeStudyCalendar(parsed.value)
       return calendar ? JSON.stringify(calendar) : null

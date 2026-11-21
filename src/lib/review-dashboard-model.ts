@@ -18,6 +18,7 @@ import {
 type IdCollection = Iterable<string>
 
 export type ReviewDashboardCounts = {
+  knowledgeDue?: number
   mistakesDue: number
   kanaDue: number
   vocabDue: number
@@ -43,6 +44,8 @@ export type ReviewDashboardModelInput = {
   mistakeSrsMap: SrsMap
   mistakeDueIds: readonly string[]
   mistakeItems?: Iterable<Pick<MistakeItem, "id" | "itemType" | "type">>
+  knowledgeSrsMap?: SrsMap
+  knowledgeDueIds?: string[]
   now?: number
 }
 
@@ -100,6 +103,8 @@ export function buildReviewDashboardModel({
   mistakeSrsMap,
   mistakeDueIds,
   mistakeItems,
+  knowledgeSrsMap = {},
+  knowledgeDueIds = [],
   now,
 }: ReviewDashboardModelInput): ReviewDashboardModel {
   const mastered = idsToSet(masteredIds)
@@ -125,6 +130,8 @@ export function buildReviewDashboardModel({
     kanaSrsMap: visibleKanaSrsMap,
     vocabDueIds: visibleVocabDueIds,
     vocabSrsMap: visibleVocabSrsMap,
+    knowledgeSrsMap,
+    knowledgeDueIds,
   })
   const totals: ReviewDashboardTotals = {
     kana: Object.keys(visibleKanaSrsMap).length,
@@ -134,6 +141,7 @@ export function buildReviewDashboardModel({
     learned: explicitLearnedVocabIds.size,
   }
   const counts: ReviewDashboardCounts = {
+    ...(Object.keys(knowledgeSrsMap).length ? { knowledgeDue: knowledgeDueIds.length } : {}),
     mistakesDue: dueMistakeIds.length,
     kanaDue: reviewableKanaDueIds.length,
     vocabDue: visibleVocabDueIds.length,
@@ -151,10 +159,10 @@ export function buildReviewDashboardModel({
     vocabEnrollMissing,
     mistakeEnrollMissing,
     todayQueue,
-    totalEnrolled: totals.kana + totals.vocab + totals.mistakes,
-    totalDue: counts.kanaDue + counts.vocabDue + counts.mistakesDue,
-    isFirstTime: totals.kana + totals.vocab + totals.mistakes === 0 && visibleKanaIds.size === 0 && visibleVocabIds.size === 0,
-    nextDueAt: getNextSrsDueAt([visibleKanaSrsMap, visibleVocabSrsMap, visibleMistakeSrsMap], now),
+    totalEnrolled: totals.kana + totals.vocab + totals.mistakes + Object.keys(knowledgeSrsMap).length,
+    totalDue: counts.kanaDue + counts.vocabDue + counts.mistakesDue + knowledgeDueIds.length,
+    isFirstTime: totals.kana + totals.vocab + totals.mistakes === 0 && Object.keys(knowledgeSrsMap).length === 0 && visibleKanaIds.size === 0 && visibleVocabIds.size === 0,
+    nextDueAt: getNextSrsDueAt([visibleKanaSrsMap, visibleVocabSrsMap, visibleMistakeSrsMap, knowledgeSrsMap], now),
     counts,
     mistakeKindDue,
     mistakeKindDueLabel,

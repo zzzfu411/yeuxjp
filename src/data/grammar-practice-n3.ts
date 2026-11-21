@@ -32,7 +32,7 @@ export const n3GrammarPracticeSets: GrammarPracticeSet[] = [
     {
       grammarId: "n3-you-ni",
       practiceTemplates: [
-        { id: "n3-you-ni-late", prompt: "遅れない___、早く家を出ます。为了达到状态应填什么？", answer: "ように", options: ["ように", "ために", "せいで", "ままに"] },
+        { id: "n3-you-ni-late", prompt: "遅れない___、早く家を出ます。为了达到状态应填什么？", answer: "ように", options: ["ように", "につれて", "せいで", "ままに"] },
         { id: "n3-you-ni-hear", prompt: "聞こえる___、大きい声で話してください。使对方能做到应填什么？", answer: "ように", options: ["ように", "とおりに", "ばかりに", "くせに"] },
       ],
     },

@@ -1,5 +1,6 @@
 "use client"
 
+import { generateSafeId } from "@/lib/safe-id"
 import { setLearningWriteLockHeld } from "@/lib/learning-write-lock-state"
 import { LEARNING_WRITE_EPOCH_KEY } from "@/lib/storage-keys"
 
@@ -27,7 +28,7 @@ export async function runLearningWrite<T>(commit: () => T, options: { replacesDa
       let replaced = false
       try {
         if (options.replacesData) {
-          window.localStorage.setItem(LEARNING_WRITE_EPOCH_KEY, crypto.randomUUID())
+          window.localStorage.setItem(LEARNING_WRITE_EPOCH_KEY, generateSafeId())
           replaced = true
         }
         const result = commit()

@@ -1,0 +1,46 @@
+import assert from "node:assert/strict"
+import { chromium } from "playwright"
+import { loadTsModule } from "../tests/unit/load-ts-module.mjs"
+const { STARTER_LESSONS } = await loadTsModule("src/data/lessons.ts")
+const { getCourseKanaIds } = await loadTsModule("src/lib/course-kana.ts")
+const { getKanaById } = await loadTsModule("src/lib/kana-id.ts")
+const { STORAGE_KEYS } = await loadTsModule("src/lib/storage-keys.ts")
+const base = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3218"
+const lesson = STARTER_LESSONS.find(l => getCourseKanaIds(l).some(id => id.startsWith("katakana:")))
+const ids = getCourseKanaIds(lesson)
+const target = getKanaById(ids[0])
+const browser = await chromium.launch({ headless: true })
+try {
+  const page = await browser.newPage({ serviceWorkers: "block", viewport: { width: 390, height: 844 } })
+  const errors = []
+  page.on("pageerror", error => errors.push(error.message))
+  await page.goto(`${base}/learn/${lesson.id}/kana`, { waitUntil: "networkidle" })
+  assert.deepEqual(await page.locator("[data-kana-id]").evaluateAll(nodes => nodes.map(node => node.dataset.kanaId)), ids)
+  await page.getByTestId("course-kana-all").click()
+  await page.getByTestId("course-kana-prompt").waitFor()
+  assert.match(await page.getByTestId("course-kana-prompt").innerText(), new RegExp(target.kana[target.script]))
+  assert.equal(await page.getByTestId("course-kana-prompt").getByRole("button").count(), 0)
+  await page.getByTestId(`review-answer-${target.romaji}`).click()
+  await page.getByTestId("review-next").waitFor()
+  const first = await page.evaluate(({ items, srs, id }) => ({ item: JSON.parse(localStorage.getItem(items))[id], card: JSON.parse(localStorage.getItem(srs))[id] }),
+    { items: STORAGE_KEYS.ITEM_PROGRESS, srs: STORAGE_KEYS.SRS_KANA, id: target.id })
+  assert.equal(first.item.assessmentEvidence.recognition.correct, 1)
+  assert.ok(first.card.dueAt > Date.now())
+  await page.getByRole("button", { name: "返回", exact: true }).click()
+  await page.reload({ waitUntil: "networkidle" })
+  assert.match(await page.getByTestId("course-kana-counts").innerText(), new RegExp(`当前方向未测 ${ids.length - 1} 个`))
+  await page.getByRole("combobox").selectOption("listening")
+  assert.match(await page.getByTestId("course-kana-counts").innerText(), new RegExp(`当前方向未测 ${ids.length} 个`))
+  await page.getByTestId("course-kana-all").click()
+  await page.getByTestId("course-kana-prompt").waitFor()
+  assert.doesNotMatch(await page.getByTestId("course-kana-prompt").innerText(), new RegExp(target.kana[target.script]))
+  assert.equal(await page.getByTestId(`review-answer-${target.romaji}`).innerText(), target.kana[target.script])
+  await page.getByTestId(`review-answer-${target.romaji}`).click()
+  await page.getByTestId("review-next").waitFor()
+  const item = await page.evaluate(({ key, id }) => JSON.parse(localStorage.getItem(key))[id], { key: STORAGE_KEYS.ITEM_PROGRESS, id: target.id })
+  assert.equal(item.assessmentEvidence.listening.correct, 1)
+  assert.equal(item.assessmentEvidence.recognition.correct, 1)
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false)
+  assert.deepEqual(errors, [])
+  console.log("Course kana passed: exact katakana collection, separate reading/listening evidence, first SRS enrollment, reload, and no pre-answer audio/glyph leakage.")
+} finally { await browser.close() }

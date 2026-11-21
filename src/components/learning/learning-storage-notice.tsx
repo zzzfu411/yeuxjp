@@ -24,8 +24,8 @@ export function LearningStorageNotice() {
     }
   }, [])
   if (!reason) return null
-  return <div role="alert" className="paper-wrap border-b border-accent/40 bg-accent/10 p-4 text-sm">
-    {messages[reason] ?? messages.failed}
-    {reason !== "unsupported" && <button type="button" className="ml-3 underline" onClick={() => setReason(null)}>关闭提示</button>}
-  </div>
+  return <aside role="alert" data-testid="learning-storage-notice" className="fixed inset-x-3 top-[4.5rem] z-[70] mx-auto flex max-h-[calc(100dvh-6rem)] max-w-3xl items-start gap-3 overflow-y-auto border-2 border-foreground bg-background p-4 text-sm shadow-lg sm:top-20">
+    <p className="min-w-0 flex-1">{messages[reason] ?? messages.failed}</p>
+    <button type="button" aria-label="关闭保存提示" className="min-h-11 shrink-0 px-2 underline underline-offset-4" onClick={() => setReason(null)}>关闭</button>
+  </aside>
 }

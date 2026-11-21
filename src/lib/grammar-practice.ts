@@ -1,5 +1,8 @@
 import type { GrammarPoint, GrammarPracticeTemplate } from "@/data/grammar-data"
 import type { Question } from "@/lib/questions"
+import { shuffleList } from "@/lib/question-options"
+import { createSeededRandom } from "@/lib/seeded-random"
+import { getQuestionContentVersion } from "@/lib/question-content-version"
 
 function normalizedOptions(template: GrammarPracticeTemplate) {
   const seen = new Set<string>()
@@ -31,7 +34,7 @@ export function grammarPracticeTemplateToQuestion(
 
   if (!id || !prompt || !answer || options.length < 2 || !options.includes(answer)) return null
 
-  return {
+  const question: Question = {
     type: "grammar-practice",
     itemId: point.id,
     itemType: "grammar",
@@ -43,10 +46,13 @@ export function grammarPracticeTemplateToQuestion(
     explanation: buildExplanation(point),
     options: options.map((value) => ({ value, display: value })),
   }
+  return { ...question, questionVersion: getQuestionContentVersion(question) }
 }
 
-export function buildGrammarPracticeQuestions(point: GrammarPoint): Question[] {
+export function buildGrammarPracticeQuestions(point: GrammarPoint, attemptSeed = "preview"): Question[] {
   return (point.practiceTemplates ?? [])
     .map((template) => grammarPracticeTemplateToQuestion(point, template))
     .filter((question): question is Question => question !== null)
+    .map(question => ({ ...question, options: shuffleList(question.options,
+      createSeededRandom(`${attemptSeed}:${question.mistakeId}`)) }))
 }

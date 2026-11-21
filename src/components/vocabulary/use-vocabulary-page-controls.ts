@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import type { VocabLevel } from "@/data/vocabulary/types"
-import { DEFAULT_VOCABULARY_LEVEL, isVocabLevel } from "@/data/vocabulary/levels"
+import { DEFAULT_VOCABULARY_LEVEL, getVocabLevelForId, isVocabLevel } from "@/data/vocabulary/levels"
 import { useLearningProfile } from "@/lib/learning-progress"
 import { defaultShowStudyRomaji, nextRomajiVisibility } from "@/lib/romaji-visibility"
 
@@ -20,8 +20,9 @@ export function useVocabularyPageControls() {
   useEffect(() => {
     const query = new URLSearchParams(queryString)
     const level = query.get("level")
+    const inferredLevel = getVocabLevelForId(query.get("item"))
     const timer = setTimeout(() => {
-      setCurrentLevel(isVocabLevel(level) ? level : DEFAULT_VOCABULARY_LEVEL)
+      setCurrentLevel(isVocabLevel(level) ? level : inferredLevel ?? DEFAULT_VOCABULARY_LEVEL)
       setActiveCategory(query.get("category") || null)
       setSearchQuery(query.get("q") || "")
       setOnlyUnlearned(query.get("unlearned") === "1")

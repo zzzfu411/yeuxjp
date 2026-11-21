@@ -1,5 +1,5 @@
 import { isKnownVocabularyId } from "@/data/vocabulary/id-registry"
-import { runLearningStorageTransaction } from "@/lib/learning-store"
+import { runLearningStorageTransaction } from "@/lib/learning-storage-transaction"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import { gradeSrs, type SrsResult } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"

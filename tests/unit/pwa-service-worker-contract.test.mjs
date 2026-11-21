@@ -26,7 +26,7 @@ test("PWA registers a production service worker and exposes install metadata", (
   assert.match(layout, /appleWebApp:\s*\{/)
   assert.match(layout, /themeColor:\s*\[/)
   assert.match(layout, /media:\s*"\(prefers-color-scheme: light\)",\s*color:\s*"#fffdf9"/)
-  assert.match(layout, /media:\s*"\(prefers-color-scheme: dark\)",\s*color:\s*"#1e202b"/)
+  assert.match(layout, /media:\s*"\(prefers-color-scheme: dark\)",\s*color:\s*"#191b20"/)
   assert.doesNotMatch(layout, /themeColor:\s*"#[0-9a-f]+"/i)
   assert.match(layout, /import \{ PwaRegister \} from "@\/components\/pwa-register"/)
   assert.match(layout, /<PwaRegister \/>/)
@@ -35,7 +35,7 @@ test("PWA registers a production service worker and exposes install metadata", (
   assert.match(themeProvider, /useTheme/)
   assert.match(themeProvider, /querySelectorAll<HTMLMetaElement>\('meta\[name="theme-color"\]'\)/)
   assert.match(themeProvider, /light: "#fffdf9"/)
-  assert.match(themeProvider, /dark: "#1e202b"/)
+  assert.match(themeProvider, /dark: "#191b20"/)
   assert.doesNotMatch(themeProvider, /#facc15|#000000/)
   assert.equal(manifest.id, "/")
   assert.equal(manifest.start_url, "/")
@@ -118,7 +118,7 @@ test("PWA registration lets offline or service-worker-controlled links fall back
 })
 
 test("service worker partitions startup, navigation, and runtime media caches without learning state", () => {
-  assert.match(sw, /const CACHE_VERSION = "v15"/)
+  assert.match(sw, /const CACHE_VERSION = "v19"/)
   assert.match(sw, /const SHELL_CACHE_NAME = `yasashi-shell-\$\{CACHE_VERSION\}`/)
   assert.match(sw, /const NAVIGATION_CACHE_NAME = `yasashi-navigation-\$\{CACHE_VERSION\}`/)
   assert.match(sw, /const RUNTIME_CACHE_NAME = `yasashi-runtime-\$\{CACHE_VERSION\}`/)
@@ -336,11 +336,11 @@ test("service worker warms current-page Next resources into shell and images int
 
   await warmPromise
   assert.deepEqual(putCalls, [
-    { cache: "yasashi-shell-v15", url: "https://example.test/_next/static/chunks/app.js" },
-    { cache: "yasashi-shell-v15", url: "https://example.test/_next/static/css/app.css" },
-    { cache: "yasashi-runtime-v15", url: "https://example.test/_next/image?url=%2Fassets%2Fhero.webp&w=1200&q=75" },
-    { cache: "yasashi-runtime-v15", url: "https://example.test/animcjk/kana/12354.svg" },
-    { cache: "yasashi-runtime-v15", url: "https://example.test/fonts/lxgw/lxgwwenkaiscreen.css" },
+    { cache: "yasashi-shell-v19", url: "https://example.test/_next/static/chunks/app.js" },
+    { cache: "yasashi-shell-v19", url: "https://example.test/_next/static/css/app.css" },
+    { cache: "yasashi-runtime-v19", url: "https://example.test/_next/image?url=%2Fassets%2Fhero.webp&w=1200&q=75" },
+    { cache: "yasashi-runtime-v19", url: "https://example.test/animcjk/kana/12354.svg" },
+    { cache: "yasashi-runtime-v19", url: "https://example.test/fonts/lxgw/lxgwwenkaiscreen.css" },
   ])
   assert.ok(fetchCalls.every((call) => call.cache === "reload" && call.credentials === "same-origin"))
   assert.equal(reply.type, "CURRENT_PAGE_WARMED")
@@ -355,9 +355,9 @@ test("service worker activation removes only outdated app-owned caches", async (
     caches: {
       async keys() {
         return [
-          "yasashi-shell-v15",
-          "yasashi-navigation-v15",
-          "yasashi-runtime-v15",
+          "yasashi-shell-v19",
+          "yasashi-navigation-v19",
+          "yasashi-runtime-v19",
           "yasashi-static-v7",
           "yasashi-navigation-v7",
           "yasashi-runtime-v7",
@@ -436,8 +436,8 @@ test("service worker navigation fallback ignores preserved non-app caches", asyn
           async match(request) {
             const url = typeof request === "string" ? request : request.url
             const absoluteUrl = url.startsWith("/") ? `https://example.test${url}` : url
-            if (name === "yasashi-navigation-v15") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
-            if (name === "yasashi-shell-v15") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
+            if (name === "yasashi-navigation-v19") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
+            if (name === "yasashi-shell-v19") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
             return preservedEntries.get(absoluteUrl) ?? preservedEntries.get(url) ?? null
           },
           async put() {},
@@ -514,8 +514,8 @@ test("service worker navigation fallback canonicalizes query URLs before offline
           async match(request) {
             const url = typeof request === "string" ? request : request.url
             const absoluteUrl = url.startsWith("/") ? `https://example.test${url}` : url
-            if (name === "yasashi-navigation-v15") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
-            if (name === "yasashi-shell-v15") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
+            if (name === "yasashi-navigation-v19") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
+            if (name === "yasashi-shell-v19") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
             return null
           },
           async put() {},
@@ -590,8 +590,8 @@ test("service worker navigation fallback serves cached pages for server errors b
           async match(request) {
             const url = typeof request === "string" ? request : request.url
             const absoluteUrl = url.startsWith("/") ? `https://example.test${url}` : url
-            if (name === "yasashi-navigation-v15") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
-            if (name === "yasashi-shell-v15") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
+            if (name === "yasashi-navigation-v19") return navigationEntries.get(absoluteUrl) ?? navigationEntries.get(url) ?? null
+            if (name === "yasashi-shell-v19") return staticEntries.get(absoluteUrl) ?? staticEntries.get(url) ?? null
             return null
           },
           async put() {},
@@ -659,7 +659,7 @@ test("service worker navigation network wait is bounded before cached fallback",
       async open(name) {
         return {
           async match(request) {
-            if (name !== "yasashi-navigation-v15") return null
+            if (name !== "yasashi-navigation-v19") return null
             return request.url === "https://example.test/kana" ? cachedPage : null
           },
           async put() {},
@@ -777,7 +777,7 @@ test("service worker trims old navigation cache entries after caching visited pa
   })
 
   assert.equal(await (await responded).text(), "fresh page")
-  assert.deepEqual(putCalls, [{ cache: "yasashi-navigation-v15", url: "https://example.test/new-page" }])
+  assert.deepEqual(putCalls, [{ cache: "yasashi-navigation-v19", url: "https://example.test/new-page" }])
   assert.deepEqual(deleted, ["https://example.test/old-0", "https://example.test/old-1"])
 })
 
@@ -796,7 +796,7 @@ test("runtime media eviction cannot delete startup shell resources", async () =>
   const sandbox = {
     caches: {
       async open(name) {
-        const isRuntime = name === "yasashi-runtime-v15"
+        const isRuntime = name === "yasashi-runtime-v19"
         return {
           async match() {
             return null
@@ -851,8 +851,8 @@ test("runtime media eviction cannot delete startup shell resources", async () =>
   assert.equal(await requestAsset("https://example.test/animcjk/kana/new.svg", "image"), "fresh asset")
   assert.equal(await requestAsset("https://example.test/_next/static/new-chunk.js", "script"), "fresh asset")
   assert.deepEqual(putCalls, [
-    { cache: "yasashi-runtime-v15", url: "https://example.test/animcjk/kana/new.svg" },
-    { cache: "yasashi-shell-v15", url: "https://example.test/_next/static/new-chunk.js" },
+    { cache: "yasashi-runtime-v19", url: "https://example.test/animcjk/kana/new.svg" },
+    { cache: "yasashi-shell-v19", url: "https://example.test/_next/static/new-chunk.js" },
   ])
   assert.deepEqual(runtimeDeleted, [
     "https://example.test/animcjk/kana/old-0.svg",
@@ -878,12 +878,12 @@ test("service worker serves cached runtime assets without offline revalidation",
       async open(name) {
         return {
           async match(request) {
-            if (name === "yasashi-runtime-v15") return currentStaticEntries.get(request.url) ?? null
+            if (name === "yasashi-runtime-v19") return currentStaticEntries.get(request.url) ?? null
             return preservedEntries.get(request.url) ?? null
           },
           async put(request, response) {
             putCalls.push({ cache: name, url: request.url })
-            if (name === "yasashi-runtime-v15") currentStaticEntries.set(request.url, response)
+            if (name === "yasashi-runtime-v19") currentStaticEntries.set(request.url, response)
             else preservedEntries.set(request.url, response)
           },
         }
@@ -1004,9 +1004,9 @@ test("service worker caches only allowlisted static assets", async () => {
     "https://example.test/api/file.js",
   ])
   assert.deepEqual(putCalls, [
-    { cache: "yasashi-runtime-v15", url: "https://example.test/assets/kana/kana-seion.webp" },
-    { cache: "yasashi-runtime-v15", url: "https://example.test/fonts/lxgw/lxgwwenkaiscreen.css" },
-    { cache: "yasashi-runtime-v15", url: "https://example.test/fonts/lxgw/files/lxgwwenkaiscreen-subset-4.woff2" },
+    { cache: "yasashi-runtime-v19", url: "https://example.test/assets/kana/kana-seion.webp" },
+    { cache: "yasashi-runtime-v19", url: "https://example.test/fonts/lxgw/lxgwwenkaiscreen.css" },
+    { cache: "yasashi-runtime-v19", url: "https://example.test/fonts/lxgw/files/lxgwwenkaiscreen-subset-4.woff2" },
   ])
 })
 
@@ -1053,7 +1053,7 @@ test("PWA offline E2E verifies visited-page cache, fallback, and local state pre
   assert.match(pwaE2e, /async function stressRuntimeMediaCache\(page, startupNextStaticUrls\)/)
   assert.match(pwaE2e, /runtime media eviction must preserve every startup Next resource/)
   assert.match(pwaE2e, /cacheState\.runtimeUrls\.length <= 64/)
-  assert.match(pwaE2e, /getByRole\("button", \{ name: "Toggle theme" \}\)\.click\(\)/)
+  assert.match(pwaE2e, /getByTestId\("theme-toggle"\)\.click\(\)/)
   assert.match(pwaE2e, /async function assertPwaInstallAssets\(page, phase\)/)
   assert.match(pwaE2e, /\/manifest\.webmanifest/)
   assert.match(pwaE2e, /manifest\.json\.id, "\/"/)
@@ -1154,7 +1154,7 @@ test("offline fallback copy stays readable and data-safe", () => {
   assert.match(offlineHtml, /<title>優しい Yasashi · 离线中<\/title>/)
   assert.match(offlineHtml, /<meta name="theme-color" content="#fffdf9" \/>/)
   assert.match(offlineHtml, /@media \(prefers-color-scheme: dark\)/)
-  assert.match(offlineHtml, /--base: #1e202b/)
+  assert.match(offlineHtml, /--base: #191b20/)
   assert.match(offlineHtml, /<h1>当前离线 <small>网络恢复后即可继续同步内容<\/small><\/h1>/)
   assert.match(offlineHtml, /已缓存的页面和笔顺资源仍可使用/)
   assert.match(offlineHtml, /已保存的学习进度仍保存在当前浏览器/)

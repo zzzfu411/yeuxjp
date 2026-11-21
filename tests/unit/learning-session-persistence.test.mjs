@@ -9,6 +9,9 @@ const learningStorage = await loadTsModule("src/lib/learning-storage.ts")
 const questions = await loadTsModule("src/lib/questions.ts")
 const review = await loadTsModule("src/lib/review-questions.ts")
 const storage = await loadTsModule("src/lib/storage-keys.ts")
+const { commitReviewQuestionPractice } = await loadTsModule("src/lib/review-answer-recording.ts")
+const { gradeSrs } = await loadTsModule("src/lib/srs.ts")
+const { makeCourseKanaQuestion } = await loadTsModule("src/lib/course-kana.ts")
 
 function installLocalStorage({ failKeys = new Set() } = {}) {
   const map = new Map()
@@ -59,6 +62,37 @@ function createProgressApi() {
     },
   }
 }
+
+test("first course vocabulary test enrolls SRS atomically; failed scheduling restores the untested state", () => {
+  const question = { type: "review:vocab", itemId: "sur-g-1", itemType: "vocab", mode: "meaning", correctAnswer: "sur-g-1",
+    questionText: "こんにちは", options: [{ value: "sur-g-1", display: "你好" }, { value: "sur-g-2", display: "再见" }] }
+  for (const fail of [true, false]) {
+    const { map } = installLocalStorage({ failKeys: new Set(fail ? [storage.STORAGE_KEYS.SRS_VOCAB] : []) })
+    const committed = commitReviewQuestionPractice({ progress: createProgressApi(), result: questions.makeQuestionResult(question, "sur-g-1"),
+      grade: () => gradeSrs(storage.STORAGE_KEYS.SRS_VOCAB, question.itemId, "good") })
+    assert.equal(committed, !fail)
+    if (fail) assert.equal(map.size, 0)
+    else {
+      assert.equal(JSON.parse(map.get(storage.STORAGE_KEYS.ITEM_PROGRESS))[question.itemId].assessmentEvidence.meaning.attempts, 1)
+      assert.ok(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_VOCAB))[question.itemId].dueAt > Date.now())
+    }
+  }
+})
+
+test("first course kana test rolls back evidence when SRS enrollment fails, in both scripts and directions", () => {
+  for (const id of ["hiragana:a", "katakana:a"]) for (const direction of ["recognition", "listening"]) for (const fail of [true, false]) {
+    const question = makeCourseKanaQuestion(id, direction)
+    const { map } = installLocalStorage({ failKeys: new Set(fail ? [storage.STORAGE_KEYS.SRS_KANA] : []) })
+    const committed = commitReviewQuestionPractice({ progress: createProgressApi(), result: questions.makeQuestionResult(question, question.correctAnswer),
+      grade: () => gradeSrs(storage.STORAGE_KEYS.SRS_KANA, id, "good") })
+    assert.equal(committed, !fail)
+    if (fail) assert.equal(map.size, 0)
+    else {
+      assert.equal(JSON.parse(map.get(storage.STORAGE_KEYS.ITEM_PROGRESS))[id].assessmentEvidence[direction].attempts, 1)
+      assert.ok(JSON.parse(map.get(storage.STORAGE_KEYS.SRS_KANA))[id].dueAt > Date.now())
+    }
+  }
+})
 
 test("practice recording failure prevents review enrollment", () => {
   const { map } = installLocalStorage({ failKeys: new Set([storage.STORAGE_KEYS.ITEM_PROGRESS]) })

@@ -71,7 +71,7 @@ function QuizPageContent() {
           <p className="text-sm font-semibold text-muted-foreground">从听音、辨义、活用或输入中选一项开始</p>
         </div>
 
-        <SpeechSettingsBar className="w-full" />
+        <SpeechSettingsBar collapsible className="w-full" />
 
         <section aria-label="测验模式" className="paper-sheet grid w-full grid-cols-1 gap-4 px-5 py-3 md:grid-cols-2">
           {QUIZ_MODE_OPTIONS.map((option) => (

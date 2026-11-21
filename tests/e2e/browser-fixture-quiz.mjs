@@ -142,6 +142,7 @@ export async function assertQuizModeRecordsPractice(page, baseUrl, { mode, itemT
     recordedPractice,
     `${mode} quiz should record ${itemType}/${practiceMode} practice`
   )
+  assert.equal(recordedPractice.responseFormat, "choice", "quiz options must retain their choice format")
 
   const itemProgress = await readJsonStorage(page, E2E_STORAGE_KEYS.ITEM_PROGRESS)
   assert.ok(

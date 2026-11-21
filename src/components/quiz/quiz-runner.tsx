@@ -36,17 +36,6 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
     playAudio,
   } = useQuizSession(mode)
 
-  if (!currentQuestion) {
-    return (
-      <QuizEmptyState
-        mode={mode}
-        onExit={onExit}
-        onRetryVocabulary={retryVocabulary}
-        reason={emptyReason}
-      />
-    )
-  }
-
   return (
     <div className="container py-10 px-4 mx-auto max-w-lg mb-20 flex flex-col items-center space-y-6">
       <div className="flex w-full items-center justify-between border-b border-dashed border-border/60 pb-3">
@@ -61,6 +50,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
       <QuizModeHint mode={mode} />
 
       <SpeechSettingsBar
+        collapsible
         showQuizOptions={shouldShowQuizSpeechOptions(mode)}
       />
 
@@ -77,6 +67,10 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
         onOnlyUnlearnedVocabChange={setOnlyUnlearnedVocab}
       />
 
+      {!currentQuestion ? <div className="w-full space-y-4" data-testid="quiz-empty-recovery">
+        {(onlyUnmasteredKana || onlyUnlearnedVocab) && <Button variant="outline" className="w-full" data-testid="quiz-clear-filters" onClick={() => { setOnlyUnmasteredKana(false); setOnlyUnlearnedVocab(false) }}>取消筛选，继续练习</Button>}
+        <div className="[&>div]:w-full [&>div]:p-0"><QuizEmptyState mode={mode} onExit={onExit} onRetryVocabulary={retryVocabulary} reason={emptyReason} /></div>
+      </div> : <>
       <QuizQuestionPrompt
         question={currentQuestion}
         mode={mode}
@@ -107,6 +101,7 @@ export function QuizRunner({ mode, onExit }: { mode: QuizMode, onExit: () => voi
           下一题 <RefreshCw className="w-4 h-4" />
         </Button>
       )}
+      </>}
     </div>
   )
 }

@@ -9,6 +9,18 @@ test("review queues remove correct answers and requeue wrong answers", () => {
   assert.deepEqual(session.advanceReviewQueue(["a", "b", "c"], false), ["b", "c", "a"])
 })
 
+test("a time-budget batch stops after one attempt per item, even when every answer is wrong", () => {
+  let queue = ["a", "b"]
+  let stats = session.createReviewStats()
+  for (let i = 0; i < 2; i++) {
+    stats = session.recordReviewAnswer(stats, false, false)
+    queue = session.advanceReviewQueue(queue, false, false)
+  }
+  assert.deepEqual(queue, [])
+  assert.deepEqual(session.getReviewCompletionStats(2, stats), { initial: 2, answered: 2, correct: 0, repeated: 0 })
+  assert.deepEqual(session.advanceReviewQueue(["a"], null, false), ["a"])
+})
+
 test("wrong-answer requeues produce a fresh queue snapshot", () => {
   const queue = ["a"]
   const next = session.advanceReviewQueue(queue, false)

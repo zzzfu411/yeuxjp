@@ -2,7 +2,7 @@
 
 import { useId } from "react"
 import { cn } from "@/lib/utils"
-import { generateActiveStrokeCss, type ParsedAnimCjkSvg } from "@/lib/animcjk"
+import type { ParsedAnimCjkSvg } from "@/lib/animcjk"
 
 type SpeedValue = 1.6 | 1 | 0.6
 
@@ -38,12 +38,10 @@ interface KanaGlyphBoardProps {
 }
 
 /**
- * Renders one glyph: 田字格 background, SVG strokes, and start-dot overlay.
- * The SVG itself is injected via dangerouslySetInnerHTML. We expose stroke
- * progress through a wrapper class so a single <style> block (rendered
- * inline below) can control the entire animation. Each stroke path has
- * `data-stroke-index="N"`. We toggle visibility/animation based on the
- * activeStroke prop.
+ * Renders one glyph: 田字格 background, pure React SVG strokes, and start-dot overlay.
+ * Stroke progress is driven directly via React props without raw HTML injection
+ * or per-instance inline style blocks; scoped SVG IDs avoid collisions when the
+ * same kana appears twice on screen.
  */
 export function KanaGlyphBoard({
   svg,
@@ -60,6 +58,8 @@ export function KanaGlyphBoard({
   const drawMs = Math.round(800 * speed)
   const rawScopeId = useId()
   const scopeId = `kana-stroke-${rawScopeId.replace(/[^a-zA-Z0-9_-]/g, "")}`
+  const geometry = svg.geometry
+  const isFinishedAll = activeStroke > svg.strokeCount
 
   return (
     <div
@@ -89,11 +89,8 @@ export function KanaGlyphBoard({
           aria-hidden
           className="pointer-events-none absolute inset-2"
           style={{
-            // Outer dashed border + crosshair
             backgroundImage: [
-              // vertical center line
               "linear-gradient(to right, transparent calc(50% - 0.5px), hsl(var(--muted-foreground) / 0.22) calc(50% - 0.5px), hsl(var(--muted-foreground) / 0.22) calc(50% + 0.5px), transparent calc(50% + 0.5px))",
-              // horizontal center line
               "linear-gradient(to bottom, transparent calc(50% - 0.5px), hsl(var(--muted-foreground) / 0.22) calc(50% - 0.5px), hsl(var(--muted-foreground) / 0.22) calc(50% + 0.5px), transparent calc(50% + 0.5px))",
             ].join(","),
             border: "1px dashed hsl(var(--muted-foreground) / 0.25)",
@@ -114,14 +111,52 @@ export function KanaGlyphBoard({
           className="kana-glyph-svg relative w-full h-full [&_svg]:w-full [&_svg]:h-full [&_svg]:block [&_svg]:overflow-visible"
           style={
             {
-              // CSS variables consumed by the inline <style> block below.
               ["--stroke-draw-ms" as string]: `${drawMs}ms`,
               ["--active-stroke" as string]: activeStroke,
             } as React.CSSProperties
           }
-          // svg.html has no <script>/<style> blocks anymore (stripped in parseAnimCJK)
-          dangerouslySetInnerHTML={{ __html: svg.html }}
-        />
+        >
+          {geometry && (
+            <svg
+              aria-hidden
+              className="acjk"
+              viewBox={svg.viewBox}
+              preserveAspectRatio="xMidYMid meet"
+            >
+              {geometry.basePaths.map((basePath) => (
+                <path key={basePath.id} id={`${scopeId}-${basePath.id}`} d={basePath.d} />
+              ))}
+              <defs>
+                {geometry.clipPaths.map((clip) => (
+                  <clipPath key={clip.id} id={`${scopeId}-${clip.id}`}>
+                    <use href={`#${scopeId}-${clip.href}`} />
+                  </clipPath>
+                ))}
+              </defs>
+              {geometry.strokes.map((stroke, idx) => {
+                const isReached = isFinishedAll || activeStroke >= stroke.index
+                const isCurrent = !isFinishedAll && activeStroke === stroke.index
+                return (
+                  <path
+                    key={`${stroke.clipPathId}-${idx}`}
+                    d={stroke.d}
+                    pathLength={stroke.length}
+                    clipPath={`url(#${scopeId}-${stroke.clipPathId})`}
+                    data-stroke-index={stroke.index}
+                    style={
+                      {
+                        ["--stroke-len" as string]: stroke.length,
+                        ["--stroke-off" as string]: stroke.length + 2,
+                        strokeDashoffset: isReached ? 0 : stroke.length + 2,
+                        stroke: isCurrent ? "hsl(var(--primary))" : "hsl(var(--foreground))",
+                      } as React.CSSProperties
+                    }
+                  />
+                )
+              })}
+            </svg>
+          )}
+        </div>
 
         {/* Start-dot overlay */}
         {showStartDots && (
@@ -134,9 +169,6 @@ export function KanaGlyphBoard({
             {svg.starts.map((s) => {
               const isReached = activeStroke >= s.index
               const isCurrent = activeStroke === s.index
-              const isFinishedAll = activeStroke > svg.strokeCount
-              // Hide all dots once the glyph is complete so the finished form
-              // reads cleanly without numbering.
               if (isFinishedAll) return null
               return (
                 <g key={s.index} opacity={isReached ? 1 : 0.35}>
@@ -165,16 +197,6 @@ export function KanaGlyphBoard({
           </svg>
         )}
       </div>
-
-      {/* Dynamic per-active-stroke rules + base styles. We inline these so the
-          wrapper's [data-active-stroke="N"] selector cascades to each stroke
-          path. Multi-glyph combos (e.g. きゃ) each animate independently via
-          their own ancestor's data-active-stroke value. */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: generateActiveStrokeCss(svg.strokeCount, scopeId),
-        }}
-      />
     </div>
   )
 }

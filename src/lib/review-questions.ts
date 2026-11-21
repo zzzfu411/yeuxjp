@@ -1,105 +1,16 @@
 import { kanaData } from "@/data/kana-data"
 import type { Vocabulary } from "@/data/vocabulary/types"
-import { getKanaById, normalizeKanaIdList, normalizeKanaIdRecord } from "@/lib/kana-id"
+import { getKanaById } from "@/lib/kana-id"
 import type { MistakeItem } from "@/lib/mistake-notebook-model"
 import { pickUniqueQuestionOptions } from "@/lib/question-options"
 import { normalizeAnswer, type Question } from "@/lib/questions"
-import type { SrsMap } from "@/lib/srs-model"
 import { isReviewableKanaId } from "@/lib/review-visibility"
+import { shuffleList } from "@/lib/question-options"
+import { createSeededRandom } from "@/lib/seeded-random"
 
-export type ReviewDeck = "kana" | "vocab" | "mistakes"
-export type TodayReviewItem = { deck: ReviewDeck; id: string }
-
-type DueReviewItem = TodayReviewItem & {
-  deck: "kana" | "vocab"
-  dueAt: number
-  deckSize: number
-  order: number
-}
-
-const DUE_REVIEW_DECK_ORDER = {
-  kana: 0,
-  vocab: 1,
-} as const
-
+export { buildTodayReviewQueue, TODAY_REVIEW_QUEUE_LIMIT, type ReviewDeck, type TodayReviewItem } from "@/lib/review-queue"
 export { isReviewableKanaId }
 export { shuffleList } from "@/lib/question-options"
-
-function getReviewDueAt(map: SrsMap, id: string) {
-  return map[id]?.dueAt ?? Number.MAX_SAFE_INTEGER
-}
-
-function buildDueReviewItems({
-  deck,
-  ids,
-  srsMap,
-}: {
-  deck: "kana" | "vocab"
-  ids: string[]
-  srsMap: SrsMap
-}): DueReviewItem[] {
-  const deckSize = ids.length
-  return ids.map((id, order) => ({
-    deck,
-    id,
-    dueAt: getReviewDueAt(srsMap, id),
-    deckSize,
-    order,
-  }))
-}
-
-function sortDueReviewItems(items: DueReviewItem[]): TodayReviewItem[] {
-  return [...items]
-    .sort((a, b) => {
-      const dueOrder = a.dueAt - b.dueAt
-      if (dueOrder !== 0) return dueOrder
-
-      const deckSizeOrder = a.deckSize - b.deckSize
-      if (deckSizeOrder !== 0) return deckSizeOrder
-
-      const deckOrder = DUE_REVIEW_DECK_ORDER[a.deck] - DUE_REVIEW_DECK_ORDER[b.deck]
-      if (deckOrder !== 0) return deckOrder
-
-      return a.order - b.order
-    })
-    .map(({ deck, id }) => ({ deck, id }))
-}
-
-export const TODAY_REVIEW_QUEUE_LIMIT = 30
-
-function normalizeTodayReviewQueueLimit(limit: number) {
-  if (!Number.isFinite(limit)) return TODAY_REVIEW_QUEUE_LIMIT
-  const normalized = Math.floor(limit)
-  return normalized >= 1 ? normalized : TODAY_REVIEW_QUEUE_LIMIT
-}
-
-export function buildTodayReviewQueue({
-  dueMistakeIds,
-  kanaDueIds,
-  kanaSrsMap,
-  vocabDueIds,
-  vocabSrsMap,
-  limit = TODAY_REVIEW_QUEUE_LIMIT,
-}: {
-  dueMistakeIds: string[]
-  kanaDueIds: string[]
-  kanaSrsMap: SrsMap
-  vocabDueIds: string[]
-  vocabSrsMap: SrsMap
-  limit?: number
-}): TodayReviewItem[] {
-  const kanaIds = normalizeKanaIdList(kanaDueIds)
-  const normalizedKanaSrsMap = normalizeKanaIdRecord(kanaSrsMap) as SrsMap
-  const dueItems = [
-    ...buildDueReviewItems({ deck: "kana", ids: kanaIds, srsMap: normalizedKanaSrsMap }),
-    ...buildDueReviewItems({ deck: "vocab", ids: vocabDueIds, srsMap: vocabSrsMap }),
-  ]
-
-  return [
-    ...dueMistakeIds.map((id) => ({ deck: "mistakes" as const, id })),
-    ...sortDueReviewItems(dueItems),
-  ].slice(0, normalizeTodayReviewQueueLimit(limit))
-}
 
 export function ensureQuestionOptions(question: Pick<Question, "correctAnswer" | "correctDisplay" | "options">) {
   const seen = new Set<string>()
@@ -125,7 +36,7 @@ export function ensureQuestionOptions(question: Pick<Question, "correctAnswer" |
 
 export { questionUsesTypedReview, shouldShowReviewSpecialFeedback, uniqueQuestionOptionCount } from "@/lib/review-typed-question"
 
-export function mistakeToQuestion(item: MistakeItem): Question {
+export function mistakeToQuestion(item: MistakeItem, attemptSeed = "review"): Question {
   const options = ensureQuestionOptions(item)
   const lastWrong = item.lastWrongAnswer?.trim()
   if (lastWrong && !options.some((option) => normalizeAnswer(option.value) === normalizeAnswer(lastWrong))) {
@@ -134,6 +45,7 @@ export function mistakeToQuestion(item: MistakeItem): Question {
 
   return {
     type: item.type,
+    questionVersion: item.questionVersion,
     mistakeId: item.id,
     itemId: item.itemId,
     itemType: item.itemType,
@@ -144,7 +56,7 @@ export function mistakeToQuestion(item: MistakeItem): Question {
     acceptedAnswers: item.acceptedAnswers,
     correctDisplay: item.correctDisplay,
     explanation: item.explanation,
-    options,
+    options: shuffleList([...options].sort((a, b) => a.value.localeCompare(b.value)), createSeededRandom(`${attemptSeed}:${item.id}`)),
     meta: item.meta,
   }
 }
@@ -241,7 +153,10 @@ export function makeVocabReviewQuestion(
 
   const options = pickUniqueQuestionOptions({
     target: item,
-    pool: vocab,
+    // The Chinese-only prompt cannot distinguish entries with the same gloss.
+    pool: direction === "recall"
+      ? vocab.filter(entry => entry.id === item.id || normalizeAnswer(entry.meaning) !== normalizeAnswer(item.meaning))
+      : vocab,
     // Options are judged by id, but learners only see the display value.
     // De-duplicate by that visible value so two equivalent vocabulary rows
     // cannot render identical buttons where only one id is accepted.

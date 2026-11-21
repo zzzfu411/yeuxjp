@@ -4,7 +4,7 @@ export const n5GrammarPracticeSets: GrammarPracticeSet[] = [
     {
       grammarId: "n5-wa",
       practiceTemplates: [
-        { id: "topic-particle", prompt: "私は___学生です。主题助词应填哪一个？", answer: "は", options: ["は", "が", "を", "で"] },
+        { id: "topic-particle", prompt: "私___学生です。主题助词应填哪一个？", answer: "は", options: ["は", "が", "を", "で"] },
         { id: "topic-today", prompt: "今日___日曜日です。标记话题应填什么？", answer: "は", options: ["は", "を", "へ", "と"] },
         { id: "topic-name", prompt: "名前___田中です。自我介绍时标记话题应填什么？", answer: "は", options: ["は", "が", "に", "の"] },
       ],

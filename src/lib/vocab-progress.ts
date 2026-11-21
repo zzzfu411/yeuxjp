@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { warnInDevelopment } from "@/lib/dev-log"
-import { LEARNING_STORE_EVENT, runLearningStorageTransaction } from "@/lib/learning-store"
+import { runLearningStorageTransaction } from "@/lib/learning-storage-transaction"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-events"
 import { notifyProgressList, PROGRESS_UPDATE_EVENT, readProgressListResult, writeProgressList } from "@/lib/progress-list-storage"
 import { clearSrs, enrollSrs, removeSrs } from "@/lib/srs"
 import { STORAGE_KEYS } from "@/lib/storage-keys"

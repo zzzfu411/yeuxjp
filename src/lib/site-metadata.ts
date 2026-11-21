@@ -5,8 +5,9 @@ if (!["https:", "http:"].includes(siteUrl.protocol)) throw new Error("NEXT_PUBLI
 export const SITE_ORIGIN = siteUrl.origin
 
 export const PUBLIC_ROUTES = [
-  { path: "/", title: "今日学习 | 優しい Yasashi", description: "从五十音到 N2，按 175 天课程学习日语，查看每日目标与复习安排。" },
-  { path: "/path", title: "175 天学习路径", description: "从假名、基础句型到 N2，循序浏览课程，区分已完成与按基础跳过的内容。" },
+  { path: "/", title: "今日学习 | 優しい Yasashi", description: "从五十音到 N2，按 175 课课程学习日语，查看每日目标与复习安排。" },
+  { path: "/path", title: "175 课学习路径", description: "从假名、基础句型到 N2，循序浏览课程，区分已完成与按基础跳过的内容。" },
+  { path: "/placement", title: "阶段覆盖与学习起点", description: "查看各阶段学习基础和实际覆盖，用分项诊断选择起点，练习汉字读音并保存阶段作品。" },
   { path: "/kana", title: "五十音与发音", description: "学习平假名、片假名、浊音、拗音与特殊音节，查看笔顺并练习日语发音。" },
   { path: "/vocabulary", title: "日语单词库", description: "按等级、主题和关键词查找单词，通过翻卡、发音和自评巩固日语词汇。" },
   { path: "/grammar", title: "日语语法手册", description: "查找 N5 至 N2 及作品口语中的语法，学习结构、例句并进行专项练习。" },

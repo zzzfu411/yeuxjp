@@ -33,7 +33,7 @@ test("calendar separates self assessment and assisted answers and recovers lesso
   assert.deepEqual(days["2026-09-05"], { practiceCount: 1, independentCorrect: 0, selfAssessmentCount: 1, lessonCompleted: true })
   const exported = backup.normalizeLearningBackup({ version: 4, exportedAt: now, entries: { [STORAGE_KEYS.STUDY_CALENDAR]: JSON.stringify(days) } })
   assert.deepEqual(JSON.parse(exported.entries[STORAGE_KEYS.STUDY_CALENDAR]), days)
-  for (const version of [1, 2, 3]) assert.equal(backup.normalizeLearningBackup({ version, exportedAt: now, entries: {} }).version, 4)
+  for (const version of [1, 2, 3, 4]) assert.equal(backup.normalizeLearningBackup({ version, exportedAt: now, entries: {} }).version, backup.LEARNING_BACKUP_VERSION)
 })
 
 test("calendar rejects corrupted dates and values without overwriting raw storage", () => {
@@ -48,10 +48,11 @@ test("calendar rejects corrupted dates and values without overwriting raw storag
   assert.equal(writes, 0)
 })
 
-test("measured mastery distinguishes an untested skill from an independently failed skill", () => {
-  let items = progress.updateItemProgressForPractice({}, { itemId: "sur-g-1", itemType: "vocab", mode: "meaning", correct: true, createdAt: 1 })
+test("measured mastery distinguishes an untested skill from an independently failed skill", async () => {
+  const { CURRENT_ASSESSMENT_REVISION } = await loadTsModule("src/lib/assessment-evidence.ts")
+  let items = progress.updateItemProgressForPractice({}, { itemId: "sur-g-1", itemType: "vocab", mode: "meaning", correct: true, createdAt: 1, assessmentRevision: CURRENT_ASSESSMENT_REVISION })
   assert.equal(progress.averageMastery(items["sur-g-1"]), 18)
-  items = progress.updateItemProgressForPractice(items, { itemId: "sur-g-1", itemType: "vocab", mode: "recall", correct: false, createdAt: 2 })
+  items = progress.updateItemProgressForPractice(items, { itemId: "sur-g-1", itemType: "vocab", mode: "recall", correct: false, createdAt: 2, assessmentRevision: CURRENT_ASSESSMENT_REVISION })
   assert.deepEqual(items["sur-g-1"].assessedModes, ["meaning", "recall"])
   assert.equal(progress.averageMastery(items["sur-g-1"]), 9)
   assert.deepEqual(progress.normalizeItemProgressMap(items)["sur-g-1"].assessedModes, ["meaning", "recall"])

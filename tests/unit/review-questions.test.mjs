@@ -102,10 +102,10 @@ test("mistakeToQuestion preserves answers and de-duplicates options", () => {
   assert.equal(question.mode, "recognition")
   assert.equal(question.mistakeId, "m1")
   assert.equal(question.correctAnswer, "は")
-  assert.deepEqual(question.options, [
+  assert.deepEqual(new Set(question.options.map(o => JSON.stringify(o))), new Set([
     { value: "は", display: "は" },
     { value: "が", display: "が" },
-  ])
+  ].map(o => JSON.stringify(o))))
 })
 
 test("typed review is used when a production mistake has no distractors", () => {

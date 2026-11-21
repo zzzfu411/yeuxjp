@@ -6,6 +6,8 @@ import { getKanaById } from "@/lib/kana-id"
 import { resolveLearningEntry, type LearningEntry, type LearningEntrySkill } from "@/lib/learning-entry"
 import { averageMastery, type ItemProgress, type ItemProgressMap, type KanaLevel, type PracticeItemType } from "@/lib/learning-progress-model"
 import { countSatisfiedLessons } from "@/lib/lesson-skip"
+import { getRecommendedConsolidation } from "@/lib/lesson-consolidation"
+import type { LessonProgressMap } from "@/lib/learning-progress-types"
 import {
   buildReviewVisibleIdSet,
   filterReviewableKanaIds,
@@ -94,7 +96,10 @@ export function buildHomePageModel({
   vocabDueIds,
   mistakeDueIds,
   mistakeIds,
+  knowledgeDueIds = [],
   kanaLevel,
+  lessons = {},
+  entryOrder = 1,
 }: {
   completedLessonIds: ReadonlySet<string>
   items: ItemProgressMap
@@ -105,24 +110,27 @@ export function buildHomePageModel({
   vocabDueIds: readonly string[]
   mistakeDueIds: readonly string[]
   mistakeIds: Iterable<string>
+  knowledgeDueIds?: readonly string[]
   kanaLevel?: KanaLevel | null
+  lessons?: LessonProgressMap
+  entryOrder?: number
 }): HomePageModel {
   const dueMistakeIds = getHomeDueMistakeIds(mistakeDueIds, mistakeIds)
   const visibleKanaIds = buildReviewVisibleIdSet({ explicitIds: masteredKanaIds ?? [], items, itemType: "kana" })
   const visibleVocabIds = buildReviewVisibleIdSet({ explicitIds: learnedVocabIds ?? [], items, itemType: "vocab" })
   const visibleKanaDueIds = filterReviewableKanaIds(kanaDueIds, visibleKanaIds)
   const visibleVocabDueIds = vocabDueIds.filter((id) => visibleVocabIds.has(id))
-  const nextLesson = getNextLesson(completedLessonIds, kanaLevel)
+  const nextLesson = getNextLesson(completedLessonIds, kanaLevel, entryOrder)
   const vocabStats = summarizeLearnedVocabIds(learnedVocabIds ?? [])
   const weakest = getHomeWeakestItem(items)
 
   return {
     dueMistakeIds,
-    totalDue: visibleKanaDueIds.length + visibleVocabDueIds.length + dueMistakeIds.length,
+    totalDue: visibleKanaDueIds.length + visibleVocabDueIds.length + dueMistakeIds.length + knowledgeDueIds.length,
     nextLesson,
-    learningEntry: resolveLearningEntry({ nextLesson, skill }),
+    learningEntry: resolveLearningEntry({ nextLesson, skill, consolidation: getRecommendedConsolidation(lessons, entryOrder) }),
     completedCount: STARTER_LESSONS.filter(lesson => completedLessonIds.has(lesson.id)).length,
-    skippedCount: countSatisfiedLessons(STARTER_LESSONS, completedLessonIds, kanaLevel) - STARTER_LESSONS.filter(lesson => completedLessonIds.has(lesson.id)).length,
+    skippedCount: countSatisfiedLessons(STARTER_LESSONS, completedLessonIds, kanaLevel, entryOrder) - STARTER_LESSONS.filter(lesson => completedLessonIds.has(lesson.id)).length,
     survivalDone: vocabStats.survival.done,
     survivalTotal: vocabStats.survival.total,
     weakest,

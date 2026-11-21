@@ -719,16 +719,19 @@ test("parseLearningBackup normalizes managed entries before restore", () => {
   assert.deepEqual(Object.keys(JSON.parse(parsed.entries[storage.STORAGE_KEYS.SRS_MISTAKES])), ["m1"])
 })
 
-test("learning store restore and reset snapshot managed keys before mutating", () => {
-  const source = read("src/lib/learning-store.ts")
+test("learning store restore and reset share the lightweight snapshot transaction", () => {
+  const source = read("src/lib/learning-storage-transaction.ts")
+  const storeSource = read("src/lib/learning-store.ts")
 
   assert.match(source, /function snapshotLearningKeys/)
   assert.match(source, /function applyLearningSnapshot/)
   assert.match(source, /function rollbackLearningKeys/)
   assert.match(source, /const previous = snapshotLearningKeys\(\)/)
   assert.match(source, /rollbackLearningKeys\(previous/)
-  assert.match(source, /notifyLearningStore\(\{ action: "restore", keys: BACKUP_KEYS \}\)/)
-  assert.match(source, /notifyLearningStore\(\{ action: "reset", keys: BACKUP_KEYS \}\)/)
+  assert.match(storeSource, /import \{ runLearningStorageTransaction \} from "@\/lib\/learning-storage-transaction"/)
+  assert.match(storeSource, /export \{ runLearningStorageTransaction \} from "@\/lib\/learning-storage-transaction"/)
+  assert.match(storeSource, /notifyLearningStore\(\{ action: "restore", keys: BACKUP_KEYS \}\)/)
+  assert.match(storeSource, /notifyLearningStore\(\{ action: "reset", keys: BACKUP_KEYS \}\)/)
 })
 
 test("learning store keeps backup normalization in a pure helper module", () => {

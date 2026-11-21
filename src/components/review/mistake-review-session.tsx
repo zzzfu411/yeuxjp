@@ -19,6 +19,7 @@ import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
 import type { useSrsDeck } from "@/lib/srs"
 import { mistakeToQuestion, questionUsesTypedReview } from "@/lib/review-questions"
+import { reviewPromptAudio } from "@/lib/review-prompt-audio"
 
 export function MistakeReviewSession({
   ids,
@@ -57,7 +58,7 @@ export function MistakeReviewSession({
   }, [currentId, dropCurrent, item])
 
   const { playAudio } = useReviewAudio({
-    autoPlayText: item?.questionAudio,
+    autoPlayText: item ? reviewPromptAudio(item) : undefined,
     autoPlayKey: review.presentationVersion,
   })
 
@@ -88,7 +89,7 @@ export function MistakeReviewSession({
 
   if (!item) return null
 
-  const question = mistakeToQuestion(item)
+  const question = mistakeToQuestion(item, String(review.presentationVersion))
   const correct = question.correctAnswer
 
   const handleSelect = async (val: string) => {
@@ -124,7 +125,7 @@ export function MistakeReviewSession({
       <ReviewPromptCard>
         <MistakeReviewPrompt
           questionText={item.questionText}
-          questionAudio={item.questionAudio}
+          questionAudio={reviewPromptAudio(item)}
           type={item.type}
           onPlay={playAudio}
         />

@@ -3,23 +3,26 @@
 import { useMemo } from "react"
 import { kanaData } from "@/data/kana-data"
 import { STARTER_LESSONS, getNextLesson } from "@/data/lesson-catalog"
-import { useLearningProfile } from "@/lib/learning-progress"
+import { useLearningProfile } from "@/lib/learning-profile"
 import { buildLearningRecommendationModel } from "@/lib/learning-recommendation-model"
-import { useLearningStatus } from "@/lib/learning-status"
+import { useLearningStatusSnapshot } from "@/lib/learning-status-reader"
 import { countSatisfiedLessons } from "@/lib/lesson-skip"
+import { useStageDiagnostics } from "@/lib/use-stage-diagnostics"
 
 export function useLearningRecommendation() {
-  const learning = useLearningStatus()
+  const learning = useLearningStatusSnapshot()
   const { profile } = useLearningProfile()
   const kanaLevel = profile?.kanaLevel
+  const placement = useStageDiagnostics()
+  const entryOrder = placement.entryOrder
 
   const nextLesson = useMemo(
-    () => getNextLesson(learning.completedLessonIds, kanaLevel),
-    [kanaLevel, learning.completedLessonIds]
+    () => getNextLesson(learning.completedLessonIds, kanaLevel, entryOrder),
+    [kanaLevel, learning.completedLessonIds, entryOrder]
   )
   const satisfiedLessonCount = useMemo(
-    () => countSatisfiedLessons(STARTER_LESSONS, learning.completedLessonIds, kanaLevel),
-    [kanaLevel, learning.completedLessonIds]
+    () => countSatisfiedLessons(STARTER_LESSONS, learning.completedLessonIds, kanaLevel, entryOrder),
+    [kanaLevel, learning.completedLessonIds, entryOrder]
   )
   const course = useMemo(
     () => ({
@@ -27,8 +30,9 @@ export function useLearningRecommendation() {
       allLessonsDone: !nextLesson,
       goal: profile?.goal,
       kanaLevel,
+      entryOrder,
     }),
-    [kanaLevel, nextLesson, profile?.goal]
+    [kanaLevel, nextLesson, profile?.goal, entryOrder]
   )
   const recommendation = useMemo(
     () =>
@@ -37,10 +41,12 @@ export function useLearningRecommendation() {
         isKanaMastered: learning.isKanaMastered,
         learnedVocabIds: learning.learnedVocabIds,
         nextLesson,
+        lessons: learning.lessons,
+        entryOrder,
         goal: profile?.goal,
         kanaLevel,
       }),
-    [kanaLevel, learning.isKanaMastered, learning.learnedVocabIds, nextLesson, profile?.goal]
+    [kanaLevel, learning.isKanaMastered, learning.learnedVocabIds, learning.lessons, nextLesson, profile?.goal, entryOrder]
   )
 
   return {
@@ -48,6 +54,7 @@ export function useLearningRecommendation() {
     nextLesson,
     satisfiedLessonCount,
     course,
+    placement,
     ...recommendation,
   }
 }

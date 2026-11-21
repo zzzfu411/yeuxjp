@@ -12,7 +12,8 @@ function read(relPath) {
 test("SpeechPreferencesProvider reloads preferences after learning data restore or reset", () => {
   const source = read("src/components/ui/speech-preferences.tsx")
 
-  assert.match(source, /from "@\/lib\/learning-store"/)
+  assert.match(source, /from "@\/lib\/learning-events"/)
+  assert.doesNotMatch(source, /from "@\/lib\/learning-store"/)
   assert.match(source, /from "@\/lib\/storage-keys"/)
   assert.match(source, /const syncPreferences = \(\) => \{/)
   assert.match(source, /loadSpeechPreferences\(storageKey\)/)

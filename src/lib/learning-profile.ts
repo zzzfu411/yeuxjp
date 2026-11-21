@@ -1,6 +1,6 @@
 "use client"
 import { useCallback, useEffect, useState } from "react"
-import { LEARNING_STORE_EVENT } from "@/lib/learning-store"
+import { LEARNING_STORE_EVENT } from "@/lib/learning-events"
 import { LEARNING_EVENT, writeLearningJson } from "@/lib/learning-storage"
 import { isProfileStorageKey } from "@/lib/learning-progress-keys"
 import { STORAGE_KEYS } from "@/lib/storage-keys"

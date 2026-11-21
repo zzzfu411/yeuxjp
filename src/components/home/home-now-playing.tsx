@@ -1,4 +1,5 @@
 import { useState } from "react"
+import Image from "next/image"
 import { OnboardingPanel } from "@/components/home/onboarding-panel"
 import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import { Modal } from "@/components/ui/modal"
@@ -6,42 +7,49 @@ import type { UserProfile } from "@/lib/learning-progress"
 
 export function HomeNowPlaying({
   profile, profileLoaded = true, profileSaveError, onSaveProfile,
-  todayPracticeCount, dailyTarget, completedCount, skippedCount,
+  todayPracticeCount, completedCount, skippedCount,
   totalLessons, survivalDone, survivalTotal, streak,
+  entryOrder = 1,
 }: {
   profile: UserProfile | null
   profileLoaded?: boolean
   profileSaveError: boolean
   onSaveProfile: (input: Omit<UserProfile, "createdAt" | "updatedAt">) => Promise<boolean>
   todayPracticeCount: number
-  dailyTarget: number
   completedCount: number
   skippedCount: number
   totalLessons: number
   survivalDone: number
   survivalTotal: number
   streak: number
+  entryOrder?: number
 }) {
   const [editingProfile, setEditingProfile] = useState(false)
-  const progress = Math.min(100, Math.round((todayPracticeCount / dailyTarget) * 100) || 0)
 
   return (
     <section className="home-progress" aria-labelledby="home-progress-title">
-      <h2 id="home-progress-title">学习进度</h2>
-      <div className="home-daily-label">
-        <span>{todayPracticeCount >= dailyTarget ? "今日完成" : "今日练习"}</span>
-        <span>{todayPracticeCount} / {dailyTarget}</span>
+      <div className="home-progress-heading">
+        <div>
+          <h2 id="home-progress-title">学习进度</h2>
+          <p className="home-companion-note">按自己的节奏，<br />一点点进步就好。</p>
+        </div>
+        <figure className="companion-portrait companion-emilia">
+          <Image src="/assets/visual-novel/emilia-wave.webp" alt="爱蜜莉雅眨眼挥手" width={144} height={144} sizes="(max-width: 1023px) 108px, 144px" />
+          <figcaption lang="ja">エミリア</figcaption>
+        </figure>
       </div>
-      <div className="vn-progress-track" role="progressbar" aria-label="今日练习进度" aria-valuemin={0} aria-valuemax={dailyTarget} aria-valuenow={Math.min(todayPracticeCount, dailyTarget)}>
-        <span style={{ width: `${progress}%` }} />
+      <div className="home-daily-label">
+        <span>今日答题次数</span>
+        <span>{todayPracticeCount} 次</span>
       </div>
       <dl className="home-stat-list">
         <MiniStat label="课程" value={`${completedCount}/${totalLessons}`} note={skippedCount > 0 ? `另跳过 ${skippedCount} 课` : undefined} />
         <MiniStat label="入门词" value={`${survivalDone}/${survivalTotal}`} />
-        <MiniStat label="连续学习" value={`${streak} 天`} />
+        <MiniStat label="连续学习" value={`${streak} 天`} note="含阅读／表达本人确认" />
       </dl>
       <div className="home-profile-summary">
-        <p>{profileLoaded ? profile ? profileSummary(profile) : "零基础 · 每天 10 分钟" : "正在读取学习设置..."}</p>
+        <p>{profileLoaded ? profile ? profileSummary(profile) : entryOrder > 1 ? "按诊断起点学习 · 每天 10 分钟" : "零基础 · 每天 10 分钟" : "正在读取学习设置..."}</p>
+        {entryOrder > 1 && <p className="text-sm">诊断起点 · 第 {entryOrder} 课</p>}
         <button type="button" data-testid="home-edit-profile" disabled={!profileLoaded} aria-haspopup="dialog" aria-expanded={editingProfile} className="home-text-button" onClick={() => setEditingProfile(true)}>学习设置</button>
       </div>
       <Modal isOpen={editingProfile} onClose={() => setEditingProfile(false)} ariaLabelledBy="home-profile-title" className="max-w-xl p-5 sm:p-8">
@@ -70,5 +78,5 @@ function profileSummary(profile: UserProfile) {
 }
 
 function MiniStat({ label, value, note }: { label: string; value: string; note?: string }) {
-  return <div><dt>{label}</dt><dd>{value}</dd>{note && <p>{note}</p>}</div>
+  return <div><dt>{label}</dt><dd>{value}{note && <p className="font-sans font-normal">{note}</p>}</dd></div>
 }

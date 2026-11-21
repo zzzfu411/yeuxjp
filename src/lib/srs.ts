@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { LEARNING_STORE_EVENT, queueLearningNotification } from "@/lib/learning-store"
+import { LEARNING_STORE_EVENT, queueLearningNotification } from "@/lib/learning-events"
 import { createSrsState, isDue, type SrsMap, type SrsResult } from "@/lib/srs-model"
 import {
   canStoreSrsId,
@@ -164,5 +164,5 @@ export function useSrsDeck(storageKey: string) {
     return true
   }, [storageKey])
 
-  return { map, dueIds, loaded, enroll, remove, grade, gradeExisting, has, clear }
+  return { map, dueIds, now, loaded, enroll, remove, grade, gradeExisting, has, clear }
 }

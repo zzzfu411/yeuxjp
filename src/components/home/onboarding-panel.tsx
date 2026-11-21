@@ -5,18 +5,19 @@ import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { KanaLevel, LearningGoal, RomajiMode, UserProfile } from "@/lib/learning-progress"
+import type { ReferenceLevel } from "@/lib/learning-progress-types"
 
 const goalOptions: { value: LearningGoal; label: string; desc: string }[] = [
   { value: "balanced", label: "均衡推进", desc: "兼顾阅读、听力和造句，按 N5→N2 课程学习" },
-  { value: "travel", label: "旅行实用", desc: "先学点餐、问路和求助等常用表达" },
-  { value: "jlpt", label: "JLPT N5–N2", desc: "按 N5→N2 的考试范围循序学习" },
-  { value: "media", label: "动漫理解", desc: "先打好基础，再学习动漫中的常见表达" },
+  { value: "travel", label: "旅行实用", desc: "共同主线之外，立即提供点餐、问路和请求重复的专项" },
+  { value: "jlpt", label: "JLPT N5–N2", desc: "共同主线之外，按目标等级和自评基础推荐专项；非完整官方考纲" },
+  { value: "media", label: "动漫理解", desc: "共同主线之外，立即练习角色称呼、句尾语气和言外之意" },
 ]
 
 const kanaOptions: { value: KanaLevel; label: string; desc: string }[] = [
-  { value: "none", label: "刚开始", desc: "从 Day 1 的假名课开始" },
-  { value: "some", label: "认识一些", desc: "仍从 Day 1 开始，并更早推荐句型练习" },
-  { value: "solid", label: "基本会读", desc: "跳过 Day 1–21 的假名课，从基础句型开始" },
+  { value: "none", label: "刚开始", desc: "从 第 1 课 的假名课开始" },
+  { value: "some", label: "认识一些", desc: "仍从 第 1 课 开始，并更早推荐句型练习" },
+  { value: "solid", label: "基本会读", desc: "跳过 第 1–21 课 的假名课，从基础句型开始" },
 ]
 
 const romajiOptions: { value: RomajiMode; label: string }[] = [
@@ -30,18 +31,20 @@ export function OnboardingPanel({
   initial,
 }: {
   onSave: (input: Omit<UserProfile, "createdAt" | "updatedAt">) => Promise<boolean>
-  initial?: Pick<UserProfile, "goal" | "kanaLevel" | "romajiMode" | "minutesPerDay"> | null
+  initial?: Pick<UserProfile, "goal" | "kanaLevel" | "romajiMode" | "minutesPerDay" | "jlptTarget" | "selfAssessedLevel"> | null
 }) {
   const [saving, setSaving] = useState(false)
   const [goal, setGoal] = useState<LearningGoal>(initial?.goal ?? "balanced")
   const [kanaLevel, setKanaLevel] = useState<KanaLevel>(initial?.kanaLevel ?? "none")
   const [romajiMode, setRomajiMode] = useState<RomajiMode>(initial?.romajiMode ?? "practice")
   const [minutesPerDay, setMinutesPerDay] = useState(initial?.minutesPerDay ?? 10)
+  const [jlptTarget, setJlptTarget] = useState<ReferenceLevel>(initial?.jlptTarget ?? "N5")
+  const [selfAssessedLevel, setSelfAssessedLevel] = useState<ReferenceLevel | "unknown">(initial?.selfAssessedLevel ?? "unknown")
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm text-muted-foreground">选择适合你的学习节奏，之后可以随时调整。</p>
+        <p className="text-sm leading-7 text-muted-foreground">所有目标共用主线课程；首页和路径同时提供目标专项。选择适合你的节奏，之后可以随时调整。</p>
       </div>
 
       <div>
@@ -68,6 +71,12 @@ export function OnboardingPanel({
           ))}
         </div>
       </div>
+
+      {goal === "jlpt" && <div className="grid gap-4 sm:grid-cols-2">
+        <label className="grid gap-2 text-sm font-semibold">目标等级<select aria-label="目标等级" value={jlptTarget} onChange={event => setJlptTarget(event.target.value as ReferenceLevel)} className="min-h-11 border border-border bg-background px-3 text-base">{["N5", "N4", "N3", "N2"].map(level => <option key={level} value={level}>{level}</option>)}</select></label>
+        <label className="grid gap-2 text-sm font-semibold">当前基础（自评）<select aria-label="当前基础（自评）" value={selfAssessedLevel} onChange={event => setSelfAssessedLevel(event.target.value as ReferenceLevel | "unknown")} className="min-h-11 border border-border bg-background px-3 text-base"><option value="unknown">不确定 / 尚未定位</option>{["N5", "N4", "N3", "N2"].map(level => <option key={level} value={level}>{level} 内容较熟悉</option>)}</select></label>
+        <p className="text-xs leading-6 text-muted-foreground sm:col-span-2">自评只调整补充练习，不作为诊断结果或主线解锁依据。当前专项不提供官方考试分数。</p>
+      </div>}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <SelectPills label="假名基础" value={kanaLevel} options={kanaOptions} onChange={(value) => setKanaLevel(value as KanaLevel)} />
@@ -102,7 +111,7 @@ export function OnboardingPanel({
         disabled={saving}
         onClick={async () => {
           setSaving(true)
-          try { await onSave({ goal, kanaLevel, romajiMode, minutesPerDay }) } finally { setSaving(false) }
+          try { await onSave({ goal, kanaLevel, romajiMode, minutesPerDay, jlptTarget, selfAssessedLevel }) } finally { setSaving(false) }
         }}
       >
         {initial ? "保存学习设置" : "保存并开始学习"} <ArrowRight className="h-4 w-4" />

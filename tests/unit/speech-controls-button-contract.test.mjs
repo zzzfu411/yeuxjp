@@ -31,7 +31,7 @@ test("Speech controls stay in the navbar while Modal portals above navigation", 
   const layout = read("src/app/layout.tsx")
 
   assert.match(modal, /createPortal/)
-  assert.match(modal, /setPortalTarget\(document\.body\)/)
+  assert.match(modal, /const portalTarget = isClient \? document\.body : null/)
   assert.match(modal, /return portalTarget \? createPortal\(overlay, portalTarget\) : overlay/)
   assert.match(modal, /fixed inset-0 z-\[100\] !mt-0 flex/)
 

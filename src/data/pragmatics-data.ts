@@ -527,7 +527,7 @@ export const pragmaticsData: PragmaticScenario[] = [
     id: "p-ani-ending",
     title: "句尾助词",
     situation: "口癖",
-    context: "～だ手羽 (Dattebayo) / ～だぞ (Dazo)。",
+    context: "～だってばよ (Dattebayo) / ～だぞ (Dazo)。",
     culturalNote: "角色标志。",
     responses: [{ type: "Anime", expression: "行くぞ！", explanation: "走啦！" }]
   },

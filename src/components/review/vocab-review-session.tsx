@@ -14,9 +14,10 @@ import { PracticeSaveError } from "@/components/practice/practice-save-error"
 import type { useLearningProgress } from "@/lib/learning-progress"
 import type { useMistakeNotebook } from "@/lib/mistake-notebook"
 import type { QuestionResult } from "@/lib/questions"
-import type { useSrsDeck } from "@/lib/srs"
+import { gradeSrs, type useSrsDeck } from "@/lib/srs"
+import { STORAGE_KEYS } from "@/lib/storage-keys"
 import { useLearningProfile } from "@/lib/learning-progress"
-import { getVocabReviewPromptModel, makeVocabReviewQuestion, pickVocabReviewDirection } from "@/lib/review-questions"
+import { getVocabReviewPromptModel, makeVocabReviewQuestion, pickVocabReviewDirection, type VocabReviewDirection } from "@/lib/review-questions"
 import { defaultShowStudyRomaji } from "@/lib/romaji-visibility"
 import { createSeededRandom } from "@/lib/seeded-random"
 
@@ -26,12 +27,16 @@ export function VocabReviewSession({
   notebook,
   learning,
   srs,
+  practice = false,
+  practiceDirection,
 }: {
   ids: string[]
   onExit: () => void
   notebook: ReturnType<typeof useMistakeNotebook>
   learning: ReturnType<typeof useLearningProgress>
   srs: ReturnType<typeof useSrsDeck>
+  practice?: boolean
+  practiceDirection?: VocabReviewDirection
 }) {
   const vocabulary = useVocabularyReviewPool(ids, ids.length > 0)
   const { profile } = useLearningProfile()
@@ -47,8 +52,8 @@ export function VocabReviewSession({
   const currentId = review.currentItem
   const item = useMemo(() => (currentId ? vocabulary.data.find((v) => v.id === currentId) ?? null : null), [currentId, vocabulary.data])
   const direction = useMemo(
-    () => (item ? pickVocabReviewDirection(createSeededRandom(`${reviewSeed}:direction:${item.id}`)) : "meaning"),
-    [item, reviewSeed]
+    () => practiceDirection ?? (item ? pickVocabReviewDirection(createSeededRandom(`${reviewSeed}:direction:${item.id}`)) : "meaning"),
+    [item, practiceDirection, reviewSeed]
   )
   const question = useMemo(
     () => (item ? makeVocabReviewQuestion(item, vocabulary.data, createSeededRandom(`${reviewSeed}:question:${item.id}`), direction) : null),
@@ -76,12 +81,13 @@ export function VocabReviewSession({
     recordAnswer: review.recordAnswer,
     canRecord: useCallback(() => {
       if (!item) return false
-      return srs.has(item.id)
-    }, [item, srs]),
+      return practice || srs.has(item.id)
+    }, [item, practice, srs]),
     grade: useCallback((result: QuestionResult) => {
       if (!item) return false
+      if (practice) return gradeSrs(STORAGE_KEYS.SRS_VOCAB, item.id, result.correct ? "good" : "again")
       return srs.gradeExisting(item.id, result.correct ? "good" : "again")
-    }, [item, srs]),
+    }, [item, practice, srs]),
   })
 
   if (review.isComplete) {

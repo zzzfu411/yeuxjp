@@ -272,11 +272,15 @@ async function verifyFilteredVocabularyQuizTransitions(page, baseUrl) {
         itemType: "vocab",
         recognition: 0,
         listening: 0,
-        meaning: 30,
+        meaning: 36,
         recall: 0,
         production: 0,
-        attempts: 1,
-        correct: 1,
+        attempts: 2,
+        correct: 2,
+        assessedModes: ["meaning"],
+        // Two current, independently scored answers. An unversioned legacy
+        // score must not certify the last item when the next answer is saved.
+        assessmentEvidence: { meaning: { score: 36, attempts: 2, correct: 2 } },
         updatedAt: Date.now(),
       },
     }))
@@ -294,7 +298,7 @@ async function verifyFilteredVocabularyQuizTransitions(page, baseUrl) {
   await clickQuizOptionByValueAndReadPractice(page, lastUnlearnedVocabId)
   await page.waitForFunction(({ storageKey, id }) => {
     const items = JSON.parse(localStorage.getItem(storageKey) ?? "{}")
-    return items?.[id]?.meaning >= 40
+    return items?.[id]?.meaning >= 40 && items[id].assessmentEvidence?.meaning?.score >= 40
   }, { storageKey: E2E_STORAGE_KEYS.ITEM_PROGRESS, id: lastUnlearnedVocabId })
   await page.evaluate(() => new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve))
@@ -482,7 +486,7 @@ export async function verifyQuizAndMistakeFlow(page, baseUrl) {
   await assertQuizModeRecordsPractice(page, baseUrl, {
     mode: "verb-conjugation",
     itemType: "grammar",
-    practiceMode: "production",
+    practiceMode: "recognition",
   })
   await assertQuizModeRecordsPractice(page, baseUrl, {
     mode: "audio-sokuon",

@@ -17,7 +17,8 @@ test("lesson recap keeps vocabulary mastery copy and also counts kana", () => {
   assert.ok(day1VocabId)
   assert.ok(model.vocabIds.includes(day1VocabId))
   assert.match(model.href, /\/vocabulary/)
-  assert.match(model.cta, /用闪卡把本课词评成记住/)
+  assert.equal(model.cta, "补练本课词汇 →")
+  assert.equal(model.href, `/learn/${day1.id}/vocabulary`)
 })
 
 test("lesson recap vocab labels prefer kanji and fall back to kana", () => {
@@ -33,7 +34,7 @@ test("lesson recap does not pin mixed-level vocabulary to the first word's flash
   const day46 = lessons.STARTER_LESSONS.find((lesson) => lesson.id === "day-46-n4-tara")
   const model = recap.buildLessonCompletionRecapModel(day46, () => false)
 
-  assert.equal(model.href, "/vocabulary")
+  assert.equal(model.href, `/learn/${day46.id}/vocabulary`)
   assert.ok(model.vocabIds.includes("day-gw-8"))
   assert.ok(model.vocabIds.includes("sur-v-1"))
 })
@@ -47,14 +48,14 @@ test("lesson recap counts sentence-build steps because course data does not list
   assert.match(model.summary, /语法点 2/)
 })
 
-test("kana-only lessons recap to the kana page instead of pretending there are no new items", () => {
+test("kana-only lessons recap to the course kana collection instead of pretending there are no new items", () => {
   const day21 = lessons.STARTER_LESSONS.find((lesson) => lesson.id === "day-21-kana-graduation")
   const mastered = new Set(day21.newItemIds.filter((item) => item.type === "kana").slice(0, 2).map((item) => item.id))
   const model = recap.buildLessonCompletionRecapModel(day21, () => false, (id) => mastered.has(id))
 
   assert.match(model.summary, /假名 2\//)
   assert.doesNotMatch(model.summary, /复习课没有新词/)
-  assert.equal(model.href, "/kana")
+  assert.equal(model.href, `/learn/${day21.id}/kana`)
 })
 
 test("course vocab coverage counts unique lesson vocabulary ids", () => {

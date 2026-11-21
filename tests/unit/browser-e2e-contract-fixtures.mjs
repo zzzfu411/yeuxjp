@@ -76,6 +76,11 @@ export function readE2EStorageKeys() {
 
 export const requiredSelectors = [
   {
+    testId: "reference-document",
+    source: "src/components/reference/url-controlled-reference-modal.tsx",
+    pattern: /data-testid="reference-document"/,
+  },
+  {
     testId: "home-start-learning",
     source: "src/components/home/home-scene.tsx",
     pattern: /data-testid="home-start-learning"/,
@@ -164,26 +169,6 @@ export const requiredSelectors = [
     testId: "lesson-submit-typing",
     source: "src/components/lesson/lesson-step-body.tsx",
     pattern: /data-testid="lesson-submit-typing"/,
-  },
-  {
-    testId: "lesson-sentence-chunk-0",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
-  },
-  {
-    testId: "lesson-sentence-chunk-1",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
-  },
-  {
-    testId: "lesson-sentence-chunk-2",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
-  },
-  {
-    testId: "lesson-sentence-chunk-3",
-    source: "src/components/lesson/lesson-step-body.tsx",
-    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
   },
   {
     testId: "lesson-submit-sentence",
@@ -531,11 +516,6 @@ export const requiredSelectors = [
     pattern: /data-testid="grammar-practice-start"/,
   },
   {
-    testId: "grammar-practice-answer-1",
-    source: "src/components/reference/grammar-practice-panel.tsx",
-    pattern: /testIdPrefix="grammar-practice-answer"/,
-  },
-  {
     testId: "grammar-practice-feedback",
     source: "src/components/reference/grammar-practice-panel.tsx",
     pattern: /data-testid="grammar-practice-feedback"/,
@@ -758,6 +738,16 @@ export const requiredSelectors = [
 ]
 
 export const dynamicSelectorContracts = [
+  {
+    label: "shuffled grammar answers",
+    source: "src/components/reference/grammar-practice-panel.tsx",
+    pattern: /testIdPrefix="grammar-practice-answer"/,
+  },
+  {
+    label: "shuffled sentence chunks",
+    source: "src/components/lesson/lesson-step-body.tsx",
+    pattern: /data-testid=\{`lesson-sentence-chunk-\$\{idx\}`\}/,
+  },
   {
     label: "quiz answer options",
     source: "src/components/quiz/quiz-option-grid.tsx",

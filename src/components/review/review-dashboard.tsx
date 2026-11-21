@@ -19,6 +19,7 @@ export interface ReviewDashboardProps {
   nextDueAt: number | null
   todayQueueLength: number
   counts: {
+    knowledgeDue?: number
     mistakesDue: number
     kanaDue: number
     vocabDue: number
@@ -82,7 +83,7 @@ export function ReviewDashboard({
       <div className="mx-auto max-w-3xl space-y-2 text-center">
         <h1 className="font-brush text-4xl font-normal sm:text-5xl"><span className="inkline">复习台</span></h1>
         <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">
-          在这里复习 <span className="font-semibold text-foreground">假名、单词和错题</span>，把容易忘的内容记牢。
+          在这里复习 <span className="font-semibold text-foreground">假名、单词、语法、句子和错题</span>，把容易忘的内容记牢。
         </p>
       </div>
 

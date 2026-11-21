@@ -70,6 +70,7 @@ async function verifyAutoplayStaysStableOnPreferenceChange(page, baseUrl) {
 
     await autoplayPage.goto(`${baseUrl}/quiz`, { waitUntil: "networkidle" })
     await autoplayPage.getByTestId("quiz-mode-audio-kana").click()
+    await autoplayPage.locator("summary").filter({ hasText: "听力设置" }).click()
     await autoplayPage.getByTestId("speech-repeat-2").waitFor({ state: "visible" })
     await autoplayPage.waitForFunction(() => window.__yasashiSpeechSpoken?.length === 1, undefined, { timeout: 2_000 })
 

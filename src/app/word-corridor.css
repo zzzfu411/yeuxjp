@@ -1,0 +1,42 @@
+/* Preserve the user's original scene as a complete manga panel. */
+.word-corridor {
+  --corridor-paper: var(--paper);
+  --corridor-ink: var(--ink);
+  --corridor-line: var(--ink-faint);
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.6fr);
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border: 2px solid var(--corridor-ink);
+  background: var(--corridor-paper);
+  color: var(--corridor-ink);
+  box-shadow: 5px 5px 0 var(--corridor-ink);
+}
+.corridor-heading { grid-column: 1; padding: 2rem 2rem 0; }
+.corridor-heading h1 { font-family: var(--font-jp); font-size: clamp(2.75rem, 4vw, 3.5rem); font-weight: 800; line-height: 1.22; letter-spacing: -0.065em; }
+.corridor-heading h1 span { color: hsl(var(--accent-text)); }
+.corridor-heading p { margin-top: 1.2rem; font-size: 1.1rem; line-height: 1.9; }
+.corridor-world { grid-column: 2; grid-row: 1 / 3; align-self: center; min-width: 0; border-left: 1px solid var(--corridor-line); }
+.corridor-illustration { display: block; width: 100%; height: auto; }
+.corridor-lesson { grid-column: 1; align-self: end; margin: 1.5rem 2rem 2rem; padding-top: 1.2rem; border-top: 1px solid var(--corridor-line); }
+.corridor-lesson h2 { margin-top: 0.55rem; font-size: 1.3rem; line-height: 1.5; font-weight: 700; overflow-wrap: anywhere; }
+.corridor-lesson .vn-lesson-description { max-width: 30ch; }
+.corridor-lesson .vn-start-button { width: 100%; }
+.dark .word-corridor { border-color: var(--ink-faint); box-shadow: 5px 5px 0 var(--manga-ink); }
+@media (max-width: 1023px) {
+  .word-corridor { display: flex; flex-direction: column; box-shadow: 3px 3px 0 var(--corridor-ink); }
+  .corridor-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75rem; padding: 1.5rem; }
+  .corridor-heading h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.25; }
+  .corridor-heading p { margin: 0 0 0.15rem; font-size: 1rem; line-height: 1.8; }
+  .corridor-world { width: 100%; border-left: 0; border-block: 1px solid var(--corridor-line); }
+  .corridor-lesson { align-self: stretch; margin: 0; padding: 1.5rem; border-top: 0; }
+  .corridor-lesson .vn-lesson-description { max-width: none; }
+}
+@media (max-width: 480px) {
+  .corridor-heading, .corridor-lesson { padding: 1.25rem; }
+  .corridor-heading p { font-size: 0.9375rem; }
+}
+@media (max-width: 350px) {
+  .corridor-heading, .corridor-lesson { padding: 1rem; }
+  .corridor-heading p { font-size: 0.85rem; }
+}

@@ -5,7 +5,7 @@ import { ThemeProvider as NextThemesProvider, type ThemeProviderProps, useTheme 
 
 const THEME_COLOR_BY_MODE = {
   light: "#fffdf9",
-  dark: "#1e202b",
+  dark: "#191b20",
 } as const
 
 function ThemeColorSync() {

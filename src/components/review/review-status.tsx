@@ -97,7 +97,7 @@ export function ReviewDone({
         </div>
         {stats ? (
           <div className="text-xs text-muted-foreground">
-            {stats.repeated > 0 ? "有些内容答错过，建议稍后再复习一次。" : "状态不错，可以继续下一课或做一组测验。"}
+            {stats.answered > stats.correct ? "有些内容答错过，建议稍后再复习一次。" : "状态不错，可以继续下一课或做一组测验。"}
           </div>
         ) : null}
       </div>

@@ -35,3 +35,9 @@ export const vocabLevelCounts = mapVocabularyLevels(
 export function getVocabularyLevelMetadata(level: VocabLevel) {
   return VOCABULARY_LEVEL_METADATA.find((item) => item.id === level) ?? null
 }
+
+export function getVocabLevelForId(id: string | null | undefined): VocabLevel | null {
+  if (!id) return null
+  const match = VOCABULARY_LEVEL_METADATA.find((item) => id.startsWith(item.idPrefix))
+  return match?.id ?? null
+}

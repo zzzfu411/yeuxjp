@@ -9,6 +9,8 @@ export type MistakeMeta = {
 }
 
 export type MistakeItem = {
+  archived?: true
+  questionVersion?: string
   id: string
   type: string
   questionText?: string
@@ -29,6 +31,7 @@ export type MistakeItem = {
 }
 
 export type RecordMistakeInput = {
+  questionVersion?: string
   type: string
   questionText?: string
   questionAudio?: string
@@ -171,6 +174,8 @@ export function normalizeMistakeList(input: unknown, now: number = Date.now()): 
     if (typeof item.id !== "string" || typeof item.type !== "string" || typeof item.correctAnswer !== "string") continue
 
     const normalized: MistakeItem = {
+      ...(item.archived === true ? { archived: true } : {}),
+      ...(typeof item.questionVersion === "string" ? { questionVersion: item.questionVersion } : {}),
       id: item.id,
       type: item.type,
       questionText: stringOrUndefined(item.questionText),
@@ -207,6 +212,7 @@ export function upsertWrongMistake(previous: readonly MistakeItem[], input: Reco
     (base ? normalizeMistakeProgressMetadata(base as unknown as Record<string, unknown>) : null)
 
   const updated: MistakeItem = {
+    ...(input.questionVersion ? { questionVersion: input.questionVersion } : {}),
     id,
     type: input.type,
     questionText: input.questionText,
@@ -225,6 +231,9 @@ export function upsertWrongMistake(previous: readonly MistakeItem[], input: Reco
   }
 
   const next = [...previous]
+  if (base && input.questionVersion && base.questionVersion !== input.questionVersion) {
+    next.push({ ...base, id: `${base.id}@history:${base.questionVersion ?? "legacy"}:${base.lastWrongAt}`, archived: true })
+  }
   if (index >= 0) next[index] = updated
   else next.unshift(updated)
 

@@ -6,6 +6,10 @@ export const appHealthRoutes = [
   "/review",
   "/settings",
   "/path",
+  "/placement",
+  "/placement/n5",
+  "/checkpoints/n5",
+  "/checkpoints/n5/kanji",
   "/grammar",
   "/semantics",
   "/semantics/s-shiru-wakaru",
@@ -18,6 +22,8 @@ export const appNotFoundRoutes = [
   "/learn/__missing__",
   "/semantics/__missing__",
   "/pragmatics/__missing__",
+  "/placement/__missing__",
+  "/checkpoints/__missing__/kanji",
 ]
 
 const OHAYOU_GOZAIMASU = String.fromCodePoint(0x304a, 0x306f, 0x3088, 0x3046, 0x3054, 0x3056, 0x3044, 0x307e, 0x3059)
@@ -29,14 +35,18 @@ export const appHealthRouteSentinels = {
   "/kana": { all: [/data-route-shell="kana"/] },
   "/vocabulary": { all: [/data-route-shell="vocabulary"/] },
   "/quiz": { all: [/data-route-shell="quiz"/] },
-  "/review": { all: [/learning-data-panel/], any: [/review-empty-state/, /review-scheduled-empty-state/] },
+  "/review": { all: [/data-route-shell="review"/], any: [/learning-data-panel/, /正在读取复习安排/] },
   "/settings": { all: [/learning-data-panel/, /学习设置与数据/] },
   "/path": { all: [/path-next-learning/] },
+  "/placement": { all: [/data-testid="placement-page"/, /找到合适的起点/] },
+  "/placement/n5": { all: [/data-testid="stage-diagnostic"/, /检查你的下一步/] },
+  "/checkpoints/n5": { all: [/data-testid="stage-writing"/, /阶段作品/] },
+  "/checkpoints/n5/kanji": { all: [/data-testid="stage-kanji"/, /把这个词读出来/] },
   "/grammar": { all: [/data-route-shell="grammar"/] },
   "/semantics": { all: [/Nuance Lab/, /s-shiru-wakaru/] },
-  "/semantics/s-shiru-wakaru": { all: [/Nuance Lab/, /s-shiru-wakaru/] },
+  "/semantics/s-shiru-wakaru": { all: [/reference-document/, /知る/, /分かる/] },
   "/pragmatics": { all: [/p-aisatsu-morning/] },
-  "/pragmatics/p-aisatsu-morning": { all: [new RegExp(OHAYOU_GOZAIMASU), /p-aisatsu-morning/] },
+  "/pragmatics/p-aisatsu-morning": { all: [new RegExp(OHAYOU_GOZAIMASU), /reference-document/] },
   "/learn/day-1-a-row-hello": { all: [/lesson-next/, /day-1-a-row-hello/] },
 }
 

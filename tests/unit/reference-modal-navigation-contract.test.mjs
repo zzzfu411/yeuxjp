@@ -246,7 +246,7 @@ test("semantics and pragmatics detail pages avoid rendering full reference lists
     },
   ]
 
-  for (const { source: relPath, data, modal, title } of pages) {
+  for (const { source: relPath, data, modal } of pages) {
     const source = read(relPath)
 
     assert.doesNotMatch(source, /"use client"/, relPath)
@@ -258,8 +258,8 @@ test("semantics and pragmatics detail pages avoid rendering full reference lists
     assert.match(source, /selectedPosition=\{selectedIndex \+ 1\}/, relPath)
     assert.match(source, new RegExp(`total=\\{${data}\\.length\\}`), relPath)
     assert.match(source, /closeHref="/, relPath)
-    assert.match(source, /className="sr-only"/, relPath)
-    assert.match(source, new RegExp(title), relPath)
+    assert.match(source, /presentation="page"/, relPath)
+    assert.doesNotMatch(source, /min-h-\[70vh\]/, relPath)
     assert.doesNotMatch(source, new RegExp(`${data}\\.map`), relPath)
     assert.doesNotMatch(source, /ReferenceQueryRedirect/, relPath)
     assert.doesNotMatch(source, /enableQueryRedirect/, relPath)

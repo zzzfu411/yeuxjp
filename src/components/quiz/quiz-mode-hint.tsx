@@ -5,15 +5,17 @@ import { GlossaryButton, GlossaryTerm } from "@/components/ui/glossary"
 import { getNextLesson } from "@/data/lesson-catalog"
 import { useLearningProfile } from "@/lib/learning-progress"
 import { useLearningStatus } from "@/lib/learning-status"
+import { useStageDiagnostics } from "@/lib/use-stage-diagnostics"
 import type { QuizMode } from "@/lib/quiz-generators"
 import { verbConjFormsForCourse, VERB_CONJ_FORMS } from "@/lib/verb-conjugation"
 
 export function QuizModeHint({ mode }: { mode: QuizMode }) {
   const learning = useLearningStatus()
   const { profile } = useLearningProfile()
+  const { entryOrder } = useStageDiagnostics()
   const nextLesson = useMemo(
-    () => getNextLesson(learning.completedLessonIds, profile?.kanaLevel),
-    [learning.completedLessonIds, profile?.kanaLevel]
+    () => getNextLesson(learning.completedLessonIds, profile?.kanaLevel, entryOrder),
+    [learning.completedLessonIds, profile?.kanaLevel, entryOrder]
   )
   const includeN4VerbForms = verbConjFormsForCourse(nextLesson?.track, !nextLesson) === VERB_CONJ_FORMS
   let content

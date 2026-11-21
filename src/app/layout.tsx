@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { SITE_ORIGIN } from "@/lib/site-metadata";
 import "./globals.css";
 import "./visual-novel.css";
+import "./word-corridor.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     default: "優しい Yasashi | 日语学习",
     template: "%s | 優しい Yasashi",
   },
-  description: "从五十音到 N2：按 175 天课程学习词汇和语法，并用间隔复习巩固。",
+  description: "从五十音到 N2：按 175 课课程学习词汇和语法，并用间隔复习巩固。",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -36,19 +37,19 @@ export const metadata: Metadata = {
     locale: "zh_CN",
     siteName: "優しい Yasashi",
     title: "優しい Yasashi | 日语学习",
-    description: "从五十音到 N2，按 175 天课程循序学习日语。",
+    description: "从五十音到 N2，按 175 课课程循序学习日语。",
   },
   twitter: {
     card: "summary_large_image",
     title: "優しい Yasashi | 日语学习",
-    description: "从五十音到 N2，按 175 天课程循序学习日语。",
+    description: "从五十音到 N2，按 175 课课程循序学习日语。",
   },
 };
 
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fffdf9" },
-    { media: "(prefers-color-scheme: dark)", color: "#1e202b" },
+    { media: "(prefers-color-scheme: dark)", color: "#191b20" },
   ],
 };
 

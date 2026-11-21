@@ -177,7 +177,7 @@ test("today review adapter resolves mistakes and preserves mistake history metad
   assert.equal(resolved.missingReviewEntry, false)
   assert.equal(resolved.insufficientQuestionOptions, false)
   assert.equal(resolved.data.deckLabel, "词汇错题")
-  assert.equal(resolved.data.prompt, "（无题干）")
+  assert.equal(resolved.data.prompt, "完成这道复习题")
   assert.equal(resolved.data.sub, undefined)
   assert.equal(resolved.data.question.mistakeId, "m2")
   assert.equal(resolved.data.question.itemId, "v1")
@@ -202,7 +202,8 @@ test("today review adapter labels grammar mistakes for the shared mistake deck",
   })
 
   assert.equal(resolved.data.deckLabel, "语法错题")
-  assert.equal(resolved.data.sub, "は标记主题。")
+  assert.equal(resolved.data.sub, "错题会留在今日队列，答对后才离开")
+  assert.equal(resolved.data.question.explanation, "は标记主题。")
   assert.equal(resolved.data.question.itemType, "grammar")
 })
 

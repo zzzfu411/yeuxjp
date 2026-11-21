@@ -9,7 +9,7 @@ export type ReviewStats = {
 
 export type ReviewSession =
   | { deck: ReviewDeck; ids: string[] }
-  | { deck: "today"; items: TodayReviewItem[]; remainingDueAfterBatch: number }
+  | { deck: "today"; items: TodayReviewItem[]; remainingDueAfterBatch: number; singlePass?: boolean }
 
 const REVIEW_SESSION_SOURCE_KEYS = new Set<string>([
   STORAGE_KEYS.KANA_MASTERED,
@@ -18,6 +18,7 @@ const REVIEW_SESSION_SOURCE_KEYS = new Set<string>([
   STORAGE_KEYS.SRS_VOCAB,
   STORAGE_KEYS.SRS_MISTAKES,
   STORAGE_KEYS.MISTAKES,
+  STORAGE_KEYS.KNOWLEDGE_REVIEWS,
 ])
 
 export type ReviewCompletionStats = {
@@ -31,19 +32,19 @@ export function createReviewStats(): ReviewStats {
   return { correct: 0, wrong: 0, repeated: 0 }
 }
 
-export function recordReviewAnswer(stats: ReviewStats, ok: boolean): ReviewStats {
+export function recordReviewAnswer(stats: ReviewStats, ok: boolean, repeatWrong = true): ReviewStats {
   return {
     correct: stats.correct + (ok ? 1 : 0),
     wrong: stats.wrong + (ok ? 0 : 1),
-    repeated: stats.repeated + (ok ? 0 : 1),
+    repeated: stats.repeated + (!ok && repeatWrong ? 1 : 0),
   }
 }
 
-export function advanceReviewQueue<T>(queue: T[], lastOk: boolean | null): T[] {
+export function advanceReviewQueue<T>(queue: T[], lastOk: boolean | null, repeatWrong = true): T[] {
   const [head, ...rest] = queue
   if (!head) return queue
   if (lastOk === null) return queue
-  return lastOk ? rest : [...rest, head]
+  return lastOk || !repeatWrong ? rest : [...rest, head]
 }
 
 export function dropCurrentReviewItem<T>(queue: T[]): T[] {

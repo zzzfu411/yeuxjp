@@ -10,6 +10,8 @@ import {
   type PathVocabStats,
 } from "@/lib/path-page-model"
 import type { SkillId, SkillNode } from "@/lib/skill-tree"
+import { getRecommendedConsolidation } from "@/lib/lesson-consolidation"
+import type { LessonProgressMap } from "@/lib/learning-progress-types"
 
 export interface LearningRecommendationModel {
   kanaStats: PathKanaStats
@@ -27,6 +29,8 @@ export function buildLearningRecommendationModel({
   skillTree,
   goal,
   kanaLevel,
+  lessons = {},
+  entryOrder = 1,
 }: {
   kana: readonly Kana[]
   isKanaMastered: (romaji: string) => boolean
@@ -35,6 +39,8 @@ export function buildLearningRecommendationModel({
   skillTree?: readonly SkillNode[]
   goal?: CourseRecommendationHint["goal"]
   kanaLevel?: CourseRecommendationHint["kanaLevel"]
+  lessons?: LessonProgressMap
+  entryOrder?: number
 }): LearningRecommendationModel {
   const kanaStats = getKanaSkillStats(kana, isKanaMastered)
   const vocabStats = summarizeLearnedVocabIds(learnedVocabIds)
@@ -43,6 +49,7 @@ export function buildLearningRecommendationModel({
     allLessonsDone: !nextLesson,
     goal,
     kanaLevel,
+    entryOrder,
   })
   const recommendedSkill = findSkillNode(nextSkillId, skillTree)
 
@@ -51,6 +58,6 @@ export function buildLearningRecommendationModel({
     vocabStats,
     nextSkillId,
     recommendedSkill,
-    learningEntry: resolveLearningEntry({ nextLesson, skill: recommendedSkill }),
+    learningEntry: resolveLearningEntry({ nextLesson, skill: recommendedSkill, consolidation: getRecommendedConsolidation(lessons, entryOrder) }),
   }
 }

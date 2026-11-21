@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v15";
+const CACHE_VERSION = "v19";
 const SHELL_CACHE_NAME = `yasashi-shell-${CACHE_VERSION}`;
 const NAVIGATION_CACHE_NAME = `yasashi-navigation-${CACHE_VERSION}`;
 const RUNTIME_CACHE_NAME = `yasashi-runtime-${CACHE_VERSION}`;

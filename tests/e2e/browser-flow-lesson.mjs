@@ -181,6 +181,8 @@ export async function verifyLessonFlow(page, baseUrl) {
   await page.getByTestId("lesson-typing-input").fill("こんにちは")
   await page.getByTestId("lesson-submit-typing").click()
   await page.getByTestId("lesson-next").click()
+  await page.getByRole("button", { name: "学生", exact: true }).click()
+  await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-completed-summary").waitFor({ state: "visible" })
   const completedSummary = page.getByTestId("lesson-completed-summary")
@@ -191,7 +193,7 @@ export async function verifyLessonFlow(page, baseUrl) {
   )
   await completedSummary.getByText("こんにちは").waitFor({ state: "visible" })
   assert.ok(
-    await completedSummary.getByRole("link", { name: /用闪卡把本课词评成记住/ }).isVisible(),
+    await completedSummary.getByRole("link", { name: /补练本课词汇/ }).isVisible(),
     "completed lesson recap should send learners to vocabulary flashcards"
   )
   const completedLessonProgress = await readJsonStorage(page, E2E_STORAGE_KEYS.LESSON_PROGRESS)
@@ -226,6 +228,7 @@ export async function verifyLessonFlow(page, baseUrl) {
   assert.equal(editedProfile?.romajiMode, "hidden", "home profile editor should persist a later romaji change")
   assert.equal(editedProfile?.goal, "travel", "home profile editor should keep the existing learning goal")
   await page.goto(`${baseUrl}/path`, { waitUntil: "networkidle" })
+  await page.getByText("查看能力记录与统计说明", { exact: true }).click()
   assert.equal(
     await page.getByTestId("path-next-learning").getAttribute("href"),
     "/learn/day-2-ka-row-thanks",
@@ -412,10 +415,9 @@ export async function verifyLessonFlow(page, baseUrl) {
   await page.getByTestId(`lesson-answer-${ra}`).click()
   await page.getByTestId("lesson-next").click()
 
-  await page.getByTestId("lesson-sentence-chunk-1").click()
-  await page.getByTestId("lesson-sentence-chunk-3").click()
-  await page.getByTestId("lesson-sentence-chunk-2").click()
-  await page.getByTestId("lesson-sentence-chunk-0").click()
+  for (const chunk of ["わたし", "は", "がくせい", "です"]) {
+    await page.getByTestId(/^lesson-sentence-chunk-/).filter({ hasText: new RegExp(`^${chunk}$`) }).click()
+  }
   await page.getByTestId("lesson-submit-sentence").click()
   await page.getByTestId("lesson-next").click()
   await page.getByTestId("lesson-typing-input").fill(ha)
@@ -429,7 +431,8 @@ export async function verifyLessonFlow(page, baseUrl) {
         item.lessonStepId === "build-intro" &&
         item.itemId === "sentence-intro-student" &&
         item.itemType === "sentence" &&
-        item.mode === "production" &&
+        item.mode === "recall" &&
+        item.responseFormat === "assembly" &&
         item.correct === true
       ) &&
       practice.some((item) =>
@@ -449,10 +452,11 @@ export async function verifyLessonFlow(page, baseUrl) {
         item.lessonStepId === "build-intro" &&
         item.itemId === "sentence-intro-student" &&
         item.itemType === "sentence" &&
-        item.mode === "production" &&
+        item.mode === "recall" &&
+        item.responseFormat === "assembly" &&
         item.correct === true
       ),
-    "sentence build lesson step should write sentence production practice"
+    "sentence build should preserve assembly evidence rather than independent typed output"
   )
   assert.ok(
     Array.isArray(day4Practice) &&
